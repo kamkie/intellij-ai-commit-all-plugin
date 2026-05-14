@@ -45,7 +45,7 @@ Validation expected: gradle buildPlugin and gradle runIde startup.
 - Use `.agents/references/reviews.md` for review tasks.
 - Use `.agents/references/code-style.md` before editing Kotlin, Gradle, or plugin descriptor files.
 - Use `.agents/references/documentation.md` before adding or changing docs.
-- Use `docs/decisions/` for accepted durable decisions.
+- Use `docs/decisions/` for project decisions and repository rule changes.
 
 ## Constraints To State Explicitly
 

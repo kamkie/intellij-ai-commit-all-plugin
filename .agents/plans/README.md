@@ -8,7 +8,7 @@ This directory holds task-specific implementation plans for work that is too lar
 - Use `PLAN_TEMPLATE.md` as the starting point.
 - Keep plans focused on one task or milestone.
 - Link unresolved user input back to `OPEN_QUESTIONS.md`.
-- Move durable accepted decisions to `docs/decisions/`.
+- Move accepted project decisions and repository rule changes to `docs/decisions/`.
 
 ## Lifecycle
 

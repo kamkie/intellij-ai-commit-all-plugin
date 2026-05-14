@@ -41,7 +41,8 @@ A useful plan should include:
 - Keep plans short enough to maintain.
 - Do not duplicate the full backlog from `TASKS.md`.
 - Move unresolved user decisions to `OPEN_QUESTIONS.md`.
-- Record durable decisions in `docs/decisions/` only after they are accepted.
+- Record every project decision in `docs/decisions/` as an ADR before or alongside implementation.
+- Record repository rule changes in `docs/decisions/` as new or superseding ADRs before or alongside the rule edit.
 - Update or delete stale plans when implementation makes them obsolete.
 
 ## Before Implementation

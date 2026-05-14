@@ -37,6 +37,8 @@ When instructions overlap, apply this project-specific order:
 
 - Use the smallest task-shaped context that can safely answer the request.
 - Identify the behavior and governing artifact before editing.
+- Record every repository rule change in `docs/decisions/` as a new or superseding ADR before or alongside the rule edit.
+- Record every project decision in `docs/decisions/` as an ADR before or alongside the implementation it affects.
 - Update specs or docs before or alongside behavior changes when behavior changes.
 - Run validation that matches the diff and risk.
 - Review for bugs, missing validation, and API or IDE compatibility risk before handing off.

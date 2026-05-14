@@ -1,18 +1,23 @@
 # Decision Records
 
-Use this directory for accepted, durable decisions that future work should preserve.
+Use this directory for project decisions and repository rule changes that future work should preserve.
 
-Do not add a decision record for every task. Add one when a choice affects architecture, compatibility, user behavior, validation expectations, or future maintenance.
+Every project decision must be recorded as an ADR before or alongside the implementation it affects.
+
+Every repository rule change must be recorded as a new ADR or as an update that supersedes an existing ADR before or alongside the rule edit.
+
+Routine task execution notes do not need ADRs unless they choose or change project direction, repository rules, compatibility, user behavior, validation expectations, or future maintenance policy.
 
 ## When To Add A Decision
 
-Good candidates include:
+Required ADR topics include:
 
 - Minimum supported IntelliJ Platform version.
 - Supported IDE family or Git-only versus broader VCS support.
 - Runtime-discovered AI Assistant action versus direct dependency on AI Assistant APIs.
 - Separate commit-and-push action versus reusing the IDE's existing commit executor state.
 - Compatibility policy for IntelliJ Platform API changes.
+- Repository rule or workflow changes.
 
 ## Status Values
 
