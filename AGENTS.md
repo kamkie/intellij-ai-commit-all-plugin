@@ -20,8 +20,11 @@ This is the AI entry point for the repository. Keep task context small and read 
 - Code style: `.agents/references/code-style.md`
 - Validation: `.agents/references/testing.md`
 - Review priorities: `.agents/references/reviews.md`
+- Release preparation: `.agents/references/releases.md`
 - Documentation ownership: `.agents/references/documentation.md`
 - Commit message template: `.gitmessage`
+- Changelog: `CHANGELOG.md`
+- Support policy: `SUPPORT.md`
 - Decision records: `docs/decisions/`
 
 ## Priority Order
@@ -38,6 +41,7 @@ When instructions overlap, apply this project-specific order:
 
 - Use the smallest task-shaped context that can safely answer the request.
 - Identify the behavior and governing artifact before editing.
+- Do not load every AI instruction file automatically; start from this file and then read only the specific mapped guidance needed for the current task.
 - Follow `docs/decisions/README.md` for project decisions and repository rule changes.
 - Update specs or docs before or alongside behavior changes when behavior changes.
 - Run validation that matches the diff and risk.

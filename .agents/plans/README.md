@@ -6,6 +6,8 @@ This directory holds task-specific implementation plans for work that is too lar
 
 - Create a plan when work spans multiple files or behavior areas.
 - Use `PLAN_TEMPLATE.md` as the starting point.
+- Give every plan a stable `Plan-ID` in the form `P-<short-kebab-slug>`, such as `P-scaffold-plugin-project`.
+- Do not use a strictly number-based plan ID such as `P-0001`; the ID should carry enough meaning to recognize the plan without its file path.
 - Keep plans focused on one task or milestone.
 - Link unresolved user input back to `OPEN_QUESTIONS.md`.
 - Move accepted project decisions and repository rule changes to `docs/decisions/`.
@@ -20,3 +22,5 @@ This directory holds task-specific implementation plans for work that is too lar
 - Superseded: another plan or decision record replaced it.
 
 Update the status in the plan file instead of leaving stale instructions.
+
+Keep `Plan-ID` stable when the plan title, filename, status, or wording changes. If a plan is split, keep the original ID for the closest surviving plan and assign new meaningful IDs to new plans.

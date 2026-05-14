@@ -57,6 +57,8 @@ Run only one task worker at a time unless the accepted plan explicitly marks tas
 ## Context Rules
 
 - Read only the context needed for the current task.
+- Do not bulk-load every AI instruction file automatically; use `AGENTS.md` and the guidance map to choose the smallest governing read set.
+- Broaden the read set only when targeted discovery shows another owner document is needed, the user asks for a broad audit, or validation requires cross-document consistency checks.
 - Prefer existing IntelliJ Platform and Gradle plugin conventions over custom infrastructure.
 - Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; do not add unrelated release or operations files outside that scope.
 - If the repo is still unscaffolded, do not assume Gradle, Kotlin, or plugin descriptor files exist.

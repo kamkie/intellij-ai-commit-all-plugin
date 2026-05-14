@@ -32,10 +32,12 @@ Validation expected: gradle buildPlugin and gradle runIde startup.
 - Implementation: name the user-facing behavior, target files, validation expected, and any decisions already made.
 - Review: ask for bugs, unintended commit risk, AI Assistant integration risk, and missing validation.
 - Documentation: state whether the change affects users, contributors, or AI agents.
+- Release: ask only after implementation is integrated and validation evidence is ready.
 
 ## What AI Should Read
 
 - Start with `AGENTS.md`.
+- Do not ask or expect AI to load every AI instruction file automatically; it should use the guidance map and load only the specific owner documents needed for the task.
 - Use `TASKS.md` for backlog and scope boundaries.
 - Use `OPEN_QUESTIONS.md` for missing user decisions.
 - Use `docs/DEVELOPMENT_LIFECYCLE.md` for multi-step changes.
@@ -43,6 +45,7 @@ Validation expected: gradle buildPlugin and gradle runIde startup.
 - Use `.agents/references/execution.md` before implementation.
 - Use `.agents/references/testing.md` before choosing validation.
 - Use `.agents/references/reviews.md` for review tasks.
+- Use `.agents/references/releases.md` for release preparation, changelog updates, and support-policy checks.
 - Use `.agents/references/code-style.md` before editing Kotlin, Gradle, or plugin descriptor files.
 - Use `.agents/references/documentation.md` before adding or changing docs.
 - Use `docs/decisions/` for project decisions and repository rule changes.
@@ -76,13 +79,17 @@ For documentation-only changes, a focused content review and link/path check is 
 
 When asking AI to commit completed work, expect Conventional Commit messages with the metadata trailer block defined in [.gitmessage](../.gitmessage).
 
+When asking AI to create or execute a plan, expect a stable non-number-only `Plan-ID` such as `P-scaffold-plugin-project`.
+
 When work comes from `TASKS.md`, reference the stable `T-AREA-NNN` task ID in the request or expect AI to identify it before implementation.
 
 Before AI starts implementation from an accepted plan, all plan questions and required decisions should be answered or documented as allowed assumptions. If a new question appears during planned implementation, AI should stop, update the appropriate planning, question, decision, or task document, and ask for the missing decision when needed.
 
 For accepted multi-task plans, each named task is committed after implementation, targeted validation, and self-review. The later release workflow is responsible for whole-release review, manual checks and tests, documentation update passes, and release artifact preparation.
 
-When using AI agents on an accepted multi-task plan, prefer one orchestrator plus one fresh task worker per named task. The orchestrator keeps the plan state, handles questions, checks evidence, and verifies the commit before the next worker starts.
+When using AI agents on an accepted multi-task plan, prefer one orchestrator plus one fresh task worker per named task. The orchestrator keeps the plan state, handles questions, checks evidence, maintains `CHANGELOG.md` for notable changes, and verifies the commit before the next worker starts.
+
+For release preparation, use [.agents/references/releases.md](../.agents/references/releases.md). The release orchestrator owns [CHANGELOG.md](../CHANGELOG.md) updates and should check whether [SUPPORT.md](../SUPPORT.md) still matches the release scope.
 
 To use the same template locally:
 

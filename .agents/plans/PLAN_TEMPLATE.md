@@ -1,5 +1,7 @@
 # Plan: <title>
 
+Plan-ID: P-<short-kebab-slug>
+
 Status: Draft
 
 ## Goal

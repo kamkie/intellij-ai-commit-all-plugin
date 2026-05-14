@@ -43,6 +43,10 @@ Implementation guidance for future agents is in [AGENTS.md](AGENTS.md).
 
 Guidance for working with AI agents on this repository is in [docs/WORKING_WITH_AI.md](docs/WORKING_WITH_AI.md).
 
+Notable changes are tracked in [CHANGELOG.md](CHANGELOG.md).
+
+Support status and issue-reporting expectations are in [SUPPORT.md](SUPPORT.md).
+
 ## License
 
 Licensed under the Apache License 2.0. See [LICENSE](LICENSE).

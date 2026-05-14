@@ -67,3 +67,9 @@ Report:
 - Validation run.
 - Validation not run and why.
 - Remaining open questions or risks.
+
+## 7. Release Preparation
+
+Release preparation starts after implementation work is complete and integrated on `main`, or when the user explicitly requests release work.
+
+Use `.agents/references/releases.md` for release sequencing. The release orchestrator owns `CHANGELOG.md` updates, checks whether `SUPPORT.md` still matches the supported scope, runs the broader release validation, and prepares release artifacts.

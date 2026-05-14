@@ -137,6 +137,10 @@ Notation:
 - [x] T-DOC-006: Document license in `README.md`. (ADR 0018)
 - [ ] T-DOC-007: Document Marketplace source code link.
 - [ ] T-DOC-008: Document Marketplace publication process and required secrets.
+- [x] T-DOC-009: Add root `CHANGELOG.md` for notable unreleased and released changes. (ADR 0029)
+- [x] T-DOC-010: Add root `SUPPORT.md` for support status and issue-reporting expectations. (ADR 0029)
+- [x] T-DOC-011: Add rule to avoid automatically loading every AI instruction file. (ADR 0031)
+- [x] T-DOC-012: Add stable non-number-only plan IDs. (ADR 0032)
 
 ## 11. Publishing, Signing, Marketplace, And CI
 
@@ -149,3 +153,5 @@ Notation:
 - [ ] T-REL-007: Add Plugin Verifier CI for target IDE versions.
 - [ ] T-REL-008: Add a gated/manual release workflow for signing and Marketplace publishing.
 - [ ] T-REL-009: Ensure pull-request CI does not require or expose Marketplace tokens, signing keys, or certificate passwords.
+- [x] T-REL-010: Add release guidance for changelog, support-policy, version tag, and release-precondition rules. (ADR 0029)
+- [x] T-REL-011: Assign changelog maintenance to the orchestrator during orchestrated plan execution and release preparation. (ADR 0030)
