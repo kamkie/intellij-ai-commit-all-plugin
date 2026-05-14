@@ -31,8 +31,9 @@ Required ADR topics include:
 Use a short numbered filename:
 
 ```text
-0001-minimum-intellij-platform-version.md
-0002-ai-assistant-integration-strategy.md
+0000-initial-repository-creation-and-scaffolding.md
+0001-import-lightweight-ai-guidance-model.md
+0002-record-rule-changes-and-project-decisions.md
 ```
 
 Start from `ADR_TEMPLATE.md`.
