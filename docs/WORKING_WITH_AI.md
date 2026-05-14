@@ -29,7 +29,7 @@ Validation expected: gradle buildPlugin and gradle runIde startup.
 ## Useful Task Types
 
 - Planning: ask for a plan when the target IDE version, supported IDEs, or commit/push behavior is not settled.
-- Implementation: name the user-facing behavior, target files, and validation expected.
+- Implementation: name the user-facing behavior, target files, validation expected, and any decisions already made.
 - Review: ask for bugs, unintended commit risk, AI Assistant integration risk, and missing validation.
 - Documentation: state whether the change affects users, contributors, or AI agents.
 
@@ -75,6 +75,10 @@ For documentation-only changes, a focused content review and link/path check is 
 ## Commit Requests
 
 When asking AI to commit completed work, expect Conventional Commit messages with the metadata trailer block defined in [.gitmessage](../.gitmessage).
+
+Before AI starts implementation from an accepted plan, all plan questions and required decisions should be answered or documented as allowed assumptions. If a new question appears during planned implementation, AI should stop, update the appropriate planning, question, decision, or task document, and ask for the missing decision when needed.
+
+For accepted multi-task plans, each named task is committed after implementation, targeted validation, and self-review. The later release workflow is responsible for whole-release review, manual checks and tests, documentation update passes, and release artifact preparation.
 
 To use the same template locally:
 

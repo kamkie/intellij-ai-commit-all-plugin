@@ -14,16 +14,34 @@ This file also owns AI-facing commit-message rules. The repository root `.gitmes
 6. Self-review: use `.agents/references/reviews.md` to check for behavior, compatibility, and validation gaps.
 7. Report evidence: summarize changed files, validation run, and any remaining risk.
 
+## Multi-Task Plans
+
+When working from an accepted plan that contains multiple implementation tasks, treat each named task as its own execution unit:
+
+- Fully implement the task according to this execution loop.
+- Run task-appropriate validation from `.agents/references/testing.md`.
+- Self-review the task using `.agents/references/reviews.md`.
+- Commit the completed task before starting the next plan task.
+
+Use `Project-Source: plan-task`, `Project-Plan:`, and `Project-Plan-Task:` commit metadata for these commits.
+
+Do not batch multiple plan tasks into one commit unless the accepted plan or a later user request explicitly says those tasks are inseparable.
+
+Per-task completion does not replace the later release workflow. Release preparation is expected to run after implementation tasks and should cover the full cross-task review, broader manual checks and tests, documentation updates, and release artifact preparation.
+
 ## Context Rules
 
 - Read only the context needed for the current task.
 - Prefer existing IntelliJ Platform and Gradle plugin conventions over custom infrastructure.
 - Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; do not add unrelated release or operations files outside that scope.
 - If the repo is still unscaffolded, do not assume Gradle, Kotlin, or plugin descriptor files exist.
+- Before implementing from an accepted plan, confirm every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.
 
 ## Commit Rules
 
 Commit completed work only when the user asks for a commit or the task scope explicitly requires it.
+
+For accepted multi-task plans, each completed plan task explicitly requires its own commit under ADR 0023.
 
 When creating a commit for AI-authored work:
 
@@ -39,3 +57,5 @@ Use `Project-Source: prompt` for direct ad hoc user requests, `task` for `TASKS.
 ## Stop Conditions
 
 Pause and ask for a decision when implementation depends on an unresolved product choice, such as direct dependency on proprietary AI Assistant APIs.
+
+When a new question, missing decision, or unsafe assumption appears during planned implementation, stop work immediately and update the appropriate document before continuing: the active plan, `OPEN_QUESTIONS.md`, `docs/decisions/`, or `TASKS.md`.

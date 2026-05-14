@@ -17,11 +17,13 @@ List work that is intentionally out of scope.
 ## Open Questions
 
 - Link to `OPEN_QUESTIONS.md` entries or list task-specific questions.
+- Accepted plans must have every question answered, decided, moved to an owner document, or explicitly documented as an allowed assumption.
 
 ## Proposed Changes
 
 - List files, modules, or docs expected to change.
 - Keep this at the level of implementation steps, not backlog history.
+- For multi-task plans, use named tasks suitable for `Project-Plan-Task:` commit metadata.
 
 ## Validation
 
@@ -34,3 +36,4 @@ List work that is intentionally out of scope.
 ## Handoff Notes
 
 - Record anything the next agent or maintainer should know after implementation.
+- If a new question appeared during implementation, note where it was recorded and whether work resumed.

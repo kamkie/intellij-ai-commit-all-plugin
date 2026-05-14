@@ -9,11 +9,12 @@ This directory holds task-specific implementation plans for work that is too lar
 - Keep plans focused on one task or milestone.
 - Link unresolved user input back to `OPEN_QUESTIONS.md`.
 - Move accepted project decisions and repository rule changes to `docs/decisions/`.
+- Do not start implementation from an accepted plan until every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.
 
 ## Lifecycle
 
 - Draft: the plan is being shaped and may contain unanswered questions.
-- Accepted: the plan is approved or clear enough to implement.
+- Accepted: the plan is approved or clear enough to implement, with every required question and decision answered, decided, or explicitly documented as an allowed assumption.
 - Implemented: the code/docs have been changed and validated.
 - Superseded: another plan or decision record replaced it.
 
