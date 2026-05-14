@@ -27,6 +27,8 @@ Before implementation starts from an accepted plan, every plan question and requ
 
 For accepted plans with multiple implementation tasks, each task is completed independently: implement it, validate it using `.agents/references/testing.md`, review it using `.agents/references/reviews.md`, and commit it before starting the next task.
 
+When agent delegation is available, run accepted multi-task plans with one orchestrator and one fresh task worker per named task. The orchestrator owns sequencing, question handling, review evidence, validation evidence, and commit verification. Task workers should not carry context from previous plan tasks.
+
 The later release workflow takes over after implementation tasks. It should perform the full cross-task review, broader manual checks and tests, documentation update pass, and release artifact preparation.
 
 ## 3. Implement

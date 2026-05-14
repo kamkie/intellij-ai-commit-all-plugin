@@ -10,6 +10,7 @@ This directory holds task-specific implementation plans for work that is too lar
 - Link unresolved user input back to `OPEN_QUESTIONS.md`.
 - Move accepted project decisions and repository rule changes to `docs/decisions/`.
 - Do not start implementation from an accepted plan until every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.
+- For multi-task implementation, prefer an orchestrator with one fresh task worker per named task when the environment supports agent delegation.
 
 ## Lifecycle
 

@@ -22,7 +22,9 @@ Use this guide when adding or updating repository documentation.
 - Do not copy Spring, REST, OpenAPI, release, deployment, operations, benchmark, or frontend guidance from other repositories.
 - Do not imply plugin implementation has started until Gradle, Kotlin, or IntelliJ plugin scaffold files exist.
 - Prefer concrete commands and artifact names over generic process language.
-- Give open questions stable IDs in `OPEN_QUESTIONS.md`; mark blocked `TASKS.md` items with `depends on: Q-ID`, and tasks that answer questions with `resolves: Q-ID`.
+- Give open questions stable IDs in `OPEN_QUESTIONS.md`.
+- Give every `TASKS.md` item a stable task ID in the form `T-AREA-NNN`, keep the ID stable when wording or ordering changes, and do not renumber existing task IDs.
+- Mark blocked `TASKS.md` items with `depends on: Q-ID`, and tasks that answer questions with `resolves: Q-ID`.
 - Follow `docs/decisions/README.md` for project decisions and repository rule changes.
 - Update documentation before or alongside behavior changes that affect users, validation, supported IDEs, or AI agent workflow.
 

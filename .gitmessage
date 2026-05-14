@@ -5,7 +5,7 @@
 Project-Source: <plan|plan-task|task|prompt|manual>
 Project-Plan: <.agents/plans/*.md or omit>
 Project-Plan-Task: <plan task name or omit>
-Project-Task: <TASKS.md item or omit>
+Project-Task: <TASKS.md T-AREA-NNN task ID/title or omit>
 Project-Prompt: <short direct-request summary or omit>
 Co-authored-by: <agent-name> <agent-email>
 Refs: <paths/issues/ADRs or omit>

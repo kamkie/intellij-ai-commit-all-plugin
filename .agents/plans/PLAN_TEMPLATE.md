@@ -23,7 +23,13 @@ List work that is intentionally out of scope.
 
 - List files, modules, or docs expected to change.
 - Keep this at the level of implementation steps, not backlog history.
+- Reference related `TASKS.md` items by stable `T-AREA-NNN` task ID when applicable.
 - For multi-task plans, use named tasks suitable for `Project-Plan-Task:` commit metadata.
+
+## Execution Model
+
+- For multi-task plans, use an orchestrator plus one fresh task worker per named task when agent delegation is available.
+- Record any task that is safe to run in parallel only when it has a disjoint write scope.
 
 ## Validation
 

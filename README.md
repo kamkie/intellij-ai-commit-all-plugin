@@ -17,6 +17,7 @@ Current scope decisions:
 - Error and notification handling should reuse or forward standard IntelliJ, Git, VCS, push, and AI Assistant messages where possible.
 - Confirmation and safety barriers should come from the standard IntelliJ commit and push workflows unless development reveals a concrete uncovered risk.
 - Icons should use AI-generated base concepts adapted into IntelliJ-style SVG assets.
+- Detailed split-button styling should start from a generated placeholder graphic and be adapted into IntelliJ Platform UI conventions during implementation.
 - Distribution target: open-source plugin published to the official JetBrains Marketplace with signing, Marketplace metadata, and CI support.
 - Validation target: current stable JetBrains IDE builds available through All Products Pack, with changelists and Git staging enabled and disabled covered.
 - End-to-end tests should use local Git repositories where the IntelliJ test framework and sandbox setup make that practical.

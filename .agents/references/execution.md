@@ -29,6 +29,31 @@ Do not batch multiple plan tasks into one commit unless the accepted plan or a l
 
 Per-task completion does not replace the later release workflow. Release preparation is expected to run after implementation tasks and should cover the full cross-task review, broader manual checks and tests, documentation updates, and release artifact preparation.
 
+## Orchestrator And Task Workers
+
+When an accepted multi-task plan is executed with delegated agents, use one orchestrator and one fresh task worker per plan task.
+
+The orchestrator owns:
+
+- Confirming all plan questions and required decisions are answered before implementation starts.
+- Selecting the next named plan task.
+- Giving the task worker only task-shaped context needed for that task.
+- Handling new questions or missing decisions by stopping implementation and updating the owning document.
+- Reviewing worker output, validation evidence, self-review evidence, and commit metadata.
+- Starting the next task only after the current task is committed.
+
+The task worker owns only its assigned task:
+
+- Implement the task according to this execution loop.
+- Run task-appropriate validation from `.agents/references/testing.md`.
+- Self-review using `.agents/references/reviews.md`.
+- Commit the completed task when the task scope requires it, or return the exact commit-ready diff and evidence when the environment prevents worker commits.
+- Stop immediately and report if a new question, missing decision, unsafe assumption, or scope conflict appears.
+
+Use a fresh task worker context for each plan task. Do not carry worker context from one plan task to the next.
+
+Run only one task worker at a time unless the accepted plan explicitly marks tasks as independent and gives them disjoint write scopes.
+
 ## Context Rules
 
 - Read only the context needed for the current task.
@@ -52,7 +77,7 @@ When creating a commit for AI-authored work:
 - Include `Validation:` with the command and result, or `not run` with a reason.
 - When committing non-interactively, use a commit-message file or one final message paragraph for all trailer lines. Do not pass each footer as a separate `git commit -m` argument because Git inserts blank lines between message paragraphs.
 
-Use `Project-Source: prompt` for direct ad hoc user requests, `task` for `TASKS.md` items, `plan` or `plan-task` for accepted plan work, and `manual` only for human-authored commits outside the AI workflow.
+Use `Project-Source: prompt` for direct ad hoc user requests, `task` for `TASKS.md` items, `plan` or `plan-task` for accepted plan work, and `manual` only for human-authored commits outside the AI workflow. For `TASKS.md` work, include the stable `T-AREA-NNN` task ID in `Project-Task:`.
 
 ## Stop Conditions
 

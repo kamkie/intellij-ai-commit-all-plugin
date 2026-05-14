@@ -46,8 +46,13 @@ A useful plan should include:
 - Follow `docs/decisions/README.md` for project decisions and repository rule changes.
 - Update or delete stale plans when implementation makes them obsolete.
 - For multi-task plans, name tasks clearly enough to use in `Project-Plan-Task:` commit metadata.
+- When plan tasks come from `TASKS.md`, reference the stable `T-AREA-NNN` task ID alongside the task name.
 - For multi-task plans, each task must be fully implemented, validated through `.agents/references/testing.md`, self-reviewed through `.agents/references/reviews.md`, and committed before the next task starts.
 - Leave release-wide review, broader manual checks and tests, documentation update passes, and release artifact preparation to the later release workflow unless the plan is specifically a release plan.
+- For multi-task plan execution, use an orchestrator plus one fresh task worker per plan task when the environment supports agent delegation.
+- The orchestrator owns plan state, task sequencing, question handling, validation evidence, review evidence, and commit verification.
+- Each task worker gets only the task-shaped context needed for its assigned plan task, not accumulated context from previous tasks.
+- Do not run task workers in parallel unless the accepted plan explicitly identifies independent tasks with disjoint write scopes.
 
 ## Before Implementation
 
@@ -66,3 +71,14 @@ If a new question, missing decision, or unsafe assumption appears while implemen
 - Update the appropriate document before continuing: the active plan for task-local questions, `OPEN_QUESTIONS.md` for missing user input, `docs/decisions/` for project decisions or repository rule changes, and `TASKS.md` when backlog scope or dependencies change.
 - Ask the user for the decision when the answer cannot be safely inferred from the current request and governing documents.
 - Resume only after the question is answered, decided, or explicitly documented as an allowed assumption.
+
+## Orchestrated Execution
+
+When using delegated agents for an accepted multi-task plan:
+
+- Keep one orchestrator responsible for the whole plan.
+- Start one fresh task worker for the current named plan task.
+- Give the worker `AGENTS.md`, the accepted plan, the current task name, relevant ADRs, relevant source files, expected validation, and commit metadata requirements.
+- Have the worker stop and report immediately if the task reveals a new question, missing decision, unsafe assumption, or scope conflict.
+- Have the orchestrator update the owning document and obtain the missing decision before resuming.
+- Have the orchestrator review worker output, confirm validation and self-review evidence, and verify the task commit before starting the next task.

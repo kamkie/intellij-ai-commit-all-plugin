@@ -76,9 +76,13 @@ For documentation-only changes, a focused content review and link/path check is 
 
 When asking AI to commit completed work, expect Conventional Commit messages with the metadata trailer block defined in [.gitmessage](../.gitmessage).
 
+When work comes from `TASKS.md`, reference the stable `T-AREA-NNN` task ID in the request or expect AI to identify it before implementation.
+
 Before AI starts implementation from an accepted plan, all plan questions and required decisions should be answered or documented as allowed assumptions. If a new question appears during planned implementation, AI should stop, update the appropriate planning, question, decision, or task document, and ask for the missing decision when needed.
 
 For accepted multi-task plans, each named task is committed after implementation, targeted validation, and self-review. The later release workflow is responsible for whole-release review, manual checks and tests, documentation update passes, and release artifact preparation.
+
+When using AI agents on an accepted multi-task plan, prefer one orchestrator plus one fresh task worker per named task. The orchestrator keeps the plan state, handles questions, checks evidence, and verifies the commit before the next worker starts.
 
 To use the same template locally:
 
