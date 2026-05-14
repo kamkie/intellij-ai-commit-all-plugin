@@ -1,0 +1,61 @@
+<type>[optional scope][!]: <description>
+
+[optional body: explain what changed and why]
+
+Project-Source: <plan|plan-task|task|prompt|manual>
+Project-Plan: <.agents/plans/*.md or omit>
+Project-Plan-Task: <plan task name or omit>
+Project-Task: <TASKS.md item or omit>
+Project-Prompt: <short direct-request summary or omit>
+Co-authored-by: <agent-name> <agent-email>
+Refs: <paths/issues/ADRs or omit>
+Validation: <command/result>
+
+# Conventional Commits 1.0.0 shape:
+#   <type>[optional scope][optional !]: <description>
+#   [optional body]
+#   [optional footer(s)]
+#
+# Repository types:
+#   feat      new user-facing plugin behavior
+#   fix       bug fix
+#   docs      documentation-only change
+#   test      test or manual sandbox validation change
+#   refactor  internal code change with no behavior change
+#   chore     repository maintenance
+#   build     build, dependency, or tooling change
+#   ci        CI or release automation change
+#   perf      performance improvement
+#   style     formatting-only change
+#   revert    revert a previous commit
+#
+# Breaking changes:
+#   Use ! or a BREAKING CHANGE: footer only when explicitly approved by user request,
+#   accepted ADR, or accepted plan.
+#
+# Project metadata footers:
+#   Project-Source is required for AI-created commits.
+#   Co-authored-by footer is required for AI-created commits.
+#   Keep all metadata footers contiguous; do not put blank lines between trailer lines.
+#   Use plan for whole-plan or plan/spec-only commits.
+#   Use plan-task for one named task within an active plan.
+#   Use task for a TASKS.md item that is not covered by a plan.
+#   Use prompt for a direct ad hoc user request.
+#   Use manual only for human-authored commits outside the AI workflow.
+#   Include only the Project-* footers that apply.
+#   Validation is required for AI-created commits; say "not run" with a reason when needed.
+#   For generated ADRs and plans, commit metadata supplements the artifact's context;
+#   do not rely on the commit alone for decision or planning provenance.
+#
+# Examples:
+#   docs(decisions): define all-files commit scope
+#
+#   Project-Source: prompt
+#   Project-Prompt: define all files as every non-ignored committable change
+#   Co-authored-by: <agent-name> <agent-email>
+#   Refs: docs/decisions/0003-define-all-files-commit-scope.md
+#   Validation: git diff --check - passed
+#
+#   build(scaffold): add IntelliJ plugin Gradle project
+#   feat(commit): add AI Commit All split button
+#   test(sandbox): add manual staging-area validation notes

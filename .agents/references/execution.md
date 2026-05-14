@@ -2,6 +2,8 @@
 
 Use this loop for implementation work.
 
+This file also owns AI-facing commit-message rules. The repository root `.gitmessage` is the authoritative commit-message template and example source.
+
 ## Loop
 
 1. Frame the behavior: name the user-facing behavior, command, action, or workflow being changed.
@@ -18,6 +20,21 @@ Use this loop for implementation work.
 - Prefer existing IntelliJ Platform and Gradle plugin conventions over custom infrastructure.
 - Do not add release, publishing, signing, CI, marketplace, or operations files unless requested.
 - If the repo is still unscaffolded, do not assume Gradle, Kotlin, or plugin descriptor files exist.
+
+## Commit Rules
+
+Commit completed work only when the user asks for a commit or the task scope explicitly requires it.
+
+When creating a commit for AI-authored work:
+
+- Use Conventional Commits 1.0.0 style.
+- Use `.gitmessage` as the authoritative template, rule set, and example source.
+- Include the AI metadata trailer block required by `.gitmessage`.
+- Keep all project metadata footers contiguous; do not put blank lines between trailer lines.
+- Include `Validation:` with the command and result, or `not run` with a reason.
+- When committing non-interactively, use a commit-message file or one final message paragraph for all trailer lines. Do not pass each footer as a separate `git commit -m` argument because Git inserts blank lines between message paragraphs.
+
+Use `Project-Source: prompt` for direct ad hoc user requests, `task` for `TASKS.md` items, `plan` or `plan-task` for accepted plan work, and `manual` only for human-authored commits outside the AI workflow.
 
 ## Stop Conditions
 

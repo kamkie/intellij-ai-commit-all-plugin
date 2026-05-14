@@ -66,3 +66,13 @@ Ask for validation that matches the change. For code changes, likely checks incl
 - Manual sandbox checks for tracked, deleted, moved or renamed, unversioned, ignored-file exclusion, commit-only, commit-and-push, AI unavailable, and Git staging-area modes
 
 For documentation-only changes, a focused content review and link/path check is usually enough.
+
+## Commit Requests
+
+When asking AI to commit completed work, expect Conventional Commit messages with the metadata trailer block defined in [.gitmessage](../.gitmessage).
+
+To use the same template locally:
+
+```text
+git config commit.template .gitmessage
+```

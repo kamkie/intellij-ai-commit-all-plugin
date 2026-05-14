@@ -21,6 +21,7 @@ This is the AI entry point for the repository. Keep task context small and read 
 - Validation: `.agents/references/testing.md`
 - Review priorities: `.agents/references/reviews.md`
 - Documentation ownership: `.agents/references/documentation.md`
+- Commit message template: `.gitmessage`
 - Decision records: `docs/decisions/`
 
 ## Priority Order
@@ -41,4 +42,4 @@ When instructions overlap, apply this project-specific order:
 - Update specs or docs before or alongside behavior changes when behavior changes.
 - Run validation that matches the diff and risk.
 - Review for bugs, missing validation, and API or IDE compatibility risk before handing off.
-- Commit completed work only when the user asks for commits or the task scope explicitly requires it.
+- Commit completed work only when the user asks for commits or the task scope explicitly requires it; when committing, follow `.gitmessage` and `.agents/references/execution.md`.
