@@ -1,5 +1,7 @@
 # AGENTS.md
 
+This is the AI entry point for the repository. Keep task context small and read the most specific governing artifact before editing.
+
 ## Project Intent
 
 This repository is for an IntelliJ Platform plugin named `ai commit all files`.
@@ -16,6 +18,35 @@ Target behavior:
 ## Current State
 
 The repository is intentionally initialized only. Do not assume a Gradle/Kotlin plugin scaffold already exists unless it has been added after this file.
+
+## Guidance Map
+
+- Human guide for asking AI to work here: `docs/WORKING_WITH_AI.md`
+- Build and implementation backlog: `TASKS.md`
+- Execution loop: `.agents/references/execution.md`
+- Code style: `.agents/references/code-style.md`
+- Validation: `.agents/references/testing.md`
+- Review priorities: `.agents/references/reviews.md`
+- Documentation ownership: `.agents/references/documentation.md`
+
+## Priority Order
+
+When instructions overlap, apply this project-specific order:
+
+1. Current user request.
+2. `TASKS.md` and accepted implementation plans.
+3. IntelliJ Platform API constraints and plugin descriptor behavior.
+4. `README.md` and user-facing plugin behavior.
+5. ADRs and AI guidance.
+
+## Working Rules
+
+- Use the smallest task-shaped context that can safely answer the request.
+- Identify the behavior and governing artifact before editing.
+- Update specs or docs before or alongside behavior changes when behavior changes.
+- Run validation that matches the diff and risk.
+- Review for bugs, missing validation, and API or IDE compatibility risk before handing off.
+- Commit completed work only when the user asks for commits or the task scope explicitly requires it.
 
 ## Implementation Notes For Future Agents
 

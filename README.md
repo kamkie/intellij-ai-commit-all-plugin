@@ -18,3 +18,4 @@ Repository initialized only. No Gradle, Kotlin, or IntelliJ plugin scaffold has 
 
 Implementation guidance for future agents is in [AGENTS.md](AGENTS.md).
 
+Guidance for working with AI agents on this repository is in [docs/WORKING_WITH_AI.md](docs/WORKING_WITH_AI.md).
