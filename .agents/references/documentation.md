@@ -12,7 +12,7 @@ Use this guide when adding or updating repository documentation.
 - `AGENTS.md`: short AI entry point, guidance map, priority order, and high-level workflow rules.
 - `docs/WORKING_WITH_AI.md`: human-facing guide for asking AI agents to work on the repository.
 - `docs/DEVELOPMENT_LIFECYCLE.md`: repository development lifecycle for larger changes.
-- `docs/proposals/`: repository analysis and proposal documents for maintainer triage; start from `docs/proposals/PROPOSAL_TEMPLATE.md` and follow `docs/proposals/README.md`.
+- `docs/proposals/`: repository analysis and proposal documents for maintainer triage; every proposal needs a stable `proposal_id`; start from `docs/proposals/PROPOSAL_TEMPLATE.md` and follow `docs/proposals/README.md`.
 - `docs/decisions/`: project decisions, repository rule changes, and ADR template.
 - `.agents/references/`: focused AI guidance for planning, execution, code style, testing, reviews, and documentation.
 - `.agents/plans/`: task-specific implementation plans and plan template; every plan needs a stable `Plan-ID`.
@@ -30,6 +30,7 @@ Use this guide when adding or updating repository documentation.
 - Give open questions stable IDs in `OPEN_QUESTIONS.md`.
 - Give every `TASKS.md` item a stable task ID in the form `T-AREA-NNN`, keep the ID stable when wording or ordering changes, and do not renumber existing task IDs.
 - Give every plan a stable `Plan-ID` in the form `P-<short-kebab-slug>`, keep it stable when title, filename, status, or wording changes, and avoid strictly number-based plan IDs.
+- Give every proposal a stable `proposal_id` in the form `PROP-<short-kebab-slug>`, keep it stable when title, filename, status, wording, or archive location changes, and do not reuse retired proposal IDs.
 - Mark blocked `TASKS.md` items with `depends on: Q-ID`, and tasks that answer questions with `resolves: Q-ID`.
 - Follow `docs/decisions/README.md` for project decisions and repository rule changes.
 - Update documentation before or alongside behavior changes that affect users, validation, supported IDEs, or AI agent workflow.

@@ -18,6 +18,8 @@ Completed proposals have no `open` rows in their `Progress Tracker`. Keep them l
 
 - _none yet_
 
+Index entries should include the proposal ID, title, file link, and current status date when applicable.
+
 ## When To Use A Proposal
 
 Create a proposal when a task asks for any of:
@@ -52,19 +54,40 @@ Rules:
 - Keep the topic short and descriptive, for example `repository-analysis`, `workflow-duplication-review`, or `docs-cleanup-proposal`.
 - Do not overwrite an older proposal with the same topic. Create a new timestamped file and link to older context when needed.
 
+## Proposal IDs
+
+Every proposal must have a stable `proposal_id` in its front matter.
+
+Use the format `PROP-<short-kebab-slug>`, for example:
+
+- `PROP-repository-analysis`
+- `PROP-workflow-duplication-review`
+- `PROP-docs-cleanup`
+
+Rules:
+
+- Use an uppercase `PROP-` prefix and a lowercase ASCII kebab-case slug.
+- Keep the ID readable enough to identify the proposal without relying on title, filename, or index position.
+- Keep the ID stable when the title, filename, status, wording, or archive location changes.
+- When a proposal is split, keep the original ID for the closest surviving proposal and assign new meaningful IDs to new proposals.
+- Do not reuse a retired proposal ID for unrelated work.
+
+Use proposal IDs in README index entries, handoffs, reviews, ADRs, tasks, or commit references that refer to proposal work.
+
 ## Required Front Matter
 
 Every proposal must start with:
 
 ```yaml
 ---
+proposal_id: PROP-<short-kebab-slug>
 generated_at: <YYYY-MM-DDTHH-MM>
 purpose: <one sentence describing what this document proposes>
 scope: <one sentence describing what part of the repository is covered>
 ---
 ```
 
-Optional keys such as `author`, `related`, or `supersedes` may be added, but they must not replace the three required keys.
+Optional keys such as `author`, `related`, or `supersedes` may be added, but they must not replace the four required keys.
 
 ## Required Structure
 
@@ -180,7 +203,7 @@ Use the same priority in the tracker table and the per-finding YAML block.
 3. Bump `updated` to the current date.
 4. Leave `done` or `rejected` findings in place as history.
 5. When no `open` rows remain, move the proposal from `Active Proposals` to `Completed Proposals` in this README and append the completion date.
-6. Move fully retired proposals to `archive/` only when their IDs and filename can be preserved.
+6. Move fully retired proposals to `archive/` only when their proposal ID, finding IDs, and filename can be preserved.
 
 ## Template
 

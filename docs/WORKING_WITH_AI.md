@@ -83,6 +83,8 @@ When asking AI to commit completed work, expect Conventional Commit messages wit
 
 When asking AI to create or execute a plan, expect a stable non-number-only `Plan-ID` such as `P-scaffold-plugin-project`.
 
+When asking AI to create a proposal, expect a stable `proposal_id` such as `PROP-repository-analysis`.
+
 When work comes from `TASKS.md`, reference the stable `T-AREA-NNN` task ID in the request or expect AI to identify it before implementation.
 
 Before AI starts implementation from an accepted plan, all plan questions and required decisions should be answered or documented as allowed assumptions. If a new question appears during planned implementation, AI should stop, update the appropriate planning, question, decision, or task document, and ask for the missing decision when needed.

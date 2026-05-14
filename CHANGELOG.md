@@ -21,3 +21,4 @@ This repository has no released plugin version yet.
 - Assigned changelog maintenance to the orchestrator for orchestrated plan execution and release preparation.
 - Added an explicit rule that AI agents should not automatically load every instruction file and should instead load the smallest task-specific guidance set.
 - Added stable, human-readable plan IDs that are not strictly number-based.
+- Added stable proposal IDs for repository analysis and proposal documents.

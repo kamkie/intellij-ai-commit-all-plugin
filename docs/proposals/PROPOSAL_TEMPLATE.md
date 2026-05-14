@@ -1,4 +1,5 @@
 ---
+proposal_id: PROP-<short-kebab-slug>
 generated_at: YYYY-MM-DDTHH-MM
 purpose: One sentence describing what this document proposes.
 scope: One sentence describing what part of the repository is covered.
