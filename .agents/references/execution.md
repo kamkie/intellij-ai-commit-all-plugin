@@ -18,7 +18,7 @@ This file also owns AI-facing commit-message rules. The repository root `.gitmes
 
 - Read only the context needed for the current task.
 - Prefer existing IntelliJ Platform and Gradle plugin conventions over custom infrastructure.
-- Do not add release, publishing, signing, CI, marketplace, or operations files unless requested.
+- Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; do not add unrelated release or operations files outside that scope.
 - If the repo is still unscaffolded, do not assume Gradle, Kotlin, or plugin descriptor files exist.
 
 ## Commit Rules
@@ -38,4 +38,4 @@ Use `Project-Source: prompt` for direct ad hoc user requests, `task` for `TASKS.
 
 ## Stop Conditions
 
-Pause and ask for a decision when implementation depends on an unresolved product choice, such as minimum IDE version, Git-only versus all VCS, or direct dependency on proprietary AI Assistant APIs.
+Pause and ask for a decision when implementation depends on an unresolved product choice, such as direct dependency on proprietary AI Assistant APIs.

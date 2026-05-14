@@ -21,9 +21,15 @@ Review in this order:
 
 - Could this commit files the user did not expect?
 - Does it preserve the IDE's normal before-commit checks and error handling?
-- Does it fail closed when AI Assistant is unavailable or times out?
+- Does it reuse or forward platform-owned errors instead of replacing them with plugin-specific wording?
+- Does it avoid adding plugin-specific confirmation prompts unless a concrete uncovered risk was documented?
+- Does it fail closed when AI Assistant is unavailable, not signed in, or times out?
+- Does plugin metadata require JetBrains AI Assistant so missing or disabled AI Assistant fails at installation/loading time?
 - Does it avoid compile-time dependencies on non-public AI Assistant APIs unless explicitly approved?
 - Does it behave predictably with Git staging area enabled and disabled?
+- Does it preserve support for changes spread across multiple changelists?
+- Do local-repository E2E tests avoid real remotes and destructive repository state?
+- Does publishing/signing/CI keep Marketplace tokens, certificates, private keys, and passwords out of the repository?
 - Is the target IDE version documented or otherwise accounted for?
 
 ## Review Output

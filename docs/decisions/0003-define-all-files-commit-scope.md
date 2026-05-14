@@ -33,7 +33,7 @@ The first implementation should use IntelliJ Platform VCS and commit workflow AP
 - The implementation must include all changelists in the supported project and VCS scope.
 - The action must not commit ignored files.
 - The implementation needs explicit validation for modified, deleted, moved or renamed, and non-ignored unversioned files.
-- Whether the first implementation supports projects with multiple VCS roots remains a separate open question. Within any supported root, all non-ignored committable file changes are in scope.
+- The first implementation supports Git only, including multiple Git roots. Within any supported Git root, all non-ignored committable file changes are in scope.
 
 ## Alternatives Considered
 

@@ -20,9 +20,9 @@ Example:
 ```text
 Task: Scaffold the IntelliJ plugin project.
 Goal: Add a Kotlin Gradle project that can run an IDE sandbox.
-Target IDE version: 2025.1.
+Target IDE version: 2026.1.
 Target artifacts: build.gradle.kts, settings.gradle.kts, plugin.xml.
-Constraints: No publishing, signing, or CI setup.
+Constraints: Keep publishing, signing, and CI changes aligned with ADR 0019.
 Validation expected: gradle buildPlugin and gradle runIde startup.
 ```
 
@@ -49,10 +49,15 @@ Validation expected: gradle buildPlugin and gradle runIde startup.
 
 ## Constraints To State Explicitly
 
-- Minimum supported IntelliJ Platform version.
-- Target IDEs, such as IntelliJ IDEA only or all JetBrains IDEs with VCS commit UI.
-- Git-only behavior versus broader VCS support.
+- Minimum supported IntelliJ Platform version, currently 2026.1.
+- Target IDEs, currently all JetBrains IDEs with VCS commit UI.
+- Git-only first-version behavior, including multiple Git roots.
 - Split-button styling and icon choices beyond the accepted `AI Commit All` / `& Push` structure.
+- Plugin ID and base package `pl.devopssolutions.aicommitall`; vendor `DevOps Solutions Kamil Kiewisz`.
+- Apache-2.0 repository and plugin license.
+- Open-source publication to the official JetBrains Marketplace, including signing, Marketplace metadata, and CI.
+- Manual validation against current stable JetBrains IDE builds available through All Products Pack.
+- End-to-end validation against local Git repositories where practical.
 - Whether proprietary JetBrains AI Assistant APIs may be used directly. The default is no.
 
 ## Validation Expectations

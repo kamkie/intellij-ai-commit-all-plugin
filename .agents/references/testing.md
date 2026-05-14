@@ -6,11 +6,17 @@ Use validation that matches the change. Documentation-only changes do not requir
 
 - `gradle buildPlugin` for packaging and basic compile validation once a Gradle scaffold exists.
 - `gradle verifyPlugin` when configured.
+- Plugin signing and signature verification once signing configuration exists.
 - IntelliJ Plugin Verifier for the supported IDE version range once compatibility targets are chosen.
+- CI workflow validation for pull-request checks without Marketplace or signing secrets once CI exists.
 
 ## Sandbox Checks
 
 Use `gradle runIde` for manual sandbox testing once the scaffold exists.
+
+Use current stable JetBrains IDE builds available through the user's All Products Pack. Record exact product names and build numbers in validation reports.
+
+Create end-to-end tests against local Git repositories where the IntelliJ test framework, Gradle sandbox, and CI environment make that practical. Keep manual sandbox coverage for scenarios that cannot be automated reliably yet.
 
 Manual scenarios for this plugin:
 
@@ -22,16 +28,26 @@ Manual scenarios for this plugin:
 - Files from all changelists in the supported VCS scope are included.
 - Commit-only flow commits selected files after AI message generation.
 - Commit-and-push flow pushes after a successful commit when that flow is selected.
-- AI Assistant unavailable, disabled, not signed in, or missing.
+- Existing before-commit checks, commit warnings, and push errors remain active through the IDE workflow.
+- JetBrains AI Assistant dependency missing or disabled fails installation/loading.
+- AI Assistant present but unavailable or not signed in stops without commit or push.
+- Standard IntelliJ, Git, VCS, push, and AI Assistant errors are surfaced or forwarded without being masked by custom plugin text.
 - Git staging area enabled.
 - Git staging area disabled.
+- Local-repository E2E coverage for commit selection, changelists, staging modes, commit-only, and local-remote commit-and-push where safe.
 - Empty change set.
 - User edits or clears the message while AI generation is in progress.
+- Release workflow only through a gated/manual path with secrets supplied outside the repository.
 
 ## Review Checks
 
 - Confirm no validation relies on source repo assumptions from unrelated Spring, REST, OpenAPI, release, or operations workflows.
 - Confirm failures are reported without committing.
+- Confirm platform-owned errors are not replaced by less precise plugin-owned notifications.
+- Confirm implementation does not bypass IDE commit or push safeguards.
+- Confirm changelists and Git staging enabled/disabled paths remain covered.
+- Confirm local-repository E2E tests do not push to real remotes.
+- Confirm publishing and signing secrets are not committed or required for pull-request checks.
 - Confirm timeout paths do not leave the user with an unintended commit.
 
 ## Reporting

@@ -13,6 +13,7 @@ Use this guide when adding or updating repository documentation.
 - `docs/decisions/`: project decisions, repository rule changes, and ADR template.
 - `.agents/references/`: focused AI guidance for planning, execution, code style, testing, reviews, and documentation.
 - `.agents/plans/`: task-specific implementation plans and plan template.
+- `LICENSE`: Apache-2.0 license text for the repository and plugin.
 - `.gitmessage`: commit-message template, Conventional Commit type guidance, and AI metadata trailer schema.
 
 ## Rules

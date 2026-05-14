@@ -28,7 +28,7 @@ Small docs-only changes do not need a plan.
 - Keep the change scoped to the requested behavior.
 - Prefer existing IntelliJ Platform, Gradle, and Kotlin conventions once the project is scaffolded.
 - Update docs before or alongside behavior changes.
-- Avoid adding release, publishing, signing, marketplace, or CI work unless requested.
+- Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; avoid unrelated operations work outside that scope.
 
 ## 4. Validate
 
