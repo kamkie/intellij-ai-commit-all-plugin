@@ -12,6 +12,7 @@ Use this guide when adding or updating repository documentation.
 - `AGENTS.md`: short AI entry point, guidance map, priority order, and high-level workflow rules.
 - `docs/WORKING_WITH_AI.md`: human-facing guide for asking AI agents to work on the repository.
 - `docs/DEVELOPMENT_LIFECYCLE.md`: repository development lifecycle for larger changes.
+- `docs/proposals/`: repository analysis and proposal documents for maintainer triage; start from `docs/proposals/PROPOSAL_TEMPLATE.md` and follow `docs/proposals/README.md`.
 - `docs/decisions/`: project decisions, repository rule changes, and ADR template.
 - `.agents/references/`: focused AI guidance for planning, execution, code style, testing, reviews, and documentation.
 - `.agents/plans/`: task-specific implementation plans and plan template; every plan needs a stable `Plan-ID`.
@@ -35,6 +36,8 @@ Use this guide when adding or updating repository documentation.
 - Update `CHANGELOG.md` for notable user-facing, contributor-facing, compatibility, support, release, or workflow changes.
 - In orchestrated plan execution and release preparation, `CHANGELOG.md` maintenance belongs to the orchestrator; task workers may suggest entries but do not own final changelog edits.
 - Update `SUPPORT.md` when supported IDE versions, supported VCS scope, plugin dependency requirements, Marketplace availability, or support channels change.
+- Use `docs/proposals/` for analysis documents that list findings, duplications, simplifications, or improvement options for maintainer triage.
+- Keep proposals advisory until accepted through ADRs, plans, or tasks.
 
 ## When To Add ADRs
 

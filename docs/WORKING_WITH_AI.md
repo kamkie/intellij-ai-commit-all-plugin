@@ -32,6 +32,7 @@ Validation expected: gradle buildPlugin and gradle runIde startup.
 - Implementation: name the user-facing behavior, target files, validation expected, and any decisions already made.
 - Review: ask for bugs, unintended commit risk, AI Assistant integration risk, and missing validation.
 - Documentation: state whether the change affects users, contributors, or AI agents.
+- Proposal: ask for a proposal when you want findings, duplications, simplifications, or improvement options collected for later triage without immediate implementation.
 - Release: ask only after implementation is integrated and validation evidence is ready.
 
 ## What AI Should Read
@@ -48,6 +49,7 @@ Validation expected: gradle buildPlugin and gradle runIde startup.
 - Use `.agents/references/releases.md` for release preparation, changelog updates, and support-policy checks.
 - Use `.agents/references/code-style.md` before editing Kotlin, Gradle, or plugin descriptor files.
 - Use `.agents/references/documentation.md` before adding or changing docs.
+- Use `docs/proposals/README.md` before creating repository analysis or improvement proposal files.
 - Use `docs/decisions/` for project decisions and repository rule changes.
 
 ## Constraints To State Explicitly

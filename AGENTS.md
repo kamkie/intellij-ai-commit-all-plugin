@@ -25,6 +25,7 @@ This is the AI entry point for the repository. Keep task context small and read 
 - Commit message template: `.gitmessage`
 - Changelog: `CHANGELOG.md`
 - Support policy: `SUPPORT.md`
+- Proposals: `docs/proposals/`
 - Decision records: `docs/decisions/`
 
 ## Priority Order

@@ -13,6 +13,7 @@ This repository has no released plugin version yet.
 - Added `CHANGELOG.md` to track notable unreleased and released project changes.
 - Added `SUPPORT.md` to define the current support policy and issue-reporting expectations.
 - Added AI-facing release guidance for changelog and support-policy updates during release preparation.
+- Added `docs/proposals/` with proposal rules, a proposal template, and archive guidance for repository analysis documents.
 
 ### Changed
 

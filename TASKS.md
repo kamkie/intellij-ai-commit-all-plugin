@@ -141,6 +141,7 @@ Notation:
 - [x] T-DOC-010: Add root `SUPPORT.md` for support status and issue-reporting expectations. (ADR 0029)
 - [x] T-DOC-011: Add rule to avoid automatically loading every AI instruction file. (ADR 0031)
 - [x] T-DOC-012: Add stable non-number-only plan IDs. (ADR 0032)
+- [x] T-DOC-013: Add `docs/proposals/` with proposal rules, template, and archive marker. (ADR 0033)
 
 ## 11. Publishing, Signing, Marketplace, And CI
 

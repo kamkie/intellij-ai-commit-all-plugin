@@ -13,6 +13,8 @@ Use this lifecycle for changes that are larger than a direct documentation edit.
 
 Create a plan in `.agents/plans/` when the work spans multiple files, changes behavior, or depends on unresolved technical choices.
 
+Use `docs/proposals/` before planning when the task is to collect findings, duplications, simplifications, or improvement options for maintainer triage without immediate implementation.
+
 A plan should state:
 
 - Goal and non-goals.
