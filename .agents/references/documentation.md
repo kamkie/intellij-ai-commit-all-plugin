@@ -6,9 +6,13 @@ Use this guide when adding or updating repository documentation.
 
 - `README.md`: user-facing project description, setup, usage, supported IDE versions, limitations, and sandbox instructions after implementation exists.
 - `TASKS.md`: backlog, implementation decisions still pending, and validation tasks.
-- `AGENTS.md`: short AI entry point, project intent, priority order, and high-level rules.
+- `OPEN_QUESTIONS.md`: missing user input and unresolved product or implementation choices.
+- `AGENTS.md`: short AI entry point, guidance map, priority order, and high-level workflow rules.
 - `docs/WORKING_WITH_AI.md`: human-facing guide for asking AI agents to work on the repository.
-- `.agents/references/`: focused AI guidance for execution, code style, testing, reviews, and documentation.
+- `docs/DEVELOPMENT_LIFECYCLE.md`: repository development lifecycle for larger changes.
+- `docs/decisions/`: accepted durable decisions and ADR template.
+- `.agents/references/`: focused AI guidance for planning, execution, code style, testing, reviews, and documentation.
+- `.agents/plans/`: task-specific implementation plans and plan template.
 
 ## Rules
 
@@ -26,4 +30,4 @@ Add decision records only for durable project choices, such as:
 - Runtime-discovered AI Assistant action versus direct API dependency.
 - Separate `AI Commit & Push All` button versus reusing an existing push-selected state.
 
-Do not add ADR structure until a durable decision needs to be recorded.
+Use the existing ADR structure only when a durable decision needs to be recorded.

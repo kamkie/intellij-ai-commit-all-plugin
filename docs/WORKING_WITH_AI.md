@@ -37,11 +37,15 @@ Validation expected: gradle buildPlugin and gradle runIde startup.
 
 - Start with `AGENTS.md`.
 - Use `TASKS.md` for backlog and scope boundaries.
+- Use `OPEN_QUESTIONS.md` for missing user decisions.
+- Use `docs/DEVELOPMENT_LIFECYCLE.md` for multi-step changes.
+- Use `.agents/references/planning.md` before creating implementation plans.
 - Use `.agents/references/execution.md` before implementation.
 - Use `.agents/references/testing.md` before choosing validation.
 - Use `.agents/references/reviews.md` for review tasks.
 - Use `.agents/references/code-style.md` before editing Kotlin, Gradle, or plugin descriptor files.
 - Use `.agents/references/documentation.md` before adding or changing docs.
+- Use `docs/decisions/` for accepted durable decisions.
 
 ## Constraints To State Explicitly
 
