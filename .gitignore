@@ -1,0 +1,30 @@
+# IntelliJ IDEA local project state
+.idea/
+*.iml
+*.iws
+out/
+
+# Gradle
+.gradle/
+build/
+gradle-app.setting
+
+# IntelliJ Platform plugin artifacts
+sandbox/
+run/
+*.zip
+*.jar
+
+# Kotlin/JVM
+*.class
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Local environment
+.env
+.env.*
+!.env.example
