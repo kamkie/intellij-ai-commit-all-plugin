@@ -63,6 +63,6 @@ Ask for validation that matches the change. For code changes, likely checks incl
 - `gradle verifyPlugin` when configured
 - `gradle runIde` for sandbox validation
 - IntelliJ Plugin Verifier for supported IDE ranges
-- Manual sandbox checks for tracked, unversioned, commit-only, commit-and-push, AI unavailable, and Git staging-area modes
+- Manual sandbox checks for tracked, deleted, moved or renamed, unversioned, ignored-file exclusion, commit-only, commit-and-push, AI unavailable, and Git staging-area modes
 
 For documentation-only changes, a focused content review and link/path check is usually enough.

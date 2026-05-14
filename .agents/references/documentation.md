@@ -20,6 +20,7 @@ Use this guide when adding or updating repository documentation.
 - Do not copy Spring, REST, OpenAPI, release, deployment, operations, benchmark, or frontend guidance from other repositories.
 - Do not imply plugin implementation has started until Gradle, Kotlin, or IntelliJ plugin scaffold files exist.
 - Prefer concrete commands and artifact names over generic process language.
+- Give open questions stable IDs in `OPEN_QUESTIONS.md`; mark blocked `TASKS.md` items with `depends on: Q-ID`, and tasks that answer questions with `resolves: Q-ID`.
 - Record every repository rule change in `docs/decisions/` as a new or superseding ADR before or alongside the rule edit.
 - Record every project decision in `docs/decisions/` as an ADR before or alongside the implementation it affects.
 - Update documentation before or alongside behavior changes that affect users, validation, supported IDEs, or AI agent workflow.

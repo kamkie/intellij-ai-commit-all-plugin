@@ -6,7 +6,7 @@ IntelliJ Platform plugin concept for adding an `AI Commit All Files` action to t
 
 The plugin should provide a one-click commit flow:
 
-1. Select/include all changed and unversioned files.
+1. Select/include every non-ignored committable file change, including modified, added, deleted, moved or renamed, and unversioned files.
 2. Trigger JetBrains AI Assistant's `Generate commit message with AI Assistant` action.
 3. Wait for AI Assistant to finish generating the commit message.
 4. Commit all selected files.

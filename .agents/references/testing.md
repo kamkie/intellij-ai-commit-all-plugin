@@ -15,7 +15,11 @@ Use `gradle runIde` for manual sandbox testing once the scaffold exists.
 Manual scenarios for this plugin:
 
 - Modified tracked file is included.
+- Deleted tracked file is included.
+- Moved or renamed tracked file is included.
 - Unversioned file is included.
+- Ignored file is excluded.
+- Files from all changelists in the supported VCS scope are included.
 - Commit-only flow commits selected files after AI message generation.
 - Commit-and-push flow pushes after a successful commit when that flow is selected.
 - AI Assistant unavailable, disabled, not signed in, or missing.
