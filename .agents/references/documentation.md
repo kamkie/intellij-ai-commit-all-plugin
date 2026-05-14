@@ -21,13 +21,12 @@ Use this guide when adding or updating repository documentation.
 - Do not imply plugin implementation has started until Gradle, Kotlin, or IntelliJ plugin scaffold files exist.
 - Prefer concrete commands and artifact names over generic process language.
 - Give open questions stable IDs in `OPEN_QUESTIONS.md`; mark blocked `TASKS.md` items with `depends on: Q-ID`, and tasks that answer questions with `resolves: Q-ID`.
-- Record every repository rule change in `docs/decisions/` as a new or superseding ADR before or alongside the rule edit.
-- Record every project decision in `docs/decisions/` as an ADR before or alongside the implementation it affects.
+- Follow `docs/decisions/README.md` for project decisions and repository rule changes.
 - Update documentation before or alongside behavior changes that affect users, validation, supported IDEs, or AI agent workflow.
 
 ## When To Add ADRs
 
-Add decision records for every project decision, including:
+See `docs/decisions/README.md` for required ADR topics, including:
 
 - Minimum supported IntelliJ Platform version.
 - Runtime-discovered AI Assistant action versus direct API dependency.

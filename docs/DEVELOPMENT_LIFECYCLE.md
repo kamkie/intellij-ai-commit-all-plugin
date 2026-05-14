@@ -7,7 +7,7 @@ Use this lifecycle for changes that are larger than a direct documentation edit.
 - Identify the user-facing behavior, repository artifact, or workflow being changed.
 - Check `OPEN_QUESTIONS.md` for decisions that block the work.
 - Use `TASKS.md` for backlog scope, not as proof that a decision has been made.
-- Record project decisions and repository rule changes in `docs/decisions/` before or alongside the affected implementation or rule edit.
+- Follow `docs/decisions/README.md` for project decisions and repository rule changes.
 
 ## 2. Plan When Needed
 
