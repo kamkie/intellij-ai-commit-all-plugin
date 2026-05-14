@@ -11,7 +11,6 @@ This file tracks decisions and missing input needed from the user. Keep implemen
 
 ## Commit Flow
 
-- Q-COMMIT-1: Should there be one `AI Commit All` action, separate `AI Commit All` and `AI Commit & Push All` actions, or integration with the existing Commit / Commit and Push choice?
 - Q-COMMIT-2: Should the plugin proceed to commit automatically after AI generation, or pause if the generated message needs user review?
 - Q-COMMIT-3: What should happen if the user edits or clears the commit message while AI generation is in progress?
 
@@ -24,10 +23,10 @@ This file tracks decisions and missing input needed from the user. Keep implemen
 
 ## UX Decisions
 
-- Q-UX-1: What exact action labels should appear in the Commit tool window?
 - Q-UX-2: Should the actions use custom icons, IntelliJ platform icons, or no icons initially?
 - Q-UX-3: What notification text should be shown for skipped commits, AI failures, timeout, empty change set, and unsupported push?
 - Q-UX-4: Should before-commit checks and IDE warnings be the only confirmation barriers, or should the plugin add its own confirmation for risky cases?
+- Q-UX-5: What detailed styling should the split button use beyond default IntelliJ Platform styling?
 
 ## Project Metadata
 

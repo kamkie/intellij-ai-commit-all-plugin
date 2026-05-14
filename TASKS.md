@@ -11,12 +11,11 @@ Notation:
 - [ ] Confirm target IDEs: IntelliJ IDEA only, or all JetBrains IDEs with VCS commit UI. (resolves: Q-SCOPE-2)
 - [ ] Decide whether the first version supports only Git or all VCS integrations. (resolves: Q-SCOPE-3)
 - [ ] Decide whether the first version supports projects with multiple VCS roots. (resolves: Q-SCOPE-4)
-- [ ] Confirm whether "push was selected" means a separate `AI Commit & Push All` button or reuse of the existing Commit/Commit and Push choice. (resolves: Q-COMMIT-1)
 - [ ] Decide whether the action commits automatically after AI generation or pauses for user review. (resolves: Q-COMMIT-2)
 - [ ] Decide what happens if the user edits or clears the message while AI generation is in progress. (resolves: Q-COMMIT-3)
 - [ ] Choose AI completion timeout and stable-message interval. (resolves: Q-AI-1, Q-AI-2)
 - [ ] Decide unavailable-AI and non-AI fallback behavior. (resolves: Q-AI-3, Q-AI-4)
-- [ ] Choose action labels, icons, notification text, and confirmation behavior. (resolves: Q-UX-1, Q-UX-2, Q-UX-3, Q-UX-4)
+- [ ] Choose icons, split-button styling, notification text, and confirmation behavior. (resolves: Q-UX-2, Q-UX-3, Q-UX-4, Q-UX-5)
 - [ ] Choose plugin ID, package name, vendor name, and license. (resolves: Q-META-1, Q-META-2)
 - [ ] Decide whether publishing, signing, marketplace metadata, or CI are in this phase. (resolves: Q-META-3)
 - [ ] Choose sandbox validation IDE versions, staging-area coverage, and acceptance workflows. (resolves: Q-VAL-1, Q-VAL-2, Q-VAL-3)
@@ -32,8 +31,9 @@ Notation:
 
 ## 3. Register Commit Tool Window Actions
 
-- [ ] Add `AI Commit All` action to the Commit tool window primary actions group. (depends on: Q-COMMIT-1, Q-UX-1, Q-UX-2)
-- [ ] Add `AI Commit & Push All` action if a separate push action is chosen. (depends on: Q-COMMIT-1, Q-UX-1, Q-UX-2)
+- [ ] Add split button to the Commit tool window primary actions group with `AI Commit All` and `& Push` segments. (depends on: Q-UX-2)
+- [ ] Wire the `AI Commit All` split-button segment to the commit-only flow.
+- [ ] Wire the `& Push` split-button segment to the commit-and-push flow. (depends on: Q-SCOPE-3)
 - [ ] Ensure actions are visible only when a project has an active VCS commit workflow. (depends on: Q-SCOPE-2, Q-SCOPE-3, Q-SCOPE-4)
 - [ ] Disable actions when no non-ignored committable files exist.
 
@@ -65,10 +65,10 @@ Notation:
 ## 7. Commit And Push
 
 - [ ] Commit all included files through the current commit workflow. (depends on: Q-COMMIT-2, Q-UX-4)
-- [ ] For push flow, use Git's commit-and-push executor when available. (depends on: Q-COMMIT-1, Q-SCOPE-3)
+- [ ] For push flow, use Git's commit-and-push executor when available. (depends on: Q-SCOPE-3)
 - [ ] Respect existing before-commit checks. (depends on: Q-UX-4)
 - [ ] Do not bypass commit confirmation/errors from the IDE. (depends on: Q-UX-4)
-- [ ] Report unavailable push executor for non-Git or unsupported projects. (depends on: Q-COMMIT-1, Q-SCOPE-3, Q-UX-3)
+- [ ] Report unavailable push executor for non-Git or unsupported projects. (depends on: Q-SCOPE-3, Q-UX-3)
 
 ## 8. Error Handling And UX
 
@@ -90,8 +90,8 @@ Notation:
 - [ ] Test with moved or renamed files.
 - [ ] Test with files in multiple changelists.
 - [ ] Test that ignored files are excluded.
-- [ ] Test with Commit only. (depends on: Q-COMMIT-1, Q-COMMIT-2)
-- [ ] Test with Commit and Push. (depends on: Q-COMMIT-1, Q-SCOPE-3)
+- [ ] Test with Commit only. (depends on: Q-COMMIT-2)
+- [ ] Test with Commit and Push. (depends on: Q-SCOPE-3)
 - [ ] Test with AI Assistant unavailable. (depends on: Q-AI-3, Q-AI-4)
 - [ ] Test with Git staging area enabled and disabled. (depends on: Q-SCOPE-3, Q-VAL-2)
 

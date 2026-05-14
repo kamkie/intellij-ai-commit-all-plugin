@@ -6,7 +6,7 @@ Date: 2026-05-14
 
 ## Context
 
-The repository was created for an IntelliJ Platform plugin concept named `AI Commit All Files`.
+The repository was created for an IntelliJ Platform plugin concept initially named `AI Commit All Files`.
 
 At creation time, key implementation choices were still unresolved, including minimum supported IntelliJ Platform version, target IDEs, Git-only versus broader VCS support, and commit-and-push behavior.
 
@@ -39,3 +39,5 @@ Defer executable plugin scaffolding until the required scope and target decision
 - Resolve the missing input tracked in `OPEN_QUESTIONS.md`.
 - Record accepted project decisions in `docs/decisions/`.
 - Add the Gradle/Kotlin IntelliJ plugin scaffold through a later task, plan, or ADR-backed implementation.
+- See ADR 0005 for the accepted product and action labels.
+- See ADR 0006 for the accepted split-button commit and push presentation.

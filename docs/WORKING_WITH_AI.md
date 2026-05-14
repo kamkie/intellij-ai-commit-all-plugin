@@ -52,7 +52,7 @@ Validation expected: gradle buildPlugin and gradle runIde startup.
 - Minimum supported IntelliJ Platform version.
 - Target IDEs, such as IntelliJ IDEA only or all JetBrains IDEs with VCS commit UI.
 - Git-only behavior versus broader VCS support.
-- Commit-only button, separate commit-and-push button, or reuse of the IDE commit executor state.
+- Split-button styling and icon choices beyond the accepted `AI Commit All` / `& Push` structure.
 - Whether proprietary JetBrains AI Assistant APIs may be used directly. The default is no.
 
 ## Validation Expectations

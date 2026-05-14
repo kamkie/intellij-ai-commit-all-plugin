@@ -15,7 +15,7 @@ Required ADR topics include:
 - Minimum supported IntelliJ Platform version.
 - Supported IDE family or Git-only versus broader VCS support.
 - Runtime-discovered AI Assistant action versus direct dependency on AI Assistant APIs.
-- Separate commit-and-push action versus reusing the IDE's existing commit executor state.
+- Commit/push presentation, such as split-button design versus separate commit-and-push action.
 - Compatibility policy for IntelliJ Platform API changes.
 - Repository rule or workflow changes.
 

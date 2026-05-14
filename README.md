@@ -1,6 +1,8 @@
-# AI Commit All Files
+# AI Commit All
 
-IntelliJ Platform plugin concept for adding an `AI Commit All Files` action to the Commit tool window.
+IntelliJ Platform plugin concept for adding an `AI Commit All` action to the Commit tool window.
+
+The commit control should be a split button with `AI Commit All` as the primary segment and `& Push` as the push segment.
 
 ## Goal
 

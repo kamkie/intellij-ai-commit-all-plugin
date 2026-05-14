@@ -30,7 +30,7 @@ See `docs/decisions/README.md` for required ADR topics, including:
 
 - Minimum supported IntelliJ Platform version.
 - Runtime-discovered AI Assistant action versus direct API dependency.
-- Separate `AI Commit & Push All` button versus reusing an existing push-selected state.
+- Split-button commit/push presentation versus separate commit-and-push action.
 - Repository rule or workflow changes.
 
 Use the existing ADR structure for project decisions and repository rule changes.
