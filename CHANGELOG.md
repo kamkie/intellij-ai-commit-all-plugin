@@ -4,14 +4,17 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog. Release tags should use semantic version tags in the form `vMAJOR.MINOR.PATCH` for stable releases or `vMAJOR.MINOR.PATCH-PRERELEASE` for prereleases.
 
-This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.1` is the first scaffold prerelease prepared from this repository.
+This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.2` is the current implementation prerelease candidate prepared from this repository.
 
 ## [Unreleased]
+
+## [v0.1.0-alpha.2] - 2026-05-15
 
 ### Added
 
 - Added draft active plans for the remaining workflow, validation, documentation, and release automation work.
 - Added a draft orchestration plan that makes cross-plan dependencies and safe parallel execution waves explicit.
+- Added repository-maintenance proposals for hygiene automation, `TASKS.md` retirement, plugin default settings, split-button look experiments, and proposal formatting conventions.
 - Added final IntelliJ-style `AI Commit All` and `& Push` action icons.
 - Added Commit tool window actions that are visible only in supported Git commit workflow contexts and disabled when no committable Git content is available.
 - Added Git change selection for tracked, unversioned, resolved-conflict, multi-changelist, and multi-root commit content while excluding ignored files.
@@ -31,6 +34,10 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.1
 - Changed ADR `decision-makers` metadata to use the configured Git username and email.
 - Added explicit ADR acceptance and plan approval gates before governed implementation can start.
 - Updated README and support documentation to describe the implemented but unreleased workflow, source repository, release process, and current validation limits.
+
+### Fixed
+
+- Fixed AI generation completion handling so user edits and still-running generation state stop the workflow without committing or pushing.
 
 ## [v0.1.0-alpha.1] - 2026-05-15
 
