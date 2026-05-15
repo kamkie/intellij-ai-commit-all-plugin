@@ -9,6 +9,7 @@ import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowUi
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelectionService
+import pl.devopssolutions.aicommitall.vcs.GitVcsSupportStatus
 
 @Service(Service.Level.PROJECT)
 internal class CommitWorkflowSelectionService(private val project: Project) {
@@ -20,7 +21,13 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
             return CommitWorkflowSelectionResult.MissingWorkflow
         }
 
-        val selection = GitChangeSelectionService.getInstance(project).collectSelection()
+        val selectionService = GitChangeSelectionService.getInstance(project)
+        val supportStatus = selectionService.supportStatus()
+        if (supportStatus != GitVcsSupportStatus.Supported) {
+            return CommitWorkflowSelectionResult.UnsupportedVcs(supportStatus)
+        }
+
+        val selection = selectionService.collectSelection()
         if (!selection.hasCommittableContent) {
             return CommitWorkflowSelectionResult.EmptySelection
         }

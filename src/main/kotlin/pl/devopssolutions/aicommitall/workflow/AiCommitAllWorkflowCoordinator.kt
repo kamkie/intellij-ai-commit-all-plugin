@@ -66,6 +66,8 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
                 stopped(AiCommitAllWorkflowStopReason.EmptySelection)
             CommitWorkflowSelectionResult.MissingWorkflow ->
                 stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
+            is CommitWorkflowSelectionResult.UnsupportedVcs ->
+                stopped(AiCommitAllWorkflowStopReason.UnsupportedVcs)
             is CommitWorkflowSelectionResult.UnsupportedWorkflow ->
                 stopped(AiCommitAllWorkflowStopReason.UnsupportedWorkflow)
         }
@@ -144,6 +146,7 @@ internal sealed interface AiCommitAllWorkflowResult {
 internal enum class AiCommitAllWorkflowStopReason {
     MissingWorkflow,
     EmptySelection,
+    UnsupportedVcs,
     UnsupportedWorkflow,
     MissingAiAction,
     AiCompletionFailed,

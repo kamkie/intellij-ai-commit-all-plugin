@@ -9,6 +9,11 @@ import com.intellij.openapi.vcs.changes.ChangeListManager
 
 @Service(Service.Level.PROJECT)
 internal class GitChangeSelectionService(private val project: Project) {
+    fun supportStatus(): GitVcsSupportStatus {
+        val vcsManager = ProjectLevelVcsManager.getInstance(project)
+        return GitVcsSupport.status(vcsManager.getAllActiveVcss().map { vcs -> vcs.name })
+    }
+
     fun collectTrackedSelection(): GitChangeSelection {
         val changeListManager = ChangeListManager.getInstance(project)
         val vcsManager = ProjectLevelVcsManager.getInstance(project)
