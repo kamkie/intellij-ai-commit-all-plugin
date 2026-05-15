@@ -10,7 +10,7 @@ Proposals are advisory until accepted through the normal repository flow. A prop
 
 Active proposals still have at least one `open` row in their `Progress Tracker`.
 
-- _none yet_
+- `PROP-repository-analysis` - Repository Analysis Proposal ([repository-analysis-2026-05-15T01-47.md](repository-analysis-2026-05-15T01-47.md)), open as of 2026-05-15.
 
 ### Completed Proposals
 
