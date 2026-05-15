@@ -1,0 +1,112 @@
+package pl.devopssolutions.aicommitall.settings
+
+import com.intellij.openapi.options.ConfigurationException
+import com.intellij.openapi.options.SearchableConfigurable
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import javax.swing.JComponent
+import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.JSpinner
+import javax.swing.SpinnerNumberModel
+
+internal class AiCommitAllConfigurable : SearchableConfigurable {
+    private var panel: JPanel? = null
+    private var timeoutSpinner: JSpinner? = null
+    private var checkIntervalSpinner: JSpinner? = null
+
+    override fun getId(): String = AiCommitAllSettings.SETTINGS_ID
+
+    override fun getDisplayName(): String = AiCommitAllSettings.DISPLAY_NAME
+
+    override fun createComponent(): JComponent {
+        val settings = AiCommitAllSettings.getInstance().completionOptions()
+        timeoutSpinner = millisSpinner(settings.timeout.toMillis())
+        checkIntervalSpinner = millisSpinner(settings.checkInterval.toMillis())
+
+        panel = JPanel(GridBagLayout()).apply {
+            add(
+                JLabel("AI generation timeout (ms)"),
+                constraints(row = 0, column = 0),
+            )
+            add(
+                requireNotNull(timeoutSpinner),
+                constraints(row = 0, column = 1),
+            )
+            add(
+                JLabel("Completion check interval (ms)"),
+                constraints(row = 1, column = 0),
+            )
+            add(
+                requireNotNull(checkIntervalSpinner),
+                constraints(row = 1, column = 1),
+            )
+        }
+
+        return requireNotNull(panel)
+    }
+
+    override fun isModified(): Boolean {
+        val settings = AiCommitAllSettings.getInstance().completionOptions()
+        return timeoutSpinner?.longValue() != settings.timeout.toMillis() ||
+            checkIntervalSpinner?.longValue() != settings.checkInterval.toMillis()
+    }
+
+    override fun apply() {
+        val timeoutMillis = timeoutSpinner?.longValue() ?: return
+        val checkIntervalMillis = checkIntervalSpinner?.longValue() ?: return
+
+        if (timeoutMillis <= 0) {
+            throw ConfigurationException("AI generation timeout must be positive.")
+        }
+        if (checkIntervalMillis <= 0) {
+            throw ConfigurationException("Completion check interval must be positive.")
+        }
+
+        AiCommitAllSettings.getInstance().updateCompletionOptions(
+            timeoutMillis = timeoutMillis,
+            checkIntervalMillis = checkIntervalMillis,
+        )
+    }
+
+    override fun reset() {
+        val settings = AiCommitAllSettings.getInstance().completionOptions()
+        timeoutSpinner?.value = settings.timeout.toMillis()
+        checkIntervalSpinner?.value = settings.checkInterval.toMillis()
+    }
+
+    override fun disposeUIResources() {
+        panel = null
+        timeoutSpinner = null
+        checkIntervalSpinner = null
+    }
+
+    private fun millisSpinner(value: Long): JSpinner =
+        JSpinner(
+            SpinnerNumberModel(
+                value,
+                MIN_MILLIS,
+                MAX_MILLIS,
+                STEP_MILLIS,
+            ),
+        )
+
+    private fun JSpinner.longValue(): Long =
+        (value as Number).toLong()
+
+    private fun constraints(row: Int, column: Int): GridBagConstraints =
+        GridBagConstraints().apply {
+            gridx = column
+            gridy = row
+            anchor = GridBagConstraints.WEST
+            fill = if (column == 1) GridBagConstraints.HORIZONTAL else GridBagConstraints.NONE
+            weightx = if (column == 1) 1.0 else 0.0
+            insets = java.awt.Insets(4, 4, 4, 4)
+        }
+
+    companion object {
+        private const val MIN_MILLIS = 1L
+        private const val MAX_MILLIS = Int.MAX_VALUE.toLong()
+        private const val STEP_MILLIS = 100L
+    }
+}

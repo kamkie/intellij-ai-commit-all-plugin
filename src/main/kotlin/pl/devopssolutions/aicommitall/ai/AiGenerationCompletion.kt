@@ -7,6 +7,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.vcs.commit.CommitMessageUi
+import pl.devopssolutions.aicommitall.settings.AiCommitAllSettings
 import java.lang.reflect.Field
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
@@ -22,7 +23,7 @@ internal class AiGenerationCompletionService {
         snapshot: AiCommitMessageSnapshot,
         invocation: AiCommitMessageActionInvocationResult.Invoked,
         commitMessageUi: CommitMessageUi,
-        options: AiGenerationCompletionOptions = AiGenerationCompletionOptions.DEFAULT,
+        options: AiGenerationCompletionOptions = AiCommitAllSettings.getInstance().completionOptions(),
     ): CompletableFuture<AiGenerationCompletionResult> =
         CompletableFuture.supplyAsync(
             {

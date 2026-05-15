@@ -2,4 +2,11 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.vcs</depends>
     <depends>com.intellij.ml.llm</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationConfigurable
+            id="pl.devopssolutions.aicommitall.settings"
+            displayName="AI Commit All"
+            instance="pl.devopssolutions.aicommitall.settings.AiCommitAllConfigurable" />
+    </extensions>
 </idea-plugin>
