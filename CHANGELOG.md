@@ -18,6 +18,7 @@ This repository has no released plugin version yet.
 - Added `scripts/validate-docs.ps1` for documentation consistency checks.
 - Added accepted plan `P-scaffold-plugin-project` for the first executable plugin scaffold.
 - Added ADR 0035 to store open questions with decision records.
+- Added ADR 0036 requiring plan filenames to include their stable `Plan-ID`.
 
 ### Changed
 
@@ -32,3 +33,4 @@ This repository has no released plugin version yet.
 - Allowed the future Gradle Wrapper jar through `.gitignore` and named wrapper files in the scaffold plan.
 - Clarified Marketplace documentation versus release metadata task ownership.
 - Marked `PROP-repository-analysis` completed after implementing accepted findings.
+- Renamed the active scaffold plan file to include `P-scaffold-plugin-project`.

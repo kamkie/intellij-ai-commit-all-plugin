@@ -15,7 +15,7 @@ Use this guide when adding or updating repository documentation.
 - `docs/proposals/`: repository analysis and proposal documents for maintainer triage; every proposal needs a stable `proposal_id`; start from `docs/proposals/PROPOSAL_TEMPLATE.md` and follow `docs/proposals/README.md`.
 - `docs/decisions/`: project decisions, repository rule changes, and ADR template.
 - `.agents/references/`: focused AI guidance for planning, execution, code style, testing, reviews, and documentation.
-- `.agents/plans/`: task-specific implementation plans and plan template; every plan needs a stable `Plan-ID`.
+- `.agents/plans/`: task-specific implementation plans and plan template; every plan needs a stable `Plan-ID` included in the filename.
 - `LICENSE`: Apache-2.0 license text for the repository and plugin.
 - `.gitmessage`: commit-message template, Conventional Commit type guidance, and AI metadata trailer schema.
 - `.agents/references/releases.md`: release preparation, changelog update rules, support-policy checks, version tags, and release preconditions.
@@ -29,7 +29,7 @@ Use this guide when adding or updating repository documentation.
 - Do not load every AI instruction file automatically. Start from `AGENTS.md`, use the guidance map, and load only the owner documents needed for the current documentation change unless the task is a broad guidance audit or cross-document consistency review.
 - Give open questions stable IDs in `docs/decisions/OPEN_QUESTIONS.md`.
 - Give every `TASKS.md` item a stable task ID in the form `T-AREA-NNN`, keep the ID stable when wording or ordering changes, and do not renumber existing task IDs.
-- Give every plan a stable `Plan-ID` in the form `P-<short-kebab-slug>`, keep it stable when title, filename, status, or wording changes, and avoid strictly number-based plan IDs.
+- Give every plan a stable `Plan-ID` in the form `P-<short-kebab-slug>`, include it in the filename, keep it stable when title, filename, status, or wording changes, and avoid strictly number-based plan IDs.
 - Give every proposal a stable `proposal_id` in the form `PROP-<short-kebab-slug>`, keep it stable when title, filename, status, wording, or archive location changes, and do not reuse retired proposal IDs.
 - Mark blocked `TASKS.md` items with `depends on: Q-ID`, and tasks that answer questions with `resolves: Q-ID`.
 - Follow `docs/decisions/README.md` for project decisions and repository rule changes.

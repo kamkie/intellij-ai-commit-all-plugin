@@ -17,11 +17,11 @@ Do not create a plan for small documentation cleanup unless the user asks for on
 
 Store active plans in `.agents/plans/`.
 
-Use `.agents/plans/PLAN_TEMPLATE.md` as the starting shape. Name plan files after the task, for example:
+Use `.agents/plans/PLAN_TEMPLATE.md` as the starting shape. Name plan files with the stable `Plan-ID` as the filename prefix, for example:
 
 ```text
-.agents/plans/scaffold-plugin-project.md
-.agents/plans/commit-tool-window-actions.md
+.agents/plans/P-scaffold-plugin-project.md
+.agents/plans/P-commit-tool-window-actions.md
 ```
 
 ## Plan Content
@@ -41,6 +41,7 @@ A useful plan should include:
 
 - Keep plans short enough to maintain.
 - Give every plan a stable, human-readable `Plan-ID` such as `P-scaffold-plugin-project`; avoid strictly number-based IDs such as `P-0001`.
+- Include the stable `Plan-ID` in the plan filename.
 - Keep `Plan-ID` stable when plan title, filename, status, or wording changes.
 - Do not duplicate the full backlog from `TASKS.md`.
 - Move unresolved user decisions to `docs/decisions/OPEN_QUESTIONS.md`.

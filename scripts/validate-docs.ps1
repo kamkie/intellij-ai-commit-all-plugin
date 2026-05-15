@@ -57,6 +57,25 @@ if (Test-Path -LiteralPath $tasksPath) {
     }
 }
 
+$planFiles = Get-ChildItem -LiteralPath (Join-Path $repoRoot '.agents/plans') -File -Filter '*.md' |
+    Where-Object { $_.Name -notin @('README.md', 'PLAN_TEMPLATE.md') }
+
+foreach ($plan in $planFiles) {
+    $relative = Get-RelativePath $plan.FullName
+    $text = Get-Content -Raw -LiteralPath $plan.FullName
+    $planIdMatch = [regex]::Match($text, '(?m)^Plan-ID:\s+(P-[A-Za-z0-9][A-Za-z0-9-]*)\s*$')
+
+    if (-not $planIdMatch.Success) {
+        Add-ValidationError "$relative is missing a stable Plan-ID"
+        continue
+    }
+
+    $planId = $planIdMatch.Groups[1].Value
+    if (-not $plan.Name.StartsWith($planId, [System.StringComparison]::Ordinal)) {
+        Add-ValidationError "$relative filename must include Plan-ID prefix $planId"
+    }
+}
+
 $adrFiles = Get-ChildItem -LiteralPath (Join-Path $repoRoot 'docs/decisions') -File -Filter '*.md' |
     Where-Object { $_.Name -match '^\d{4}-' } |
     Sort-Object Name

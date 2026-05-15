@@ -4,6 +4,8 @@ Plan-ID: P-<short-kebab-slug>
 
 Status: Draft
 
+Filename: `.agents/plans/P-<short-kebab-slug>.md`
+
 ## Goal
 
 State the behavior or repository outcome this plan should achieve.

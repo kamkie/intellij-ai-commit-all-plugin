@@ -80,3 +80,4 @@ Start from `ADR_TEMPLATE.md`.
 | [0033](0033-add-proposals-directory-and-rules.md) | Add Proposals Directory And Rules | Accepted | 2026-05-15 |
 | [0034](0034-use-stable-proposal-ids.md) | Use Stable Proposal IDs | Accepted | 2026-05-15 |
 | [0035](0035-store-open-questions-with-decisions.md) | Store Open Questions With Decisions | Accepted | 2026-05-15 |
+| [0036](0036-include-plan-ids-in-plan-filenames.md) | Include Plan IDs In Plan Filenames | Accepted | 2026-05-15 |
