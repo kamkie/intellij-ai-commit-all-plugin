@@ -8,5 +8,9 @@
             id="pl.devopssolutions.aicommitall.settings"
             displayName="AI Commit All"
             instance="pl.devopssolutions.aicommitall.settings.AiCommitAllConfigurable" />
+        <notificationGroup
+            id="AI Commit All"
+            displayType="BALLOON"
+            isLogByDefault="true" />
     </extensions>
 </idea-plugin>
