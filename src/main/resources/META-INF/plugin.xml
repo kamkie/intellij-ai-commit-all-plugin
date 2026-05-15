@@ -1,0 +1,5 @@
+<idea-plugin>
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.vcs</depends>
+    <depends>com.intellij.ml.llm</depends>
+</idea-plugin>

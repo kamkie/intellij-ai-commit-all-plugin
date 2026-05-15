@@ -20,6 +20,7 @@ This repository has no released plugin version yet.
 - Added ADR 0035 to store open questions with decision records.
 - Added ADR 0036 requiring plan filenames to include their stable `Plan-ID`.
 - Added the initial Gradle Kotlin DSL and Kotlin/JVM scaffold for the IntelliJ Platform plugin.
+- Added plugin descriptor metadata and the required JetBrains AI Assistant dependency.
 
 ### Changed
 

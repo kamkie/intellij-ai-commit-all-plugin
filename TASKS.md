@@ -37,9 +37,9 @@ Notation:
 - [x] T-SCAFFOLD-001: Add Gradle Kotlin DSL project files. (Plan `P-scaffold-plugin-project`, Task 1)
 - [x] T-SCAFFOLD-002: Configure the IntelliJ Platform Gradle Plugin. (Plan `P-scaffold-plugin-project`, Task 1)
 - [x] T-SCAFFOLD-003: Add Kotlin/JVM configuration. (Plan `P-scaffold-plugin-project`, Task 1)
-- [ ] T-SCAFFOLD-004: Add plugin descriptor at `src/main/resources/META-INF/plugin.xml`.
-- [ ] T-SCAFFOLD-005: Identify JetBrains AI Assistant plugin dependency ID for IntelliJ Platform 2026.1.
-- [ ] T-SCAFFOLD-006: Declare JetBrains AI Assistant as a required plugin dependency.
+- [x] T-SCAFFOLD-004: Add plugin descriptor at `src/main/resources/META-INF/plugin.xml`. (Plan `P-scaffold-plugin-project`, Task 2)
+- [x] T-SCAFFOLD-005: Identify JetBrains AI Assistant plugin dependency ID for IntelliJ Platform 2026.1: `com.intellij.ml.llm`. (Plan `P-scaffold-plugin-project`, Task 2)
+- [x] T-SCAFFOLD-006: Declare JetBrains AI Assistant as a required plugin dependency. (Plan `P-scaffold-plugin-project`, Task 2)
 - [x] T-SCAFFOLD-007: Add a base package for plugin code. (Plan `P-scaffold-plugin-project`, Task 1)
 - [ ] T-SCAFFOLD-008: Verify `runIde` starts a sandbox IDE.
 - [x] T-SCAFFOLD-009: Add a top-level `LICENSE` file. (ADR 0018)
