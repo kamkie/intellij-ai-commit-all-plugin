@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_channel:
+        description: JetBrains Marketplace channel.
+        required: true
+        default: default
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Sign and publish
+    runs-on: ubuntu-latest
+    environment: jetbrains-marketplace
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Validate release candidate
+        run: ./gradlew test verifyPluginStructure buildPlugin verifyPlugin -PpluginPublishChannels=${{ inputs.publish_channel }}
+
+      - name: Sign and publish to JetBrains Marketplace
+        run: ./gradlew signPlugin publishPlugin -PpluginPublishChannels=${{ inputs.publish_channel }}
+        env:
+          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}

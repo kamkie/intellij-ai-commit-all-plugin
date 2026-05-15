@@ -1,0 +1,38 @@
+name: Plugin Verifier
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify against ${{ matrix.ide }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ide:
+          - IU-2026.1.1
+          - PY-2026.1.1
+          - WS-2026.1.1
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run Plugin Verifier
+        run: ./gradlew verifyPlugin -PpluginVerifierIdeVersions=${{ matrix.ide }}

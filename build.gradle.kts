@@ -8,6 +8,13 @@ plugins {
 group = "pl.devopssolutions"
 version = providers.gradleProperty("pluginVersion").get()
 
+val pluginVerifierIdeVersions = providers.gradleProperty("pluginVerifierIdeVersions")
+    .map { value ->
+        value.split(',')
+            .map { version -> version.trim() }
+            .filter { version -> version.isNotEmpty() }
+    }
+
 dependencies {
     intellijPlatform {
         intellijIdea(providers.gradleProperty("platformVersion").get())
@@ -42,7 +49,7 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            current()
+            create(pluginVerifierIdeVersions)
         }
     }
 
