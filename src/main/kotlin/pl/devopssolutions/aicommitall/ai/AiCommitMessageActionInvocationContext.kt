@@ -14,7 +14,6 @@ import com.intellij.vcs.commit.CommitMessageUi
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowUi
 import java.awt.event.InputEvent
-import java.lang.reflect.Method
 
 internal object AiCommitMessageActionInvocationContextFactory {
     fun createInvocationContext(
@@ -100,19 +99,8 @@ internal object AiCommitMessageActionInvocationContextFactory {
         workflowUi: CommitWorkflowUi,
         parentDataContext: DataContext,
     ): Document? =
-        workflowUi.commitMessageUi.findEditorDocument()
+        CommitMessageUiAccessors.editorDocument(workflowUi.commitMessageUi)
             ?: VcsDataKeys.COMMIT_MESSAGE_DOCUMENT.getData(parentDataContext)
-
-    private fun CommitMessageUi.findEditorDocument(): Document? =
-        runCatching {
-            val editorField = javaClass.findMethod("getEditorField")?.invoke(this)
-            editorField?.javaClass?.findMethod("getDocument")?.invoke(editorField) as? Document
-        }.getOrNull()
-
-    private fun Class<*>.findMethod(name: String): Method? =
-        methods.firstOrNull { method ->
-            method.name == name && method.parameterCount == 0
-        }
 
 }
 

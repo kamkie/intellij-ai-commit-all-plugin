@@ -16,12 +16,14 @@ import com.intellij.openapi.actionSystem.TimerListener
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ActionCallback
+import com.intellij.ui.AnimatedIcon
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowMode
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowResult
 import java.awt.Component
 import java.awt.event.InputEvent
 import java.lang.reflect.Proxy
 import java.util.concurrent.CompletableFuture
+import javax.swing.Icon
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -73,6 +75,7 @@ internal class AiCommitAllActionsTest {
         val action = AiCommitAllCommitAction(
             workflowStarter = CapturingWorkflowStarter(),
             availabilityProvider = StaticAvailabilityProvider(AiCommitAllWorkflowActionAvailability.Enabled),
+            activityProvider = StaticActivityProvider(),
         )
         val event = testEvent(testDataContext(testProject()))
 
@@ -87,6 +90,7 @@ internal class AiCommitAllActionsTest {
         val action = AiCommitAllCommitAction(
             workflowStarter = CapturingWorkflowStarter(),
             availabilityProvider = StaticAvailabilityProvider(AiCommitAllWorkflowActionAvailability.Disabled),
+            activityProvider = StaticActivityProvider(),
         )
         val event = testEvent(testDataContext(testProject()))
 
@@ -97,11 +101,28 @@ internal class AiCommitAllActionsTest {
     }
 
     @Test
+    fun `action update applies running activity presentation`() {
+        val action = AiCommitAllCommitAction(
+            workflowStarter = CapturingWorkflowStarter(),
+            availabilityProvider = StaticAvailabilityProvider(AiCommitAllWorkflowActionAvailability.Enabled),
+            activityProvider = StaticActivityProvider(running = true),
+        )
+        val event = testEvent(testDataContext(testProject()))
+
+        action.update(event)
+
+        assertTrue(event.presentation.isVisible)
+        assertFalse(event.presentation.isEnabled)
+        assertSame(AnimatedIcon.Default.INSTANCE, event.presentation.icon)
+    }
+
+    @Test
     fun `action update hides without project`() {
         val provider = CapturingAvailabilityProvider(AiCommitAllWorkflowActionAvailability.Enabled)
         val action = AiCommitAllCommitAction(
             workflowStarter = CapturingWorkflowStarter(),
             availabilityProvider = provider,
+            activityProvider = StaticActivityProvider(),
         )
         val event = testEvent(DataContext.EMPTY_CONTEXT)
 
@@ -154,6 +175,25 @@ internal class AiCommitAllActionsTest {
     private class StaticAvailabilityProvider(
         availability: AiCommitAllWorkflowActionAvailability,
     ) : CapturingAvailabilityProvider(availability)
+
+    private class StaticActivityProvider(
+        private val running: Boolean = false,
+    ) : AiCommitAllWorkflowActivityProvider {
+        override fun applyActivityState(
+            project: Project,
+            presentation: Presentation,
+            idleIcon: Icon?,
+            enabledWhenIdle: Boolean,
+        ) {
+            if (running) {
+                presentation.setEnabled(false)
+                presentation.setIcon(AnimatedIcon.Default.INSTANCE)
+            } else {
+                presentation.setEnabled(enabledWhenIdle)
+                presentation.setIcon(idleIcon)
+            }
+        }
+    }
 
     private fun testEvent(
         dataContext: DataContext,

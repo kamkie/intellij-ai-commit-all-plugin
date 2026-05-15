@@ -43,15 +43,15 @@ Compact overview only. Edit the YAML tracker inside each section below; this tab
 
 | Id  | Title                                           | Priority | Status | Decision |
 |-----|-------------------------------------------------|----------|--------|----------|
-| E1  | No automated code scanning configured           | 1        | open   |          |
-| E2  | No enforced code formatting/linting             | 1        | open   |          |
-| E3  | No Dependabot configuration                     | 1        | open   |          |
-| E4  | Gradle wrapper integrity is not validated in CI | 2        | open   |          |
-| E5  | No secret scanning / push protection guidance   | 2        | open   |          |
-| E6  | No SECURITY.md disclosure policy                | 2        | open   |          |
-| E7  | No CONTRIBUTING.md for external contributors    | 3        | open   |          |
-| E8  | No CODEOWNERS file                              | 3        | open   |          |
-| E9  | No pull request or issue templates              | 3        | open   |          |
+| E1 | No automated code scanning configured           | 1        | open   |          |
+| E2 | No enforced code formatting/linting             | 1        | open   |          |
+| E3 | No Dependabot configuration                     | 1        | open   |          |
+| E4 | Gradle wrapper integrity is not validated in CI | 2        | open   |          |
+| E5 | No secret scanning / push protection guidance   | 2        | open   |          |
+| E6 | No SECURITY.md disclosure policy                | 2        | open   |          |
+| E7 | No CONTRIBUTING.md for external contributors    | 3        | open   |          |
+| E8 | No CODEOWNERS file                              | 3        | open   |          |
+| E9 | No pull request or issue templates              | 3        | open   |          |
 | E10 | No license header enforcement on Kotlin sources | 4        | open   |          |
 
 ## How To Edit The Trackers

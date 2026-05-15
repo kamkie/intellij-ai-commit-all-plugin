@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.vcs.VcsDataKeys
+import pl.devopssolutions.aicommitall.ai.AiGenerationActivityStateService
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelectionService
 import pl.devopssolutions.aicommitall.vcs.GitVcsSupportStatus
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowCoordinator
@@ -14,21 +15,30 @@ import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowResult
 import pl.devopssolutions.aicommitall.workflow.CommitWorkflowExecutionService
 import java.awt.event.InputEvent
 import java.util.concurrent.CompletableFuture
+import javax.swing.Icon
 
 internal class AiCommitAllCommitAction(
     workflowStarter: AiCommitAllWorkflowStarter = ProjectAiCommitAllWorkflowStarter,
     availabilityProvider: AiCommitAllWorkflowAvailabilityProvider = ProjectAiCommitAllWorkflowAvailabilityProvider,
-) : AiCommitAllWorkflowAction(AiCommitAllWorkflowMode.Commit, workflowStarter, availabilityProvider)
+    activityProvider: AiCommitAllWorkflowActivityProvider = ProjectAiCommitAllWorkflowActivityProvider,
+) : AiCommitAllWorkflowAction(AiCommitAllWorkflowMode.Commit, workflowStarter, availabilityProvider, activityProvider)
 
 internal class AiCommitAllCommitAndPushAction(
     workflowStarter: AiCommitAllWorkflowStarter = ProjectAiCommitAllWorkflowStarter,
     availabilityProvider: AiCommitAllWorkflowAvailabilityProvider = ProjectAiCommitAllWorkflowAvailabilityProvider,
-) : AiCommitAllWorkflowAction(AiCommitAllWorkflowMode.CommitAndPush, workflowStarter, availabilityProvider)
+    activityProvider: AiCommitAllWorkflowActivityProvider = ProjectAiCommitAllWorkflowActivityProvider,
+) : AiCommitAllWorkflowAction(
+    AiCommitAllWorkflowMode.CommitAndPush,
+    workflowStarter,
+    availabilityProvider,
+    activityProvider,
+)
 
 internal abstract class AiCommitAllWorkflowAction(
     private val mode: AiCommitAllWorkflowMode,
     private val workflowStarter: AiCommitAllWorkflowStarter,
     private val availabilityProvider: AiCommitAllWorkflowAvailabilityProvider,
+    private val activityProvider: AiCommitAllWorkflowActivityProvider,
 ) : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
@@ -45,7 +55,17 @@ internal abstract class AiCommitAllWorkflowAction(
         }
 
         event.presentation.isVisible = availability.visible
-        event.presentation.isEnabled = availability.enabled
+        if (!availability.visible || project == null) {
+            event.presentation.isEnabled = false
+            return
+        }
+
+        activityProvider.applyActivityState(
+            project = project,
+            presentation = event.presentation,
+            idleIcon = event.presentation.icon ?: templatePresentation.icon,
+            enabledWhenIdle = availability.enabled,
+        )
     }
 
     override fun actionPerformed(event: AnActionEvent) {
@@ -83,6 +103,15 @@ internal interface AiCommitAllWorkflowAvailabilityProvider {
     ): AiCommitAllWorkflowActionAvailability
 }
 
+internal interface AiCommitAllWorkflowActivityProvider {
+    fun applyActivityState(
+        project: Project,
+        presentation: com.intellij.openapi.actionSystem.Presentation,
+        idleIcon: Icon?,
+        enabledWhenIdle: Boolean,
+    )
+}
+
 internal interface AiCommitAllWorkflowStarter {
     fun start(
         project: Project,
@@ -90,6 +119,22 @@ internal interface AiCommitAllWorkflowStarter {
         dataContext: DataContext,
         inputEvent: InputEvent?,
     ): CompletableFuture<AiCommitAllWorkflowResult>
+}
+
+private object ProjectAiCommitAllWorkflowActivityProvider : AiCommitAllWorkflowActivityProvider {
+    override fun applyActivityState(
+        project: Project,
+        presentation: com.intellij.openapi.actionSystem.Presentation,
+        idleIcon: Icon?,
+        enabledWhenIdle: Boolean,
+    ) {
+        AiGenerationActivityStateService.getInstance(project)
+            .applyToPresentation(
+                presentation = presentation,
+                idleIcon = idleIcon,
+                enabledWhenIdle = enabledWhenIdle,
+            )
+    }
 }
 
 private object ProjectAiCommitAllWorkflowStarter : AiCommitAllWorkflowStarter {
@@ -131,6 +176,7 @@ private object ProjectAiCommitAllWorkflowAvailabilityProvider : AiCommitAllWorkf
         val canExecute = when (mode) {
             AiCommitAllWorkflowMode.Commit ->
                 executionService.canExecuteCommit(workflowHandler)
+
             AiCommitAllWorkflowMode.CommitAndPush ->
                 executionService.canExecuteCommitAndPush(workflowHandler)
         }

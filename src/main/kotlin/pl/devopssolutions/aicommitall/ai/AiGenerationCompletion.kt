@@ -24,19 +24,24 @@ internal class AiGenerationCompletionService {
         invocation: AiCommitMessageActionInvocationResult.Invoked,
         commitMessageUi: CommitMessageUi,
         options: AiGenerationCompletionOptions = AiCommitAllSettings.getInstance().completionOptions(),
-    ): CompletableFuture<AiGenerationCompletionResult> =
-        CompletableFuture.supplyAsync(
+    ): CompletableFuture<AiGenerationCompletionResult> {
+        val userEditSignal = CommitMessageUserEditSignalFactory.create(commitMessageUi)
+
+        return CompletableFuture.supplyAsync(
             {
-                observer.awaitCompletion(
-                    snapshot = snapshot,
-                    messageReader = CommitMessageUiReader(commitMessageUi),
-                    runningSignal = ReflectiveActionProgressRunningSignal(invocation.action),
-                    userEditSignal = AiGenerationUserEditSignal.NotEdited,
-                    options = options,
-                )
+                userEditSignal.use {
+                    observer.awaitCompletion(
+                        snapshot = snapshot,
+                        messageReader = CommitMessageUiReader(commitMessageUi),
+                        runningSignal = ReflectiveActionProgressRunningSignal(invocation.action),
+                        userEditSignal = it,
+                        options = options,
+                    )
+                }
             },
             JobScheduler.getScheduler(),
         )
+    }
 
     companion object {
         fun getInstance(project: Project): AiGenerationCompletionService = project.service()
@@ -73,6 +78,7 @@ internal class AiGenerationCompletionObserver(
                         currentMessage = currentMessage,
                     )
                 }
+
                 AiGenerationRunningState.Unavailable -> {
                     return AiGenerationCompletionResult.NoCompletionSignal(
                         latestMessage = currentMessage,
