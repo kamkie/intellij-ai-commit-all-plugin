@@ -23,6 +23,10 @@ This proposal supersedes the earlier draft at `.agents/prompts/PROMPT-orchestrat
     - [S2. Orchestrator synchronization and logging (ADR B)](#s2-orchestrator-synchronization-and-logging-adr-b)
     - [S3. Execution topology — git worktrees vs single branch (ADR C)](#s3-execution-topology--git-worktrees-vs-single-branch-adr-c)
     - [S4. Plan worker-count field (ADR D)](#s4-plan-worker-count-field-adr-d)
+    - [S5. Worker plan-file update responsibility (ADR E)](#s5-worker-plan-file-update-responsibility-adr-e)
+    - [S6. Orchestrator changelog update cadence (ADR F)](#s6-orchestrator-changelog-update-cadence-adr-f)
+    - [S7. Plan execution graph with marked workers, orchestrators, and modes (ADR G)](#s7-plan-execution-graph-with-marked-workers-orchestrators-and-modes-adr-g)
+    - [S8. Author-empty decision rule for new proposal findings (ADR H)](#s8-author-empty-decision-rule-for-new-proposal-findings-adr-h)
 - [Smaller / Stylistic Items](#smaller--stylistic-items)
 - [Suggested Priority Order](#suggested-priority-order)
 - [Out Of Scope](#out-of-scope)
@@ -30,17 +34,21 @@ This proposal supersedes the earlier draft at `.agents/prompts/PROMPT-orchestrat
 ## Summary
 
 - Propose a coherent set of orchestrator/worker rules for multi-agent execution of accepted multi-task plans, layered on top of ADR 0023, ADR 0024, and ADR 0026 without weakening them.
-- Group the seven user-requested rules into four ADRs (A–D) so commit-schema, orchestrator behavior, execution topology, and plan-level worker declaration can each be reviewed independently.
+- Group the user-requested rules into eight ADRs (A–H) so commit-schema, orchestrator behavior, execution topology, plan-level worker declaration, worker plan-file update responsibility, orchestrator changelog update cadence, a mandatory plan execution graph, and the author-empty decision rule for new proposal findings can each be reviewed independently.
 - No implementation is performed by this proposal; it is advisory until each ADR is authored and accepted and the dependent guidance, template, and validation updates are merged.
 
 ## Progress Tracker
 
 | Id | Title                                                     | Priority | Status | Decision |
 |----|-----------------------------------------------------------|----------|--------|----------|
-| S1 | Commit-message schema extension for multi-agent execution | 3        | open   |          |
-| S2 | Orchestrator synchronization and logging                  | 4        | open   |          |
-| S3 | Execution topology — git worktrees vs single branch       | 5        | open   |          |
-| S4 | Plan worker-count field                                   | 2        | open   |          |
+| S1 | Commit-message schema extension for multi-agent execution | 3        | open   | accepted |
+| S2 | Orchestrator synchronization and logging                  | 4        | open   | accepted |
+| S3 | Execution topology — git worktrees vs single branch       | 5        | open   | accepted |
+| S4 | Plan worker-count field                                   | 2        | open   | accepted |
+| S5 | Worker plan-file update responsibility                    | 2        | open   |          |
+| S6 | Orchestrator changelog update cadence                     | 2        | open   |          |
+| S7 | Plan execution graph with marked workers, orchestrators, and modes | 2        | open   |          |
+| S8 | Author-empty decision rule for new proposal findings      | 1        | open   |          |
 
 ## How To Edit The Trackers
 
@@ -48,6 +56,7 @@ This proposal supersedes the earlier draft at `.agents/prompts/PROMPT-orchestrat
 - Mirror `status`, `decision`, and `priority` to the row above.
 - Bump `updated` to the current date.
 - Leave completed or rejected findings in place as history.
+- When adding a new finding to this proposal, never mark it as accepted; the `decision` field must start empty and is only filled in by the maintainer after triage.
 
 ## Errors And Mistakes
 
@@ -139,6 +148,87 @@ updated: 2026-05-15
 comment:
 ```
 
+### S5. Worker plan-file update responsibility (ADR E)
+
+- Evidence: `.agents/references/execution.md` (`Orchestrator And Task Workers`), ADR 0023, ADR 0026, and `.agents/plans/PLAN_TEMPLATE.md` describe per-task commits and status tracking, but no accepted rule assigns ownership of plan-file status updates (task checkboxes, status fields, progress notes) after each completed task. In practice this can drift between the worker that did the work and the orchestrator that dispatched it.
+- Impact: Plan files can fall out of sync with actual execution state, especially in multi-agent runs, because neither the worker nor the orchestrator is unambiguously responsible for writing the post-task update. This undermines plan auditability and the ADR 0037 status lifecycle.
+- Proposal: Author one ADR (ADR E) that:
+    - Codifies worker plan-file update responsibility (Rule 8): after completing each plan task (success or failure), the worker must update the governing plan file's status for that task in the same commit as the task work, OR explicitly hand that responsibility off to the orchestrator within the same execution step.
+    - Defines the hand-off mechanism: when the worker delegates, the orchestrator must perform the plan-file update before dispatching the next task; the delegation must be recorded (chat transcript or `.agents/runs/` log per S2 if accepted).
+    - Requires that, however the update is performed, the plan file reflects the new status before the next task starts, preserving ADR 0023's one-commit-per-task boundary (the plan-file edit rides along in the same task commit, or is a separate orchestrator commit attributed per S1).
+    - References ADR 0023, ADR 0026, and ADR 0037; aligns with S1 (commit attribution) and S2 (orchestrator logging) if those ADRs are accepted.
+    - After acceptance, update `.agents/references/execution.md` (`Orchestrator And Task Workers`) and `.agents/references/planning.md` to describe the responsibility and the hand-off mechanism.
+
+```yaml
+status: open
+decision:
+priority: 2
+owner:
+updated: 2026-05-15
+comment:
+```
+
+### S6. Orchestrator changelog update cadence (ADR F)
+
+- Evidence: ADR 0030 (`orchestrator-maintains-changelog`) and `.agents/references/releases.md` establish that the orchestrator owns `CHANGELOG.md` upkeep, but no accepted rule specifies the cadence. `.agents/references/execution.md` (`Orchestrator And Task Workers`) describes per-task handover from worker back to orchestrator without requiring a changelog update at that boundary. In practice, changelog edits can accumulate until release preparation rather than landing at each handover, undermining traceability between plan tasks and user-visible changes.
+- Impact: Without a per-handover cadence, `CHANGELOG.md` drifts behind actual plan progress in multi-task or multi-agent runs, making it harder to map each accepted task to its user-facing entry and to prepare a clean release section.
+- Proposal: Author one ADR (ADR F) that:
+    - Codifies orchestrator changelog cadence (Rule 9): after every worker handover (success or failure) on a plan task that produces a user-visible or workflow-visible change, the orchestrator must update `CHANGELOG.md` under the next unreleased section before dispatching the next task.
+    - Defines the exemption: purely internal tasks (no user-facing or workflow-visible effect) may be recorded as a single grouped entry, but the decision to group must be logged (chat transcript or `.agents/runs/` log per S2 if accepted).
+    - Requires that the changelog edit ride along in the same task commit when feasible (preserving ADR 0023's one-commit-per-task boundary), or be a separate orchestrator commit attributed per S1; aligns with S5 so plan-file status and changelog update land at the same handover point.
+    - References ADR 0030, ADR 0023, ADR 0026, and `.agents/references/releases.md`.
+    - After acceptance, update `.agents/references/execution.md` (`Orchestrator And Task Workers`) and `.agents/references/releases.md` to describe the per-handover cadence and the grouping exemption.
+
+```yaml
+status: open
+decision:
+priority: 2
+owner:
+updated: 2026-05-15
+comment:
+```
+
+### S7. Plan execution graph with marked workers, orchestrators, and modes (ADR G)
+
+- Evidence: `.agents/plans/PLAN_TEMPLATE.md`, `.agents/plans/README.md`, and `.agents/references/planning.md` do not require any execution graph in plan files. `PLAN-fastest-plan-execution.md` illustrates a Before/After orchestrator/worker graph, but as a one-off example rather than a required plan element. ADR 0026 introduces orchestrator/worker roles and ADR 0023 fixes the commit-per-task boundary, but neither requires the plan itself to visualize who runs what, under which orchestrator, and in which agent mode. The `Project-Agent-Mode` vocabulary proposed in S1 has no plan-level counterpart.
+- Impact: Without a mandatory execution graph, reviewers must infer parallelism, orchestrator ownership, and per-task agent mode from prose; multi-agent plans cannot be validated at a glance against ADR 0026 (independent tasks, disjoint write scopes) or against the worker-count declaration from S4. This also makes it harder to cross-check commit trailers (S1) and orchestrator logs (S2) against the plan that produced them.
+- Proposal: Author one ADR (ADR G) that:
+    - Codifies a required plan section (Rule 10): every plan includes an `Execution Graph` section with a Mermaid (or equivalent fenced) diagram that marks each node as a worker (`W<n>`) or orchestrator (`O<n>`) and labels each worker node with its agent mode from the S1 vocabulary (`code`, `fast-code`, `setup`, `advanced-chat`, `run-verify`, `niche`, `chat`).
+    - Requires the graph to encode task assignment (which plan task id each worker executes), wave/sequence ordering, and orchestrator handover edges, so it is consistent with ADR 0023 (one commit per task), ADR 0026 (independent tasks for parallel waves), and the `Workers:` field from S4.
+    - Requires `scripts/validate-docs.ps1` to assert presence of the `Execution Graph` section in every plan file; deeper structural validation is optional and may be deferred.
+    - Requires `.agents/plans/PLAN_TEMPLATE.md`, `.agents/plans/README.md`, and `.agents/references/planning.md` to describe the section, the node/edge vocabulary, and the link to S1/S4.
+    - References ADR 0023, ADR 0026, ADR 0032 / ADR 0036 / ADR 0038 for plan-id conventions, and aligns with S1 (agent-mode vocabulary) and S4 (worker count) if those ADRs are accepted.
+    - After acceptance, update `PLAN_TEMPLATE.md`, `.agents/plans/README.md`, `.agents/references/planning.md`, and `scripts/validate-docs.ps1` in a single follow-up change, and backfill the section on existing plans (including `PLAN-fastest-plan-execution.md`, whose Before/After diagram already approximates the required form).
+
+```yaml
+status: open
+decision:
+priority: 2
+owner:
+updated: 2026-05-15
+comment:
+```
+
+### S8. Author-empty decision rule for new proposal findings (ADR H)
+
+- Evidence: `docs/proposals/PROPOSAL_TEMPLATE.md`, `docs/proposals/README.md`, and ADR 0033 (`add-proposals-directory-and-rules`) / ADR 0034 (`use-stable-proposal-ids`) define how proposals are authored and tracked, but no accepted rule forbids the author from pre-filling `decision: accepted` on new findings. In this proposal's `How To Edit The Trackers` section, a working bullet was added asserting that new findings must start with an empty `decision`, but the rule itself is not yet ADR-gated.
+- Impact: Without an ADR, the empty-decision convention is only local guidance in one proposal and can be silently broken when new proposals are created from the template or when new findings are appended; maintainer triage cannot reliably distinguish author intent from accepted decisions.
+- Proposal: Author one ADR (ADR H) that:
+    - Codifies the author-empty decision rule (Rule 11): when an author adds a new finding (or a new proposal) under `docs/proposals/`, the `decision` field in both the Progress Tracker row and the finding's YAML status block must start empty; only the maintainer fills it after triage, and authors must never set `decision: accepted` themselves.
+    - Applies to the initial creation of a proposal and to every later finding appended to an existing proposal.
+    - Requires `docs/proposals/PROPOSAL_TEMPLATE.md` and `docs/proposals/README.md` to state the rule explicitly; optionally requires `scripts/validate-docs.ps1` to assert that newly added findings in a diff do not introduce `decision: accepted` written by the author (deeper enforcement may be deferred).
+    - References ADR 0033 and ADR 0034; aligns with the existing `How To Edit The Trackers` bullet in this proposal so the bullet survives as documentation of an accepted rule.
+    - After acceptance, update `docs/proposals/PROPOSAL_TEMPLATE.md` and `docs/proposals/README.md` in a single follow-up change.
+
+```yaml
+status: open
+decision:
+priority: 1
+owner:
+updated: 2026-05-15
+comment:
+```
+
 ## Smaller / Stylistic Items
 
 - The After view of the `Orchestrator And Workers Graph` in `PLAN-fastest-plan-execution.md` already illustrates 14 workers; once S4 is accepted, the plan should declare `Workers: 14 (parallel by wave, tasks: as labeled W1–W14)` to make the graph and the front matter consistent.
@@ -150,12 +240,16 @@ comment:
 1. `S4` — smallest blast radius (one ADR plus a plan-template field, README note, planning reference, and validation script update); unblocks plan-level worker count for every later change.
 2. `S1` — commit-message schema; small, localized to `.gitmessage` and one `execution.md` section, and makes S2/S3 trails observable.
 3. `S2` — orchestrator synchronization and logging; depends on S1 to record agent mode and worker identity in commits, and on a destination decision for the log.
-4. `S3` — execution topology; largest cross-document impact (touches ADR 0023's commit boundary), so do it last and after S2 has clarified what the orchestrator must observe across worktrees.
+4. `S5` — worker plan-file update responsibility; small, localized to two reference docs, and closes an ownership gap that becomes more visible once S1/S2 land.
+5. `S6` — orchestrator changelog update cadence; small, localized to two reference docs, and pairs naturally with S5 at the per-task handover boundary.
+6. `S7` — plan execution graph; depends on S1 (agent-mode vocabulary) and S4 (worker count) being settled so the graph's node labels match commit trailers and plan front matter.
+7. `S3` — execution topology; largest cross-document impact (touches ADR 0023's commit boundary), so do it last and after S2 has clarified what the orchestrator must observe across worktrees.
+8. `S8` — author-empty decision rule; smallest possible blast radius (one ADR plus two proposal docs), independent of S1–S7, and can be accepted at any time to harden proposal-authoring discipline.
 
 ## Out Of Scope
 
 - Implementing any orchestrator runtime, daemon, or process supervisor.
 - Changes to source code under `src/`.
-- Any modification to existing accepted ADRs; new behavior must be introduced via new ADRs (A–D) that reference the existing ones.
+- Any modification to existing accepted ADRs; new behavior must be introduced via new ADRs (A–H) that reference the existing ones.
 - Touching `.gitmessage`, `.agents/references/execution.md`, `.agents/references/planning.md`, `.agents/plans/PLAN_TEMPLATE.md`, `.agents/plans/README.md`, `scripts/validate-docs.ps1`, or `CHANGELOG.md` before the matching ADR is accepted.
 - Release tagging, Marketplace publishing, or CI changes triggered by this proposal.
