@@ -67,6 +67,7 @@ internal class AiCommitMessageActionInvoker(
         )
 
         return AiCommitMessageActionInvocationResult.Invoked(
+            action = actionReference.action,
             actionId = actionReference.actionId,
             source = actionReference.source,
         )
@@ -75,6 +76,7 @@ internal class AiCommitMessageActionInvoker(
 
 internal sealed interface AiCommitMessageActionInvocationResult {
     data class Invoked(
+        val action: com.intellij.openapi.actionSystem.AnAction,
         val actionId: String?,
         val source: AiCommitMessageActionSource,
     ) : AiCommitMessageActionInvocationResult
