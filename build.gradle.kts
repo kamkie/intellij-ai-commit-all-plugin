@@ -50,15 +50,18 @@ intellijPlatform {
         name = "AI Commit All"
         version = providers.gradleProperty("pluginVersion").get()
         description = """
-            <p>Adds an AI-assisted commit flow for JetBrains IDEs with the VCS Commit tool window.</p>
-            <p>The workflow implementation is still pending in this prerelease scaffold.</p>
+            <p>AI Commit All adds an AI-assisted Commit tool window workflow for Git projects.</p>
+            <p>The split-button action selects every non-ignored committable Git change, asks JetBrains AI Assistant to generate the commit message, then commits through the standard IntelliJ commit workflow. The push segment uses the IDE commit-and-push executor.</p>
+            <p>Source code: <a href="https://github.com/kamkie/intellij-ai-commit-all-plugin">https://github.com/kamkie/intellij-ai-commit-all-plugin</a></p>
         """.trimIndent()
         changeNotes = """
-            <p>v0.1.0-alpha.1 scaffold prerelease.</p>
+            <p>v0.1.0-alpha.1 prerelease.</p>
             <ul>
-                <li>Initial executable Gradle/Kotlin IntelliJ Platform plugin scaffold.</li>
-                <li>Plugin descriptor metadata and required JetBrains AI Assistant dependency.</li>
-                <li>Validated package build and sandbox startup.</li>
+                <li>Adds the AI Commit All split-button actions to the Commit tool window.</li>
+                <li>Selects non-ignored committable Git changes across changelists and Git roots.</li>
+                <li>Invokes JetBrains AI Assistant commit-message generation through the IntelliJ action system.</li>
+                <li>Commits and commits-and-pushes through standard IntelliJ workflow executors.</li>
+                <li>Adds configurable AI generation timeout and completion-check settings.</li>
             </ul>
         """.trimIndent()
 
