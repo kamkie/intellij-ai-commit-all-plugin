@@ -61,7 +61,7 @@ _No tracked findings._
 
 ### S1. Define a compact canonical plan status vocabulary
 
-- Evidence: Before ADR 0037, `.agents/plans/README.md` listed only `Draft`, `Accepted`, `Implemented`, and `Superseded` for plan lifecycle states. `.agents/plans/PLAN_TEMPLATE.md` started new plans at `Status: Draft`, and `.agents/plans/P-scaffold-plugin-project.md` moved directly from `Accepted` to `Implemented`.
+- Evidence: Before ADR 0037, `.agents/plans/README.md` listed only `Draft`, `Accepted`, `Implemented`, and `Superseded` for plan lifecycle states. `.agents/plans/PLAN_TEMPLATE.md` started new plans at `Status: Draft`, and `.agents/plans/PLAN-scaffold-plugin-project.md` moved directly from `Accepted` to `Implemented`.
 - Impact: Plans that were under review, approved but not yet executing, actively executing, blocked, deferred, rejected, released, or archived had no clear status value. Agents and maintainers could encode these states inconsistently in notes instead of the `Status` field.
 - Proposal: Adopt the canonical status set `Draft`, `Approved`, `In Progress`, `Blocked`, `Implemented`, and `Closed`. Require `Closed` plans to carry `Close-Reason: Released`, `Rejected`, `Superseded`, `Deferred`, or `Archived`. Treat `Accepted` as the old readiness status, `Implementing` as a non-canonical alias for `In Progress`, and `Defered` as a typo for `Deferred`.
 

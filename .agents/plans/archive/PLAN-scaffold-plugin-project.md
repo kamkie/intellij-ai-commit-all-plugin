@@ -1,6 +1,6 @@
 # Plan: Scaffold Plugin Project
 
-Plan-ID: P-scaffold-plugin-project
+Plan-ID: PLAN-scaffold-plugin-project
 
 Status: Closed
 

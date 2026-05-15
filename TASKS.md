@@ -145,14 +145,14 @@ Archived as of `v0.1.0-alpha.1` release preparation.
 
 ### Scaffold Plugin Project
 
-- [x] T-SCAFFOLD-001: Add Gradle Kotlin DSL project files. (Plan `P-scaffold-plugin-project`, Task 1)
-- [x] T-SCAFFOLD-002: Configure the IntelliJ Platform Gradle Plugin. (Plan `P-scaffold-plugin-project`, Task 1)
-- [x] T-SCAFFOLD-003: Add Kotlin/JVM configuration. (Plan `P-scaffold-plugin-project`, Task 1)
-- [x] T-SCAFFOLD-004: Add plugin descriptor at `src/main/resources/META-INF/plugin.xml`. (Plan `P-scaffold-plugin-project`, Task 2)
-- [x] T-SCAFFOLD-005: Identify JetBrains AI Assistant plugin dependency ID for IntelliJ Platform 2026.1: `com.intellij.ml.llm`. (Plan `P-scaffold-plugin-project`, Task 2)
-- [x] T-SCAFFOLD-006: Declare JetBrains AI Assistant as a required plugin dependency. (Plan `P-scaffold-plugin-project`, Task 2)
-- [x] T-SCAFFOLD-007: Add a base package for plugin code. (Plan `P-scaffold-plugin-project`, Task 1)
-- [x] T-SCAFFOLD-008: Verify `runIde` starts a sandbox IDE. (Plan `P-scaffold-plugin-project`, Task 3)
+- [x] T-SCAFFOLD-001: Add Gradle Kotlin DSL project files. (Plan `PLAN-scaffold-plugin-project`, Task 1)
+- [x] T-SCAFFOLD-002: Configure the IntelliJ Platform Gradle Plugin. (Plan `PLAN-scaffold-plugin-project`, Task 1)
+- [x] T-SCAFFOLD-003: Add Kotlin/JVM configuration. (Plan `PLAN-scaffold-plugin-project`, Task 1)
+- [x] T-SCAFFOLD-004: Add plugin descriptor at `src/main/resources/META-INF/plugin.xml`. (Plan `PLAN-scaffold-plugin-project`, Task 2)
+- [x] T-SCAFFOLD-005: Identify JetBrains AI Assistant plugin dependency ID for IntelliJ Platform 2026.1: `com.intellij.ml.llm`. (Plan `PLAN-scaffold-plugin-project`, Task 2)
+- [x] T-SCAFFOLD-006: Declare JetBrains AI Assistant as a required plugin dependency. (Plan `PLAN-scaffold-plugin-project`, Task 2)
+- [x] T-SCAFFOLD-007: Add a base package for plugin code. (Plan `PLAN-scaffold-plugin-project`, Task 1)
+- [x] T-SCAFFOLD-008: Verify `runIde` starts a sandbox IDE. (Plan `PLAN-scaffold-plugin-project`, Task 3)
 - [x] T-SCAFFOLD-009: Add a top-level `LICENSE` file. (ADR 0018)
 - [x] T-SCAFFOLD-010: Do not add `NOTICE` initially; add one later only if attribution needs or bundled dependencies require it. (ADR 0018)
 
@@ -162,7 +162,7 @@ Archived as of `v0.1.0-alpha.1` release preparation.
 
 ### Validation
 
-- [x] T-VAL-001: Run Gradle build. (Plan `P-scaffold-plugin-project`, Task 3)
+- [x] T-VAL-001: Run Gradle build. (Plan `PLAN-scaffold-plugin-project`, Task 3)
 
 ### Documentation
 

@@ -14,7 +14,8 @@ _None yet._
 
 ### Changed
 
-_None yet._
+- Changed plan IDs to use the `PLAN-<short-kebab-slug>` format.
+- Changed active and archived proposal filename rules so filenames start with their stable `proposal_id`.
 
 ## [v0.1.0-alpha.1] - 2026-05-15
 
@@ -26,7 +27,7 @@ _None yet._
 - Added `docs/proposals/` with proposal rules, a proposal template, and archive guidance for repository analysis documents.
 - Added a clickable ADR index to `docs/decisions/README.md`.
 - Added `scripts/validate-docs.ps1` for documentation consistency checks.
-- Added accepted plan `P-scaffold-plugin-project` for the first executable plugin scaffold.
+- Added accepted plan `PLAN-scaffold-plugin-project` for the first executable plugin scaffold.
 - Added ADR 0035 to store open questions with decision records.
 - Added ADR 0036 requiring plan filenames to include their stable `Plan-ID`.
 - Added ADR 0037 defining the compact plan status lifecycle.
@@ -47,7 +48,7 @@ _None yet._
 - Allowed the future Gradle Wrapper jar through `.gitignore` and named wrapper files in the scaffold plan.
 - Clarified Marketplace documentation versus release metadata task ownership.
 - Marked `PROP-repository-analysis` completed after implementing accepted findings.
-- Renamed the active scaffold plan file to include `P-scaffold-plugin-project`.
+- Renamed the active scaffold plan file to include `PLAN-scaffold-plugin-project`.
 - Updated plan guidance and the plan template to surface readiness, open questions, and implementation progress.
 - Marked `PROP-plan-status-vocabulary` completed after implementing accepted findings.
 - Archived completed plans, completed proposals, and completed task entries for the first scaffold prerelease.

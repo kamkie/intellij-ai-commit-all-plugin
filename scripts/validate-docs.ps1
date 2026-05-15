@@ -66,7 +66,7 @@ $planFiles = Get-ChildItem -LiteralPath (Join-Path $repoRoot '.agents/plans') -R
 foreach ($plan in $planFiles) {
     $relative = Get-RelativePath $plan.FullName
     $text = Get-Content -Raw -LiteralPath $plan.FullName
-    $planIdMatch = [regex]::Match($text, '(?m)^Plan-ID:\s+(P-[A-Za-z0-9][A-Za-z0-9-]*)\s*$')
+    $planIdMatch = [regex]::Match($text, '(?m)^Plan-ID:\s+(PLAN-[A-Za-z0-9][A-Za-z0-9-]*)\s*$')
 
     if (-not $planIdMatch.Success) {
         Add-ValidationError "$relative is missing a stable Plan-ID"
@@ -142,6 +142,21 @@ foreach ($proposal in $proposalFiles) {
     foreach ($key in @('proposal_id', 'generated_at', 'purpose', 'scope')) {
         if ($frontMatter -notmatch "(?m)^${key}:\s+\S") {
             Add-ValidationError "$relative front matter is missing $key"
+        }
+    }
+
+    $proposalIdMatch = [regex]::Match($frontMatter, '(?m)^proposal_id:\s+(PROP-[A-Za-z0-9][A-Za-z0-9-]*)\s*$')
+    if (-not $proposalIdMatch.Success)
+    {
+        Add-ValidationError "$relative front matter has invalid proposal_id"
+    }
+    else
+    {
+        $proposalId = $proposalIdMatch.Groups[1].Value
+        $proposalBaseName = [System.IO.Path]::GetFileNameWithoutExtension($proposal.Name)
+        if ($proposalBaseName -ne $proposalId -and -not $proposalBaseName.StartsWith("$proposalId-", [System.StringComparison]::Ordinal))
+        {
+            Add-ValidationError "$relative filename must include proposal_id prefix $proposalId"
         }
     }
 

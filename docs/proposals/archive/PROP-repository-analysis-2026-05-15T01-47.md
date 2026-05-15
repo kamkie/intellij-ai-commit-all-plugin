@@ -173,7 +173,7 @@ comment: Implemented with `scripts/validate-docs.ps1` and testing guidance.
 
 - Evidence: `README.md:40` says no Gradle, Kotlin, or IntelliJ plugin scaffold exists. `TASKS.md:35` through `TASKS.md:42` lists scaffold tasks, and `rg --files -g "build.gradle*" -g "settings.gradle*" -g "src/**" -g "*.kt" -g "*.kts"` returned no scaffold or source files.
 - Impact: Many backlog items describe implementation behavior that cannot be compiled, run, or validated yet. Adding more process documentation before scaffolding increases documentation surface without reducing plugin delivery risk.
-- Proposal: Make the next implementation-oriented artifact an accepted `P-scaffold-plugin-project` plan covering Gradle Kotlin DSL, IntelliJ Platform Gradle Plugin, plugin descriptor, base package, AI Assistant dependency identification, and `runIde` validation.
+- Proposal: Make the next implementation-oriented artifact an accepted `PLAN-scaffold-plugin-project` plan covering Gradle Kotlin DSL, IntelliJ Platform Gradle Plugin, plugin descriptor, base package, AI Assistant dependency identification, and `runIde` validation.
 
 ```yaml
 status: done
@@ -181,7 +181,7 @@ decision: accepted
 priority: 4
 owner:
 updated: 2026-05-15
-comment: Implemented with accepted plan `P-scaffold-plugin-project`.
+comment: Implemented with accepted plan `PLAN-scaffold-plugin-project`.
 ```
 
 ## Smaller / Stylistic Items

@@ -1,6 +1,6 @@
 # Plan: <title>
 
-Plan-ID: P-<short-kebab-slug>
+Plan-ID: PLAN-<short-kebab-slug>
 
 Status: Draft
 

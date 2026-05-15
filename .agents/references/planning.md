@@ -20,15 +20,15 @@ Store active plans in `.agents/plans/`.
 Use `.agents/plans/PLAN_TEMPLATE.md` as the starting shape. Name plan files with the stable `Plan-ID` as the filename prefix, for example:
 
 ```text
-.agents/plans/P-scaffold-plugin-project.md
-.agents/plans/P-commit-tool-window-actions.md
+.agents/plans/PLAN-scaffold-plugin-project.md
+.agents/plans/PLAN-commit-tool-window-actions.md
 ```
 
 ## Plan Content
 
 A useful plan should include:
 
-- Stable `Plan-ID` in the form `P-<short-kebab-slug>`, not a strictly number-based ID.
+- Stable `Plan-ID` in the form `PLAN-<short-kebab-slug>`, not a strictly number-based ID.
 - Compact `Status`: `Draft`, `Approved`, `In Progress`, `Blocked`, `Implemented`, or `Closed`.
 - `Readiness` section that summarizes plan readiness, open questions, and implementation progress.
 - Goal.
@@ -42,8 +42,8 @@ A useful plan should include:
 ## Planning Rules
 
 - Keep plans short enough to maintain.
-- Give every plan a stable, human-readable `Plan-ID` such as `P-scaffold-plugin-project`; avoid strictly number-based IDs such as `P-0001`.
-- Include the stable `Plan-ID` in the plan filename.
+- Give every plan a stable, human-readable `Plan-ID` such as `PLAN-scaffold-plugin-project`; avoid strictly number-based IDs such as `PLAN-0001`.
+- Include the stable `Plan-ID` in the plan filename for active and archived plans.
 - Keep `Plan-ID` stable when plan title, filename, status, or wording changes.
 - Use only canonical plan statuses from `.agents/plans/README.md`; `Closed` plans must include a `Close-Reason`.
 - Do not duplicate the full backlog from `TASKS.md`.

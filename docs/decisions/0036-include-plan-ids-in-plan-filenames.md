@@ -12,9 +12,9 @@ The user requested that plans include the plan ID in the filename, consistent wi
 
 ## Decision
 
-Every implementation plan file under `.agents/plans/` must include its stable `Plan-ID` in the filename.
+Every implementation plan file under `.agents/plans/`, including `.agents/plans/archive/`, must include its stable `Plan-ID` in the filename.
 
-Use the `Plan-ID` as the filename prefix, for example `P-scaffold-plugin-project.md`.
+Use the `Plan-ID` as the filename prefix, for example `PLAN-scaffold-plugin-project.md`.
 
 Keep the `Plan-ID` stable when the plan title, filename, status, or wording changes. When renaming a plan, preserve the `Plan-ID` in the filename.
 
@@ -33,5 +33,5 @@ Keep the `Plan-ID` stable when the plan title, filename, status, or wording chan
 
 ## Follow-Up
 
-- Rename the active scaffold plan to include `P-scaffold-plugin-project`.
+- Rename the active scaffold plan to include `PLAN-scaffold-plugin-project`.
 - Update plan guidance and documentation validation.

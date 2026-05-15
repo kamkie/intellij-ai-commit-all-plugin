@@ -6,9 +6,9 @@ This directory holds task-specific implementation plans for work that is too lar
 
 - Create a plan when work spans multiple files or behavior areas.
 - Use `PLAN_TEMPLATE.md` as the starting point.
-- Give every plan a stable `Plan-ID` in the form `P-<short-kebab-slug>`, such as `P-scaffold-plugin-project`.
-- Include the stable `Plan-ID` in the plan filename, such as `P-scaffold-plugin-project.md`.
-- Do not use a strictly number-based plan ID such as `P-0001`; the ID should carry enough meaning to recognize the plan without its file path.
+- Give every plan a stable `Plan-ID` in the form `PLAN-<short-kebab-slug>`, such as `PLAN-scaffold-plugin-project`.
+- Include the stable `Plan-ID` in the plan filename, such as `PLAN-scaffold-plugin-project.md`.
+- Do not use a strictly number-based plan ID such as `PLAN-0001`; the ID should carry enough meaning to recognize the plan without its file path.
 - Keep plans focused on one task or milestone.
 - Link unresolved user input back to `docs/decisions/OPEN_QUESTIONS.md`, and move accepted project decisions or repository rule changes to `docs/decisions/`.
 - Follow `.agents/references/planning.md` and `.agents/references/execution.md` for plan readiness, per-task commits, and orchestrator or task-worker execution.
@@ -20,7 +20,7 @@ _none yet_
 
 ## Archived Plans
 
-- `P-scaffold-plugin-project` - Scaffold Plugin Project ([archive/P-scaffold-plugin-project.md](archive/P-scaffold-plugin-project.md)), archived as of 2026-05-15.
+- `PLAN-scaffold-plugin-project` - Scaffold Plugin Project ([archive/PLAN-scaffold-plugin-project.md](archive/PLAN-scaffold-plugin-project.md)), archived as of 2026-05-15.
 
 ## Lifecycle
 

@@ -81,7 +81,7 @@ For documentation-only changes, a focused content review and link/path check is 
 
 When asking AI to commit completed work, expect Conventional Commit messages with the metadata trailer block defined in [.gitmessage](../.gitmessage).
 
-When asking AI to create or execute a plan, expect a stable non-number-only `Plan-ID` such as `P-scaffold-plugin-project`.
+When asking AI to create or execute a plan, expect a stable non-number-only `Plan-ID` such as `PLAN-scaffold-plugin-project`.
 
 When asking AI to create a proposal, expect a stable `proposal_id` such as `PROP-repository-analysis`.
 

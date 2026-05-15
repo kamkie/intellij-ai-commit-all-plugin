@@ -14,7 +14,7 @@ The user requested that proposals also need a stable ID.
 
 ## Decision
 
-Every proposal must have a stable `proposal_id` in front matter.
+Every proposal must have a stable `proposal_id` in front matter and in its active or archived filename.
 
 Use the format `PROP-<short-kebab-slug>`, for example:
 
@@ -26,13 +26,13 @@ The proposal ID should be human-readable enough to recognize the proposal withou
 
 When a proposal is split, keep the original ID for the closest surviving proposal and assign new meaningful IDs to new proposals. Do not reuse a retired proposal ID for unrelated work.
 
-Proposal index entries, handoffs, reviews, ADRs, tasks, and commit references that refer to proposal work should include the stable `proposal_id` when practical.
+Proposal filenames, index entries, handoffs, reviews, ADRs, tasks, and commit references that refer to proposal work should include the stable `proposal_id` when practical.
 
 ## Consequences
 
 - Proposals can be referenced reliably without depending only on timestamped filenames.
 - Proposal IDs remain distinct from plan IDs and per-finding IDs.
-- Proposal front matter has one additional required key.
+- Proposal front matter has one additional required key, and proposal filenames carry the same stable ID.
 - Agents must choose meaningful proposal IDs and preserve them during archive moves or proposal edits.
 
 ## Alternatives Considered

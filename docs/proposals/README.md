@@ -22,8 +22,8 @@ _none yet_
 
 Archived proposals have completed or otherwise retired tracker rows and live under `archive/`.
 
-- `PROP-repository-analysis` - Repository Analysis Proposal ([archive/repository-analysis-2026-05-15T01-47.md](archive/repository-analysis-2026-05-15T01-47.md)), archived as of 2026-05-15.
-- `PROP-plan-status-vocabulary` - Plan Status Vocabulary Proposal ([archive/plan-status-vocabulary-2026-05-15T02-51.md](archive/plan-status-vocabulary-2026-05-15T02-51.md)), archived as of 2026-05-15.
+- `PROP-repository-analysis` - Repository Analysis Proposal ([archive/PROP-repository-analysis-2026-05-15T01-47.md](archive/PROP-repository-analysis-2026-05-15T01-47.md)), archived as of 2026-05-15.
+- `PROP-plan-status-vocabulary` - Plan Status Vocabulary Proposal ([archive/PROP-plan-status-vocabulary-2026-05-15T02-51.md](archive/PROP-plan-status-vocabulary-2026-05-15T02-51.md)), archived as of 2026-05-15.
 
 Index entries should include the proposal ID, title, file link, and current status date when applicable.
 
@@ -46,24 +46,25 @@ Do not create a proposal for:
 
 ## File Naming
 
-Proposal files must live under `docs/proposals/`.
+Proposal files must live under `docs/proposals/` or `docs/proposals/archive/`.
 
 Use this filename shape:
 
 ```text
-<topic>-<YYYY-MM-DD>T<HH-MM>.md
+<proposal_id>-<YYYY-MM-DD>T<HH-MM>.md
 ```
 
 Rules:
 
-- Use lowercase ASCII and hyphen-separated words.
+- Start every active and archived proposal filename with its stable `proposal_id`.
+- Use ASCII and hyphen-separated words; keep the required `PROP-` prefix uppercase.
 - Use local creation time with no seconds and no timezone.
-- Keep the topic short and descriptive, for example `repository-analysis`, `workflow-duplication-review`, or `docs-cleanup-proposal`.
-- Do not overwrite an older proposal with the same topic. Create a new timestamped file and link to older context when needed.
+- Keep the proposal ID short and descriptive, for example `PROP-repository-analysis`, `PROP-workflow-duplication-review`, or `PROP-docs-cleanup`.
+- Do not overwrite an older proposal with the same proposal ID or topic. Create a new timestamped file and link to older context when needed.
 
 ## Proposal IDs
 
-Every proposal must have a stable `proposal_id` in its front matter.
+Every proposal must have a stable `proposal_id` in its front matter and filename.
 
 Use the format `PROP-<short-kebab-slug>`, for example:
 
@@ -76,6 +77,7 @@ Rules:
 - Use an uppercase `PROP-` prefix and a lowercase ASCII kebab-case slug.
 - Keep the ID readable enough to identify the proposal without relying on title, filename, or index position.
 - Keep the ID stable when the title, filename, status, wording, or archive location changes.
+- Preserve the `proposal_id` as the filename prefix for active and archived proposal files.
 - When a proposal is split, keep the original ID for the closest surviving proposal and assign new meaningful IDs to new proposals.
 - Do not reuse a retired proposal ID for unrelated work.
 

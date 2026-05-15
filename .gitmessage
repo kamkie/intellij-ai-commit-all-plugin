@@ -3,7 +3,7 @@
 [optional body: explain what changed and why]
 
 Project-Source: <plan|plan-task|task|prompt|manual>
-Project-Plan: <P-slug plan ID and/or .agents/plans/*.md or omit>
+Project-Plan: <PLAN-slug plan ID and/or .agents/plans/*.md or omit>
 Project-Plan-Task: <plan task name or omit>
 Project-Task: <TASKS.md T-AREA-NNN task ID/title or omit>
 Project-Prompt: <short direct-request summary or omit>

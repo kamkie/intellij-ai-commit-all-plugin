@@ -16,13 +16,13 @@ The user requested that plans have stable IDs, but not IDs that are strictly num
 
 Every plan must have a stable `Plan-ID`.
 
-Use the format `P-<short-kebab-slug>`, for example:
+Use the format `PLAN-<short-kebab-slug>`, for example:
 
-- `P-scaffold-plugin-project`
-- `P-commit-tool-window-actions`
-- `P-local-repository-e2e-tests`
+- `PLAN-scaffold-plugin-project`
+- `PLAN-commit-tool-window-actions`
+- `PLAN-local-repository-e2e-tests`
 
-Do not use strictly number-based plan IDs such as `P-0001`.
+Do not use strictly number-based plan IDs such as `PLAN-0001`.
 
 The plan ID should be human-readable enough to recognize the plan without relying on the file path. Keep the `Plan-ID` stable when the title, filename, status, or wording changes.
 
