@@ -8,6 +8,10 @@ Every project decision must be recorded as an ADR before or alongside the implem
 
 Every repository rule change must be recorded as a new ADR or as an update that supersedes an existing ADR before or alongside the rule edit.
 
+When a requested change requires creating an ADR, create the ADR first and stop. Continue with the governed implementation, workflow guidance, backlog, validation rules, or related behavior only after the user has reviewed and explicitly accepted the ADR.
+
+When a requested change needs an implementation plan, create or update the plan first and stop. Implementation may start only after the user has reviewed and explicitly approved the plan.
+
 Routine task execution notes do not need ADRs unless they choose or change project direction, repository rules, compatibility, user behavior, validation expectations, or future maintenance policy.
 
 ## When To Add A Decision
@@ -90,4 +94,4 @@ Set `decision-makers` to the configured Git identity in `Name <email>` form.
 | [ard-0038](ard-0038-use-plan-prefix-and-filename-stable-ids.md)                    | Use PLAN Prefix And Filename Stable IDs                    | Accepted | 2026-05-15 |
 | [ard-0039](ard-0039-use-madr-adr-format-and-ard-filenames.md)                      | Use MADR ADR Format And ARD Filenames                      | Accepted | 2026-05-15 |
 | [ard-0040](ard-0040-use-git-identity-for-adr-decision-makers.md)                   | Use Git Identity For ADR Decision Makers                   | Accepted | 2026-05-15 |
-| [ard-0041](ard-0041-gate-adr-and-plan-implementation.md)                           | Gate ADR And Plan Implementation                           | Proposed | 2026-05-15 |
+| [ard-0041](ard-0041-gate-adr-and-plan-implementation.md)                           | Gate ADR And Plan Implementation                           | Accepted | 2026-05-15 |

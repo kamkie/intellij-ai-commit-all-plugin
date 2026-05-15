@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 date: 2026-05-15
 decision-makers: Kamil Kiewisz <kamkie@outlook.com>
 consulted: Codex
@@ -66,5 +66,5 @@ Compliance is checked through documentation review and by verifying that ADR-bac
 
 ## More Information
 
-- If accepted, update `AGENTS.md`, `.agents/references/planning.md`, `.agents/references/execution.md`, and `docs/decisions/README.md`.
-- If accepted, update validation or review guidance where practical to make the gate visible during handoff.
+- Update `AGENTS.md`, `.agents/references/planning.md`, `.agents/references/execution.md`, and `docs/decisions/README.md`.
+- Update validation or review guidance where practical to make the gate visible during handoff.

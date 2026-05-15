@@ -33,6 +33,7 @@ Use this guide when adding or updating repository documentation.
 - Give every proposal a stable `proposal_id` in the form `PROP-<short-kebab-slug>`, include it in active and archived filenames, keep it stable when title, filename, status, wording, or archive location changes, and do not reuse retired proposal IDs.
 - Mark blocked `TASKS.md` items with `depends on: Q-ID`, and tasks that answer questions with `resolves: Q-ID`.
 - Follow `docs/decisions/README.md` for project decisions and repository rule changes.
+- When a requested documentation or workflow change requires creating an ADR, create the ADR first and stop. Continue with governed docs only after the user reviews and explicitly accepts it.
 - Update documentation before or alongside behavior changes that affect users, validation, supported IDEs, or AI agent workflow.
 - Update `CHANGELOG.md` for notable user-facing, contributor-facing, compatibility, support, release, or workflow changes.
 - In orchestrated plan execution and release preparation, `CHANGELOG.md` maintenance belongs to the orchestrator; task workers may suggest entries but do not own final changelog edits.
@@ -50,3 +51,5 @@ See `docs/decisions/README.md` for required ADR topics, including:
 - Repository rule or workflow changes.
 
 Use the existing ADR structure for project decisions and repository rule changes.
+
+When an ADR is required for a requested change, create the ADR first and stop until the user explicitly accepts it.

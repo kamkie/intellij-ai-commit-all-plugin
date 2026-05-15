@@ -62,7 +62,9 @@ Run only one task worker at a time unless the approved plan explicitly marks tas
 - Prefer existing IntelliJ Platform and Gradle plugin conventions over custom infrastructure.
 - Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; do not add unrelated release or operations files outside that scope.
 - If the repo is still unscaffolded, do not assume Gradle, Kotlin, or plugin descriptor files exist.
-- Before implementing from an `Approved` plan, confirm every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.
+- If a requested change requires creating an ADR, create the ADR first and stop. Do not update the governed implementation, workflow guidance, backlog, validation rules, or related behavior until the user has reviewed and explicitly accepted the ADR.
+- If a requested change needs a plan, create or update the plan first and stop. Do not start implementation until the user has reviewed and explicitly approved the plan.
+- Before implementing from an `Approved` plan, confirm the approval was explicit and every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.
 
 ## Commit Rules
 
@@ -82,6 +84,10 @@ When creating a commit for AI-authored work:
 Use `Project-Source: prompt` for direct ad hoc user requests, `task` for `TASKS.md` items, `plan` or `plan-task` for approved plan work, and `manual` only for human-authored commits outside the AI workflow. For `TASKS.md` work, include the stable `T-AREA-NNN` task ID in `Project-Task:`.
 
 ## Stop Conditions
+
+Stop after creating a required ADR and wait for explicit user acceptance before changing the governed artifacts.
+
+Stop after creating or updating a required plan and wait for explicit user approval before implementation starts.
 
 Pause and ask for a decision when implementation depends on an unresolved product choice, such as direct dependency on proprietary AI Assistant APIs.
 

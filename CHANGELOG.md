@@ -18,6 +18,7 @@ _None yet._
 - Changed active and archived proposal filename rules so filenames start with their stable `proposal_id`.
 - Changed ADR files to use MADR 4.0.0 structure and `ard-0000-<slug>.md` filenames.
 - Changed ADR `decision-makers` metadata to use the configured Git username and email.
+- Added explicit ADR acceptance and plan approval gates before governed implementation can start.
 
 ## [v0.1.0-alpha.1] - 2026-05-15
 

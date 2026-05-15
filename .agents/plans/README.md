@@ -12,6 +12,7 @@ This directory holds task-specific implementation plans for work that is too lar
 - Keep plans focused on one task or milestone.
 - Link unresolved user input back to `docs/decisions/OPEN_QUESTIONS.md`, and move accepted project decisions or repository rule changes to `docs/decisions/`.
 - Follow `.agents/references/planning.md` and `.agents/references/execution.md` for plan readiness, per-task commits, and orchestrator or task-worker execution.
+- Creating or updating a plan is not approval to implement. Implementation may start only after explicit user review and approval.
 - Move closed plans to `archive/` only after the plan no longer needs active execution or release-preparation updates. Preserve the `Plan-ID`, filename, and close reason.
 
 ## Active Plans

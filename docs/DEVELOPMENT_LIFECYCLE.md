@@ -8,10 +8,13 @@ Use this lifecycle for changes that are larger than a direct documentation edit.
 - Check `docs/decisions/OPEN_QUESTIONS.md` for decisions that block the work.
 - Use `TASKS.md` for backlog scope, not as proof that a decision has been made.
 - Follow `docs/decisions/README.md` for project decisions and repository rule changes.
+- If the requested change requires creating an ADR, create the ADR first and stop. Continue only after user review and explicit acceptance.
 
 ## 2. Plan When Needed
 
 Create a plan in `.agents/plans/` when the work spans multiple files, changes behavior, or depends on unresolved technical choices.
+
+After creating or updating a required plan, stop for user review. Implementation may start only after explicit user approval and `Status: Approved`.
 
 Use `docs/proposals/` before planning when the task is to collect findings, duplications, simplifications, or improvement options for maintainer triage without immediate implementation.
 
@@ -25,7 +28,7 @@ A plan should state:
 
 Small docs-only changes do not need a plan.
 
-Before implementation starts from an approved plan, follow the readiness, per-task execution, and delegation rules in `.agents/references/planning.md` and `.agents/references/execution.md`.
+Before implementation starts from an approved plan, confirm explicit approval and follow the readiness, per-task execution, and delegation rules in `.agents/references/planning.md` and `.agents/references/execution.md`.
 
 The later release workflow takes over after implementation tasks and owns whole-release review, broader manual checks and tests, documentation update passes, and release artifact preparation.
 

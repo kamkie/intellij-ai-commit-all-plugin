@@ -52,6 +52,10 @@ Validation expected: gradle buildPlugin and gradle runIde startup.
 - Use `docs/proposals/README.md` before creating repository analysis or improvement proposal files.
 - Use `docs/decisions/` for project decisions and repository rule changes.
 
+If a requested change requires an ADR, expect the AI to create the ADR first and stop until you explicitly accept it.
+
+If a requested change needs an implementation plan, expect the AI to create or update the plan first and stop until you explicitly approve it.
+
 ## Constraints To State Explicitly
 
 - Minimum supported IntelliJ Platform version, currently 2026.1.
@@ -82,6 +86,8 @@ For documentation-only changes, a focused content review and link/path check is 
 When asking AI to commit completed work, expect Conventional Commit messages with the metadata trailer block defined in [.gitmessage](../.gitmessage).
 
 When asking AI to create or execute a plan, expect a stable non-number-only `Plan-ID` such as `PLAN-scaffold-plugin-project`.
+
+Implementation from a plan should start only after you review and explicitly approve that plan.
 
 When asking AI to create a proposal, expect a stable `proposal_id` such as `PROP-repository-analysis`.
 

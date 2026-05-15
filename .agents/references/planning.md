@@ -13,6 +13,8 @@ Create or update a plan when:
 
 Do not create a plan for small documentation cleanup unless the user asks for one.
 
+When a requested change needs a plan, create or update the plan first and stop. Do not start implementation until the user has reviewed and explicitly approved the plan.
+
 ## Plan Location
 
 Store active plans in `.agents/plans/`.
@@ -46,6 +48,8 @@ A useful plan should include:
 - Include the stable `Plan-ID` in the plan filename for active and archived plans.
 - Keep `Plan-ID` stable when plan title, filename, status, or wording changes.
 - Use only canonical plan statuses from `.agents/plans/README.md`; `Closed` plans must include a `Close-Reason`.
+- Treat `Approved` as an explicit user approval state, not an agent-assumed readiness label.
+- Do not implement from a plan until the user has reviewed it, explicitly approved it, and the plan status is `Approved`.
 - Do not duplicate the full backlog from `TASKS.md`.
 - Move unresolved user decisions to `docs/decisions/OPEN_QUESTIONS.md`.
 - Before implementation starts from an `Approved` plan, every plan question and required project decision must be answered, explicitly decided, or recorded as a documented assumption that the current user request allows.
@@ -66,6 +70,7 @@ A useful plan should include:
 
 Before editing code from a plan:
 
+- Confirm the plan has `Status: Approved` from explicit user approval.
 - Confirm every plan question and required decision is answered, decided, or explicitly assumed under the current request.
 - Update the plan status to `In Progress` when implementation starts and keep `## Readiness` current.
 - Identify files likely to change.

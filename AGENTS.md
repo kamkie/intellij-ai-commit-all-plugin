@@ -44,6 +44,8 @@ When instructions overlap, apply this project-specific order:
 - Identify the behavior and governing artifact before editing.
 - Do not load every AI instruction file automatically; start from this file and then read only the specific mapped guidance needed for the current task.
 - Follow `docs/decisions/README.md` for project decisions and repository rule changes.
+- When a requested change requires creating an ADR, create the ADR first and stop. Continue only after the user reviews and explicitly accepts it.
+- When work needs an implementation plan, create or update the plan first and stop. Start implementation only after the user reviews and explicitly approves the plan.
 - Update specs or docs before or alongside behavior changes when behavior changes.
 - Run validation that matches the diff and risk.
 - Review for bugs, missing validation, and API or IDE compatibility risk before handing off.
