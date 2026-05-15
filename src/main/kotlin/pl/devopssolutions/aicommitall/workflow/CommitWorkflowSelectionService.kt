@@ -3,7 +3,6 @@ package pl.devopssolutions.aicommitall.workflow
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.ChangeListManager
 import com.intellij.openapi.vcs.changes.LocalChangeList
 import com.intellij.vcs.commit.CommitWorkflowHandler
@@ -26,13 +25,16 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
             return CommitWorkflowSelectionResult.EmptySelection
         }
 
-        val changeLists = collectGitChangeLists(selection.trackedChanges)
+        val changeLists = CommitWorkflowSelectionItems.changeListsContaining(
+            trackedChanges = selection.trackedChanges,
+            changeLists = ChangeListManager.getInstance(project).changeLists,
+        )
         if (changeLists.isEmpty() && selection.trackedChanges.isNotEmpty()) {
             return CommitWorkflowSelectionResult.UnsupportedWorkflow("No Git changelist owns the selected tracked changes.")
         }
 
         val activeChangeList = chooseActiveChangeList(changeLists)
-        val inclusionItems = selection.toInclusionItems()
+        val inclusionItems = CommitWorkflowSelectionItems.inclusionItems(selection)
 
         if (!workflowUi.activate()) {
             return CommitWorkflowSelectionResult.UnsupportedWorkflow("The Commit tool window workflow could not be activated.")
@@ -55,17 +57,8 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
         }
     }
 
-    private fun collectGitChangeLists(trackedChanges: List<Change>): List<LocalChangeList> {
-        val trackedSet = trackedChanges.toSet()
-        return ChangeListManager.getInstance(project).changeLists
-            .filter { changeList -> changeList.changes.any { change -> change in trackedSet } }
-    }
-
     private fun chooseActiveChangeList(changeLists: List<LocalChangeList>): LocalChangeList =
         changeLists.firstOrNull() ?: ChangeListManager.getInstance(project).defaultChangeList
-
-    private fun GitChangeSelection.toInclusionItems(): List<Any> =
-        trackedChanges + unversionedFiles + resolvedConflictPaths
 
     companion object {
         fun getInstance(project: Project): CommitWorkflowSelectionService = project.service()
