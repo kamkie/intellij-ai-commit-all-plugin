@@ -95,3 +95,4 @@ Set `decision-makers` to the configured Git identity in `Name <email>` form.
 | [ard-0039](ard-0039-use-madr-adr-format-and-ard-filenames.md)                      | Use MADR ADR Format And ARD Filenames                      | Accepted | 2026-05-15 |
 | [ard-0040](ard-0040-use-git-identity-for-adr-decision-makers.md)                   | Use Git Identity For ADR Decision Makers                   | Accepted | 2026-05-15 |
 | [ard-0041](ard-0041-gate-adr-and-plan-implementation.md)                           | Gate ADR And Plan Implementation                           | Accepted | 2026-05-15 |
+| [ard-0042](ard-0042-record-plan-approval-identity.md)                               | Record Plan Approval Identity                              | Accepted | 2026-05-15 |

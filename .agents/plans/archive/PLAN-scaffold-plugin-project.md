@@ -9,6 +9,7 @@ Close-Reason: Archived
 ## Readiness
 
 - Plan readiness: Complete.
+- Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Open questions: None.
 - Implementation progress: Implemented in commits `f6fb83e`, `de91f49`, and `b84bc3d`; archived during `v0.1.0-alpha.1` release preparation.
 

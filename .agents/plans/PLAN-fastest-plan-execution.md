@@ -8,8 +8,9 @@ Filename: `.agents/plans/PLAN-fastest-plan-execution.md`
 
 ## Readiness
 
-- Plan readiness: Approved by user; ready to orchestrate implementation.
-- Open questions: None known.
+- Plan readiness: Approved; ready to orchestrate implementation.
+- Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Open questions: None.
 - Implementation progress: Not started.
 
 ## Goal

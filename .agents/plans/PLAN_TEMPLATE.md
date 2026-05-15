@@ -11,6 +11,7 @@ Filename: `.agents/plans/P-<short-kebab-slug>.md`
 ## Readiness
 
 - Plan readiness: Not ready until open questions and required decisions are resolved.
+- Approved by:
 - Open questions: Yes; see `## Open Questions`.
 - Implementation progress: Not started.
 

@@ -59,6 +59,7 @@ if (Test-Path -LiteralPath $tasksPath) {
 
 $allowedPlanStatuses = @('Draft', 'Approved', 'In Progress', 'Blocked', 'Implemented', 'Closed')
 $allowedPlanCloseReasons = @('Released', 'Rejected', 'Superseded', 'Deferred', 'Archived')
+$planStatusesRequiringApprovalIdentity = @('Approved', 'In Progress', 'Blocked', 'Implemented', 'Closed')
 
 $planFiles = Get-ChildItem -LiteralPath (Join-Path $repoRoot '.agents/plans') -Recurse -File -Filter '*.md' |
     Where-Object { $_.Name -notin @('README.md', 'PLAN_TEMPLATE.md') }
@@ -77,6 +78,7 @@ foreach ($plan in $planFiles) {
         }
     }
 
+    $planStatus = $null
     $statusMatch = [regex]::Match($text, '(?m)^Status:\s+(.+?)\s*$')
     if (-not $statusMatch.Success) {
         Add-ValidationError "$relative is missing a Status"
@@ -99,8 +101,39 @@ foreach ($plan in $planFiles) {
         }
     }
 
-    if ($text -notmatch '(?m)^## Readiness\s*$') {
+    $readinessMatch = [regex]::Match($text, '(?ms)^## Readiness\s*(.*?)(?=^## |\z)')
+    if (-not $readinessMatch.Success) {
         Add-ValidationError "$relative is missing a ## Readiness section"
+    } else {
+        $readinessText = $readinessMatch.Groups[1].Value
+        $approvedByMatch = [regex]::Match($readinessText, '(?m)^-\s+Approved by:\s*(.*?)\s*$')
+        $approvedBy = if ($approvedByMatch.Success) { $approvedByMatch.Groups[1].Value.Trim() } else { '' }
+
+        if ($readinessText -match '(?m)^-\s+Open questions:\s+None known\.\s*$') {
+            Add-ValidationError "$relative uses ambiguous readiness wording; use 'Open questions: None.'"
+        }
+
+        if ($planStatus -ne $null) {
+            $requiresApprovalIdentity = $planStatusesRequiringApprovalIdentity -contains $planStatus
+            if ($requiresApprovalIdentity -and [string]::IsNullOrWhiteSpace($approvedBy)) {
+                Add-ValidationError "$relative has Status '$planStatus' but is missing Approved by in ## Readiness"
+            }
+
+            if (-not $requiresApprovalIdentity -and -not [string]::IsNullOrWhiteSpace($approvedBy)) {
+                Add-ValidationError "$relative has Status '$planStatus' but must not claim approval in Approved by"
+            }
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($approvedBy)) {
+            if ($approvedBy -match '(?i)^(user|maintainer|pending|none|none known|unknown|n/a|tbd)$') {
+                Add-ValidationError "$relative has ambiguous Approved by value '$approvedBy'"
+            }
+
+            if (($approvedBy.Contains('<') -or $approvedBy.Contains('>')) -and
+                $approvedBy -notmatch '^[^<>\r\n]+\s+<[^<>\s@]+@[^<>\s@]+\.[^<>\s@]+>$') {
+                Add-ValidationError "$relative Approved by must use Name <email> form when an email identity is used"
+            }
+        }
     }
 }
 

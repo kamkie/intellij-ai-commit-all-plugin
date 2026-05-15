@@ -8,8 +8,9 @@ Filename: `.agents/plans/PLAN-ai-assistant-message-generation.md`
 
 ## Readiness
 
-- Plan readiness: Approved by user; ready for implementation.
-- Open questions: None known.
+- Plan readiness: Approved; ready for implementation.
+- Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Open questions: None.
 - Implementation progress: Not started.
 
 ## Goal

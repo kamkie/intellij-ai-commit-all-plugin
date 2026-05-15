@@ -64,7 +64,7 @@ Run only one task worker at a time unless the approved plan explicitly marks tas
 - If the repo is still unscaffolded, do not assume Gradle, Kotlin, or plugin descriptor files exist.
 - If a requested change requires creating an ADR, create the ADR first and stop. Do not update the governed implementation, workflow guidance, backlog, validation rules, or related behavior until the user has reviewed and explicitly accepted the ADR.
 - If a requested change needs a plan, create or update the plan first and stop. Do not start implementation until the user has reviewed and explicitly approved the plan.
-- Before implementing from an `Approved` plan, confirm the approval was explicit and every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.
+- Before implementing from an `Approved` plan, confirm the approval was explicit, `Approved by:` records the approver, and every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.
 
 ## Commit Rules
 

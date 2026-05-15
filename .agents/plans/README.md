@@ -12,7 +12,7 @@ This directory holds task-specific implementation plans for work that is too lar
 - Keep plans focused on one task or milestone.
 - Link unresolved user input back to `docs/decisions/OPEN_QUESTIONS.md`, and move accepted project decisions or repository rule changes to `docs/decisions/`.
 - Follow `.agents/references/planning.md` and `.agents/references/execution.md` for plan readiness, per-task commits, and orchestrator or task-worker execution.
-- Creating or updating a plan is not approval to implement. Implementation may start only after explicit user review and approval.
+- Creating or updating a plan is not approval to implement. Implementation may start only after explicit user review and approval, recorded in `Approved by:` when the plan becomes approved.
 - Move closed plans to `archive/` only after the plan no longer needs active execution or release-preparation updates. Preserve the `Plan-ID`, filename, and close reason.
 
 ## Active Plans
@@ -37,7 +37,7 @@ This directory holds task-specific implementation plans for work that is too lar
 Use the smallest status set that preserves traceability:
 
 - Draft: the plan is being shaped and may contain unanswered questions.
-- Approved: the plan is ready to implement; all open questions and required decisions are answered, explicitly decided, moved to an owner document, or documented as allowed assumptions.
+- Approved: the plan is ready to implement; all open questions and required decisions are answered, explicitly decided, moved to an owner document, or documented as allowed assumptions, and `Approved by:` records the approver.
 - In Progress: implementation has started.
 - Blocked: implementation cannot proceed; link the blocker in `## Readiness`, `## Open Questions`, or the relevant owner document.
 - Implemented: planned changes are complete and task validation is done; release workflow may still remain.
@@ -50,7 +50,14 @@ Update the status in the plan file instead of leaving stale instructions.
 Every plan must keep a short `## Readiness` section near the top with:
 
 - Plan readiness.
+- Approval identity for approved and post-approval plans.
 - Open questions.
 - Implementation progress.
+
+Approved and post-approval plans with `Status: Approved`, `In Progress`, `Blocked`, `Implemented`, or `Closed` must include a non-empty `Approved by:` entry in `## Readiness`.
+
+Use the configured Git identity in `Name <email>` form when the configured repository user approved the plan, resolved from `git config user.name` and `git config user.email` when approval is recorded. Use another approver name only when the current user request explicitly supplies it.
+
+Draft or otherwise unapproved plans must not claim approval. They may omit `Approved by:` or leave it empty.
 
 Keep `Plan-ID` stable when the plan title, filename, status, or wording changes. If a plan is renamed, preserve the `Plan-ID` in the filename. If a plan is split, keep the original ID for the closest surviving plan and assign new meaningful IDs to new plans.

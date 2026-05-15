@@ -32,7 +32,7 @@ A useful plan should include:
 
 - Stable `Plan-ID` in the form `PLAN-<short-kebab-slug>`, not a strictly number-based ID.
 - Compact `Status`: `Draft`, `Approved`, `In Progress`, `Blocked`, `Implemented`, or `Closed`.
-- `Readiness` section that summarizes plan readiness, open questions, and implementation progress.
+- `Readiness` section that summarizes plan readiness, approval identity when approved, open questions, and implementation progress.
 - Goal.
 - Non-goals.
 - Assumptions.
@@ -49,7 +49,9 @@ A useful plan should include:
 - Keep `Plan-ID` stable when plan title, filename, status, or wording changes.
 - Use only canonical plan statuses from `.agents/plans/README.md`; `Closed` plans must include a `Close-Reason`.
 - Treat `Approved` as an explicit user approval state, not an agent-assumed readiness label.
-- Do not implement from a plan until the user has reviewed it, explicitly approved it, and the plan status is `Approved`.
+- Do not implement from a plan until the user has reviewed it, explicitly approved it, the plan status is `Approved`, and `Approved by:` records the approver.
+- For approved and post-approval plans, set `Approved by:` to the configured Git identity in `Name <email>` form unless the current user request explicitly supplies another approver name.
+- Draft or otherwise unapproved plans must not claim approval; omit `Approved by:` or leave it empty.
 - Do not duplicate the full backlog from `TASKS.md`.
 - Move unresolved user decisions to `docs/decisions/OPEN_QUESTIONS.md`.
 - Before implementation starts from an `Approved` plan, every plan question and required project decision must be answered, explicitly decided, or recorded as a documented assumption that the current user request allows.
@@ -71,6 +73,7 @@ A useful plan should include:
 Before editing code from a plan:
 
 - Confirm the plan has `Status: Approved` from explicit user approval.
+- Confirm `Approved by:` records the approver.
 - Confirm every plan question and required decision is answered, decided, or explicitly assumed under the current request.
 - Update the plan status to `In Progress` when implementation starts and keep `## Readiness` current.
 - Identify files likely to change.
