@@ -24,8 +24,29 @@ internal class CommitWorkflowExecutionService(
         return CommitWorkflowExecutionResult.Started
     }
 
+    fun executeCommitAndPush(workflowHandler: CommitWorkflowHandler?): CommitWorkflowExecutionResult {
+        if (workflowHandler == null) {
+            return CommitWorkflowExecutionResult.MissingWorkflow
+        }
+
+        val executor = workflowHandler.getExecutor(GIT_COMMIT_AND_PUSH_EXECUTOR_ID)
+            ?: return CommitWorkflowExecutionResult.UnsupportedExecutor
+        if (!workflowHandler.isExecutorEnabled(executor)) {
+            return CommitWorkflowExecutionResult.DisabledExecutor
+        }
+
+        scheduler.schedule {
+            if (workflowHandler.isExecutorEnabled(executor)) {
+                workflowHandler.execute(executor)
+            }
+        }
+        return CommitWorkflowExecutionResult.Started
+    }
+
     companion object {
         fun getInstance(project: Project): CommitWorkflowExecutionService = project.service()
+
+        private const val GIT_COMMIT_AND_PUSH_EXECUTOR_ID = "Git.Commit.And.Push.Executor"
     }
 }
 
@@ -48,4 +69,5 @@ internal enum class CommitWorkflowExecutionResult {
     Started,
     MissingWorkflow,
     UnsupportedExecutor,
+    DisabledExecutor,
 }

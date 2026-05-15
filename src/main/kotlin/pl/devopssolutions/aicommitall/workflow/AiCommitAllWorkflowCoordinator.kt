@@ -99,19 +99,25 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
             AiCommitAllWorkflowMode.Commit ->
                 CommitWorkflowExecutionService.getInstance(project)
                     .executeCommit(workflowHandler)
-                    .toWorkflowResult()
+                    .toWorkflowResult(AiCommitAllWorkflowStopReason.CommitExecutionUnavailable)
             AiCommitAllWorkflowMode.CommitAndPush ->
-                AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.PushExecutionUnavailable)
+                CommitWorkflowExecutionService.getInstance(project)
+                    .executeCommitAndPush(workflowHandler)
+                    .toWorkflowResult(AiCommitAllWorkflowStopReason.PushExecutionUnavailable)
         }
 
-    private fun CommitWorkflowExecutionResult.toWorkflowResult(): AiCommitAllWorkflowResult =
+    private fun CommitWorkflowExecutionResult.toWorkflowResult(
+        unavailableReason: AiCommitAllWorkflowStopReason,
+    ): AiCommitAllWorkflowResult =
         when (this) {
             CommitWorkflowExecutionResult.Started ->
                 AiCommitAllWorkflowResult.Started
             CommitWorkflowExecutionResult.MissingWorkflow ->
                 AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
             CommitWorkflowExecutionResult.UnsupportedExecutor ->
-                AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.CommitExecutionUnavailable)
+                AiCommitAllWorkflowResult.Stopped(unavailableReason)
+            CommitWorkflowExecutionResult.DisabledExecutor ->
+                AiCommitAllWorkflowResult.Stopped(unavailableReason)
         }
 
     private fun stopped(reason: AiCommitAllWorkflowStopReason): CompletableFuture<AiCommitAllWorkflowResult> =
