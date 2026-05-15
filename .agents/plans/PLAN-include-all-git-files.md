@@ -2,13 +2,13 @@
 
 Plan-ID: PLAN-include-all-git-files
 
-Status: Draft
+Status: Approved
 
 Filename: `.agents/plans/PLAN-include-all-git-files.md`
 
 ## Readiness
 
-- Plan readiness: Ready for user review; implementation requires explicit approval.
+- Plan readiness: Approved by user; ready for implementation.
 - Open questions: None known.
 - Implementation progress: Not started.
 

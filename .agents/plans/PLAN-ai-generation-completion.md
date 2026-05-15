@@ -2,13 +2,13 @@
 
 Plan-ID: PLAN-ai-generation-completion
 
-Status: Draft
+Status: Approved
 
 Filename: `.agents/plans/PLAN-ai-generation-completion.md`
 
 ## Readiness
 
-- Plan readiness: Ready for user review; implementation requires explicit approval.
+- Plan readiness: Approved by user; ready for implementation.
 - Open questions: None known.
 - Implementation progress: Not started.
 
