@@ -24,8 +24,10 @@ import java.lang.reflect.Proxy
 import java.util.concurrent.CompletableFuture
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 internal class AiCommitAllActionsTest {
     @Test
@@ -66,6 +68,50 @@ internal class AiCommitAllActionsTest {
         assertNull(starter.mode)
     }
 
+    @Test
+    fun `action update applies enabled availability`() {
+        val action = AiCommitAllCommitAction(
+            workflowStarter = CapturingWorkflowStarter(),
+            availabilityProvider = StaticAvailabilityProvider(AiCommitAllWorkflowActionAvailability.Enabled),
+        )
+        val event = testEvent(testDataContext(testProject()))
+
+        action.update(event)
+
+        assertTrue(event.presentation.isVisible)
+        assertTrue(event.presentation.isEnabled)
+    }
+
+    @Test
+    fun `action update applies disabled availability`() {
+        val action = AiCommitAllCommitAction(
+            workflowStarter = CapturingWorkflowStarter(),
+            availabilityProvider = StaticAvailabilityProvider(AiCommitAllWorkflowActionAvailability.Disabled),
+        )
+        val event = testEvent(testDataContext(testProject()))
+
+        action.update(event)
+
+        assertTrue(event.presentation.isVisible)
+        assertFalse(event.presentation.isEnabled)
+    }
+
+    @Test
+    fun `action update hides without project`() {
+        val provider = CapturingAvailabilityProvider(AiCommitAllWorkflowActionAvailability.Enabled)
+        val action = AiCommitAllCommitAction(
+            workflowStarter = CapturingWorkflowStarter(),
+            availabilityProvider = provider,
+        )
+        val event = testEvent(DataContext.EMPTY_CONTEXT)
+
+        action.update(event)
+
+        assertFalse(event.presentation.isVisible)
+        assertFalse(event.presentation.isEnabled)
+        assertNull(provider.mode)
+    }
+
     private class CapturingWorkflowStarter : AiCommitAllWorkflowStarter {
         var project: Project? = null
         var mode: AiCommitAllWorkflowMode? = null
@@ -85,6 +131,29 @@ internal class AiCommitAllActionsTest {
             return CompletableFuture.completedFuture(AiCommitAllWorkflowResult.Started)
         }
     }
+
+    private open class CapturingAvailabilityProvider(
+        private val availability: AiCommitAllWorkflowActionAvailability,
+    ) : AiCommitAllWorkflowAvailabilityProvider {
+        var project: Project? = null
+        var mode: AiCommitAllWorkflowMode? = null
+        var dataContext: DataContext? = null
+
+        override fun availability(
+            project: Project,
+            mode: AiCommitAllWorkflowMode,
+            dataContext: DataContext,
+        ): AiCommitAllWorkflowActionAvailability {
+            this.project = project
+            this.mode = mode
+            this.dataContext = dataContext
+            return availability
+        }
+    }
+
+    private class StaticAvailabilityProvider(
+        availability: AiCommitAllWorkflowActionAvailability,
+    ) : CapturingAvailabilityProvider(availability)
 
     private fun testEvent(
         dataContext: DataContext,

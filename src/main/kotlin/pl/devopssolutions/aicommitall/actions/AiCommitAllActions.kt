@@ -5,28 +5,47 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.vcs.VcsDataKeys
+import pl.devopssolutions.aicommitall.vcs.GitChangeSelectionService
+import pl.devopssolutions.aicommitall.vcs.GitVcsSupportStatus
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowCoordinator
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowMode
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowResult
+import pl.devopssolutions.aicommitall.workflow.CommitWorkflowExecutionService
 import java.awt.event.InputEvent
 import java.util.concurrent.CompletableFuture
 
 internal class AiCommitAllCommitAction(
     workflowStarter: AiCommitAllWorkflowStarter = ProjectAiCommitAllWorkflowStarter,
-) : AiCommitAllWorkflowAction(AiCommitAllWorkflowMode.Commit, workflowStarter)
+    availabilityProvider: AiCommitAllWorkflowAvailabilityProvider = ProjectAiCommitAllWorkflowAvailabilityProvider,
+) : AiCommitAllWorkflowAction(AiCommitAllWorkflowMode.Commit, workflowStarter, availabilityProvider)
 
 internal class AiCommitAllCommitAndPushAction(
     workflowStarter: AiCommitAllWorkflowStarter = ProjectAiCommitAllWorkflowStarter,
-) : AiCommitAllWorkflowAction(AiCommitAllWorkflowMode.CommitAndPush, workflowStarter)
+    availabilityProvider: AiCommitAllWorkflowAvailabilityProvider = ProjectAiCommitAllWorkflowAvailabilityProvider,
+) : AiCommitAllWorkflowAction(AiCommitAllWorkflowMode.CommitAndPush, workflowStarter, availabilityProvider)
 
 internal abstract class AiCommitAllWorkflowAction(
     private val mode: AiCommitAllWorkflowMode,
     private val workflowStarter: AiCommitAllWorkflowStarter,
+    private val availabilityProvider: AiCommitAllWorkflowAvailabilityProvider,
 ) : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(event: AnActionEvent) {
-        event.presentation.isEnabled = false
+        val project = event.project
+        val availability = if (project == null) {
+            AiCommitAllWorkflowActionAvailability.Hidden
+        } else {
+            availabilityProvider.availability(
+                project = project,
+                mode = mode,
+                dataContext = event.dataContext,
+            )
+        }
+
+        event.presentation.isVisible = availability.visible
+        event.presentation.isEnabled = availability.enabled
     }
 
     override fun actionPerformed(event: AnActionEvent) {
@@ -40,6 +59,28 @@ internal abstract class AiCommitAllWorkflowAction(
     }
 
     protected fun mode(): AiCommitAllWorkflowMode = mode
+}
+
+internal data class AiCommitAllWorkflowActionAvailability(
+    val visible: Boolean,
+    val enabled: Boolean,
+) {
+    companion object {
+        val Hidden: AiCommitAllWorkflowActionAvailability =
+            AiCommitAllWorkflowActionAvailability(visible = false, enabled = false)
+        val Disabled: AiCommitAllWorkflowActionAvailability =
+            AiCommitAllWorkflowActionAvailability(visible = true, enabled = false)
+        val Enabled: AiCommitAllWorkflowActionAvailability =
+            AiCommitAllWorkflowActionAvailability(visible = true, enabled = true)
+    }
+}
+
+internal interface AiCommitAllWorkflowAvailabilityProvider {
+    fun availability(
+        project: Project,
+        mode: AiCommitAllWorkflowMode,
+        dataContext: DataContext,
+    ): AiCommitAllWorkflowActionAvailability
 }
 
 internal interface AiCommitAllWorkflowStarter {
@@ -64,4 +105,40 @@ private object ProjectAiCommitAllWorkflowStarter : AiCommitAllWorkflowStarter {
                 dataContext = dataContext,
                 inputEvent = inputEvent,
             )
+}
+
+private object ProjectAiCommitAllWorkflowAvailabilityProvider : AiCommitAllWorkflowAvailabilityProvider {
+    override fun availability(
+        project: Project,
+        mode: AiCommitAllWorkflowMode,
+        dataContext: DataContext,
+    ): AiCommitAllWorkflowActionAvailability {
+        val workflowHandler = VcsDataKeys.COMMIT_WORKFLOW_HANDLER.getData(dataContext)
+        val workflowUi = VcsDataKeys.COMMIT_WORKFLOW_UI.getData(dataContext)
+        if (workflowHandler == null || workflowUi == null) {
+            return AiCommitAllWorkflowActionAvailability.Hidden
+        }
+
+        val selectionService = GitChangeSelectionService.getInstance(project)
+        if (selectionService.supportStatus() != GitVcsSupportStatus.Supported) {
+            return AiCommitAllWorkflowActionAvailability.Hidden
+        }
+        if (!selectionService.collectSelection().hasCommittableContent) {
+            return AiCommitAllWorkflowActionAvailability.Disabled
+        }
+
+        val executionService = CommitWorkflowExecutionService.getInstance(project)
+        val canExecute = when (mode) {
+            AiCommitAllWorkflowMode.Commit ->
+                executionService.canExecuteCommit(workflowHandler)
+            AiCommitAllWorkflowMode.CommitAndPush ->
+                executionService.canExecuteCommitAndPush(workflowHandler)
+        }
+
+        return if (canExecute) {
+            AiCommitAllWorkflowActionAvailability.Enabled
+        } else {
+            AiCommitAllWorkflowActionAvailability.Disabled
+        }
+    }
 }

@@ -11,6 +11,9 @@ import com.intellij.vcs.commit.CommitWorkflowHandler
 internal class CommitWorkflowExecutionService(
     private val scheduler: CommitWorkflowExecutionScheduler = IntellijCommitWorkflowExecutionScheduler,
 ) {
+    fun canExecuteCommit(workflowHandler: CommitWorkflowHandler?): Boolean =
+        workflowHandler is CommitExecutorListener
+
     fun executeCommit(workflowHandler: CommitWorkflowHandler?): CommitWorkflowExecutionResult {
         if (workflowHandler == null) {
             return CommitWorkflowExecutionResult.MissingWorkflow
@@ -22,6 +25,16 @@ internal class CommitWorkflowExecutionService(
             executorListener.executorCalled(null)
         }
         return CommitWorkflowExecutionResult.Started
+    }
+
+    fun canExecuteCommitAndPush(workflowHandler: CommitWorkflowHandler?): Boolean {
+        if (workflowHandler == null) {
+            return false
+        }
+
+        val executor = workflowHandler.getExecutor(GIT_COMMIT_AND_PUSH_EXECUTOR_ID)
+            ?: return false
+        return workflowHandler.isExecutorEnabled(executor)
     }
 
     fun executeCommitAndPush(workflowHandler: CommitWorkflowHandler?): CommitWorkflowExecutionResult {
