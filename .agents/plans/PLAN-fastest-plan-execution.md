@@ -120,9 +120,10 @@ Under today's rules, ADR 0026 already allows parallel workers when the approved 
 
 ```mermaid
 flowchart TD
-    classDef orch fill: #1f3a5f, stroke: #0d1b33, color: #ffffff;
-    classDef worker fill: #3a3a3a, stroke: #1a1a1a, color: #ffffff;
-    classDef integ fill: #5a4a1f, stroke: #2a2310, color: #ffffff;
+    classDef orch fill:#1f3a5f,stroke:#0d1b33,color:#ffffff;
+    classDef worker fill:#3a3a3a,stroke:#1a1a1a,color:#ffffff;
+    classDef integ fill:#5a4a1f,stroke:#2a2310,color:#ffffff;
+
     subgraph B0["Wave 0: Approval And Dispatch Setup"]
         BO0["orchestrator<br/>approval, dispatch setup, ownership map"]
     end
@@ -204,8 +205,9 @@ flowchart TD
     BI3 -.-> BO4
     BI4 -.-> BO5
     BI5 -.-> BO6
-    class BO0, BO1, BO2, BO3, BO4, BO5, BO6, BI1, BI2, BI3, BI4, BI5 orch;
-    class BW1A, BW1B, BW1C, BW1D, BW2A, BW2B, BW2C, BW3A, BW3B, BW3C, BW4A, BW4B, BW5A, BW5B worker;
+
+    class BO0,BO1,BO2,BO3,BO4,BO5,BO6,BI1,BI2,BI3,BI4,BI5 orch;
+    class BW1A,BW1B,BW1C,BW1D,BW2A,BW2B,BW2C,BW3A,BW3B,BW3C,BW4A,BW4B,BW5A,BW5B worker;
 ```
 
 Properties of the **Before** graph:
@@ -222,9 +224,10 @@ Once ADRs A–D from `docs/proposals/PROP-orchestrator-worker-rules-2026-05-15T0
 
 ```mermaid
 flowchart TD
-    classDef orch fill: #1f3a5f, stroke: #0d1b33, color: #ffffff;
-    classDef worker fill: #264d3b, stroke: #0f2419, color: #ffffff;
-    classDef integ fill: #5a4a1f, stroke: #2a2310, color: #ffffff;
+    classDef orch fill:#1f3a5f,stroke:#0d1b33,color:#ffffff;
+    classDef worker fill:#264d3b,stroke:#0f2419,color:#ffffff;
+    classDef integ fill:#5a4a1f,stroke:#2a2310,color:#ffffff;
+
     subgraph W0["Wave 0: Approval And Dispatch Setup"]
         O0["O[code]<br/>orchestrator<br/>approval, dispatch setup, ownership map"]
     end
@@ -306,9 +309,10 @@ flowchart TD
     I3 -.-> O4
     I4 -.-> O5
     I5 -.-> O6
-    class O0, O1, O2, O3, O4, O5, O6 orch;
-    class W1A, W1B, W1C, W1D, W2A, W2B, W2C, W3A, W3B, W3C, W4A, W4B, W5A, W5B worker;
-    class I1, I2, I3, I4, I5 integ;
+
+    class O0,O1,O2,O3,O4,O5,O6 orch;
+    class W1A,W1B,W1C,W1D,W2A,W2B,W2C,W3A,W3B,W3C,W4A,W4B,W5A,W5B worker;
+    class I1,I2,I3,I4,I5 integ;
 ```
 
 Properties of the **After** graph (delta vs. **Before**):
