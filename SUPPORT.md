@@ -5,12 +5,14 @@ This project is a pre-release IntelliJ Platform plugin repository. No Marketplac
 ## Current Support Status
 
 - Support is best-effort until the first official JetBrains Marketplace release.
-- Current scaffold prerelease target: `v0.1.0-alpha.1`.
+- Current published tag target: `v0.1.0-alpha.1`, a scaffold prerelease.
+- Current `main` branch state: AI Commit All workflow implementation and release automation are present but not Marketplace-published.
 - Current planned IntelliJ Platform baseline: 2026.1.
 - Current planned IDE scope: JetBrains IDEs with the VCS Commit tool window and compatible commit workflow APIs.
 - Current planned VCS scope: Git only, including multiple Git roots.
 - JetBrains AI Assistant is declared as a required plugin dependency.
-- The `AI Commit All` runtime workflow is still pending; `v0.1.0-alpha.1` is a scaffold prerelease.
+- Manual sandbox validation remains required before release-readiness claims.
+- Marketplace signing and publishing are configured through gated automation but have not been executed for a public release.
 
 See [README.md](README.md) for the current supported scope decisions.
 

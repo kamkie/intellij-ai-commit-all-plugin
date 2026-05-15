@@ -12,6 +12,16 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.1
 
 - Added draft active plans for the remaining workflow, validation, documentation, and release automation work.
 - Added a draft orchestration plan that makes cross-plan dependencies and safe parallel execution waves explicit.
+- Added final IntelliJ-style `AI Commit All` and `& Push` action icons.
+- Added Commit tool window actions that are visible only in supported Git commit workflow contexts and disabled when no committable Git content is available.
+- Added Git change selection for tracked, unversioned, resolved-conflict, multi-changelist, and multi-root commit content while excluding ignored files.
+- Added JetBrains AI Assistant commit-message action discovery and invocation through the IntelliJ action system.
+- Added AI generation completion gating, configurable timeout and check interval settings, running activity state, and user-edit stop handling.
+- Added commit-only and commit-and-push execution through IntelliJ commit workflow executors.
+- Added plugin-owned notifications only for workflow stop paths without a more precise platform-owned message.
+- Added local Git repository validation for committable file states, multiple Git roots, and local-only commit-and-push.
+- Added a manual sandbox validation record with representative 2026.1 IDE product/build targets.
+- Added pull-request CI, Plugin Verifier CI, signing configuration, Marketplace publishing configuration, and a manually gated release workflow.
 
 ### Changed
 
@@ -20,6 +30,7 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.1
 - Changed ADR files to use MADR 4.0.0 structure and `ard-0000-<slug>.md` filenames.
 - Changed ADR `decision-makers` metadata to use the configured Git username and email.
 - Added explicit ADR acceptance and plan approval gates before governed implementation can start.
+- Updated README and support documentation to describe the implemented but unreleased workflow, source repository, release process, and current validation limits.
 
 ## [v0.1.0-alpha.1] - 2026-05-15
 
