@@ -9,10 +9,10 @@ import com.intellij.openapi.components.service
 import java.util.Locale
 
 @Service(Service.Level.APP)
-internal class AiCommitMessageActionDiscoveryService {
+internal class AiCommitMessageActionDiscoveryService : AiCommitMessageActionFinder {
     private val discovery = AiCommitMessageActionDiscovery(IntellijAiActionLookup)
 
-    fun findCommitMessageAction(event: AnActionEvent? = null): AiCommitMessageActionReference? =
+    override fun findCommitMessageAction(event: AnActionEvent?): AiCommitMessageActionReference? =
         discovery.findCommitMessageAction(event)
 
     companion object {
@@ -20,10 +20,14 @@ internal class AiCommitMessageActionDiscoveryService {
     }
 }
 
+internal interface AiCommitMessageActionFinder {
+    fun findCommitMessageAction(event: AnActionEvent? = null): AiCommitMessageActionReference?
+}
+
 internal class AiCommitMessageActionDiscovery(
     private val actionLookup: AiActionLookup,
-) {
-    fun findCommitMessageAction(event: AnActionEvent? = null): AiCommitMessageActionReference? =
+) : AiCommitMessageActionFinder {
+    override fun findCommitMessageAction(event: AnActionEvent?): AiCommitMessageActionReference? =
         findKnownAction()
             ?: findPrefixedAction()
             ?: findGroupedAction(event)
