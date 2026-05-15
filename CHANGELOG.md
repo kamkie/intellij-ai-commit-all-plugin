@@ -10,7 +10,7 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.1
 
 ### Added
 
-_None yet._
+- Added draft active plans for the remaining workflow, validation, documentation, and release automation work.
 
 ### Changed
 

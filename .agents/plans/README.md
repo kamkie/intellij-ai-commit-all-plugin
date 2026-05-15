@@ -17,7 +17,15 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-_none yet_
+- `PLAN-commit-tool-window-actions` - Commit Tool Window Actions ([PLAN-commit-tool-window-actions.md](PLAN-commit-tool-window-actions.md)).
+- `PLAN-include-all-git-files` - Include All Git Files ([PLAN-include-all-git-files.md](PLAN-include-all-git-files.md)).
+- `PLAN-ai-assistant-message-generation` - AI Assistant Message Generation ([PLAN-ai-assistant-message-generation.md](PLAN-ai-assistant-message-generation.md)).
+- `PLAN-ai-generation-completion` - AI Generation Completion ([PLAN-ai-generation-completion.md](PLAN-ai-generation-completion.md)).
+- `PLAN-commit-and-push-execution` - Commit And Push Execution ([PLAN-commit-and-push-execution.md](PLAN-commit-and-push-execution.md)).
+- `PLAN-error-handling-ux` - Error Handling And UX ([PLAN-error-handling-ux.md](PLAN-error-handling-ux.md)).
+- `PLAN-validation-coverage` - Validation Coverage ([PLAN-validation-coverage.md](PLAN-validation-coverage.md)).
+- `PLAN-user-documentation` - User Documentation ([PLAN-user-documentation.md](PLAN-user-documentation.md)).
+- `PLAN-marketplace-ci-release` - Marketplace, CI, And Release Automation ([PLAN-marketplace-ci-release.md](PLAN-marketplace-ci-release.md)).
 
 ## Archived Plans
 
