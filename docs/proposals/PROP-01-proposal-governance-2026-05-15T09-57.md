@@ -82,7 +82,7 @@ comment: "Source: PROP-proposal-id-and-markdown-formatting E001."
 
 ```yaml
 status: open
-decision:
+decision: accepted
 priority: 1
 owner:
 updated: 2026-05-15
@@ -97,7 +97,7 @@ comment: "Source: PROP-orchestrator-worker-rules S8."
 
 ```yaml
 status: open
-decision:
+decision: accepted
 priority: 2
 owner:
 updated: 2026-05-15
@@ -114,6 +114,8 @@ comment: "Sources: PROP-proposal-id-and-markdown-formatting E002 and S001; PROP-
 1. `S002` - clear the author-versus-maintainer decision boundary first.
 2. `S001` - normalize IDs in active proposal work after the decision boundary is clear.
 3. `S003` - update docs and validation only after the rule is accepted.
+
+> ok, do that
 
 ## Out Of Scope
 
