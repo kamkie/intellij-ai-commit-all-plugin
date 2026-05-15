@@ -7,6 +7,7 @@ import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowHandlerState
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 
@@ -44,6 +45,23 @@ internal class CommitWorkflowExecutionServiceTest {
             .executeCommit(UnsupportedCommitWorkflowHandler)
 
         assertEquals(CommitWorkflowExecutionResult.UnsupportedExecutor, result)
+    }
+
+    @Test
+    fun `does not catch default commit execution failures`() {
+        val scheduler = CapturingScheduler()
+        val workflowHandler = CapturingCommitWorkflowHandler(
+            defaultCommitFailure = IllegalStateException("commit failed"),
+        )
+
+        val result = CommitWorkflowExecutionService(scheduler)
+            .executeCommit(workflowHandler)
+
+        assertEquals(CommitWorkflowExecutionResult.Started, result)
+        assertFailsWith<IllegalStateException> {
+            scheduler.runScheduledActions()
+        }
+        assertEquals(1, workflowHandler.executorCallCount)
     }
 
     @Test
@@ -122,6 +140,25 @@ internal class CommitWorkflowExecutionServiceTest {
         assertEquals(0, workflowHandler.executeCallCount)
     }
 
+    @Test
+    fun `does not catch commit and push execution failures`() {
+        val scheduler = CapturingScheduler()
+        val workflowHandler = CapturingCommitWorkflowHandler(
+            commitAndPushExecutor = TestCommitAndPushExecutor,
+            commitAndPushEnabled = true,
+            executeFailure = IllegalStateException("push failed"),
+        )
+
+        val result = CommitWorkflowExecutionService(scheduler)
+            .executeCommitAndPush(workflowHandler)
+
+        assertEquals(CommitWorkflowExecutionResult.Started, result)
+        assertFailsWith<IllegalStateException> {
+            scheduler.runScheduledActions()
+        }
+        assertEquals(1, workflowHandler.executeCallCount)
+    }
+
     private class CapturingScheduler : CommitWorkflowExecutionScheduler {
         private val actions = mutableListOf<() -> Unit>()
 
@@ -140,6 +177,8 @@ internal class CommitWorkflowExecutionServiceTest {
     private class CapturingCommitWorkflowHandler(
         private val commitAndPushExecutor: CommitExecutor? = null,
         var commitAndPushEnabled: Boolean = false,
+        private val defaultCommitFailure: RuntimeException? = null,
+        private val executeFailure: RuntimeException? = null,
     ) : CommitWorkflowHandler, CommitExecutorListener {
         var executorCallCount = 0
         var executor: CommitExecutor? = null
@@ -153,6 +192,7 @@ internal class CommitWorkflowExecutionServiceTest {
         override fun executorCalled(executor: CommitExecutor?) {
             executorCallCount++
             this.executor = executor
+            defaultCommitFailure?.let { failure -> throw failure }
         }
 
         override fun getExecutor(executorId: String): CommitExecutor? {
@@ -170,6 +210,7 @@ internal class CommitWorkflowExecutionServiceTest {
         override fun execute(executor: CommitExecutor) {
             executeCallCount++
             executedExecutor = executor
+            executeFailure?.let { failure -> throw failure }
         }
 
         override fun getState(): CommitWorkflowHandlerState =
