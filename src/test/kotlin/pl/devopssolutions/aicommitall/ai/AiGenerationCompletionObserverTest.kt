@@ -93,6 +93,19 @@ internal class AiGenerationCompletionObserverTest {
         assertEquals(AiGenerationCompletionResult.NoCompletionSignal("generated message"), result)
     }
 
+    @Test
+    fun `fails closed when user edits message during generation`() {
+        val result = AiGenerationCompletionObserver().awaitCompletion(
+            snapshot = AiCommitMessageSnapshot("old message"),
+            messageReader = AiCommitMessageReader { "user message" },
+            runningSignal = ConstantRunningSignal(AiGenerationRunningState.Running),
+            userEditSignal = AiGenerationUserEditSignal { true },
+            options = testOptions(),
+        )
+
+        assertEquals(AiGenerationCompletionResult.UserEditedMessage("user message"), result)
+    }
+
     private class SequenceRunningSignal(
         private vararg val states: AiGenerationRunningState,
     ) : AiGenerationRunningSignal {

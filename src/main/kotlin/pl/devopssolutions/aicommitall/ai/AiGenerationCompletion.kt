@@ -31,6 +31,7 @@ internal class AiGenerationCompletionService {
                     snapshot = snapshot,
                     messageReader = CommitMessageUiReader(commitMessageUi),
                     runningSignal = ReflectiveActionProgressRunningSignal(invocation.action),
+                    userEditSignal = AiGenerationUserEditSignal.NotEdited,
                     options = options,
                 )
             },
@@ -50,6 +51,7 @@ internal class AiGenerationCompletionObserver(
         snapshot: AiCommitMessageSnapshot,
         messageReader: AiCommitMessageReader,
         runningSignal: AiGenerationRunningSignal,
+        userEditSignal: AiGenerationUserEditSignal = AiGenerationUserEditSignal.NotEdited,
         options: AiGenerationCompletionOptions = AiGenerationCompletionOptions.DEFAULT,
     ): AiGenerationCompletionResult {
         val startedAtMillis = timeSource.nowMillis()
@@ -57,6 +59,11 @@ internal class AiGenerationCompletionObserver(
         while (timeSource.nowMillis() - startedAtMillis <= options.timeout.toMillis()) {
             val signalState = runningSignal.state()
             val currentMessage = messageReader.readMessage()
+            if (userEditSignal.isUserEdited()) {
+                return AiGenerationCompletionResult.UserEditedMessage(
+                    latestMessage = currentMessage,
+                )
+            }
 
             when (signalState) {
                 AiGenerationRunningState.Running -> Unit
@@ -142,6 +149,8 @@ internal sealed interface AiGenerationCompletionResult {
     data class UnchangedMessage(val message: String) : AiGenerationCompletionResult
 
     data class NoCompletionSignal(val latestMessage: String) : AiGenerationCompletionResult
+
+    data class UserEditedMessage(val latestMessage: String) : AiGenerationCompletionResult
 }
 
 internal enum class AiGenerationCompletionEvidence {
@@ -164,6 +173,14 @@ internal enum class AiGenerationRunningState {
     Running,
     NotRunning,
     Unavailable,
+}
+
+internal fun interface AiGenerationUserEditSignal {
+    fun isUserEdited(): Boolean
+
+    companion object {
+        val NotEdited: AiGenerationUserEditSignal = AiGenerationUserEditSignal { false }
+    }
 }
 
 internal class ReflectiveActionProgressRunningSignal(private val action: AnAction) : AiGenerationRunningSignal {
