@@ -26,6 +26,14 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
             return stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
         }
 
+        when (VcsOperationReadinessService.getInstance(project).checkAndReport()) {
+            VcsOperationReadinessResult.Ready -> Unit
+            VcsOperationReadinessResult.Frozen ->
+                return stopped(AiCommitAllWorkflowStopReason.VcsFrozen)
+            VcsOperationReadinessResult.BackgroundOperationRunning ->
+                return stopped(AiCommitAllWorkflowStopReason.VcsBackgroundOperationRunning)
+        }
+
         return when (val selectionResult = CommitWorkflowSelectionService.getInstance(project)
             .prepareAllFilesSelection(workflowHandler, workflowUi)) {
             is CommitWorkflowSelectionResult.Prepared -> {
@@ -145,6 +153,8 @@ internal sealed interface AiCommitAllWorkflowResult {
 
 internal enum class AiCommitAllWorkflowStopReason {
     MissingWorkflow,
+    VcsFrozen,
+    VcsBackgroundOperationRunning,
     EmptySelection,
     UnsupportedVcs,
     UnsupportedWorkflow,
