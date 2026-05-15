@@ -10,6 +10,7 @@ build/
 gradle-app.setting
 
 # IntelliJ Platform plugin artifacts
+.intellijPlatform/
 sandbox/
 run/
 *.zip

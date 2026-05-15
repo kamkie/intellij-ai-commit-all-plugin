@@ -1,6 +1,6 @@
 # Build Tasks
 
-Repository state: documentation and planning are present, but no Gradle, Kotlin, or IntelliJ plugin scaffold exists yet.
+Repository state: documentation, planning, and the initial Gradle/Kotlin IntelliJ plugin scaffold are present. Plugin descriptor metadata and runtime workflow implementation are still pending.
 
 Notation:
 
@@ -34,13 +34,13 @@ Notation:
 
 ## 2. Scaffold Plugin Project
 
-- [ ] T-SCAFFOLD-001: Add Gradle Kotlin DSL project files.
-- [ ] T-SCAFFOLD-002: Configure the IntelliJ Platform Gradle Plugin.
-- [ ] T-SCAFFOLD-003: Add Kotlin/JVM configuration.
+- [x] T-SCAFFOLD-001: Add Gradle Kotlin DSL project files. (Plan `P-scaffold-plugin-project`, Task 1)
+- [x] T-SCAFFOLD-002: Configure the IntelliJ Platform Gradle Plugin. (Plan `P-scaffold-plugin-project`, Task 1)
+- [x] T-SCAFFOLD-003: Add Kotlin/JVM configuration. (Plan `P-scaffold-plugin-project`, Task 1)
 - [ ] T-SCAFFOLD-004: Add plugin descriptor at `src/main/resources/META-INF/plugin.xml`.
 - [ ] T-SCAFFOLD-005: Identify JetBrains AI Assistant plugin dependency ID for IntelliJ Platform 2026.1.
 - [ ] T-SCAFFOLD-006: Declare JetBrains AI Assistant as a required plugin dependency.
-- [ ] T-SCAFFOLD-007: Add a base package for plugin code.
+- [x] T-SCAFFOLD-007: Add a base package for plugin code. (Plan `P-scaffold-plugin-project`, Task 1)
 - [ ] T-SCAFFOLD-008: Verify `runIde` starts a sandbox IDE.
 - [x] T-SCAFFOLD-009: Add a top-level `LICENSE` file. (ADR 0018)
 - [x] T-SCAFFOLD-010: Do not add `NOTICE` initially; add one later only if attribution needs or bundled dependencies require it. (ADR 0018)

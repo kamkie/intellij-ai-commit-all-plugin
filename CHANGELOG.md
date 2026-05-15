@@ -19,6 +19,7 @@ This repository has no released plugin version yet.
 - Added accepted plan `P-scaffold-plugin-project` for the first executable plugin scaffold.
 - Added ADR 0035 to store open questions with decision records.
 - Added ADR 0036 requiring plan filenames to include their stable `Plan-ID`.
+- Added the initial Gradle Kotlin DSL and Kotlin/JVM scaffold for the IntelliJ Platform plugin.
 
 ### Changed
 

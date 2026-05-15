@@ -1,0 +1,3 @@
+package pl.devopssolutions.aicommitall
+
+internal class AiCommitAllPluginMarker
