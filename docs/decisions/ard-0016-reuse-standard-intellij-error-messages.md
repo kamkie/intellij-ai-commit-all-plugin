@@ -75,3 +75,4 @@ Compliance is checked through documentation review and `scripts/validate-docs.ps
 - Remove `depends on: Q-UX-3` markers from `TASKS.md`.
 - See ADR 0017 for confirmation behavior.
 - Historical note: `Q-UX-5` was later resolved by ADR 0025, and final placeholder styling was selected by ADR 0027.
+- Implementation note: the plugin-owned AI timeout notification uses title `AI Commit All` and content `AI Assistant did not finish generating a commit message before the configured timeout.`

@@ -55,7 +55,7 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
                         ).handle { completionResult, throwable ->
                             activityToken.close()
                             if (throwable != null) {
-                                AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.AiCompletionFailed)
+                                stoppedResult(AiCommitAllWorkflowStopReason.AiCompletionFailed)
                             } else {
                                 completeAfterAiGeneration(mode, workflowHandler, completionResult)
                             }
@@ -90,15 +90,15 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
             is AiGenerationCompletionResult.Completed ->
                 executeCompletedWorkflow(mode, workflowHandler)
             is AiGenerationCompletionResult.Timeout ->
-                AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.AiTimeout)
+                stoppedResult(AiCommitAllWorkflowStopReason.AiTimeout)
             AiGenerationCompletionResult.EmptyMessage ->
-                AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.EmptyMessage)
+                stoppedResult(AiCommitAllWorkflowStopReason.EmptyMessage)
             is AiGenerationCompletionResult.UnchangedMessage ->
-                AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.UnchangedMessage)
+                stoppedResult(AiCommitAllWorkflowStopReason.UnchangedMessage)
             is AiGenerationCompletionResult.NoCompletionSignal ->
-                AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.NoCompletionSignal)
+                stoppedResult(AiCommitAllWorkflowStopReason.NoCompletionSignal)
             is AiGenerationCompletionResult.UserEditedMessage ->
-                AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.UserEditedMessage)
+                stoppedResult(AiCommitAllWorkflowStopReason.UserEditedMessage)
         }
 
     private fun executeCompletedWorkflow(
@@ -123,17 +123,22 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
             CommitWorkflowExecutionResult.Started ->
                 AiCommitAllWorkflowResult.Started
             CommitWorkflowExecutionResult.MissingWorkflow ->
-                AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
+                stoppedResult(AiCommitAllWorkflowStopReason.MissingWorkflow)
             CommitWorkflowExecutionResult.UnsupportedExecutor ->
-                AiCommitAllWorkflowResult.Stopped(unavailableReason)
+                stoppedResult(unavailableReason)
             CommitWorkflowExecutionResult.DisabledExecutor ->
-                AiCommitAllWorkflowResult.Stopped(unavailableReason)
+                stoppedResult(unavailableReason)
         }
 
     private fun stopped(reason: AiCommitAllWorkflowStopReason): CompletableFuture<AiCommitAllWorkflowResult> =
         CompletableFuture.completedFuture(
-            AiCommitAllWorkflowResult.Stopped(reason),
+            stoppedResult(reason),
         )
+
+    private fun stoppedResult(reason: AiCommitAllWorkflowStopReason): AiCommitAllWorkflowResult {
+        AiCommitAllWorkflowStopReporter.getInstance(project).report(reason)
+        return AiCommitAllWorkflowResult.Stopped(reason)
+    }
 
     companion object {
         fun getInstance(project: Project): AiCommitAllWorkflowCoordinator = project.service()
