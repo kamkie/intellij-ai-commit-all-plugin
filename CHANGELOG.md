@@ -28,5 +28,7 @@ This repository has no released plugin version yet.
 - Added stable proposal IDs for repository analysis and proposal documents.
 - Moved open questions from root `OPEN_QUESTIONS.md` to `docs/decisions/OPEN_QUESTIONS.md`.
 - Clarified current split-button styling guidance in older ADR follow-ups.
+- Clarified ADR 0006 and ADR 0027 so the current split-button styling owner is unambiguous.
+- Allowed the future Gradle Wrapper jar through `.gitignore` and named wrapper files in the scaffold plan.
 - Clarified Marketplace documentation versus release metadata task ownership.
 - Marked `PROP-repository-analysis` completed after implementing accepted findings.

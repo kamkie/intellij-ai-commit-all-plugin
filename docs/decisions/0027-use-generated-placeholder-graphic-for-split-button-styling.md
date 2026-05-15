@@ -20,6 +20,8 @@ Use a generated placeholder graphic as the selected split-button styling referen
 
 The placeholder graphic is stored at `docs/concepts/graphics/split-button-placeholder.png`.
 
+This is the current detailed styling owner for the split-button direction that ADR 0006 intentionally deferred.
+
 The placeholder should cover:
 
 - Normal enabled state.

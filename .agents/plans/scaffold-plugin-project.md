@@ -31,7 +31,7 @@ No open plan questions.
 
 - Task 1: Add Gradle and Kotlin scaffold.
   - Covers `T-SCAFFOLD-001`, `T-SCAFFOLD-002`, `T-SCAFFOLD-003`, and `T-SCAFFOLD-007`.
-  - Expected files include `settings.gradle.kts`, `build.gradle.kts`, `gradle.properties`, `src/main/kotlin/pl/devopssolutions/aicommitall/`, and supporting resource directories.
+  - Expected files include `settings.gradle.kts`, `build.gradle.kts`, `gradle.properties`, Gradle Wrapper files (`gradlew`, `gradlew.bat`, `gradle/wrapper/gradle-wrapper.properties`, `gradle/wrapper/gradle-wrapper.jar`), `src/main/kotlin/pl/devopssolutions/aicommitall/`, and supporting resource directories.
 - Task 2: Add plugin descriptor and required metadata.
   - Covers `T-SCAFFOLD-004`, `T-SCAFFOLD-005`, and `T-SCAFFOLD-006`.
   - Expected files include `src/main/resources/META-INF/plugin.xml` and any Gradle metadata needed for the plugin ID, vendor, license, and required AI Assistant dependency.

@@ -8,7 +8,7 @@ Date: 2026-05-14
 
 The commit and push presentation was previously unresolved. Options included one action, separate commit and commit-and-push actions, or reuse of the IDE's existing Commit / Commit and Push choice.
 
-The user decided the control should be a split button with `AI Commit All` and `& Push` segments. Detailed visual styling remains deferred.
+The user decided the control should be a split button with `AI Commit All` and `& Push` segments. Detailed visual styling was deferred at the time of this decision.
 
 Current state: ADR 0027 later selected the generated placeholder graphic in `docs/concepts/graphics/split-button-placeholder.png` as the current detailed styling reference.
 
@@ -23,7 +23,7 @@ The primary segment starts the AI-generated commit flow and commits all non-igno
 
 The `& Push` segment starts the same AI-generated commit flow and then pushes after a successful commit.
 
-Use IntelliJ Platform default split-button styling initially. Detailed icon and styling choices remain open and should be decided later.
+Use IntelliJ Platform default split-button behavior for the control structure. Detailed icon and styling choices were decided later by ADR 0015 and ADR 0027.
 
 Current implementation guidance should also follow ADR 0015 for final icon assets and ADR 0027 for split-button styling adaptation.
 
