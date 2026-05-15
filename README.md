@@ -59,6 +59,8 @@ Run the sandbox IDE:
 .\gradlew.bat runIde
 ```
 
+Pull-request CI runs `test`, `verifyPluginStructure`, and `buildPlugin` without Marketplace or signing secrets. The separate Plugin Verifier workflow checks the configured IDE matrix.
+
 ## Usage
 
 1. Open a Git project in a supported JetBrains IDE.
@@ -84,7 +86,24 @@ Both values must be positive. Timeout and user-edit paths stop without committin
 - The plugin relies on compatible IntelliJ Commit tool window APIs and fail-closed reflection boundaries for inclusion state.
 - AI Assistant action discovery uses known action IDs and action presentation fallback; AI Assistant UI, sign-in, and runtime availability messages remain owned by JetBrains AI Assistant where available.
 - Manual sandbox validation for icon rendering, staging-area modes, AI Assistant unavailable states, and full commit/push UI behavior is not yet complete. See [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
-- Marketplace publishing, signing, and release automation are still in progress.
+- Marketplace signing and publishing automation is configured but has not been executed for a public release. The first Marketplace upload may still require manual JetBrains setup.
+
+## Source Repository
+
+The canonical source repository is [github.com/kamkie/intellij-ai-commit-all-plugin](https://github.com/kamkie/intellij-ai-commit-all-plugin). Marketplace-facing plugin metadata points users and contributors to that source location.
+
+## Release And Publication
+
+Release publication is intentionally manual and gated:
+
+1. Complete implementation, documentation, validation, and changelog review on `main`.
+2. Run local validation for the release candidate, including `test`, `verifyPluginStructure`, `buildPlugin`, and `verifyPlugin`.
+3. Confirm manual sandbox validation evidence is current where release scope depends on it.
+4. Configure the GitHub Environment named `jetbrains-marketplace` with required reviewer protection.
+5. Add GitHub Actions secrets `CERTIFICATE_CHAIN`, `PRIVATE_KEY`, `PRIVATE_KEY_PASSWORD`, and `PUBLISH_TOKEN`.
+6. Start the `Release` workflow manually with the intended Marketplace channel, usually `default`.
+
+The release workflow signs the plugin and calls `publishPlugin` only after manual dispatch and environment approval. Do not create tags or publish Marketplace updates unless release execution is explicitly requested.
 
 ## Project
 
