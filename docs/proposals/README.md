@@ -13,6 +13,7 @@ Active proposals still have at least one `open` row in their `Progress Tracker`.
 - `PROP-orchestrator-worker-rules` - Orchestrator And Worker Rules For Multi-Agent Execution ([PROP-orchestrator-worker-rules-2026-05-15T05-31.md](PROP-orchestrator-worker-rules-2026-05-15T05-31.md)), created 2026-05-15.
 - `PROP-repo-hygiene-automation` - Repository Hygiene Automation Proposal ([PROP-repo-hygiene-automation-2026-05-15T06-45.md](PROP-repo-hygiene-automation-2026-05-15T06-45.md)), created 2026-05-15.
 - `PROP-remove-tasks-md-when-empty` - Remove TASKS.md When All Tasks Are Finished Proposal ([PROP-remove-tasks-md-when-empty-2026-05-15T06-49.md](PROP-remove-tasks-md-when-empty-2026-05-15T06-49.md)), created 2026-05-15.
+- `PROP-plugin-default-settings` - Plugin Default Settings Proposal ([PROP-plugin-default-settings-2026-05-15T07-08.md](PROP-plugin-default-settings-2026-05-15T07-08.md)), created 2026-05-15.
 
 ### Completed Proposals
 
