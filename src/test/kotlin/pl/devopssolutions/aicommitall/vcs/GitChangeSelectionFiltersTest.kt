@@ -70,6 +70,45 @@ internal class GitChangeSelectionFiltersTest {
         assertFalse(result)
     }
 
+    @Test
+    fun `accepts non ignored git file paths`() {
+        val path = TestFilePath("/repo/new-file.txt")
+
+        val result = GitChangeSelectionFilters.isGitPath(
+            path = path,
+            vcsNameForPath = { GIT_VCS_NAME },
+            isIgnored = { false },
+        )
+
+        assertTrue(result)
+    }
+
+    @Test
+    fun `rejects ignored git file paths`() {
+        val path = TestFilePath("/repo/build/output.txt")
+
+        val result = GitChangeSelectionFilters.isGitPath(
+            path = path,
+            vcsNameForPath = { GIT_VCS_NAME },
+            isIgnored = { true },
+        )
+
+        assertFalse(result)
+    }
+
+    @Test
+    fun `rejects non git file paths`() {
+        val path = TestFilePath("/repo/new-file.txt")
+
+        val result = GitChangeSelectionFilters.isGitPath(
+            path = path,
+            vcsNameForPath = { "Mercurial" },
+            isIgnored = { false },
+        )
+
+        assertFalse(result)
+    }
+
     private fun modification(path: String): Change {
         val filePath = TestFilePath(path)
         return Change(TestContentRevision(filePath), TestContentRevision(filePath), FileStatus.MODIFIED)

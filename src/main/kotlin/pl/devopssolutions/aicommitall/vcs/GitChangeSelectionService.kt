@@ -13,22 +13,46 @@ internal class GitChangeSelectionService(private val project: Project) {
         val changeListManager = ChangeListManager.getInstance(project)
         val vcsManager = ProjectLevelVcsManager.getInstance(project)
 
-        val trackedChanges = changeListManager.changeLists
+        return GitChangeSelection(
+            trackedChanges = collectTrackedChanges(changeListManager, vcsManager),
+            resolvedConflictPaths = collectResolvedConflictPaths(changeListManager, vcsManager),
+        )
+    }
+
+    fun collectSelection(): GitChangeSelection {
+        val changeListManager = ChangeListManager.getInstance(project)
+        val vcsManager = ProjectLevelVcsManager.getInstance(project)
+
+        return GitChangeSelection(
+            trackedChanges = collectTrackedChanges(changeListManager, vcsManager),
+            unversionedFiles = collectUnversionedFiles(changeListManager, vcsManager),
+            resolvedConflictPaths = collectResolvedConflictPaths(changeListManager, vcsManager),
+        )
+    }
+
+    private fun collectTrackedChanges(
+        changeListManager: ChangeListManager,
+        vcsManager: ProjectLevelVcsManager,
+    ): List<Change> = changeListManager.changeLists
             .asSequence()
             .flatMap { changeList -> changeList.changes.asSequence() }
             .filter { change -> isEligibleGitChange(change, vcsManager) }
             .distinct()
             .toList()
 
-        val resolvedConflictPaths = changeListManager.resolvedConflictPaths
+    private fun collectUnversionedFiles(
+        changeListManager: ChangeListManager,
+        vcsManager: ProjectLevelVcsManager,
+    ) = changeListManager.unversionedFilesPaths
+        .filter { path -> GitChangeSelectionFilters.isGitPath(path, vcsManager) }
+        .distinctBy { path -> path.path }
+
+    private fun collectResolvedConflictPaths(
+        changeListManager: ChangeListManager,
+        vcsManager: ProjectLevelVcsManager,
+    ) = changeListManager.resolvedConflictPaths
             .filter { path -> GitChangeSelectionFilters.isGitPath(path, vcsManager) }
             .distinctBy { path -> path.path }
-
-        return GitChangeSelection(
-            trackedChanges = trackedChanges,
-            resolvedConflictPaths = resolvedConflictPaths,
-        )
-    }
 
     private fun isEligibleGitChange(
         change: Change,

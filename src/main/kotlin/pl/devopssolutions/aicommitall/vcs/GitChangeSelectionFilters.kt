@@ -18,6 +18,16 @@ internal object GitChangeSelectionFilters {
 
     fun isGitPath(
         path: FilePath,
+        vcsNameForPath: (FilePath) -> String?,
+        isIgnored: (FilePath) -> Boolean,
+    ): Boolean = vcsNameForPath(path) == GIT_VCS_NAME && !isIgnored(path)
+
+    fun isGitPath(
+        path: FilePath,
         vcsManager: ProjectLevelVcsManager,
-    ): Boolean = vcsManager.getVcsFor(path)?.name == GIT_VCS_NAME && !vcsManager.isIgnored(path)
+    ): Boolean = isGitPath(
+        path = path,
+        vcsNameForPath = { candidate -> vcsManager.getVcsFor(candidate)?.name },
+        isIgnored = vcsManager::isIgnored,
+    )
 }
