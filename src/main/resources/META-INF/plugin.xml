@@ -3,6 +3,27 @@
     <depends>com.intellij.modules.vcs</depends>
     <depends>com.intellij.ml.llm</depends>
 
+    <actions>
+        <group
+            id="pl.devopssolutions.aicommitall.actions.AiCommitAllSplitGroup"
+            text="AI Commit All"
+            popup="false">
+            <action
+                id="pl.devopssolutions.aicommitall.actions.Commit"
+                class="pl.devopssolutions.aicommitall.actions.AiCommitAllCommitAction"
+                text="AI Commit All"
+                description="Generate an AI commit message and commit all Git changes."
+                icon="/icons/aiCommitAll.svg" />
+            <action
+                id="pl.devopssolutions.aicommitall.actions.CommitAndPush"
+                class="pl.devopssolutions.aicommitall.actions.AiCommitAllCommitAndPushAction"
+                text="&amp; Push"
+                description="Generate an AI commit message, commit all Git changes, and push."
+                icon="/icons/aiCommitAllPush.svg" />
+            <add-to-group group-id="Vcs.Commit.PrimaryCommitActions" anchor="first" />
+        </group>
+    </actions>
+
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable
             id="pl.devopssolutions.aicommitall.settings"
