@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-error-handling-ux
 
-Status: In Progress
+Status: Implemented
 
 Filename: `.agents/plans/PLAN-error-handling-ux.md`
 
@@ -11,7 +11,7 @@ Filename: `.agents/plans/PLAN-error-handling-ux.md`
 - Plan readiness: Approved; ready for implementation.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Open questions: None.
-- Implementation progress: Task 5 reviewed; no newly discovered uncovered risks require a new open question.
+- Implementation progress: Implemented through committed plan tasks; no newly discovered uncovered risks require a new open question.
 
 ## Goal
 

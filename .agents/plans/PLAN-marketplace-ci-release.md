@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-marketplace-ci-release
 
-Status: In Progress
+Status: Implemented
 
 Filename: `.agents/plans/PLAN-marketplace-ci-release.md`
 
@@ -11,7 +11,7 @@ Filename: `.agents/plans/PLAN-marketplace-ci-release.md`
 - Plan readiness: Approved; ready for implementation.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Open questions: None.
-- Implementation progress: Orchestrated execution started.
+- Implementation progress: Implemented through committed plan tasks; signing, publishing, CI, and verifier surfaces are configured but not executed for a public release.
 
 ## Goal
 

@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-validation-coverage
 
-Status: In Progress
+Status: Implemented
 
 Filename: `.agents/plans/PLAN-validation-coverage.md`
 
@@ -11,7 +11,7 @@ Filename: `.agents/plans/PLAN-validation-coverage.md`
 - Plan readiness: Approved; ready for implementation.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Open questions: None.
-- Implementation progress: Orchestrated execution started.
+- Implementation progress: Implemented through committed plan tasks; automated coverage and manual sandbox records are present.
 
 ## Goal
 
