@@ -48,5 +48,5 @@ Prefer existing platform icons when they already communicate the exact action cl
 
 ## Follow-Up
 
-- Remove `Q-UX-2` from `OPEN_QUESTIONS.md`.
+- Remove `Q-UX-2` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Update `TASKS.md` with icon asset creation and validation tasks.

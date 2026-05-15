@@ -14,7 +14,7 @@ This is the AI entry point for the repository. Keep task context small and read 
 - Human guide for asking AI to work here: `docs/WORKING_WITH_AI.md`
 - Development lifecycle: `docs/DEVELOPMENT_LIFECYCLE.md`
 - Implementation backlog: `TASKS.md`
-- Missing user input: `OPEN_QUESTIONS.md`
+- Missing user input: `docs/decisions/OPEN_QUESTIONS.md`
 - Execution loop: `.agents/references/execution.md`
 - Planning: `.agents/references/planning.md`
 - Code style: `.agents/references/code-style.md`

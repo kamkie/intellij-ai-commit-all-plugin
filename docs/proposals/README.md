@@ -10,13 +10,13 @@ Proposals are advisory until accepted through the normal repository flow. A prop
 
 Active proposals still have at least one `open` row in their `Progress Tracker`.
 
-- `PROP-repository-analysis` - Repository Analysis Proposal ([repository-analysis-2026-05-15T01-47.md](repository-analysis-2026-05-15T01-47.md)), open as of 2026-05-15.
+- _none yet_
 
 ### Completed Proposals
 
 Completed proposals have no `open` rows in their `Progress Tracker`. Keep them listed here until they are moved to `archive/`.
 
-- _none yet_
+- `PROP-repository-analysis` - Repository Analysis Proposal ([repository-analysis-2026-05-15T01-47.md](repository-analysis-2026-05-15T01-47.md)), completed as of 2026-05-15.
 
 Index entries should include the proposal ID, title, file link, and current status date when applicable.
 
@@ -34,7 +34,7 @@ Do not create a proposal for:
 - Accepted project decisions; use `docs/decisions/`.
 - Implementation plans; use `.agents/plans/`.
 - Backlog items; use `TASKS.md`.
-- Missing user input; use `OPEN_QUESTIONS.md`.
+- Missing user input; use `docs/decisions/OPEN_QUESTIONS.md`.
 - One-shot explanations or status updates that do not need triage.
 
 ## File Naming

@@ -67,6 +67,6 @@ Use the business domain namespace instead of a personal or GitHub namespace. The
 
 ## Follow-Up
 
-- Remove `Q-META-1` from `OPEN_QUESTIONS.md`.
+- Remove `Q-META-1` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Update `TASKS.md` dependencies and implementation guidance.
 - Use this identity when scaffolding Gradle, Kotlin packages, `plugin.xml`, and Marketplace metadata.

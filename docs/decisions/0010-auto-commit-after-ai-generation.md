@@ -36,6 +36,6 @@ This does not override fail-closed behavior for AI generation failure, timeout, 
 
 ## Follow-Up
 
-- Remove `Q-COMMIT-2` from `OPEN_QUESTIONS.md`.
+- Remove `Q-COMMIT-2` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Remove `Q-COMMIT-2` dependency markers from `TASKS.md`.
 - See ADR 0011 for user edits or clears during AI generation.

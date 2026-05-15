@@ -32,5 +32,5 @@ The plugin should treat the user edit as intentional intervention and fail close
 
 ## Follow-Up
 
-- Remove `Q-COMMIT-3` from `OPEN_QUESTIONS.md`.
+- Remove `Q-COMMIT-3` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Update `TASKS.md` to implement the fail-closed stop path.

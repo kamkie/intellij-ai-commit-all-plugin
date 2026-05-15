@@ -41,7 +41,7 @@ Notification and error message policy is covered by ADR 0016. Detailed split-but
 
 ## Follow-Up
 
-- Remove `Q-AI-4` from `OPEN_QUESTIONS.md`.
+- Remove `Q-AI-4` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Update `TASKS.md` to add button animation/progress state and standard IntelliJ notifications for runtime AI failures.
 - Use ADR 0016 for notification and error message policy.
 - Keep detailed split-button styling open.

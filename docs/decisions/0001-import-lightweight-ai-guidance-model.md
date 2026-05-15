@@ -23,7 +23,7 @@ Use this lightweight structure:
 - `.agents/plans/` for task-specific implementation plans and a reusable plan template.
 - `docs/decisions/` for ADRs.
 
-Keep project plans, product intent, feature descriptions, and missing user input out of `AGENTS.md`. Put them in `README.md`, `TASKS.md`, `OPEN_QUESTIONS.md`, plans, or ADRs as appropriate.
+Keep project plans, product intent, feature descriptions, and missing user input out of `AGENTS.md`. Put them in `README.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.md`, plans, or ADRs as appropriate.
 
 Do not import these source-repository artifacts unless a future accepted decision says otherwise:
 

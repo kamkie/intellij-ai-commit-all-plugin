@@ -54,7 +54,7 @@ The first Marketplace upload is expected to be manual when JetBrains requires in
 
 ## Follow-Up
 
-- Remove `Q-META-3` from `OPEN_QUESTIONS.md`.
+- Remove `Q-META-3` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Add publishing, signing, Marketplace metadata, and CI tasks to `TASKS.md`.
 - See ADR 0022 for plugin ID, package name, vendor name, and vendor contact metadata.
 - See ADR 0018 for the accepted Apache-2.0 license decision.

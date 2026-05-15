@@ -42,6 +42,6 @@ The implementation must support and test both:
 
 ## Follow-Up
 
-- Remove `Q-VAL-1` and `Q-VAL-2` from `OPEN_QUESTIONS.md`.
+- Remove `Q-VAL-1` and `Q-VAL-2` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Update `TASKS.md` validation dependencies.
 - See ADR 0021 for local-repository end-to-end acceptance workflows.

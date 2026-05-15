@@ -96,6 +96,6 @@ Implementation:
 
 ## Follow-Up
 
-- Remove `Q-META-2` from `OPEN_QUESTIONS.md`.
+- Remove `Q-META-2` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Add `LICENSE` before implementation or Marketplace packaging work.
 - Record any future license change in a superseding accepted ADR.

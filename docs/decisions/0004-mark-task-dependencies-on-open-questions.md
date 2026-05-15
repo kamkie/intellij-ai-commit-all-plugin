@@ -6,13 +6,13 @@ Date: 2026-05-14
 
 ## Context
 
-`TASKS.md` tracks implementation work while `OPEN_QUESTIONS.md` tracks unresolved user input and project decisions.
+`TASKS.md` tracks implementation work while `docs/decisions/OPEN_QUESTIONS.md` tracks unresolved user input and project decisions.
 
 Some backlog items cannot be implemented safely until specific open questions are answered. Without explicit links, future agents may treat blocked tasks as ready work and make assumptions about commit behavior, IDE support, metadata, validation, or UX.
 
 ## Decision
 
-Give each open question in `OPEN_QUESTIONS.md` a stable question ID.
+Give each open question in `docs/decisions/OPEN_QUESTIONS.md` a stable question ID.
 
 Mark task items in `TASKS.md` with:
 
@@ -25,7 +25,7 @@ Use comma-separated IDs when a task depends on multiple questions.
 
 - Blocked work is visible in the backlog.
 - Future implementation plans can trace assumptions back to unresolved questions.
-- `OPEN_QUESTIONS.md` IDs should remain stable even when question wording is clarified.
+- `docs/decisions/OPEN_QUESTIONS.md` IDs should remain stable even when question wording is clarified.
 - When a question is resolved, related `TASKS.md` dependency markers should be updated or removed alongside the ADR, plan, or implementation that resolves it.
 
 ## Alternatives Considered
@@ -37,6 +37,6 @@ Use comma-separated IDs when a task depends on multiple questions.
 
 ## Follow-Up
 
-- Add question IDs to `OPEN_QUESTIONS.md`.
+- Add question IDs to `docs/decisions/OPEN_QUESTIONS.md`.
 - Annotate `TASKS.md` task dependencies and resolution tasks.
 - Document the convention in repository documentation guidance.

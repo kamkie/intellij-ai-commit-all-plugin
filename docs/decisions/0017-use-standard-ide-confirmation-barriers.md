@@ -23,7 +23,7 @@ Use the standard IntelliJ commit workflow as the confirmation and validation bou
 - Do not bypass commit or push executor confirmation behavior.
 - Do not add custom "are you sure" prompts unless a concrete implementation path proves the standard workflow does not cover the risk.
 
-If development reveals a path that may require an additional plugin-owned confirmation or check, add a new open question with a stable ID in `OPEN_QUESTIONS.md`, leave a placeholder task or implementation branch, and continue with the rest of the work.
+If development reveals a path that may require an additional plugin-owned confirmation or check, add a new open question with a stable ID in `docs/decisions/OPEN_QUESTIONS.md`, leave a placeholder task or implementation branch, and continue with the rest of the work.
 
 ## Consequences
 
@@ -41,6 +41,6 @@ If development reveals a path that may require an additional plugin-owned confir
 
 ## Follow-Up
 
-- Remove `Q-UX-4` from `OPEN_QUESTIONS.md`.
+- Remove `Q-UX-4` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Remove `depends on: Q-UX-4` markers from `TASKS.md`.
-- Keep `Q-UX-5` open for detailed split-button styling.
+- Historical note: `Q-UX-5` was later resolved by ADR 0025, and final placeholder styling was selected by ADR 0027.

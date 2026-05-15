@@ -6,7 +6,7 @@ Date: 2026-05-15
 
 ## Context
 
-`OPEN_QUESTIONS.md` already uses stable question IDs such as `Q-UX-6`.
+`docs/decisions/OPEN_QUESTIONS.md` already uses stable question IDs such as `Q-UX-6`.
 
 `TASKS.md` tracks backlog and implementation work, but task entries did not have stable identifiers. Referencing tasks by section and line position is fragile because the backlog is expected to change as plans, decisions, implementation, and validation evolve.
 

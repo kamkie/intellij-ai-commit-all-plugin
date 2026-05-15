@@ -46,5 +46,5 @@ The first implementation should use IntelliJ Platform VCS and commit workflow AP
 
 ## Follow-Up
 
-- Update `README.md`, `TASKS.md`, and `OPEN_QUESTIONS.md` to reflect the accepted scope.
+- Update `README.md`, `TASKS.md`, and `docs/decisions/OPEN_QUESTIONS.md` to reflect the accepted scope.
 - Validate this scope in sandbox testing after the plugin scaffold exists.

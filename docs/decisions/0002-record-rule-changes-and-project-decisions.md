@@ -8,7 +8,7 @@ Date: 2026-05-14
 
 Repository guidance now includes explicit rules for where project intent, tasks, open questions, plans, and AI workflow instructions belong.
 
-Without a decision record requirement, repository rules and project decisions can drift across `AGENTS.md`, `TASKS.md`, `OPEN_QUESTIONS.md`, `.agents/references/`, and `docs/` without a durable explanation of why they changed.
+Without a decision record requirement, repository rules and project decisions can drift across `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.md`, `.agents/references/`, and `docs/` without a durable explanation of why they changed.
 
 ## Decision
 
@@ -22,7 +22,7 @@ Routine task execution notes do not need ADRs unless they choose or change proje
 
 - Future agents and maintainers have a durable record of rule changes and project decisions.
 - Rule and decision changes require a little more documentation work.
-- `OPEN_QUESTIONS.md` remains the place for unresolved input, while `docs/decisions/` records accepted decisions.
+- `docs/decisions/OPEN_QUESTIONS.md` remains the place for unresolved input, while `docs/decisions/` records accepted decisions.
 
 ## Alternatives Considered
 

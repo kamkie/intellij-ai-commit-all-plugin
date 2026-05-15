@@ -38,6 +38,6 @@ Runtime states that can still occur with the dependency present, such as not sig
 
 ## Follow-Up
 
-- Remove `Q-AI-3` from `OPEN_QUESTIONS.md`.
+- Remove `Q-AI-3` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Update `TASKS.md` to declare the required AI Assistant dependency and test missing-dependency behavior.
 - See ADR 0014 for non-AI fallback behavior when AI Assistant exists but cannot generate a message.

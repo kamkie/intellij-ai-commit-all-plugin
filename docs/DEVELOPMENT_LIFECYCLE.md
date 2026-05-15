@@ -5,7 +5,7 @@ Use this lifecycle for changes that are larger than a direct documentation edit.
 ## 1. Frame The Work
 
 - Identify the user-facing behavior, repository artifact, or workflow being changed.
-- Check `OPEN_QUESTIONS.md` for decisions that block the work.
+- Check `docs/decisions/OPEN_QUESTIONS.md` for decisions that block the work.
 - Use `TASKS.md` for backlog scope, not as proof that a decision has been made.
 - Follow `docs/decisions/README.md` for project decisions and repository rule changes.
 
@@ -25,13 +25,9 @@ A plan should state:
 
 Small docs-only changes do not need a plan.
 
-Before implementation starts from an accepted plan, every plan question and required project decision must be answered, decided, or explicitly documented as an allowed assumption.
+Before implementation starts from an accepted plan, follow the readiness, per-task execution, and delegation rules in `.agents/references/planning.md` and `.agents/references/execution.md`.
 
-For accepted plans with multiple implementation tasks, each task is completed independently: implement it, validate it using `.agents/references/testing.md`, review it using `.agents/references/reviews.md`, and commit it before starting the next task.
-
-When agent delegation is available, run accepted multi-task plans with one orchestrator and one fresh task worker per named task. The orchestrator owns sequencing, question handling, review evidence, validation evidence, and commit verification. Task workers should not carry context from previous plan tasks.
-
-The later release workflow takes over after implementation tasks. It should perform the full cross-task review, broader manual checks and tests, documentation update pass, and release artifact preparation.
+The later release workflow takes over after implementation tasks and owns whole-release review, broader manual checks and tests, documentation update passes, and release artifact preparation.
 
 ## 3. Implement
 
@@ -39,7 +35,7 @@ The later release workflow takes over after implementation tasks. It should perf
 - Prefer existing IntelliJ Platform, Gradle, and Kotlin conventions once the project is scaffolded.
 - Update docs before or alongside behavior changes.
 - Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; avoid unrelated operations work outside that scope.
-- If a new question, missing decision, or unsafe assumption appears during planned implementation, stop work and update the active plan, `OPEN_QUESTIONS.md`, `docs/decisions/`, or `TASKS.md` before continuing.
+- If a new question, missing decision, or unsafe assumption appears during planned implementation, follow the stop-and-update rules in `.agents/references/planning.md`.
 
 ## 4. Validate
 

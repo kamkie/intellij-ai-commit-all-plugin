@@ -8,7 +8,7 @@ Create or update a plan when:
 
 - The work changes plugin behavior.
 - The work touches multiple areas, such as Gradle, plugin descriptor, Kotlin code, and docs.
-- A user decision from `OPEN_QUESTIONS.md` blocks implementation.
+- A user decision from `docs/decisions/OPEN_QUESTIONS.md` blocks implementation.
 - The change may affect commit selection, AI message generation, commit execution, or push behavior.
 
 Do not create a plan for small documentation cleanup unless the user asks for one.
@@ -43,7 +43,7 @@ A useful plan should include:
 - Give every plan a stable, human-readable `Plan-ID` such as `P-scaffold-plugin-project`; avoid strictly number-based IDs such as `P-0001`.
 - Keep `Plan-ID` stable when plan title, filename, status, or wording changes.
 - Do not duplicate the full backlog from `TASKS.md`.
-- Move unresolved user decisions to `OPEN_QUESTIONS.md`.
+- Move unresolved user decisions to `docs/decisions/OPEN_QUESTIONS.md`.
 - Before implementation starts from an accepted plan, every plan question and required project decision must be answered, explicitly decided, or recorded as a documented assumption that the current user request allows.
 - Record project decisions and repository rule changes in `docs/decisions/` before or alongside the plan or implementation they affect.
 - Follow `docs/decisions/README.md` for project decisions and repository rule changes.
@@ -72,7 +72,7 @@ Before editing code from a plan:
 If a new question, missing decision, or unsafe assumption appears while implementing from a plan:
 
 - Stop implementation work immediately.
-- Update the appropriate document before continuing: the active plan for task-local questions, `OPEN_QUESTIONS.md` for missing user input, `docs/decisions/` for project decisions or repository rule changes, and `TASKS.md` when backlog scope or dependencies change.
+- Update the appropriate document before continuing: the active plan for task-local questions, `docs/decisions/OPEN_QUESTIONS.md` for missing user input, `docs/decisions/` for project decisions or repository rule changes, and `TASKS.md` when backlog scope or dependencies change.
 - Ask the user for the decision when the answer cannot be safely inferred from the current request and governing documents.
 - Resume only after the question is answered, decided, or explicitly documented as an allowed assumption.
 

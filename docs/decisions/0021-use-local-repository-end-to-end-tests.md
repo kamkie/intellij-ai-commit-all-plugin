@@ -47,6 +47,6 @@ When an end-to-end scenario cannot be automated reliably, keep a manual sandbox 
 
 ## Follow-Up
 
-- Remove `Q-VAL-3` from `OPEN_QUESTIONS.md`.
+- Remove `Q-VAL-3` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Add local-repository E2E tasks to `TASKS.md`.
 - Keep manual sandbox checks for cases that cannot be automated yet.

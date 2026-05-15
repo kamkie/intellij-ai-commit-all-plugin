@@ -4,6 +4,7 @@ Use validation that matches the change. Documentation-only changes do not requir
 
 ## Build Checks
 
+- `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1` for documentation structure, links, stable IDs, ADR numbering and index, and proposal tracker checks.
 - `gradle buildPlugin` for packaging and basic compile validation once a Gradle scaffold exists.
 - `gradle verifyPlugin` when configured.
 - Plugin signing and signature verification once signing configuration exists.

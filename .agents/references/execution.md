@@ -85,4 +85,4 @@ Use `Project-Source: prompt` for direct ad hoc user requests, `task` for `TASKS.
 
 Pause and ask for a decision when implementation depends on an unresolved product choice, such as direct dependency on proprietary AI Assistant APIs.
 
-When a new question, missing decision, or unsafe assumption appears during planned implementation, stop work immediately and update the appropriate document before continuing: the active plan, `OPEN_QUESTIONS.md`, `docs/decisions/`, or `TASKS.md`.
+When a new question, missing decision, or unsafe assumption appears during planned implementation, stop work immediately and update the appropriate document before continuing: the active plan, `docs/decisions/OPEN_QUESTIONS.md`, `docs/decisions/`, or `TASKS.md`.

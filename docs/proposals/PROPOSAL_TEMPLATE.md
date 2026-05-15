@@ -7,7 +7,7 @@ scope: One sentence describing what part of the repository is covered.
 
 # Proposal title
 
-This proposal respects `AGENTS.md`, `TASKS.md`, `OPEN_QUESTIONS.md`, and `docs/decisions/`. It lists findings for maintainer triage only; it does not implement changes by itself.
+This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.md`, and `docs/decisions/`. It lists findings for maintainer triage only; it does not implement changes by itself.
 
 ## Table of Contents
 

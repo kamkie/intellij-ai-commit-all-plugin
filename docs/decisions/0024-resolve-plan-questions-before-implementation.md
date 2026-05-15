@@ -24,7 +24,7 @@ Project decisions and repository rule changes must be recorded in `docs/decision
 If a new question, missing decision, or unsafe assumption appears during planned implementation, agents must stop implementation work immediately and update the appropriate document before continuing:
 
 - Update the active plan for task-local questions, assumptions, validation changes, or implementation notes.
-- Update `OPEN_QUESTIONS.md` for missing user input.
+- Update `docs/decisions/OPEN_QUESTIONS.md` for missing user input.
 - Add or update an ADR in `docs/decisions/` for project decisions, repository rule changes, compatibility choices, user-facing behavior, validation expectations, or future maintenance policy.
 - Update `TASKS.md` when backlog scope, dependencies, or task readiness changes.
 

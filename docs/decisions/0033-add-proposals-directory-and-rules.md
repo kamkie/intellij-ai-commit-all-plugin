@@ -6,7 +6,7 @@ Date: 2026-05-15
 
 ## Context
 
-The repository has ADRs for durable decisions, plans for accepted implementation work, `TASKS.md` for backlog items, and `OPEN_QUESTIONS.md` for missing input.
+The repository has ADRs for durable decisions, plans for accepted implementation work, `TASKS.md` for backlog items, and `docs/decisions/OPEN_QUESTIONS.md` for missing input.
 
 It did not yet have a home for analysis documents that list findings, duplications, simplifications, and improvement options for maintainer triage without immediately making decisions or implementation changes.
 
@@ -21,7 +21,7 @@ Proposal documents are advisory triage artifacts. They do not replace:
 - ADRs for accepted decisions.
 - `.agents/plans/` for implementation plans.
 - `TASKS.md` for backlog work.
-- `OPEN_QUESTIONS.md` for missing user input.
+- `docs/decisions/OPEN_QUESTIONS.md` for missing user input.
 - `CHANGELOG.md` for released or notable unreleased history.
 
 Each proposal must follow the rules in `docs/proposals/README.md`, including:

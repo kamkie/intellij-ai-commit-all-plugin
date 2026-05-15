@@ -40,7 +40,7 @@ Validation expected: gradle buildPlugin and gradle runIde startup.
 - Start with `AGENTS.md`.
 - Do not ask or expect AI to load every AI instruction file automatically; it should use the guidance map and load only the specific owner documents needed for the task.
 - Use `TASKS.md` for backlog and scope boundaries.
-- Use `OPEN_QUESTIONS.md` for missing user decisions.
+- Use `docs/decisions/OPEN_QUESTIONS.md` for missing user decisions.
 - Use `docs/DEVELOPMENT_LIFECYCLE.md` for multi-step changes.
 - Use `.agents/references/planning.md` before creating implementation plans.
 - Use `.agents/references/execution.md` before implementation.
@@ -87,11 +87,7 @@ When asking AI to create a proposal, expect a stable `proposal_id` such as `PROP
 
 When work comes from `TASKS.md`, reference the stable `T-AREA-NNN` task ID in the request or expect AI to identify it before implementation.
 
-Before AI starts implementation from an accepted plan, all plan questions and required decisions should be answered or documented as allowed assumptions. If a new question appears during planned implementation, AI should stop, update the appropriate planning, question, decision, or task document, and ask for the missing decision when needed.
-
-For accepted multi-task plans, each named task is committed after implementation, targeted validation, and self-review. The later release workflow is responsible for whole-release review, manual checks and tests, documentation update passes, and release artifact preparation.
-
-When using AI agents on an accepted multi-task plan, prefer one orchestrator plus one fresh task worker per named task. The orchestrator keeps the plan state, handles questions, checks evidence, maintains `CHANGELOG.md` for notable changes, and verifies the commit before the next worker starts.
+For accepted plans, use `.agents/references/planning.md` and `.agents/references/execution.md` for readiness, stop-on-question behavior, per-task commits, and orchestrator or task-worker execution.
 
 For release preparation, use [.agents/references/releases.md](../.agents/references/releases.md). The release orchestrator owns [CHANGELOG.md](../CHANGELOG.md) updates and should check whether [SUPPORT.md](../SUPPORT.md) still matches the release scope.
 

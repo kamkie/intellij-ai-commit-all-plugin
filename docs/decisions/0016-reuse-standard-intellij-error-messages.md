@@ -40,7 +40,7 @@ For plugin-owned states that need new wording, choose the exact message only aft
 
 ## Follow-Up
 
-- Remove `Q-UX-3` from `OPEN_QUESTIONS.md`.
+- Remove `Q-UX-3` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Remove `depends on: Q-UX-3` markers from `TASKS.md`.
 - See ADR 0017 for confirmation behavior.
-- Keep `Q-UX-5` open for detailed split-button styling.
+- Historical note: `Q-UX-5` was later resolved by ADR 0025, and final placeholder styling was selected by ADR 0027.

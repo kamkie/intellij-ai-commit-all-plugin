@@ -9,15 +9,13 @@ This directory holds task-specific implementation plans for work that is too lar
 - Give every plan a stable `Plan-ID` in the form `P-<short-kebab-slug>`, such as `P-scaffold-plugin-project`.
 - Do not use a strictly number-based plan ID such as `P-0001`; the ID should carry enough meaning to recognize the plan without its file path.
 - Keep plans focused on one task or milestone.
-- Link unresolved user input back to `OPEN_QUESTIONS.md`.
-- Move accepted project decisions and repository rule changes to `docs/decisions/`.
-- Do not start implementation from an accepted plan until every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.
-- For multi-task implementation, prefer an orchestrator with one fresh task worker per named task when the environment supports agent delegation.
+- Link unresolved user input back to `docs/decisions/OPEN_QUESTIONS.md`, and move accepted project decisions or repository rule changes to `docs/decisions/`.
+- Follow `.agents/references/planning.md` and `.agents/references/execution.md` for plan readiness, per-task commits, and orchestrator or task-worker execution.
 
 ## Lifecycle
 
 - Draft: the plan is being shaped and may contain unanswered questions.
-- Accepted: the plan is approved or clear enough to implement, with every required question and decision answered, decided, or explicitly documented as an allowed assumption.
+- Accepted: the plan is approved or clear enough to implement under `.agents/references/planning.md`.
 - Implemented: the code/docs have been changed and validated.
 - Superseded: another plan or decision record replaced it.
 

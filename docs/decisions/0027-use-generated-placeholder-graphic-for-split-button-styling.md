@@ -51,6 +51,6 @@ If implementation reveals that the generated placeholder cannot be represented c
 
 ## Follow-Up
 
-- Remove `Q-UX-6` from `OPEN_QUESTIONS.md`.
+- Remove `Q-UX-6` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Update `TASKS.md` so progress/activity styling no longer depends on an open question.
 - Store the generated placeholder graphic under `docs/concepts/graphics/` for immediate visual reference.

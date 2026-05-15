@@ -6,7 +6,7 @@ Use this guide when adding or updating repository documentation.
 
 - `README.md`: user-facing project description, setup, usage, supported IDE versions, limitations, and sandbox instructions after implementation exists.
 - `TASKS.md`: backlog, implementation decisions still pending, and validation tasks.
-- `OPEN_QUESTIONS.md`: missing user input and unresolved product or implementation choices.
+- `docs/decisions/OPEN_QUESTIONS.md`: missing user input and unresolved product or implementation choices.
 - `CHANGELOG.md`: notable unreleased changes and released history.
 - `SUPPORT.md`: support status, supported-scope summary, issue-reporting expectations, and privacy guidance.
 - `AGENTS.md`: short AI entry point, guidance map, priority order, and high-level workflow rules.
@@ -27,7 +27,7 @@ Use this guide when adding or updating repository documentation.
 - Do not imply plugin implementation has started until Gradle, Kotlin, or IntelliJ plugin scaffold files exist.
 - Prefer concrete commands and artifact names over generic process language.
 - Do not load every AI instruction file automatically. Start from `AGENTS.md`, use the guidance map, and load only the owner documents needed for the current documentation change unless the task is a broad guidance audit or cross-document consistency review.
-- Give open questions stable IDs in `OPEN_QUESTIONS.md`.
+- Give open questions stable IDs in `docs/decisions/OPEN_QUESTIONS.md`.
 - Give every `TASKS.md` item a stable task ID in the form `T-AREA-NNN`, keep the ID stable when wording or ordering changes, and do not renumber existing task IDs.
 - Give every plan a stable `Plan-ID` in the form `P-<short-kebab-slug>`, keep it stable when title, filename, status, or wording changes, and avoid strictly number-based plan IDs.
 - Give every proposal a stable `proposal_id` in the form `PROP-<short-kebab-slug>`, keep it stable when title, filename, status, wording, or archive location changes, and do not reuse retired proposal IDs.

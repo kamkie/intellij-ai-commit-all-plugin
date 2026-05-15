@@ -41,6 +41,6 @@ Target all JetBrains IDEs that expose the VCS Commit tool window and compatible 
 
 ## Follow-Up
 
-- Remove `Q-SCOPE-1` and `Q-SCOPE-2` from `OPEN_QUESTIONS.md`.
+- Remove `Q-SCOPE-1` and `Q-SCOPE-2` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Remove `Q-SCOPE-1` and `Q-SCOPE-2` dependency markers from `TASKS.md`.
 - Update README and AI collaboration docs with the accepted target.

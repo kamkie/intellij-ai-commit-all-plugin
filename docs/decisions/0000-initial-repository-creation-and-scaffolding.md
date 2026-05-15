@@ -36,7 +36,7 @@ Defer executable plugin scaffolding until the required scope and target decision
 
 ## Follow-Up
 
-- Resolve the missing input tracked in `OPEN_QUESTIONS.md`.
+- Resolve the missing input tracked in `docs/decisions/OPEN_QUESTIONS.md`.
 - Record accepted project decisions in `docs/decisions/`.
 - Add the Gradle/Kotlin IntelliJ plugin scaffold through a later task, plan, or ADR-backed implementation.
 - See ADR 0005 for the accepted product and action labels.

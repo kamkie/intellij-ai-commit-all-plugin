@@ -34,6 +34,6 @@ Non-Git VCS integrations are out of scope for the first implementation and shoul
 
 ## Follow-Up
 
-- Remove `Q-SCOPE-3` and `Q-SCOPE-4` from `OPEN_QUESTIONS.md`.
+- Remove `Q-SCOPE-3` and `Q-SCOPE-4` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Remove `Q-SCOPE-3` and `Q-SCOPE-4` dependency markers from `TASKS.md`.
 - Update documentation to state Git-only first-version behavior and multiple Git root support.

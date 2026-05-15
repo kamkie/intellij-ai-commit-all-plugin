@@ -7,7 +7,7 @@ scope: Covers current documentation, task backlog, ADRs, AI guidance, proposal w
 
 # Repository Analysis Proposal
 
-This proposal respects `AGENTS.md`, `TASKS.md`, `OPEN_QUESTIONS.md`, `docs/proposals/README.md`, and `docs/decisions/`. It lists findings for maintainer triage only; it does not implement the proposed cleanup or plugin behavior.
+This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.md`, `docs/proposals/README.md`, and `docs/decisions/`. It records repository cleanup findings and their implementation status; it does not implement plugin runtime behavior.
 
 ## Table of Contents
 
@@ -42,14 +42,14 @@ Compact overview only. Edit the YAML tracker inside each section below; this tab
 
 | Id | Title                                                                  | Priority | Status | Decision |
 |----|------------------------------------------------------------------------|----------|--------|----------|
-| E1 | Stale split-button styling guidance remains in accepted ADRs           | 2        | open   |          |
-| D1 | Scope decisions are repeated across user and agent documents           | 2        | open   |          |
-| D2 | Completed decision tasks duplicate ADR history in the backlog          | 2        | open   |          |
-| D3 | Marketplace documentation and release tasks overlap                    | 2        | open   |          |
-| D4 | Multi-task execution rules are repeated across too many guidance files | 3        | open   |          |
-| S1 | Add an ADR index or decision map                                       | 3        | open   |          |
-| S2 | Add lightweight documentation consistency checks                       | 5        | open   |          |
-| S3 | Prioritize a scaffold plan before adding more process rules            | 4        | open   |          |
+| E1 | Stale split-button styling guidance remains in accepted ADRs           | 2        | done     | accepted |
+| D1 | Scope decisions are repeated across user and agent documents           | 2        | rejected | rejected |
+| D2 | Completed decision tasks duplicate ADR history in the backlog          | 2        | rejected | rejected |
+| D3 | Marketplace documentation and release tasks overlap                    | 2        | done     | accepted |
+| D4 | Multi-task execution rules are repeated across too many guidance files | 3        | done     | accepted |
+| S1 | Add an ADR index or decision map                                       | 3        | done     | accepted |
+| S2 | Add lightweight documentation consistency checks                       | 5        | done     | accepted |
+| S3 | Prioritize a scaffold plan before adding more process rules            | 4        | done     | accepted |
 
 ## How To Edit The Trackers
 
@@ -62,17 +62,17 @@ Compact overview only. Edit the YAML tracker inside each section below; this tab
 
 ### E1. Stale split-button styling guidance remains in accepted ADRs
 
-- Evidence: `docs/decisions/0006-use-split-button-for-commit-and-push.md:11` says detailed visual styling remains deferred, and `docs/decisions/0006-use-split-button-for-commit-and-push.md:24` says detailed icon and styling choices remain open. `docs/decisions/0016-reuse-standard-intellij-error-messages.md:46` and `docs/decisions/0017-use-standard-ide-confirmation-barriers.md:46` still say to keep `Q-UX-5` open. Later, `docs/decisions/0027-use-generated-placeholder-graphic-for-split-button-styling.md:38` closes `Q-UX-6`, and `OPEN_QUESTIONS.md:5` says there are no open UX questions.
+- Evidence: `docs/decisions/0006-use-split-button-for-commit-and-push.md:11` says detailed visual styling remains deferred, and `docs/decisions/0006-use-split-button-for-commit-and-push.md:24` says detailed icon and styling choices remain open. `docs/decisions/0016-reuse-standard-intellij-error-messages.md:46` and `docs/decisions/0017-use-standard-ide-confirmation-barriers.md:46` still say to keep `Q-UX-5` open. Later, `docs/decisions/0027-use-generated-placeholder-graphic-for-split-button-styling.md:38` closes `Q-UX-6`, and `docs/decisions/OPEN_QUESTIONS.md:5` says there are no open questions.
 - Impact: A future agent reading only the most specific older ADR can reasonably think split-button styling is still unresolved, even though the current guidance points to the generated placeholder.
 - Proposal: Add short "Current state" or "Resolved later by ADR 0027" notes to the stale follow-up areas. Preserve the historical decisions, but make the currently applicable styling owner explicit.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: Implemented with current-state notes in ADR 0006, ADR 0016, and ADR 0017.
 ```
 
 ## Duplications To Remove Or Reduce
@@ -84,7 +84,7 @@ comment:
 - Proposal: Pick a narrower owner for each audience. Keep `README.md` user-facing, keep `SUPPORT.md` support-facing, keep ADRs authoritative for decisions, and make `docs/WORKING_WITH_AI.md` point to those owners instead of restating every value.
 
 ```yaml
-status: open
+status: rejected
 decision: rejected
 priority: 2
 owner:
@@ -99,12 +99,12 @@ comment: it is as designed. duplication in support is expected. as is WORKING_WI
 - Proposal: Reorder or compact `TASKS.md` so pending implementation work appears first and completed decision history is clearly secondary. Keep stable task IDs intact; do not renumber or reuse them.
 
 ```yaml
-status: open
+status: rejected
 decision: rejected
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: Maintainer rejected this cleanup in the proposal tracker.
 ```
 
 ### D3. Marketplace documentation and release tasks overlap
@@ -114,12 +114,12 @@ comment:
 - Proposal: Split ownership by artifact: `T-REL-*` should own Gradle/plugin/Marketplace metadata and publishing mechanics, while `T-DOC-*` should own user- or contributor-facing documentation. Adjust wording to remove duplicate source-link and first-upload responsibilities.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: Implemented by clarifying `T-DOC-*` and `T-REL-*` Marketplace ownership in `TASKS.md`.
 ```
 
 ### D4. Multi-task execution rules are repeated across too many guidance files
@@ -129,12 +129,12 @@ comment:
 - Proposal: Make `.agents/references/planning.md` and `.agents/references/execution.md` the detailed AI-facing owners. Shorten higher-level docs to one-sentence summaries plus links. Keep ADRs as history, not live process checklists.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 3
 owner:
 updated: 2026-05-15
-comment:
+comment: Implemented by shortening higher-level lifecycle, AI-working, and plan README guidance to point at detailed planning and execution owners.
 ```
 
 ## Simplification Opportunities
@@ -146,12 +146,12 @@ comment:
 - Proposal: Add a compact table to `docs/decisions/README.md` with ADR number, title, status, date, and topic. This can make targeted reading easier without changing decision content.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 3
 owner:
 updated: 2026-05-15
-comment: with clickable links
+comment: Implemented with clickable ADR links in `docs/decisions/README.md`.
 ```
 
 ### S2. Add lightweight documentation consistency checks
@@ -161,12 +161,12 @@ comment: with clickable links
 - Proposal: Add a small local validation command later, for example a PowerShell script under `scripts/`, to check local Markdown links, unique task IDs, ADR filename sequence, proposal front matter, and proposal tracker/table parity. Hook it into CI when CI exists.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 5
 owner:
 updated: 2026-05-15
-comment:
+comment: Implemented with `scripts/validate-docs.ps1` and testing guidance.
 ```
 
 ### S3. Prioritize a scaffold plan before adding more process rules
@@ -176,24 +176,20 @@ comment:
 - Proposal: Make the next implementation-oriented artifact an accepted `P-scaffold-plugin-project` plan covering Gradle Kotlin DSL, IntelliJ Platform Gradle Plugin, plugin descriptor, base package, AI Assistant dependency identification, and `runIde` validation.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 4
 owner:
 updated: 2026-05-15
-comment: i intended to do exactly that after this review.
+comment: Implemented with accepted plan `P-scaffold-plugin-project`.
 ```
 
 ## Smaller / Stylistic Items
 
-- `OPEN_QUESTIONS.md` currently has only `## UX Decisions` plus "No open UX questions." If there are no open questions of any kind, a top-level "No open questions" sentence would be clearer.
-    - ok. do that. move OPEN_QUESTIONS.md to docs/decisions/
-- `docs/proposals/README.md` has a "Current Proposal" section that lists the current proposal number and title.
-    - and? what is you point?
-- Consider adding a short "Repository State" line near the top of `TASKS.md` that says the project is documentation-only until the scaffold tasks land.
-    - ok. do that
-- Keep generated concept artwork clearly separated from final plugin assets; `docs/concepts/graphics/README.md` already does this well.
-    - as intended
+- Implemented: moved open questions to `docs/decisions/OPEN_QUESTIONS.md` and simplified the file to a top-level "No open questions" state.
+- No action: the noted `docs/proposals/README.md` "Current Proposal" section was not present in the current file.
+- Implemented: added a repository-state line near the top of `TASKS.md`.
+- No action: generated concept artwork was already separated from final plugin assets.
 
 ## Suggested Priority Order
 
@@ -206,7 +202,7 @@ comment: i intended to do exactly that after this review.
 
 ## Out Of Scope
 
-- No plugin runtime behavior, build scaffold, Gradle configuration, Kotlin code, `plugin.xml`, or CI is changed by this proposal.
-- No ADR is superseded or rewritten by this proposal.
+- No plugin runtime behavior, build scaffold, Gradle configuration, Kotlin code, `plugin.xml`, or CI is changed by this proposal implementation.
+- No ADR is superseded by this proposal.
 - No external JetBrains API, Marketplace, or AI Assistant dependency documentation was verified during this local repository analysis.
 - No release readiness claim is made; the repository remains pre-scaffold and pre-release.

@@ -29,7 +29,7 @@ The draft series should cover at least:
 
 The draft series must stay compatible with IntelliJ Platform UI conventions and the accepted split-button structure from ADR 0006.
 
-Final implementation should not invent a detailed style independently while coding the button. It should use the selected draft or stop and update `OPEN_QUESTIONS.md` if no draft has been selected.
+Final implementation should not invent a detailed style independently while coding the button. It should use the selected draft or stop and update `docs/decisions/OPEN_QUESTIONS.md` if no draft has been selected.
 
 ## Consequences
 
@@ -49,7 +49,7 @@ Final implementation should not invent a detailed style independently while codi
 
 ## Follow-Up
 
-- Remove `Q-UX-5` from `OPEN_QUESTIONS.md`.
+- Remove `Q-UX-5` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Add a new open question for selecting the final split-button styling draft.
 - Update `TASKS.md` with draft preparation, final selection, and progress-state dependencies.
 - Update `README.md` with the accepted draft-selection approach.

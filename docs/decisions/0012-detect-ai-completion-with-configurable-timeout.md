@@ -48,6 +48,6 @@ Default the configurable AI generation timeout to 5 seconds.
 
 ## Follow-Up
 
-- Remove `Q-AI-1` and `Q-AI-2` from `OPEN_QUESTIONS.md`.
-- Remove `Q-AI-5` from `OPEN_QUESTIONS.md`.
+- Remove `Q-AI-1` and `Q-AI-2` from `docs/decisions/OPEN_QUESTIONS.md`.
+- Remove `Q-AI-5` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Update `TASKS.md` to implement explicit completion detection, Settings-based timeout configuration, and a 500 ms default completion-check interval.

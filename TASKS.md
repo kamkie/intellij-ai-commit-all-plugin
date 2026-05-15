@@ -1,5 +1,7 @@
 # Build Tasks
 
+Repository state: documentation and planning are present, but no Gradle, Kotlin, or IntelliJ plugin scaffold exists yet.
+
 Notation:
 
 - Every task starts with a stable `T-AREA-NNN` ID. Keep IDs stable when wording, status, or ordering changes. Do not renumber existing IDs.
@@ -135,8 +137,8 @@ Notation:
 - [ ] T-DOC-004: Document how to run the sandbox IDE.
 - [ ] T-DOC-005: Document known unsupported cases.
 - [x] T-DOC-006: Document license in `README.md`. (ADR 0018)
-- [ ] T-DOC-007: Document Marketplace source code link.
-- [ ] T-DOC-008: Document Marketplace publication process and required secrets.
+- [ ] T-DOC-007: Document source code location for users and contributors once Marketplace metadata exists.
+- [ ] T-DOC-008: Document the contributor-facing release and publication process after release automation is configured.
 - [x] T-DOC-009: Add root `CHANGELOG.md` for notable unreleased and released changes. (ADR 0029)
 - [x] T-DOC-010: Add root `SUPPORT.md` for support status and issue-reporting expectations. (ADR 0029)
 - [x] T-DOC-011: Add rule to avoid automatically loading every AI instruction file. (ADR 0031)
@@ -147,10 +149,10 @@ Notation:
 ## 11. Publishing, Signing, Marketplace, And CI
 
 - [ ] T-REL-001: Add Marketplace-ready plugin metadata.
-- [ ] T-REL-002: Add official source code link to Marketplace metadata.
+- [ ] T-REL-002: Add official source code link to plugin and Marketplace metadata.
 - [ ] T-REL-003: Configure plugin signing through IntelliJ Platform Gradle Plugin 2.x using local properties or CI secrets.
 - [ ] T-REL-004: Configure `publishPlugin` for official JetBrains Marketplace using a token supplied outside the repository.
-- [ ] T-REL-005: Document that first Marketplace upload may need to be manual before automated Gradle publishing.
+- [ ] T-REL-005: Configure or record first Marketplace upload handling when JetBrains requires manual initial plugin setup.
 - [ ] T-REL-006: Add CI for build, tests, plugin structure verification, and plugin packaging.
 - [ ] T-REL-007: Add Plugin Verifier CI for target IDE versions.
 - [ ] T-REL-008: Add a gated/manual release workflow for signing and Marketplace publishing.
