@@ -8,6 +8,10 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.2
 
 ## [Unreleased]
 
+### Changed
+
+- Consolidated active proposal findings into four numbered work-stream proposals and archived the superseded source proposals with pointers to the new finding IDs.
+
 ## [v0.1.0-alpha.2] - 2026-05-15
 
 ### Added

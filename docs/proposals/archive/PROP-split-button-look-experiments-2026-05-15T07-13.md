@@ -34,11 +34,11 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 Compact overview only. Edit the YAML tracker inside each section below; this table mirrors statuses at a glance.
 
-| Id | Title                                                      | Priority | Status | Decision |
-|----|------------------------------------------------------------|----------|--------|----------|
-| E1 | Current split-button look does not match maintainer intent | 1        | open   |          |
-| E2 | No structured experimentation process for visual styling   | 1        | open   |          |
-| E3 | No decision tree to converge on a final look               | 2        | open   |          |
+| Id | Title                                                      | Priority | Status   | Decision |
+|----|------------------------------------------------------------|----------|----------|----------|
+| E1 | Current split-button look does not match maintainer intent | 1        | deferred | deferred |
+| E2 | No structured experimentation process for visual styling   | 1        | deferred | deferred |
+| E3 | No decision tree to converge on a final look               | 2        | deferred | deferred |
 
 ## How To Edit The Trackers
 
@@ -56,12 +56,12 @@ Compact overview only. Edit the YAML tracker inside each section below; this tab
 - Proposal: Treat the current placeholder + icons as explicitly non-final and open a styling iteration. Capture the *missing intent* in `docs/decisions/OPEN_QUESTIONS.md` as a new `Q-UX-*` question (e.g., "What visual direction should the split button take? Flat monochrome glyph, accented AI-spark, badge-on-VCS-icon, text+icon combo, ...?") so subsequent ADRs can reference an answered question rather than re-deriving intent.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 1
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-02-pre-release-ux E003`."
 ```
 
 ### E2. No structured experimentation process for visual styling
@@ -75,12 +75,12 @@ comment:
     4. Record the comparison table in a new proposal or an ADR draft and let the maintainer pick.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 1
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-02-pre-release-ux E004`."
 ```
 
 ### E3. No decision tree to converge on a final look
@@ -109,12 +109,12 @@ comment:
           The tree itself should live alongside the drafts (e.g., `docs/concepts/graphics/split-button-drafts/DECISION_TREE.md`) and be referenced from the follow-up ADR that supersedes ADR 0027.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-02-pre-release-ux E005`."
 ```
 
 ## Duplications To Remove Or Reduce

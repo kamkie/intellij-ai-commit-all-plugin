@@ -36,13 +36,13 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 Compact overview only. Edit the YAML tracker inside each section below; this table mirrors statuses at a glance.
 
-| Id   | Title                                                                            | Priority | Status | Decision |
-|------|----------------------------------------------------------------------------------|----------|--------|----------|
-| E001 | Variable-width point IDs (E1, E10) break visual alignment and sorting            | 1        | open   |          |
-| E002 | Markdown formatting drifts between IntelliJ reformat, AI agents, and validation  | 1        | open   |          |
-| E003 | Nested list indentation is inconsistent across proposals                         | 2        | open   |          |
-| E004 | Markdown tables are not consistently column-aligned                              | 2        | open   |          |
-| S001 | Add a shared `.editorconfig` and IntelliJ code style to anchor markdown rules    | 2        | open   |          |
+| Id   | Title                                                                           | Priority | Status   | Decision |
+|------|---------------------------------------------------------------------------------|----------|----------|----------|
+| E001 | Variable-width point IDs (E1, E10) break visual alignment and sorting           | 1        | deferred | deferred |
+| E002 | Markdown formatting drifts between IntelliJ reformat, AI agents, and validation | 1        | deferred | deferred |
+| E003 | Nested list indentation is inconsistent across proposals                        | 2        | deferred | deferred |
+| E004 | Markdown tables are not consistently column-aligned                             | 2        | deferred | deferred |
+| S001 | Add a shared `.editorconfig` and IntelliJ code style to anchor markdown rules   | 2        | deferred | deferred |
 
 ## How To Edit The Trackers
 
@@ -64,12 +64,12 @@ Compact overview only. Edit the YAML tracker inside each section below; this tab
 - Update `docs/proposals/PROPOSAL_TEMPLATE.md`, the rules in `docs/proposals/README.md`, and the regex in `scripts/validate-docs.ps1` (currently `(E\d+|D\d+|S\d+)`) to require exactly three digits: `(E\d{3}|D\d{3}|S\d{3})`. Keep existing proposals as-is for history; renumber only when a proposal is materially updated. Record the change as an ADR before implementation per `docs/decisions/README.md`.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 1
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-01-proposal-governance S001`."
 ```
 
 ### E002. Markdown formatting drifts between IntelliJ reformat, AI agents, and the validation script
@@ -83,12 +83,12 @@ comment:
 - Pick exactly one tool family (markdownlint) to avoid duplicate enforcement. Document the decision in a new ADR before implementation per `docs/decisions/README.md`.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 1
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E003`."
 ```
 
 ### E003. Nested list indentation is inconsistent across proposals
@@ -98,12 +98,12 @@ comment:
 - Proposal: Standardize on **4-space** indentation per nesting level for unordered lists in markdown (matches the existing TOC convention and IntelliJ's default for `- ` lists). Enforce via the `.editorconfig` + markdownlint rules from E002 (`MD007 { "indent": 4 }`). Forbid mixing tab/space indentation in markdown. Apply the rule to ordered lists as well (`MD029` consistent, `1.` first marker).
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E003`."
 ```
 
 ### E004. Markdown tables are not consistently column-aligned
@@ -118,12 +118,12 @@ comment:
 - Provide an IntelliJ "Reformat Code" action setting that produces the same output, and instruct AI agents in `.agents/references/code-style.md` to follow it.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E003`."
 ```
 
 ## Duplications To Remove Or Reduce
@@ -139,12 +139,12 @@ _No tracked findings._
 - Proposal: Land one small `.editorconfig` + one `.markdownlint.json` + one IntelliJ code style export in a single ADR-gated change, then reference them from `AGENTS.md` and `.agents/references/code-style.md`. Treat that change as the prerequisite implementation task for E002–E004.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E003`."
 ```
 
 ## Smaller / Stylistic Items

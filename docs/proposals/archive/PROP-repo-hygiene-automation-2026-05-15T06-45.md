@@ -41,18 +41,18 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 Compact overview only. Edit the YAML tracker inside each section below; this table mirrors statuses at a glance.
 
-| Id  | Title                                           | Priority | Status | Decision |
-|-----|-------------------------------------------------|----------|--------|----------|
-| E1 | No automated code scanning configured           | 1        | open   |          |
-| E2 | No enforced code formatting/linting             | 1        | open   |          |
-| E3 | No Dependabot configuration                     | 1        | open   |          |
-| E4 | Gradle wrapper integrity is not validated in CI | 2        | open   |          |
-| E5 | No secret scanning / push protection guidance   | 2        | open   |          |
-| E6 | No SECURITY.md disclosure policy                | 2        | open   |          |
-| E7 | No CONTRIBUTING.md for external contributors    | 3        | open   |          |
-| E8 | No CODEOWNERS file                              | 3        | open   |          |
-| E9 | No pull request or issue templates              | 3        | open   |          |
-| E10 | No license header enforcement on Kotlin sources | 4        | open   |          |
+| Id  | Title                                           | Priority | Status   | Decision |
+|-----|-------------------------------------------------|----------|----------|----------|
+| E1  | No automated code scanning configured           | 1        | deferred | deferred |
+| E2  | No enforced code formatting/linting             | 1        | deferred | deferred |
+| E3  | No Dependabot configuration                     | 1        | deferred | deferred |
+| E4  | Gradle wrapper integrity is not validated in CI | 2        | deferred | deferred |
+| E5  | No secret scanning / push protection guidance   | 2        | deferred | deferred |
+| E6  | No SECURITY.md disclosure policy                | 2        | deferred | deferred |
+| E7  | No CONTRIBUTING.md for external contributors    | 3        | deferred | deferred |
+| E8  | No CODEOWNERS file                              | 3        | deferred | deferred |
+| E9  | No pull request or issue templates              | 3        | deferred | deferred |
+| E10 | No license header enforcement on Kotlin sources | 4        | deferred | deferred |
 
 ## How To Edit The Trackers
 
@@ -70,12 +70,12 @@ Compact overview only. Edit the YAML tracker inside each section below; this tab
 - Proposal: Add GitHub CodeQL analysis for the `java-kotlin` language with the default query suite, scheduled weekly and on PRs to `main`. Upload SARIF results to GitHub code scanning. Optionally enable `security-extended` queries if signal-to-noise stays acceptable.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 1
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E002`."
 ```
 
 ### E2. No enforced code formatting/linting
@@ -88,12 +88,12 @@ comment:
        Pick exactly one to avoid duplicate enforcement. Document the choice in a new ADR before implementation per `docs/decisions/README.md`.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 1
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E003`."
 ```
 
 ### E3. No Dependabot configuration
@@ -107,12 +107,12 @@ comment:
       Constrain the IntelliJ Platform major version bumps to a separate group so they can be reviewed against ARD-0008 (target platform).
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 1
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E001`."
 ```
 
 ### E4. Gradle wrapper integrity is not validated in CI
@@ -122,12 +122,12 @@ comment:
 - Proposal: Add a `wrapper-validation` job using `gradle/wrapper-validation-action@v3` to `ci.yml` (or a dedicated workflow) that runs on every PR and push to `main`.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E004`."
 ```
 
 ### E5. No secret scanning / push protection guidance
@@ -137,12 +137,12 @@ comment:
 - Proposal: Document secret inventory and rotation in `SECURITY.md` (see E6) and add a checklist item to `.agents/references/releases.md` to verify GitHub "Secret scanning" and "Push protection" are enabled for the repository. No code change required beyond docs.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E005`."
 ```
 
 ### E6. No SECURITY.md disclosure policy
@@ -152,12 +152,12 @@ comment:
 - Proposal: Add `SECURITY.md` covering: supported versions (linked to `SUPPORT.md`), private reporting contact (email or GitHub Private Vulnerability Reporting), response SLA, and out-of-scope items. Enable GitHub Private Vulnerability Reporting.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E005`."
 ```
 
 ### E7. No CONTRIBUTING.md for external contributors
@@ -167,12 +167,12 @@ comment:
 - Proposal: Add a `CONTRIBUTING.md` that points to `docs/DEVELOPMENT_LIFECYCLE.md`, `docs/validation/manual-sandbox.md`, `.gitmessage`, and `docs/decisions/README.md`. Keep it short; link rather than duplicate.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 3
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E006`."
 ```
 
 ### E8. No CODEOWNERS file
@@ -182,12 +182,12 @@ comment:
 - Proposal: Add `.github/CODEOWNERS` mapping `*` and key paths (`src/`, `.github/workflows/`, `docs/decisions/`, `build.gradle.kts`) to the maintainer's GitHub handle. Coordinate identity with ARD-0040 (git identity for ADR decision makers).
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 3
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E007`."
 ```
 
 ### E9. No pull request or issue templates
@@ -197,12 +197,12 @@ comment:
 - Proposal: Add a single PR template referencing the review checklist and the validation matrix in `docs/validation/manual-sandbox.md`. Add two issue templates: `bug_report.yml` and `feature_request.yml`, with `config.yml` linking to `SUPPORT.md`.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 3
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E006`."
 ```
 
 ### E10. No license header enforcement on Kotlin sources
@@ -212,12 +212,12 @@ comment:
 - Proposal: If E2 selects Spotless, reuse it with the `licenseHeader` step. Otherwise add `com.github.hierynomus.license` or `org.cadixdev.licenser`. Decide as part of the same ADR that resolves E2 to avoid plugin sprawl.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 4
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E008`."
 ```
 
 ## Duplications To Remove Or Reduce

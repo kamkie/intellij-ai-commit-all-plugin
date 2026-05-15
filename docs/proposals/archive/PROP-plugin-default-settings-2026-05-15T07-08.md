@@ -34,11 +34,11 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 Compact overview only. Edit the YAML tracker inside each section below; this table mirrors statuses at a glance.
 
-| Id | Title                                                          | Priority | Status | Decision |
-|----|----------------------------------------------------------------|----------|--------|----------|
-| E1 | Commit message is not cleared before AI generation             | 1        | open   |          |
-| E2 | Push confirmation window is shown on commit-and-push flow      | 1        | open   |          |
-| E3 | Ctrl+K and Ctrl+Shift+K shortcuts are not taken over by plugin | 2        | open   |          |
+| Id | Title                                                          | Priority | Status   | Decision |
+|----|----------------------------------------------------------------|----------|----------|----------|
+| E1 | Commit message is not cleared before AI generation             | 1        | deferred | deferred |
+| E2 | Push confirmation window is shown on commit-and-push flow      | 1        | deferred | deferred |
+| E3 | Ctrl+K and Ctrl+Shift+K shortcuts are not taken over by plugin | 2        | deferred | deferred |
 
 ## How To Edit The Trackers
 
@@ -56,12 +56,12 @@ Compact overview only. Edit the YAML tracker inside each section below; this tab
 - Proposal: Make "clear commit message before invoking AI generation" the default behavior for both the `AI Commit All` and `& Push` actions. Expose an `AiCommitAllSettings` toggle (e.g., `clearCommitMessageBeforeGeneration`, default `true`) so users who prefer the current behavior can opt out. Ensure the user-edit-detection signal treats this programmatic clear as non-user input.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 1
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-02-pre-release-ux E001`."
 ```
 
 ### E2. Push confirmation window is shown on commit-and-push flow
@@ -71,12 +71,12 @@ comment:
 - Proposal: Default the `& Push` action to skip the Push Commits dialog and push immediately to the current tracked branch when conditions are safe (single Git root or all roots have a tracked upstream, no force-push needed, no unresolved conflicts). Fall back to the standard dialog when conditions are not safe. Expose an `AiCommitAllSettings` toggle (e.g., `showPushDialog`, default `false`) and document the interaction with ADR 0017 — likely requires a new ADR that narrows ADR 0017 for the `& Push` action specifically.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 1
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-02-pre-release-ux E002`."
 ```
 
 ### E3. Ctrl+K and Ctrl+Shift+K shortcuts are not taken over by plugin actions
@@ -89,12 +89,12 @@ comment:
       Implement via `<keyboard-shortcut keymap="$default" first-keystroke="…"/>` in `plugin.xml` and provide an override entry that removes the original action's shortcut where the IntelliJ Platform allows it (`<remove-shortcut>` or via a custom `KeymapExtension`). Because this overrides well-established IDE shortcuts, treat acceptance as a user-visible behavioral change that requires an ADR and a `README.md` note, plus an `AiCommitAllSettings` option (e.g., `overrideCommitShortcuts`, default `true`) so users can opt out without manually editing the keymap.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-02-pre-release-ux E006`."
 ```
 
 ## Duplications To Remove Or Reduce

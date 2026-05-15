@@ -36,13 +36,13 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 Compact overview only. Edit the YAML tracker inside each section below; this table mirrors statuses at a glance.
 
-| Id | Title                                                 | Priority | Status | Decision |
-|----|-------------------------------------------------------|----------|--------|----------|
-| E1 | Define the "all tasks finished" trigger for removal   | 1        | open   |          |
-| E2 | Remove `TASKS.md` once the trigger is met             | 2        | open   |          |
-| E3 | Update references to `TASKS.md` across the repository | 2        | open   |          |
-| E4 | Preserve completed task history before removal        | 3        | open   |          |
-| E5 | Decide the future home for any new backlog items      | 3        | open   |          |
+| Id | Title                                                 | Priority | Status   | Decision |
+|----|-------------------------------------------------------|----------|----------|----------|
+| E1 | Define the "all tasks finished" trigger for removal   | 1        | deferred | deferred |
+| E2 | Remove `TASKS.md` once the trigger is met             | 2        | deferred | deferred |
+| E3 | Update references to `TASKS.md` across the repository | 2        | deferred | deferred |
+| E4 | Preserve completed task history before removal        | 3        | deferred | deferred |
+| E5 | Decide the future home for any new backlog items      | 3        | deferred | deferred |
 
 ## How To Edit The Trackers
 
@@ -60,12 +60,12 @@ Compact overview only. Edit the YAML tracker inside each section below; this tab
 - Proposal: Adopt the rule "remove `TASKS.md` only when both (a) `## Open Backlog` contains no `[ ]` task, and (b) no active plan under `.agents/plans/` references a `T-AREA-NNN` ID that is not marked `[x]`". Capture the rule in an ADR before implementation per `docs/decisions/README.md`.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 1
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E009`."
 ```
 
 ### E2. Remove `TASKS.md` once the trigger is met
@@ -75,12 +75,12 @@ comment:
 - Proposal: Delete `TASKS.md` in a dedicated change after E1 is accepted and E3/E4 are prepared. The change should be a single commit that removes the file and lands together with the reference updates from E3.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E012`."
 ```
 
 ### E3. Update references to `TASKS.md` across the repository
@@ -90,12 +90,12 @@ comment:
 - Proposal: As part of the same change that removes `TASKS.md`, update every reference to either (a) point at the new backlog home chosen in E5, or (b) state that the backlog is empty and direct readers to plans/ADRs. Use a repository-wide search for `TASKS.md` to enumerate all touch points before editing.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E012`."
 ```
 
 ### E4. Preserve completed task history before removal
@@ -105,12 +105,12 @@ comment:
 - Proposal: Before removal, either (a) move the `## Completed Task Archive` section into `CHANGELOG.md` under an "Archived Backlog" appendix, or (b) relocate it to `docs/history/completed-tasks.md`. Keep all `T-AREA-NNN` IDs verbatim so historical references in commits and ADRs remain resolvable. Decide the destination in the ADR opened by E1.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 3
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E010`."
 ```
 
 ### E5. Decide the future home for any new backlog items
@@ -123,12 +123,12 @@ comment:
        Pick one explicitly so `AGENTS.md`, `docs/WORKING_WITH_AI.md`, `docs/proposals/README.md`, and `.agents/references/` can be updated consistently in E3.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 3
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-03-repository-quality-lifecycle E011`."
 ```
 
 ## Duplications To Remove Or Reduce

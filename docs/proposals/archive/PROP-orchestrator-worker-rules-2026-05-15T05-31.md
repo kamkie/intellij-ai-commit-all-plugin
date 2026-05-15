@@ -39,16 +39,16 @@ This proposal supersedes the earlier draft at `.agents/prompts/PROMPT-orchestrat
 
 ## Progress Tracker
 
-| Id | Title                                                     | Priority | Status | Decision |
-|----|-----------------------------------------------------------|----------|--------|----------|
-| S1 | Commit-message schema extension for multi-agent execution | 3        | open   | accepted |
-| S2 | Orchestrator synchronization and logging                  | 4        | open   | accepted |
-| S3 | Execution topology — git worktrees vs single branch       | 5        | open   | accepted |
-| S4 | Plan worker-count field                                   | 2        | open   | accepted |
-| S5 | Worker plan-file update responsibility                    | 2        | open   |          |
-| S6 | Orchestrator changelog update cadence                     | 2        | open   |          |
-| S7 | Plan execution graph with marked workers, orchestrators, and modes | 2        | open   |          |
-| S8 | Author-empty decision rule for new proposal findings      | 1        | open   |          |
+| Id | Title                                                              | Priority | Status   | Decision |
+|----|--------------------------------------------------------------------|----------|----------|----------|
+| S1 | Commit-message schema extension for multi-agent execution          | 3        | deferred | deferred |
+| S2 | Orchestrator synchronization and logging                           | 4        | deferred | deferred |
+| S3 | Execution topology — git worktrees vs single branch                | 5        | deferred | deferred |
+| S4 | Plan worker-count field                                            | 2        | deferred | deferred |
+| S5 | Worker plan-file update responsibility                             | 2        | deferred | deferred |
+| S6 | Orchestrator changelog update cadence                              | 2        | deferred | deferred |
+| S7 | Plan execution graph with marked workers, orchestrators, and modes | 2        | deferred | deferred |
+| S8 | Author-empty decision rule for new proposal findings               | 1        | deferred | deferred |
 
 ## How To Edit The Trackers
 
@@ -80,12 +80,12 @@ _No tracked findings._
     - After acceptance, update `.gitmessage` (template + example block) and the `## Commit Rules` section of `.agents/references/execution.md` in a single follow-up change.
 
 ```yaml
-status: open
-decision: accepted
+status: deferred
+decision: deferred
 priority: 3
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-04-multi-agent-execution S002`."
 ```
 
 ### S2. Orchestrator synchronization and logging (ADR B)
@@ -100,12 +100,12 @@ comment:
     - After acceptance, extend `.agents/references/execution.md` (`Orchestrator And Task Workers`) and, if file-backed, document `.agents/runs/` in `.agents/references/execution.md` and `AGENTS.md` guidance map.
 
 ```yaml
-status: open
-decision: accepted
+status: deferred
+decision: deferred
 priority: 4
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-04-multi-agent-execution S003`."
 ```
 
 ### S3. Execution topology — git worktrees vs single branch (ADR C)
@@ -120,12 +120,12 @@ comment:
     - After acceptance, update `.agents/references/execution.md` (`Orchestrator And Task Workers`) with the topology choice and, if needed, `.agents/references/testing.md` for per-worktree validation.
 
 ```yaml
-status: open
-decision: accepted
+status: deferred
+decision: deferred
 priority: 5
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-04-multi-agent-execution S007`."
 ```
 
 ### S4. Plan worker-count field (ADR D)
@@ -140,12 +140,12 @@ comment:
     - After acceptance, update `PLAN_TEMPLATE.md`, `.agents/plans/README.md`, `.agents/references/planning.md`, and `scripts/validate-docs.ps1` in a single follow-up change, and backfill the field on existing plans (including `PLAN-fastest-plan-execution.md`).
 
 ```yaml
-status: open
-decision: accepted
+status: deferred
+decision: deferred
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-04-multi-agent-execution S001`."
 ```
 
 ### S5. Worker plan-file update responsibility (ADR E)
@@ -160,12 +160,12 @@ comment:
     - After acceptance, update `.agents/references/execution.md` (`Orchestrator And Task Workers`) and `.agents/references/planning.md` to describe the responsibility and the hand-off mechanism.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-04-multi-agent-execution S004`."
 ```
 
 ### S6. Orchestrator changelog update cadence (ADR F)
@@ -180,12 +180,12 @@ comment:
     - After acceptance, update `.agents/references/execution.md` (`Orchestrator And Task Workers`) and `.agents/references/releases.md` to describe the per-handover cadence and the grouping exemption.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-04-multi-agent-execution S005`."
 ```
 
 ### S7. Plan execution graph with marked workers, orchestrators, and modes (ADR G)
@@ -201,12 +201,12 @@ comment:
     - After acceptance, update `PLAN_TEMPLATE.md`, `.agents/plans/README.md`, `.agents/references/planning.md`, and `scripts/validate-docs.ps1` in a single follow-up change, and backfill the section on existing plans (including `PLAN-fastest-plan-execution.md`, whose Before/After diagram already approximates the required form).
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 2
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-04-multi-agent-execution S006`."
 ```
 
 ### S8. Author-empty decision rule for new proposal findings (ADR H)
@@ -221,12 +221,12 @@ comment:
     - After acceptance, update `docs/proposals/PROPOSAL_TEMPLATE.md` and `docs/proposals/README.md` in a single follow-up change.
 
 ```yaml
-status: open
-decision:
+status: deferred
+decision: deferred
 priority: 1
 owner:
 updated: 2026-05-15
-comment:
+comment: "Consolidated into `PROP-01-proposal-governance S002`."
 ```
 
 ## Smaller / Stylistic Items
