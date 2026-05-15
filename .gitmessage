@@ -53,7 +53,7 @@ Validation: <command/result>
 #   Project-Source: prompt
 #   Project-Prompt: define all files as every non-ignored committable change
 #   Co-authored-by: <agent-name> <agent-email>
-#   Refs: docs/decisions/0003-define-all-files-commit-scope.md
+#   Refs: docs/decisions/ard-0003-define-all-files-commit-scope.md
 #   Validation: git diff --check - passed
 #
 #   build(scaffold): add IntelliJ plugin Gradle project

@@ -104,8 +104,15 @@ foreach ($plan in $planFiles) {
     }
 }
 
-$adrFiles = Get-ChildItem -LiteralPath (Join-Path $repoRoot 'docs/decisions') -File -Filter '*.md' |
-    Where-Object { $_.Name -match '^\d{4}-' } |
+$adrDirectory = Join-Path $repoRoot 'docs/decisions'
+$legacyAdrFiles = Get-ChildItem -LiteralPath $adrDirectory -File -Filter '*.md' |
+    Where-Object { $_.Name -match '^\d{4}-' }
+foreach ($legacyAdr in $legacyAdrFiles) {
+    $relative = Get-RelativePath $legacyAdr.FullName
+    Add-ValidationError "$relative must use ard-0000-<slug>.md filename format"
+}
+
+$adrFiles = Get-ChildItem -LiteralPath $adrDirectory -File -Filter 'ard-*.md' |
     Sort-Object Name
 $adrReadmePath = Join-Path $repoRoot 'docs/decisions/README.md'
 $adrReadmeText = ''
@@ -113,16 +120,84 @@ if (Test-Path -LiteralPath $adrReadmePath) {
     $adrReadmeText = Get-Content -Raw -LiteralPath $adrReadmePath
 }
 
+$requiredMadrHeadings = @(
+    '# ',
+    '## Context and Problem Statement',
+    '## Decision Drivers',
+    '## Considered Options',
+    '## Decision Outcome',
+    '### Consequences',
+    '### Confirmation',
+    '## Pros and Cons of the Options',
+    '## More Information'
+)
+
 for ($i = 0; $i -lt $adrFiles.Count; $i++) {
-    $expected = '{0:D4}' -f $i
-    $actual = $adrFiles[$i].Name.Substring(0, 4)
-    if ($actual -ne $expected) {
-        Add-ValidationError "ADR sequence expected $expected but found $($adrFiles[$i].Name)"
+    $relative = Get-RelativePath $adrFiles[$i].FullName
+    $nameMatch = [regex]::Match($adrFiles[$i].Name, '^ard-(\d{4})-[a-z0-9]+(?:-[a-z0-9]+)*\.md$')
+    if (-not $nameMatch.Success) {
+        Add-ValidationError "$relative must use ard-0000-<slug>.md filename format"
+        continue
     }
 
-    $expectedIndexEntry = "[$actual]($($adrFiles[$i].Name))"
+    $expected = '{0:D4}' -f $i
+    $actual = $nameMatch.Groups[1].Value
+    if ($actual -ne $expected) {
+        Add-ValidationError "ADR sequence expected ard-$expected but found $($adrFiles[$i].Name)"
+    }
+
+    $expectedIndexEntry = "[ard-$actual]($($adrFiles[$i].Name))"
     if (-not $adrReadmeText.Contains($expectedIndexEntry)) {
         Add-ValidationError "docs/decisions/README.md is missing ADR index entry $expectedIndexEntry"
+    }
+
+    $adrText = Get-Content -Raw -LiteralPath $adrFiles[$i].FullName
+    $frontMatterMatch = [regex]::Match($adrText, '(?s)^---\s(.*?)\s---\s*')
+    if (-not $frontMatterMatch.Success) {
+        Add-ValidationError "$relative is missing MADR YAML front matter"
+        continue
+    }
+
+    $frontMatter = $frontMatterMatch.Groups[1].Value
+    foreach ($key in @('status', 'date', 'decision-makers', 'consulted', 'informed')) {
+        if ($frontMatter -notmatch "(?m)^${key}:\s+\S") {
+            Add-ValidationError "$relative front matter is missing $key"
+        }
+    }
+
+    if ($frontMatter -notmatch '(?m)^decision-makers:\s+[^<>\r\n]+\s+<[^<>\s@]+@[^<>\s@]+\.[^<>\s@]+>\s*$') {
+        Add-ValidationError "$relative front matter decision-makers must use git username and email in Name <email> form"
+    }
+
+    if ($frontMatter -notmatch '(?m)^status:\s+(proposed|rejected|accepted|deprecated|superseded by .+)\s*$') {
+        Add-ValidationError "$relative front matter has invalid MADR status"
+    }
+
+    if ($frontMatter -notmatch '(?m)^date:\s+\d{4}-\d{2}-\d{2}\s*$') {
+        Add-ValidationError "$relative front matter has invalid MADR date"
+    }
+
+    if ([regex]::Matches($adrText, '(?m)^#\s+').Count -ne 1) {
+        Add-ValidationError "$relative must contain exactly one MADR title heading"
+    }
+
+    $lastIndex = -1
+    foreach ($heading in $requiredMadrHeadings) {
+        $pattern = if ($heading -eq '# ') { '(?m)^#\s+.+' } else { "(?m)^$([regex]::Escape($heading))\s*$" }
+        $headingMatch = [regex]::Match($adrText, $pattern)
+        if (-not $headingMatch.Success) {
+            Add-ValidationError "$relative is missing MADR heading $heading"
+            continue
+        }
+
+        if ($headingMatch.Index -le $lastIndex) {
+            Add-ValidationError "$relative has MADR heading $heading out of order"
+        }
+        $lastIndex = $headingMatch.Index
+    }
+
+    if ($adrText -notmatch '(?m)^Chosen option:\s+".+", because .+\.\s*$') {
+        Add-ValidationError "$relative is missing MADR chosen option line"
     }
 }
 
