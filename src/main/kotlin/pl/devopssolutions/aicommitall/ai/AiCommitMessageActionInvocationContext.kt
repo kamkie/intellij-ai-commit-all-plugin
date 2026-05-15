@@ -5,7 +5,7 @@ import com.intellij.openapi.actionSystem.ActionUiKind
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.actionSystem.DataKey
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.CommitMessageI
@@ -53,41 +53,55 @@ internal object AiCommitMessageActionInvocationContextFactory {
         workflowUi: CommitWorkflowUi,
         parentDataContext: DataContext = DataContext.EMPTY_CONTEXT,
     ): DataContext {
-        val data = linkedMapOf<String, Any>()
-        data.put(CommonDataKeys.PROJECT, project)
-        data.put(VcsDataKeys.COMMIT_WORKFLOW_HANDLER, workflowHandler)
-        data.put(VcsDataKeys.COMMIT_WORKFLOW_UI, workflowUi)
-
-        resolveCommitMessageControl(workflowUi, parentDataContext)?.let { commitMessageControl ->
-            data.put(VcsDataKeys.COMMIT_MESSAGE_CONTROL, commitMessageControl)
-        }
-        resolveCommitMessageDocument(workflowUi, parentDataContext)?.let { commitMessageDocument ->
-            data.put(VcsDataKeys.COMMIT_MESSAGE_DOCUMENT, commitMessageDocument)
-        }
-
-        return LayeredDataContext(
-            data = data,
+        val data = collectData(
+            project = project,
+            workflowHandler = workflowHandler,
+            workflowUi = workflowUi,
             parentDataContext = parentDataContext,
         )
+        val builder = SimpleDataContext.builder()
+            .setParent(parentDataContext)
+            .add(CommonDataKeys.PROJECT, data.project)
+            .add(VcsDataKeys.COMMIT_WORKFLOW_HANDLER, data.workflowHandler)
+            .add(VcsDataKeys.COMMIT_WORKFLOW_UI, data.workflowUi)
+
+        data.commitMessageControl?.let { commitMessageControl ->
+            builder.add(VcsDataKeys.COMMIT_MESSAGE_CONTROL, commitMessageControl)
+        }
+        data.commitMessageDocument?.let { commitMessageDocument ->
+            builder.add(VcsDataKeys.COMMIT_MESSAGE_DOCUMENT, commitMessageDocument)
+        }
+
+        return builder.build()
     }
 
-    private fun <T : Any> MutableMap<String, Any>.put(key: DataKey<T>, value: T) {
-        put(key.name, value)
-    }
+    internal fun collectData(
+        project: Project,
+        workflowHandler: CommitWorkflowHandler,
+        workflowUi: CommitWorkflowUi,
+        parentDataContext: DataContext = DataContext.EMPTY_CONTEXT,
+    ): AiCommitMessageActionInvocationData =
+        AiCommitMessageActionInvocationData(
+            project = project,
+            workflowHandler = workflowHandler,
+            workflowUi = workflowUi,
+            commitMessageControl = resolveCommitMessageControl(workflowUi, parentDataContext),
+            commitMessageDocument = resolveCommitMessageDocument(workflowUi, parentDataContext),
+        )
 
     private fun resolveCommitMessageControl(
         workflowUi: CommitWorkflowUi,
         parentDataContext: DataContext,
     ): CommitMessageI? =
         workflowUi.commitMessageUi as? CommitMessageI
-            ?: parentDataContext.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL)
+            ?: VcsDataKeys.COMMIT_MESSAGE_CONTROL.getData(parentDataContext)
 
     private fun resolveCommitMessageDocument(
         workflowUi: CommitWorkflowUi,
         parentDataContext: DataContext,
     ): Document? =
         workflowUi.commitMessageUi.findEditorDocument()
-            ?: parentDataContext.getData(VcsDataKeys.COMMIT_MESSAGE_DOCUMENT)
+            ?: VcsDataKeys.COMMIT_MESSAGE_DOCUMENT.getData(parentDataContext)
 
     private fun CommitMessageUi.findEditorDocument(): Document? =
         runCatching {
@@ -100,17 +114,17 @@ internal object AiCommitMessageActionInvocationContextFactory {
             method.name == name && method.parameterCount == 0
         }
 
-    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
-    private class LayeredDataContext(
-        private val data: Map<String, Any>,
-        private val parentDataContext: DataContext,
-    ) : DataContext {
-        override fun getData(dataId: String): Any? =
-            data[dataId] ?: parentDataContext.getData(dataId)
-    }
 }
 
 internal data class AiCommitMessageActionInvocationContext(
     val dataContext: DataContext,
     val event: AnActionEvent,
+)
+
+internal data class AiCommitMessageActionInvocationData(
+    val project: Project,
+    val workflowHandler: CommitWorkflowHandler,
+    val workflowUi: CommitWorkflowUi,
+    val commitMessageControl: CommitMessageI?,
+    val commitMessageDocument: Document?,
 )

@@ -1,6 +1,8 @@
 package pl.devopssolutions.aicommitall.ai
 
 import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.ActionUiKind
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.components.Service
@@ -15,6 +17,7 @@ internal class AiCommitMessageActionInvocationService(private val project: Proje
     private val invoker = AiCommitMessageActionInvoker(
         actionFinder = AiCommitMessageActionDiscoveryService.getInstance(),
         actionSystemInvoker = IntellijAiActionSystemInvoker,
+        dataContextFactory = IntellijAiInvocationDataContextFactory,
     )
 
     fun invokeCommitMessageGeneration(
@@ -39,6 +42,7 @@ internal class AiCommitMessageActionInvocationService(private val project: Proje
 internal class AiCommitMessageActionInvoker(
     private val actionFinder: AiCommitMessageActionFinder,
     private val actionSystemInvoker: AiActionSystemInvoker,
+    private val dataContextFactory: AiInvocationDataContextFactory = IntellijAiInvocationDataContextFactory,
 ) {
     fun invokeCommitMessageGeneration(
         project: Project,
@@ -53,7 +57,7 @@ internal class AiCommitMessageActionInvoker(
 
         val actionReference = actionFinder.findCommitMessageAction()
             ?: return AiCommitMessageActionInvocationResult.MissingAction
-        val dataContext = AiCommitMessageActionInvocationContextFactory.createDataContext(
+        val dataContext = dataContextFactory.createDataContext(
             project = project,
             workflowHandler = workflowHandler,
             workflowUi = workflowUi,
@@ -94,19 +98,44 @@ internal interface AiActionSystemInvoker {
     )
 }
 
+internal fun interface AiInvocationDataContextFactory {
+    fun createDataContext(
+        project: Project,
+        workflowHandler: CommitWorkflowHandler,
+        workflowUi: CommitWorkflowUi,
+        parentDataContext: DataContext,
+    ): DataContext
+}
+
+private object IntellijAiInvocationDataContextFactory : AiInvocationDataContextFactory {
+    override fun createDataContext(
+        project: Project,
+        workflowHandler: CommitWorkflowHandler,
+        workflowUi: CommitWorkflowUi,
+        parentDataContext: DataContext,
+    ): DataContext =
+        AiCommitMessageActionInvocationContextFactory.createDataContext(
+            project = project,
+            workflowHandler = workflowHandler,
+            workflowUi = workflowUi,
+            parentDataContext = parentDataContext,
+        )
+}
+
 private object IntellijAiActionSystemInvoker : AiActionSystemInvoker {
-    @Suppress("DEPRECATION")
     override fun invoke(
         actionReference: AiCommitMessageActionReference,
         dataContext: DataContext,
         inputEvent: InputEvent?,
     ) {
-        ActionUtil.invokeAction(
+        val event = AnActionEvent.createEvent(
             actionReference.action,
             dataContext,
+            actionReference.action.templatePresentation.clone(),
             ActionPlaces.CHANGES_VIEW_TOOLBAR,
+            ActionUiKind.NONE,
             inputEvent,
-            null,
         )
+        ActionUtil.performAction(actionReference.action, event)
     }
 }

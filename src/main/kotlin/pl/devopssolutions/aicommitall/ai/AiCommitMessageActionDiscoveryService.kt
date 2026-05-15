@@ -1,6 +1,5 @@
 package pl.devopssolutions.aicommitall.ai
 
-import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -30,7 +29,7 @@ internal class AiCommitMessageActionDiscovery(
     override fun findCommitMessageAction(event: AnActionEvent?): AiCommitMessageActionReference? =
         findKnownAction()
             ?: findPrefixedAction()
-            ?: findGroupedAction(event)
+            ?: findPresentationAction()
 
     private fun findKnownAction(): AiCommitMessageActionReference? =
         knownActionIds.firstNotNullOfOrNull { actionId ->
@@ -59,43 +58,21 @@ internal class AiCommitMessageActionDiscovery(
             }
             .firstOrNull()
 
-    private fun findGroupedAction(event: AnActionEvent?): AiCommitMessageActionReference? =
-        fallbackGroupIds.asSequence()
-            .mapNotNull { groupId -> actionLookup.getAction(groupId) as? ActionGroup }
-            .flatMap { group -> group.childrenRecursive(event).asSequence() }
-            .mapNotNull { action -> action.toPresentationFallbackReference() }
+    private fun findPresentationAction(): AiCommitMessageActionReference? =
+        presentationFallbackActionIdPrefixes.asSequence()
+            .flatMap { prefix -> actionLookup.getActionIdList(prefix).asSequence() }
+            .distinct()
+            .mapNotNull { actionId ->
+                actionLookup.getAction(actionId)?.toPresentationFallbackReference(actionId)
+            }
             .firstOrNull()
 
-    private fun ActionGroup.childrenRecursive(event: AnActionEvent?): List<AnAction> {
-        val visited = mutableSetOf<AnAction>()
-        val result = mutableListOf<AnAction>()
-
-        fun visit(action: AnAction) {
-            if (!visited.add(action)) {
-                return
-            }
-
-            if (action is ActionGroup) {
-                action.getChildrenOrEmpty(event).forEach(::visit)
-            } else {
-                result.add(action)
-            }
-        }
-
-        getChildrenOrEmpty(event).forEach(::visit)
-        return result
-    }
-
-    private fun ActionGroup.getChildrenOrEmpty(event: AnActionEvent?): Array<AnAction> =
-        runCatching { getChildren(event) }.getOrDefault(emptyArray())
-
-    private fun AnAction.toPresentationFallbackReference(): AiCommitMessageActionReference? {
-        val actionId = actionLookup.getId(this)
-        if (actionId != null && looksLikeCommitMessageActionId(actionId)) {
+    private fun AnAction.toPresentationFallbackReference(actionId: String): AiCommitMessageActionReference? {
+        if (looksLikeCommitMessageActionId(actionId)) {
             return AiCommitMessageActionReference(
                 action = this,
                 actionId = actionId,
-                source = AiCommitMessageActionSource.GroupActionId,
+                source = AiCommitMessageActionSource.PresentationActionId,
             )
         }
 
@@ -108,14 +85,14 @@ internal class AiCommitMessageActionDiscovery(
         return AiCommitMessageActionReference(
             action = this,
             actionId = actionId,
-            source = AiCommitMessageActionSource.GroupPresentation,
+            source = AiCommitMessageActionSource.PresentationText,
         )
     }
 
     companion object {
         private val knownActionIds = listOf("Vcs.LLMCommitMessageAction")
         private val actionIdPrefixes = listOf("Vcs.LLM")
-        private val fallbackGroupIds = listOf("Vcs.MessageActionGroup")
+        private val presentationFallbackActionIdPrefixes = listOf("Vcs.")
         private val rejectedFallbackTerms = listOf("reword", "rewrite", "resolve conflict", "conflict")
         private val generationFallbackTerms = listOf("generate", "write", "create", "suggest", "ai", "assistant", "llm")
 
@@ -145,16 +122,14 @@ internal data class AiCommitMessageActionReference(
 internal enum class AiCommitMessageActionSource {
     KnownActionId,
     ActionIdPrefix,
-    GroupActionId,
-    GroupPresentation,
+    PresentationActionId,
+    PresentationText,
 }
 
 internal interface AiActionLookup {
     fun getAction(actionId: String): AnAction?
 
     fun getActionIdList(prefix: String): List<String>
-
-    fun getId(action: AnAction): String?
 }
 
 private object IntellijAiActionLookup : AiActionLookup {
@@ -164,6 +139,4 @@ private object IntellijAiActionLookup : AiActionLookup {
     override fun getActionIdList(prefix: String): List<String> =
         ActionManager.getInstance().getActionIdList(prefix).toList()
 
-    override fun getId(action: AnAction): String? =
-        ActionManager.getInstance().getId(action)
 }

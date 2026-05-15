@@ -33,6 +33,7 @@ internal class AiCommitMessageActionInvokerTest {
         val result = AiCommitMessageActionInvoker(
             actionFinder = StaticActionFinder(actionReference),
             actionSystemInvoker = actionSystemInvoker,
+            dataContextFactory = TestDataContextFactory,
         ).invokeCommitMessageGeneration(
             project = project,
             workflowHandler = workflowHandler,
@@ -62,6 +63,7 @@ internal class AiCommitMessageActionInvokerTest {
         val result = AiCommitMessageActionInvoker(
             actionFinder = actionFinder,
             actionSystemInvoker = actionSystemInvoker,
+            dataContextFactory = TestDataContextFactory,
         ).invokeCommitMessageGeneration(
             project = testProxy(),
             workflowHandler = null,
@@ -80,6 +82,7 @@ internal class AiCommitMessageActionInvokerTest {
         val result = AiCommitMessageActionInvoker(
             actionFinder = StaticActionFinder(null),
             actionSystemInvoker = actionSystemInvoker,
+            dataContextFactory = TestDataContextFactory,
         ).invokeCommitMessageGeneration(
             project = testProxy(),
             workflowHandler = testProxy(),
@@ -118,6 +121,22 @@ internal class AiCommitMessageActionInvokerTest {
             this.actionReference = actionReference
             this.dataContext = dataContext
             this.inputEvent = inputEvent
+        }
+    }
+
+    private object TestDataContextFactory : AiInvocationDataContextFactory {
+        override fun createDataContext(
+            project: Project,
+            workflowHandler: CommitWorkflowHandler,
+            workflowUi: CommitWorkflowUi,
+            parentDataContext: DataContext,
+        ): DataContext {
+            val data = mapOf(
+                CommonDataKeys.PROJECT.name to project,
+                VcsDataKeys.COMMIT_WORKFLOW_HANDLER.name to workflowHandler,
+                VcsDataKeys.COMMIT_WORKFLOW_UI.name to workflowUi,
+            )
+            return DataContext { dataId -> data[dataId] }
         }
     }
 

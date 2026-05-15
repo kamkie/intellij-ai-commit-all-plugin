@@ -39,6 +39,12 @@ intellijPlatform {
     projectName.set(rootProject.name)
     buildSearchableOptions.set(false)
 
+    pluginVerification {
+        ides {
+            current()
+        }
+    }
+
     pluginConfiguration {
         id = "pl.devopssolutions.aicommitall"
         name = "AI Commit All"

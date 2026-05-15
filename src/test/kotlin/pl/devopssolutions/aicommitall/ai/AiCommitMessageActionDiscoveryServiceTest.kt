@@ -1,6 +1,5 @@
 package pl.devopssolutions.aicommitall.ai
 
-import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import kotlin.test.Test
@@ -16,9 +15,12 @@ internal class AiCommitMessageActionDiscoveryServiceTest {
         val lookup = TestActionLookup(
             actionsById = mapOf(
                 "Vcs.LLMCommitMessageAction" to knownAction,
-                "Vcs.MessageActionGroup" to TestActionGroup(fallbackAction),
+                "Vcs.GeneratedCommitMessageFallback" to fallbackAction,
             ),
-            idsByPrefix = mapOf("Vcs.LLM" to listOf("Vcs.LLMCommitMessageAction")),
+            idsByPrefix = mapOf(
+                "Vcs.LLM" to listOf("Vcs.LLMCommitMessageAction"),
+                "Vcs." to listOf("Vcs.GeneratedCommitMessageFallback"),
+            ),
         )
 
         val result = AiCommitMessageActionDiscovery(lookup).findCommitMessageAction()
@@ -52,45 +54,61 @@ internal class AiCommitMessageActionDiscoveryServiceTest {
     }
 
     @Test
-    fun `falls back to the VCS message action group presentation text`() {
+    fun `falls back to registered VCS action presentation text`() {
         val fallbackAction = TestAction("Generate Commit Message")
-        val group = TestActionGroup(
-            TestAction("Reword Commit Message"),
-            TestActionGroup(fallbackAction),
+        val lookup = TestActionLookup(
+            actionsById = mapOf(
+                "Vcs.LLMRewordCommitAction" to TestAction("Reword Commit Message"),
+                "Vcs.GeneratedCommitMessageFallback" to fallbackAction,
+            ),
+            idsByPrefix = mapOf(
+                "Vcs." to listOf(
+                    "Vcs.LLMRewordCommitAction",
+                    "Vcs.GeneratedCommitMessageFallback",
+                ),
+            ),
         )
-        val lookup = TestActionLookup(actionsById = mapOf("Vcs.MessageActionGroup" to group))
 
         val result = AiCommitMessageActionDiscovery(lookup).findCommitMessageAction()
 
         assertSame(fallbackAction, result?.action)
-        assertNull(result?.actionId)
-        assertEquals(AiCommitMessageActionSource.GroupPresentation, result?.source)
+        assertEquals("Vcs.GeneratedCommitMessageFallback", result?.actionId)
+        assertEquals(AiCommitMessageActionSource.PresentationText, result?.source)
     }
 
     @Test
-    fun `uses matching action ids inside the VCS message action group before presentation text`() {
+    fun `uses matching action ids in presentation search before presentation text`() {
         val idMatchedAction = TestAction("Unexpected Localized Text")
         val textMatchedAction = TestAction("Generate Commit Message")
-        val group = TestActionGroup(idMatchedAction, textMatchedAction)
         val lookup = TestActionLookup(
-            actionsById = mapOf("Vcs.MessageActionGroup" to group),
-            idsByAction = mapOf(idMatchedAction to "Vcs.LLMGenerateCommitMessageAction"),
+            actionsById = mapOf(
+                "Vcs.LLMGenerateCommitMessageAction" to idMatchedAction,
+                "Vcs.GeneratedCommitMessageFallback" to textMatchedAction,
+            ),
+            idsByPrefix = mapOf(
+                "Vcs." to listOf(
+                    "Vcs.LLMGenerateCommitMessageAction",
+                    "Vcs.GeneratedCommitMessageFallback",
+                ),
+            ),
         )
 
         val result = AiCommitMessageActionDiscovery(lookup).findCommitMessageAction()
 
         assertSame(idMatchedAction, result?.action)
         assertEquals("Vcs.LLMGenerateCommitMessageAction", result?.actionId)
-        assertEquals(AiCommitMessageActionSource.GroupActionId, result?.source)
+        assertEquals(AiCommitMessageActionSource.PresentationActionId, result?.source)
     }
 
     @Test
     fun `does not use the AI reword action as the commit message generator`() {
         val rewordAction = TestAction("Reword Commit Message")
         val lookup = TestActionLookup(
-            actionsById = mapOf("Vcs.MessageActionGroup" to TestActionGroup(rewordAction)),
-            idsByAction = mapOf(rewordAction to "Vcs.LLMRewordCommitAction"),
-            idsByPrefix = mapOf("Vcs.LLM" to listOf("Vcs.LLMRewordCommitAction")),
+            actionsById = mapOf("Vcs.LLMRewordCommitAction" to rewordAction),
+            idsByPrefix = mapOf(
+                "Vcs.LLM" to listOf("Vcs.LLMRewordCommitAction"),
+                "Vcs." to listOf("Vcs.LLMRewordCommitAction"),
+            ),
         )
 
         val result = AiCommitMessageActionDiscovery(lookup).findCommitMessageAction()
@@ -102,21 +120,12 @@ internal class AiCommitMessageActionDiscoveryServiceTest {
         override fun actionPerformed(event: AnActionEvent) = Unit
     }
 
-    private class TestActionGroup(vararg children: AnAction) : ActionGroup() {
-        private val children = children.toList()
-
-        override fun getChildren(event: AnActionEvent?): Array<AnAction> = children.toTypedArray()
-    }
-
     private class TestActionLookup(
         private val actionsById: Map<String, AnAction> = emptyMap(),
-        private val idsByAction: Map<AnAction, String> = actionsById.entries.associate { (id, action) -> action to id },
         private val idsByPrefix: Map<String, List<String>> = emptyMap(),
     ) : AiActionLookup {
         override fun getAction(actionId: String): AnAction? = actionsById[actionId]
 
         override fun getActionIdList(prefix: String): List<String> = idsByPrefix[prefix].orEmpty()
-
-        override fun getId(action: AnAction): String? = idsByAction[action]
     }
 }

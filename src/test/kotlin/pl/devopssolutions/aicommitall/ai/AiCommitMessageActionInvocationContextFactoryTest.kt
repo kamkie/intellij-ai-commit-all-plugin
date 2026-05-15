@@ -1,6 +1,5 @@
 package pl.devopssolutions.aicommitall.ai
 
-import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DataKey
 import com.intellij.openapi.editor.impl.DocumentImpl
@@ -24,18 +23,18 @@ internal class AiCommitMessageActionInvocationContextFactoryTest {
         val commitMessageDocument = DocumentImpl("initial commit message")
         val parentDataContext = testDataContext(VcsDataKeys.COMMIT_MESSAGE_DOCUMENT to commitMessageDocument)
 
-        val dataContext = AiCommitMessageActionInvocationContextFactory.createDataContext(
+        val data = AiCommitMessageActionInvocationContextFactory.collectData(
             project = project,
             workflowHandler = workflowHandler,
             workflowUi = workflowUi,
             parentDataContext = parentDataContext,
         )
 
-        assertSame(project, dataContext.getData(CommonDataKeys.PROJECT))
-        assertSame(workflowHandler, dataContext.getData(VcsDataKeys.COMMIT_WORKFLOW_HANDLER))
-        assertSame(workflowUi, dataContext.getData(VcsDataKeys.COMMIT_WORKFLOW_UI))
-        assertSame(commitMessageUi, dataContext.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL))
-        assertSame(commitMessageDocument, dataContext.getData(VcsDataKeys.COMMIT_MESSAGE_DOCUMENT))
+        assertSame(project, data.project)
+        assertSame(workflowHandler, data.workflowHandler)
+        assertSame(workflowUi, data.workflowUi)
+        assertSame(commitMessageUi, data.commitMessageControl)
+        assertSame(commitMessageDocument, data.commitMessageDocument)
     }
 
     @Test
@@ -43,27 +42,27 @@ internal class AiCommitMessageActionInvocationContextFactoryTest {
         val parentCommitMessageControl = TestCommitMessageControl()
         val parentDataContext = testDataContext(VcsDataKeys.COMMIT_MESSAGE_CONTROL to parentCommitMessageControl)
 
-        val dataContext = AiCommitMessageActionInvocationContextFactory.createDataContext(
+        val data = AiCommitMessageActionInvocationContextFactory.collectData(
             project = testProxy(),
             workflowHandler = testProxy(),
             workflowUi = testWorkflowUi(TestCommitMessageTextAccessor()),
             parentDataContext = parentDataContext,
         )
 
-        assertSame(parentCommitMessageControl, dataContext.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL))
+        assertSame(parentCommitMessageControl, data.commitMessageControl)
     }
 
     @Test
     fun `uses commit message UI editor document when available`() {
         val commitMessageDocument = DocumentImpl("generated message")
 
-        val dataContext = AiCommitMessageActionInvocationContextFactory.createDataContext(
+        val data = AiCommitMessageActionInvocationContextFactory.collectData(
             project = testProxy(),
             workflowHandler = testProxy(),
             workflowUi = testWorkflowUi(TestCommitMessageControl(commitMessageDocument)),
         )
 
-        assertSame(commitMessageDocument, dataContext.getData(VcsDataKeys.COMMIT_MESSAGE_DOCUMENT))
+        assertSame(commitMessageDocument, data.commitMessageDocument)
     }
 
     private class TestCommitMessageControl : CommitMessageUi, CommitMessageI {
