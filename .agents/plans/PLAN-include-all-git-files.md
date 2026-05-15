@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-include-all-git-files
 
-Status: Approved
+Status: In Progress
 
 Filename: `.agents/plans/PLAN-include-all-git-files.md`
 
@@ -11,7 +11,7 @@ Filename: `.agents/plans/PLAN-include-all-git-files.md`
 - Plan readiness: Approved; ready for implementation.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Open questions: None.
-- Implementation progress: Not started.
+- Implementation progress: Orchestrated execution started.
 
 ## Goal
 
