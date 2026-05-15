@@ -1,6 +1,6 @@
 # Build Tasks
 
-Repository state: documentation, planning, and the initial Gradle/Kotlin IntelliJ plugin scaffold are present. Plugin descriptor metadata and runtime workflow implementation are still pending.
+Repository state: documentation, planning, and the initial executable Gradle/Kotlin IntelliJ plugin scaffold are present. Runtime `AI Commit All` workflow implementation is still pending.
 
 Notation:
 
@@ -41,7 +41,7 @@ Notation:
 - [x] T-SCAFFOLD-005: Identify JetBrains AI Assistant plugin dependency ID for IntelliJ Platform 2026.1: `com.intellij.ml.llm`. (Plan `P-scaffold-plugin-project`, Task 2)
 - [x] T-SCAFFOLD-006: Declare JetBrains AI Assistant as a required plugin dependency. (Plan `P-scaffold-plugin-project`, Task 2)
 - [x] T-SCAFFOLD-007: Add a base package for plugin code. (Plan `P-scaffold-plugin-project`, Task 1)
-- [ ] T-SCAFFOLD-008: Verify `runIde` starts a sandbox IDE.
+- [x] T-SCAFFOLD-008: Verify `runIde` starts a sandbox IDE. (Plan `P-scaffold-plugin-project`, Task 3)
 - [x] T-SCAFFOLD-009: Add a top-level `LICENSE` file. (ADR 0018)
 - [x] T-SCAFFOLD-010: Do not add `NOTICE` initially; add one later only if attribution needs or bundled dependencies require it. (ADR 0018)
 
@@ -106,7 +106,7 @@ Notation:
 
 ## 9. Validation
 
-- [ ] T-VAL-001: Run Gradle build.
+- [x] T-VAL-001: Run Gradle build. (Plan `P-scaffold-plugin-project`, Task 3)
 - [ ] T-VAL-002: Run plugin verifier for target IDE versions.
 - [ ] T-VAL-003: Manually test in sandbox IDE with Git project.
 - [ ] T-VAL-004: Record exact current IDE product names and build numbers used for manual validation.

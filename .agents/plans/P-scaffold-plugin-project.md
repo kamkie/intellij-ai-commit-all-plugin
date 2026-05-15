@@ -2,7 +2,7 @@
 
 Plan-ID: P-scaffold-plugin-project
 
-Status: Accepted
+Status: Implemented
 
 ## Goal
 
@@ -61,4 +61,10 @@ Each named task should be implemented, validated, self-reviewed, and committed b
 
 ## Handoff Notes
 
-This plan is accepted as the next implementation-oriented artifact after `PROP-repository-analysis`. Implementation has not started.
+Implemented in three plan-task commits:
+
+- Task 1 added the Gradle/Kotlin scaffold and Gradle Wrapper.
+- Task 2 added plugin descriptor metadata and the required JetBrains AI Assistant dependency.
+- Task 3 validated `buildPlugin` and `runIde` startup for IntelliJ IDEA 2026.1.1.
+
+`runIde` startup validation used the sandbox log to confirm `JetBrains AI Assistant` and `AI Commit All` loaded as custom plugins. A first exploratory `runIde` launch also reached plugin loading but later exited with code 2 after the IDE attempted an internal restart; the controlled validation rerun stopped the sandbox immediately after startup evidence was captured.
