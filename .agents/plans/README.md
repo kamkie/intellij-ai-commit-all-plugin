@@ -17,6 +17,7 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
+- `PLAN-fastest-plan-execution` - Fastest Plan Execution ([PLAN-fastest-plan-execution.md](PLAN-fastest-plan-execution.md)).
 - `PLAN-commit-tool-window-actions` - Commit Tool Window Actions ([PLAN-commit-tool-window-actions.md](PLAN-commit-tool-window-actions.md)).
 - `PLAN-include-all-git-files` - Include All Git Files ([PLAN-include-all-git-files.md](PLAN-include-all-git-files.md)).
 - `PLAN-ai-assistant-message-generation` - AI Assistant Message Generation ([PLAN-ai-assistant-message-generation.md](PLAN-ai-assistant-message-generation.md)).

@@ -11,6 +11,7 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.1
 ### Added
 
 - Added draft active plans for the remaining workflow, validation, documentation, and release automation work.
+- Added a draft orchestration plan that makes cross-plan dependencies and safe parallel execution waves explicit.
 
 ### Changed
 
