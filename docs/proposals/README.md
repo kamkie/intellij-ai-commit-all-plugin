@@ -15,6 +15,7 @@ Active proposals still have at least one `open` row in their `Progress Tracker`.
 - `PROP-remove-tasks-md-when-empty` - Remove TASKS.md When All Tasks Are Finished Proposal ([PROP-remove-tasks-md-when-empty-2026-05-15T06-49.md](PROP-remove-tasks-md-when-empty-2026-05-15T06-49.md)), created 2026-05-15.
 - `PROP-plugin-default-settings` - Plugin Default Settings Proposal ([PROP-plugin-default-settings-2026-05-15T07-08.md](PROP-plugin-default-settings-2026-05-15T07-08.md)), created 2026-05-15.
 - `PROP-split-button-look-experiments` - Split Button Look Experiments Proposal ([PROP-split-button-look-experiments-2026-05-15T07-13.md](PROP-split-button-look-experiments-2026-05-15T07-13.md)), created 2026-05-15.
+- `PROP-proposal-id-and-markdown-formatting` - Proposal Point IDs And Unified Markdown Formatting Proposal ([PROP-proposal-id-and-markdown-formatting-2026-05-15T07-20.md](PROP-proposal-id-and-markdown-formatting-2026-05-15T07-20.md)), created 2026-05-15.
 
 ### Completed Proposals
 
