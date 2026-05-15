@@ -57,6 +57,9 @@ if (Test-Path -LiteralPath $tasksPath) {
     }
 }
 
+$allowedPlanStatuses = @('Draft', 'Approved', 'In Progress', 'Blocked', 'Implemented', 'Closed')
+$allowedPlanCloseReasons = @('Released', 'Rejected', 'Superseded', 'Deferred', 'Archived')
+
 $planFiles = Get-ChildItem -LiteralPath (Join-Path $repoRoot '.agents/plans') -File -Filter '*.md' |
     Where-Object { $_.Name -notin @('README.md', 'PLAN_TEMPLATE.md') }
 
@@ -67,12 +70,37 @@ foreach ($plan in $planFiles) {
 
     if (-not $planIdMatch.Success) {
         Add-ValidationError "$relative is missing a stable Plan-ID"
-        continue
+    } else {
+        $planId = $planIdMatch.Groups[1].Value
+        if (-not $plan.Name.StartsWith($planId, [System.StringComparison]::Ordinal)) {
+            Add-ValidationError "$relative filename must include Plan-ID prefix $planId"
+        }
     }
 
-    $planId = $planIdMatch.Groups[1].Value
-    if (-not $plan.Name.StartsWith($planId, [System.StringComparison]::Ordinal)) {
-        Add-ValidationError "$relative filename must include Plan-ID prefix $planId"
+    $statusMatch = [regex]::Match($text, '(?m)^Status:\s+(.+?)\s*$')
+    if (-not $statusMatch.Success) {
+        Add-ValidationError "$relative is missing a Status"
+    } else {
+        $planStatus = $statusMatch.Groups[1].Value.Trim()
+        if ($allowedPlanStatuses -notcontains $planStatus) {
+            Add-ValidationError "$relative has invalid Status '$planStatus'; expected one of: $($allowedPlanStatuses -join ', ')"
+        }
+
+        if ($planStatus -eq 'Closed') {
+            $closeReasonMatch = [regex]::Match($text, '(?m)^Close-Reason:\s+(.+?)\s*$')
+            if (-not $closeReasonMatch.Success) {
+                Add-ValidationError "$relative has Status 'Closed' but is missing Close-Reason"
+            } else {
+                $closeReason = $closeReasonMatch.Groups[1].Value.Trim()
+                if ($allowedPlanCloseReasons -notcontains $closeReason) {
+                    Add-ValidationError "$relative has invalid Close-Reason '$closeReason'; expected one of: $($allowedPlanCloseReasons -join ', ')"
+                }
+            }
+        }
+    }
+
+    if ($text -notmatch '(?m)^## Readiness\s*$') {
+        Add-ValidationError "$relative is missing a ## Readiness section"
     }
 }
 

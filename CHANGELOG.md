@@ -19,6 +19,7 @@ This repository has no released plugin version yet.
 - Added accepted plan `P-scaffold-plugin-project` for the first executable plugin scaffold.
 - Added ADR 0035 to store open questions with decision records.
 - Added ADR 0036 requiring plan filenames to include their stable `Plan-ID`.
+- Added ADR 0037 defining the compact plan status lifecycle.
 - Added the initial Gradle Kotlin DSL and Kotlin/JVM scaffold for the IntelliJ Platform plugin.
 - Added plugin descriptor metadata and the required JetBrains AI Assistant dependency.
 - Validated `buildPlugin` and sandbox `runIde` startup for the initial scaffold.
@@ -37,3 +38,5 @@ This repository has no released plugin version yet.
 - Clarified Marketplace documentation versus release metadata task ownership.
 - Marked `PROP-repository-analysis` completed after implementing accepted findings.
 - Renamed the active scaffold plan file to include `P-scaffold-plugin-project`.
+- Updated plan guidance and the plan template to surface readiness, open questions, and implementation progress.
+- Marked `PROP-plan-status-vocabulary` completed after implementing accepted findings.

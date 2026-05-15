@@ -6,7 +6,7 @@ Notation:
 
 - Every task starts with a stable `T-AREA-NNN` ID. Keep IDs stable when wording, status, or ordering changes. Do not renumber existing IDs.
 - `resolves: Q-ID` means the task answers an open question.
-- `depends on: Q-ID` means the task should wait until that question is answered or explicitly assumed in an accepted plan or ADR.
+- `depends on: Q-ID` means the task should wait until that question is answered or explicitly assumed in an approved plan or ADR.
 
 ## 1. Confirm Blocking Decisions
 

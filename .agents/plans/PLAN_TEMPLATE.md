@@ -4,7 +4,15 @@ Plan-ID: P-<short-kebab-slug>
 
 Status: Draft
 
+<!-- For Status: Closed, add `Close-Reason: Released|Rejected|Superseded|Deferred|Archived`. -->
+
 Filename: `.agents/plans/P-<short-kebab-slug>.md`
+
+## Readiness
+
+- Plan readiness: Not ready until open questions and required decisions are resolved.
+- Open questions: Yes; see `## Open Questions`.
+- Implementation progress: Not started.
 
 ## Goal
 
@@ -21,7 +29,7 @@ List work that is intentionally out of scope.
 ## Open Questions
 
 - Link to `docs/decisions/OPEN_QUESTIONS.md` entries or list task-specific questions.
-- Accepted plans must have every question answered, decided, moved to an owner document, or explicitly documented as an allowed assumption.
+- Approved plans must have every question answered, decided, moved to an owner document, or explicitly documented as an allowed assumption.
 
 ## Proposed Changes
 

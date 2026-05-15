@@ -2,7 +2,7 @@
 
 Use this directory for repository analysis and proposal documents that list findings, duplications, simplifications, or improvement options for maintainer triage.
 
-Proposals are advisory until accepted through the normal repository flow. A proposal does not replace an ADR, accepted plan, task update, implementation, validation, or release work.
+Proposals are advisory until accepted through the normal repository flow. A proposal does not replace an ADR, approved plan, task update, implementation, validation, or release work.
 
 ## Index
 
@@ -10,13 +10,14 @@ Proposals are advisory until accepted through the normal repository flow. A prop
 
 Active proposals still have at least one `open` row in their `Progress Tracker`.
 
-- _none yet_
+_none yet_
 
 ### Completed Proposals
 
 Completed proposals have no `open` rows in their `Progress Tracker`. Keep them listed here until they are moved to `archive/`.
 
 - `PROP-repository-analysis` - Repository Analysis Proposal ([repository-analysis-2026-05-15T01-47.md](repository-analysis-2026-05-15T01-47.md)), completed as of 2026-05-15.
+- `PROP-plan-status-vocabulary` - Plan Status Vocabulary Proposal ([plan-status-vocabulary-2026-05-15T02-51.md](plan-status-vocabulary-2026-05-15T02-51.md)), completed as of 2026-05-15.
 
 Index entries should include the proposal ID, title, file link, and current status date when applicable.
 

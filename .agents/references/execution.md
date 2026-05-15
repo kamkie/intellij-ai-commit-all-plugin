@@ -16,7 +16,7 @@ This file also owns AI-facing commit-message rules. The repository root `.gitmes
 
 ## Multi-Task Plans
 
-When working from an accepted plan that contains multiple implementation tasks, treat each named task as its own execution unit:
+When working from a plan with `Status: Approved` that contains multiple implementation tasks, treat each named task as its own execution unit:
 
 - Fully implement the task according to this execution loop.
 - Run task-appropriate validation from `.agents/references/testing.md`.
@@ -25,13 +25,13 @@ When working from an accepted plan that contains multiple implementation tasks, 
 
 Use `Project-Source: plan-task`, `Project-Plan:`, and `Project-Plan-Task:` commit metadata for these commits.
 
-Do not batch multiple plan tasks into one commit unless the accepted plan or a later user request explicitly says those tasks are inseparable.
+Do not batch multiple plan tasks into one commit unless the approved plan or a later user request explicitly says those tasks are inseparable.
 
 Per-task completion does not replace the later release workflow. Release preparation is expected to run after implementation tasks and should cover the full cross-task review, broader manual checks and tests, documentation updates, and release artifact preparation.
 
 ## Orchestrator And Task Workers
 
-When an accepted multi-task plan is executed with delegated agents, use one orchestrator and one fresh task worker per plan task.
+When a multi-task plan with `Status: Approved` is executed with delegated agents, use one orchestrator and one fresh task worker per plan task.
 
 The orchestrator owns:
 
@@ -52,7 +52,7 @@ The task worker owns only its assigned task:
 
 Use a fresh task worker context for each plan task. Do not carry worker context from one plan task to the next.
 
-Run only one task worker at a time unless the accepted plan explicitly marks tasks as independent and gives them disjoint write scopes.
+Run only one task worker at a time unless the approved plan explicitly marks tasks as independent and gives them disjoint write scopes.
 
 ## Context Rules
 
@@ -62,13 +62,13 @@ Run only one task worker at a time unless the accepted plan explicitly marks tas
 - Prefer existing IntelliJ Platform and Gradle plugin conventions over custom infrastructure.
 - Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; do not add unrelated release or operations files outside that scope.
 - If the repo is still unscaffolded, do not assume Gradle, Kotlin, or plugin descriptor files exist.
-- Before implementing from an accepted plan, confirm every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.
+- Before implementing from an `Approved` plan, confirm every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.
 
 ## Commit Rules
 
 Commit completed work only when the user asks for a commit or the task scope explicitly requires it.
 
-For accepted multi-task plans, each completed plan task explicitly requires its own commit under ADR 0023.
+For approved multi-task plans, each completed plan task explicitly requires its own commit under ADR 0023.
 
 When creating a commit for AI-authored work:
 
@@ -79,7 +79,7 @@ When creating a commit for AI-authored work:
 - Include `Validation:` with the command and result, or `not run` with a reason.
 - When committing non-interactively, use a commit-message file or one final message paragraph for all trailer lines. Do not pass each footer as a separate `git commit -m` argument because Git inserts blank lines between message paragraphs.
 
-Use `Project-Source: prompt` for direct ad hoc user requests, `task` for `TASKS.md` items, `plan` or `plan-task` for accepted plan work, and `manual` only for human-authored commits outside the AI workflow. For `TASKS.md` work, include the stable `T-AREA-NNN` task ID in `Project-Task:`.
+Use `Project-Source: prompt` for direct ad hoc user requests, `task` for `TASKS.md` items, `plan` or `plan-task` for approved plan work, and `manual` only for human-authored commits outside the AI workflow. For `TASKS.md` work, include the stable `T-AREA-NNN` task ID in `Project-Task:`.
 
 ## Stop Conditions
 

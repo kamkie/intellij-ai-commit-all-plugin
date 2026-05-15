@@ -25,7 +25,7 @@ A plan should state:
 
 Small docs-only changes do not need a plan.
 
-Before implementation starts from an accepted plan, follow the readiness, per-task execution, and delegation rules in `.agents/references/planning.md` and `.agents/references/execution.md`.
+Before implementation starts from an approved plan, follow the readiness, per-task execution, and delegation rules in `.agents/references/planning.md` and `.agents/references/execution.md`.
 
 The later release workflow takes over after implementation tasks and owns whole-release review, broader manual checks and tests, documentation update passes, and release artifact preparation.
 

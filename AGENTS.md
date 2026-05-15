@@ -33,7 +33,7 @@ This is the AI entry point for the repository. Keep task context small and read 
 When instructions overlap, apply this project-specific order:
 
 1. Current user request.
-2. The most specific accepted task plan or governing document.
+2. The most specific approved task plan or governing document.
 3. Platform, framework, and API constraints.
 4. `README.md` and user-facing documentation.
 5. General AI guidance and repository workflow rules.

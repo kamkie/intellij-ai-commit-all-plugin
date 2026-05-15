@@ -15,11 +15,23 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Lifecycle
 
+Use the smallest status set that preserves traceability:
+
 - Draft: the plan is being shaped and may contain unanswered questions.
-- Accepted: the plan is approved or clear enough to implement under `.agents/references/planning.md`.
-- Implemented: the code/docs have been changed and validated.
-- Superseded: another plan or decision record replaced it.
+- Approved: the plan is ready to implement; all open questions and required decisions are answered, explicitly decided, moved to an owner document, or documented as allowed assumptions.
+- In Progress: implementation has started.
+- Blocked: implementation cannot proceed; link the blocker in `## Readiness`, `## Open Questions`, or the relevant owner document.
+- Implemented: planned changes are complete and task validation is done; release workflow may still remain.
+- Closed: no further plan work is expected; include `Close-Reason: Released`, `Rejected`, `Superseded`, `Deferred`, or `Archived`.
+
+`Accepted` and `Implementing` are not plan statuses; use `Approved` and `In Progress`. Use `Deferred`, not `Defered`.
 
 Update the status in the plan file instead of leaving stale instructions.
+
+Every plan must keep a short `## Readiness` section near the top with:
+
+- Plan readiness.
+- Open questions.
+- Implementation progress.
 
 Keep `Plan-ID` stable when the plan title, filename, status, or wording changes. If a plan is renamed, preserve the `Plan-ID` in the filename. If a plan is split, keep the original ID for the closest surviving plan and assign new meaningful IDs to new plans.

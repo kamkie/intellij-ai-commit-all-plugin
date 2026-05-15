@@ -87,7 +87,7 @@ When asking AI to create a proposal, expect a stable `proposal_id` such as `PROP
 
 When work comes from `TASKS.md`, reference the stable `T-AREA-NNN` task ID in the request or expect AI to identify it before implementation.
 
-For accepted plans, use `.agents/references/planning.md` and `.agents/references/execution.md` for readiness, stop-on-question behavior, per-task commits, and orchestrator or task-worker execution.
+For approved plans, use `.agents/references/planning.md` and `.agents/references/execution.md` for readiness, stop-on-question behavior, per-task commits, and orchestrator or task-worker execution.
 
 For release preparation, use [.agents/references/releases.md](../.agents/references/releases.md). The release orchestrator owns [CHANGELOG.md](../CHANGELOG.md) updates and should check whether [SUPPORT.md](../SUPPORT.md) still matches the release scope.
 

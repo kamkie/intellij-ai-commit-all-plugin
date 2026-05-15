@@ -4,6 +4,12 @@ Plan-ID: P-scaffold-plugin-project
 
 Status: Implemented
 
+## Readiness
+
+- Plan readiness: Complete.
+- Open questions: None.
+- Implementation progress: Implemented in commits `f6fb83e`, `de91f49`, and `b84bc3d`.
+
 ## Goal
 
 Add the first executable IntelliJ Platform plugin scaffold so the repository can build a Kotlin plugin, load a sandbox IDE with `runIde`, and carry the accepted project identity and dependency decisions into plugin metadata.
