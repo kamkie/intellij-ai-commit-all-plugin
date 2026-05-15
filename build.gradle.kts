@@ -15,6 +15,7 @@ dependencies {
             providers.gradleProperty("aiAssistantPluginId").get(),
             providers.gradleProperty("aiAssistantPluginVersion").get(),
         )
+        zipSigner()
     }
 
     testImplementation(kotlin("test"))
@@ -75,5 +76,23 @@ intellijPlatform {
             email = "kontakt@devopssolutions.pl"
             url = "https://devopssolutions.pl"
         }
+    }
+
+    signing {
+        certificateChain.convention(providers.environmentVariable("CERTIFICATE_CHAIN"))
+        privateKey.convention(providers.environmentVariable("PRIVATE_KEY"))
+        password.convention(providers.environmentVariable("PRIVATE_KEY_PASSWORD"))
+    }
+
+    publishing {
+        token.convention(providers.environmentVariable("PUBLISH_TOKEN"))
+        channels.set(
+            providers.gradleProperty("pluginPublishChannels")
+                .map { value ->
+                    value.split(',')
+                        .map { channel -> channel.trim() }
+                        .filter { channel -> channel.isNotEmpty() }
+                },
+        )
     }
 }
