@@ -10,7 +10,7 @@ Proposals are advisory until accepted through the normal repository flow. A prop
 
 Active proposals still have at least one `open` row in their `Progress Tracker`.
 
-_none yet_
+- `PROP-orchestrator-worker-rules` - Orchestrator And Worker Rules For Multi-Agent Execution ([PROP-orchestrator-worker-rules-2026-05-15T05-31.md](PROP-orchestrator-worker-rules-2026-05-15T05-31.md)), created 2026-05-15.
 
 ### Completed Proposals
 
