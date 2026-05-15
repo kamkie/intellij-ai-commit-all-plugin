@@ -12,6 +12,15 @@ This directory holds task-specific implementation plans for work that is too lar
 - Keep plans focused on one task or milestone.
 - Link unresolved user input back to `docs/decisions/OPEN_QUESTIONS.md`, and move accepted project decisions or repository rule changes to `docs/decisions/`.
 - Follow `.agents/references/planning.md` and `.agents/references/execution.md` for plan readiness, per-task commits, and orchestrator or task-worker execution.
+- Move closed plans to `archive/` only after the plan no longer needs active execution or release-preparation updates. Preserve the `Plan-ID`, filename, and close reason.
+
+## Active Plans
+
+_none yet_
+
+## Archived Plans
+
+- `P-scaffold-plugin-project` - Scaffold Plugin Project ([archive/P-scaffold-plugin-project.md](archive/P-scaffold-plugin-project.md)), archived as of 2026-05-15.
 
 ## Lifecycle
 

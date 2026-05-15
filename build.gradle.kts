@@ -42,7 +42,12 @@ intellijPlatform {
             <p>The workflow implementation is still pending in this prerelease scaffold.</p>
         """.trimIndent()
         changeNotes = """
-            <p>Initial executable plugin scaffold.</p>
+            <p>v0.1.0-alpha.1 scaffold prerelease.</p>
+            <ul>
+                <li>Initial executable Gradle/Kotlin IntelliJ Platform plugin scaffold.</li>
+                <li>Plugin descriptor metadata and required JetBrains AI Assistant dependency.</li>
+                <li>Validated package build and sandbox startup.</li>
+            </ul>
         """.trimIndent()
 
         ideaVersion {

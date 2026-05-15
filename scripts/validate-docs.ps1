@@ -60,7 +60,7 @@ if (Test-Path -LiteralPath $tasksPath) {
 $allowedPlanStatuses = @('Draft', 'Approved', 'In Progress', 'Blocked', 'Implemented', 'Closed')
 $allowedPlanCloseReasons = @('Released', 'Rejected', 'Superseded', 'Deferred', 'Archived')
 
-$planFiles = Get-ChildItem -LiteralPath (Join-Path $repoRoot '.agents/plans') -File -Filter '*.md' |
+$planFiles = Get-ChildItem -LiteralPath (Join-Path $repoRoot '.agents/plans') -Recurse -File -Filter '*.md' |
     Where-Object { $_.Name -notin @('README.md', 'PLAN_TEMPLATE.md') }
 
 foreach ($plan in $planFiles) {
@@ -126,7 +126,7 @@ for ($i = 0; $i -lt $adrFiles.Count; $i++) {
     }
 }
 
-$proposalFiles = Get-ChildItem -LiteralPath (Join-Path $repoRoot 'docs/proposals') -File -Filter '*.md' |
+$proposalFiles = Get-ChildItem -LiteralPath (Join-Path $repoRoot 'docs/proposals') -Recurse -File -Filter '*.md' |
     Where-Object { $_.Name -notin @('README.md', 'PROPOSAL_TEMPLATE.md') }
 
 foreach ($proposal in $proposalFiles) {

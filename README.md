@@ -37,7 +37,9 @@ The plugin should provide a one-click commit flow:
 
 ## Current Status
 
-Initial executable Gradle/Kotlin IntelliJ plugin scaffold is present and sandbox startup has been validated. The `AI Commit All` workflow implementation is still pending.
+Initial executable Gradle/Kotlin IntelliJ plugin scaffold is present and sandbox startup has been validated. The first scaffold prerelease is prepared as `v0.1.0-alpha.1`.
+
+The `AI Commit All` workflow implementation is still pending, so this prerelease is not a usable commit automation release.
 
 Implementation guidance for future agents is in [AGENTS.md](AGENTS.md).
 

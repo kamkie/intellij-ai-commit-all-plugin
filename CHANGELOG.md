@@ -4,9 +4,19 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog. Release tags should use semantic version tags in the form `vMAJOR.MINOR.PATCH` for stable releases or `vMAJOR.MINOR.PATCH-PRERELEASE` for prereleases.
 
-This repository has no released plugin version yet.
+This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.1` is the first scaffold prerelease prepared from this repository.
 
 ## [Unreleased]
+
+### Added
+
+_None yet._
+
+### Changed
+
+_None yet._
+
+## [v0.1.0-alpha.1] - 2026-05-15
 
 ### Added
 
@@ -40,3 +50,5 @@ This repository has no released plugin version yet.
 - Renamed the active scaffold plan file to include `P-scaffold-plugin-project`.
 - Updated plan guidance and the plan template to surface readiness, open questions, and implementation progress.
 - Marked `PROP-plan-status-vocabulary` completed after implementing accepted findings.
+- Archived completed plans, completed proposals, and completed task entries for the first scaffold prerelease.
+- Set the plugin version to `0.1.0-alpha.1`.

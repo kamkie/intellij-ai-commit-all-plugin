@@ -16,8 +16,14 @@ _none yet_
 
 Completed proposals have no `open` rows in their `Progress Tracker`. Keep them listed here until they are moved to `archive/`.
 
-- `PROP-repository-analysis` - Repository Analysis Proposal ([repository-analysis-2026-05-15T01-47.md](repository-analysis-2026-05-15T01-47.md)), completed as of 2026-05-15.
-- `PROP-plan-status-vocabulary` - Plan Status Vocabulary Proposal ([plan-status-vocabulary-2026-05-15T02-51.md](plan-status-vocabulary-2026-05-15T02-51.md)), completed as of 2026-05-15.
+_none yet_
+
+### Archived Proposals
+
+Archived proposals have completed or otherwise retired tracker rows and live under `archive/`.
+
+- `PROP-repository-analysis` - Repository Analysis Proposal ([archive/repository-analysis-2026-05-15T01-47.md](archive/repository-analysis-2026-05-15T01-47.md)), archived as of 2026-05-15.
+- `PROP-plan-status-vocabulary` - Plan Status Vocabulary Proposal ([archive/plan-status-vocabulary-2026-05-15T02-51.md](archive/plan-status-vocabulary-2026-05-15T02-51.md)), archived as of 2026-05-15.
 
 Index entries should include the proposal ID, title, file link, and current status date when applicable.
 
