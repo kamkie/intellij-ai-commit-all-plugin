@@ -184,7 +184,13 @@ Archived as of `v0.1.0-alpha.1` release preparation.
 - [x] T-REL-010: Add release guidance for changelog, support-policy, version tag, and release-precondition rules. (ADR 0029)
 - [x] T-REL-011: Assign changelog maintenance to the orchestrator during orchestrated plan execution and release preparation. (ADR 0030)
 
+### Bugs
+
+- [ ] T-BUG-001: plugin does not work when vsc changelists are disabled and git is in git stage mode
+
 ### Ideas
 
-- [ ] T-IDEA-001: plugin does not work when vsc changelists are disabled and git is in git stage mode
 - [x] T-IDEA-002: docs/proposals/README.md does not need to know about archived proposals, docs/proposals/archive/README.md is doing that
+- [x] T-IDEA-003: Add an ADR implementation tracker to `docs/decisions/README.md`. (ADR 0048)
+- [ ] T-IDEA-004: we need a way to track proposals' implementation status
+- [ ] T-IDEA-005: retire or reengineer OPEN_QUESTIONS.md

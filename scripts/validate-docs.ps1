@@ -327,6 +327,107 @@ for ($i = 0; $i -lt $adrFiles.Count; $i++) {
     }
 }
 
+$allowedAdrImplementationStatuses = @('not-required', 'pending', 'planned', 'in-progress', 'implemented', 'blocked')
+$adrImplementationTrackerMatch = [regex]::Match($adrReadmeText, '(?ms)^## ADR Implementation Tracker\s*(.*?)(?=^## |\z)')
+if (-not $adrImplementationTrackerMatch.Success)
+{
+    Add-ValidationError 'docs/decisions/README.md is missing ## ADR Implementation Tracker'
+}
+else
+{
+    $adrImplementationTrackerText = $adrImplementationTrackerMatch.Groups[1].Value
+    $adrImplementationRows = [regex]::Matches(
+            $adrImplementationTrackerText,
+            '(?m)^\|\s+\[ard-(\d{4})\]\((ard-\d{4}-[a-z0-9]+(?:-[a-z0-9]+)*\.md)\)\s+\|\s+([a-z-]+)\s+\|\s+(.+?)\s+\|\s+(\d{4}-\d{2}-\d{2})\s+\|$'
+    )
+
+    $implementationRowsByAdr = @{ }
+    foreach ($row in $adrImplementationRows)
+    {
+        $adrNumber = $row.Groups[1].Value
+        $adrTarget = $row.Groups[2].Value
+        $implementationStatus = $row.Groups[3].Value.Trim()
+        $evidence = $row.Groups[4].Value.Trim()
+        $updated = $row.Groups[5].Value.Trim()
+
+        if ( $implementationRowsByAdr.ContainsKey($adrNumber))
+        {
+            Add-ValidationError "docs/decisions/README.md has duplicate ADR implementation tracker row for ard-$adrNumber"
+            continue
+        }
+
+        $implementationRowsByAdr[$adrNumber] = @{
+            Target = $adrTarget
+            Status = $implementationStatus
+            Evidence = $evidence
+            Updated = $updated
+        }
+
+        if ($allowedAdrImplementationStatuses -notcontains $implementationStatus)
+        {
+            Add-ValidationError "docs/decisions/README.md ADR implementation tracker row ard-$adrNumber has invalid status '$implementationStatus'; expected one of: $( $allowedAdrImplementationStatuses -join ', ' )"
+        }
+
+        if ([string]::IsNullOrWhiteSpace($evidence) -or $evidence -eq '-')
+        {
+            Add-ValidationError "docs/decisions/README.md ADR implementation tracker row ard-$adrNumber is missing evidence"
+        }
+
+        if ($updated -notmatch '^\d{4}-\d{2}-\d{2}$')
+        {
+            Add-ValidationError "docs/decisions/README.md ADR implementation tracker row ard-$adrNumber has invalid updated date"
+        }
+    }
+
+    $knownAdrNumbers = New-Object System.Collections.Generic.HashSet[string]
+    foreach ($adrFile in $adrFiles)
+    {
+        $adrNameMatch = [regex]::Match($adrFile.Name, '^ard-(\d{4})-[a-z0-9]+(?:-[a-z0-9]+)*\.md$')
+        if (-not $adrNameMatch.Success)
+        {
+            continue
+        }
+
+        $adrNumber = $adrNameMatch.Groups[1].Value
+        $knownAdrNumbers.Add($adrNumber) | Out-Null
+
+        if (-not $implementationRowsByAdr.ContainsKey($adrNumber))
+        {
+            Add-ValidationError "docs/decisions/README.md is missing ADR implementation tracker row for ard-$adrNumber"
+            continue
+        }
+
+        $row = $implementationRowsByAdr[$adrNumber]
+        if ($row.Target -ne $adrFile.Name)
+        {
+            Add-ValidationError "docs/decisions/README.md ADR implementation tracker row ard-$adrNumber must link to $( $adrFile.Name )"
+        }
+
+        $adrText = Get-Content -Raw -LiteralPath $adrFile.FullName
+        $frontMatterMatch = [regex]::Match($adrText, '(?s)^---\s(.*?)\s---\s*')
+        if ($frontMatterMatch.Success)
+        {
+            $frontMatter = $frontMatterMatch.Groups[1].Value
+            $adrStatusMatch = [regex]::Match($frontMatter, '(?m)^status:\s+(proposed|rejected|accepted|deprecated|superseded by .+)\s*$')
+            if ($adrStatusMatch.Success -and
+                    $adrStatusMatch.Groups[1].Value -eq 'accepted' -and
+                    $row.Status -eq 'pending' -and
+                    $row.Evidence -notmatch '(T-[A-Z]+-\d{3}|PLAN-[A-Za-z0-9][A-Za-z0-9-]*|OPEN_QUESTIONS|(?i)blocker|(?i)blocked)')
+            {
+                Add-ValidationError "docs/decisions/README.md ADR implementation tracker row ard-$adrNumber is pending without task, plan, open question, or blocker evidence"
+            }
+        }
+    }
+
+    foreach ($adrNumber in $implementationRowsByAdr.Keys)
+    {
+        if (-not $knownAdrNumbers.Contains($adrNumber))
+        {
+            Add-ValidationError "docs/decisions/README.md ADR implementation tracker references missing ard-$adrNumber"
+        }
+    }
+}
+
 $proposalRoot = Join-Path $repoRoot 'docs/proposals'
 $proposalArchiveRoot = Resolve-Path (Join-Path $proposalRoot 'archive')
 $proposalFiles = Get-ChildItem -LiteralPath $proposalRoot -Recurse -File -Filter '*.md' |
