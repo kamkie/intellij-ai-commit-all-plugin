@@ -45,9 +45,11 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 - Edit the fenced `yaml` block inside the finding section.
 - Mirror `status`, `decision`, and `priority` to the row above.
-- Bump `updated` to the current date.
-- Leave completed, rejected, or superseded findings in place as history.
+- Bump `updated` to the current timestamp.
+- Use `status` for implementation progress and `decision` for maintainer triage.
 - Do not set `decision: accepted` when authoring a new finding; leave it empty for maintainer triage.
+- Update the Proposal Implementation Summary in `docs/proposals/README.md` for accepted findings with non-terminal implementation status.
+- Leave completed, rejected, or superseded findings in place as history.
 
 ## Errors And Mistakes
 

@@ -192,5 +192,5 @@ Archived as of `v0.1.0-alpha.1` release preparation.
 
 - [x] T-IDEA-002: docs/proposals/README.md does not need to know about archived proposals, docs/proposals/archive/README.md is doing that
 - [x] T-IDEA-003: Add an ADR implementation tracker to `docs/decisions/README.md`. (ADR 0048)
-- [ ] T-IDEA-004: we need a way to track proposals' implementation status
+- [x] T-IDEA-004: Add proposal implementation status tracking through per-finding status values and a README summary. (ADR 0049)
 - [ ] T-IDEA-005: retire or reengineer OPEN_QUESTIONS.md

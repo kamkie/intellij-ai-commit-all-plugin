@@ -8,7 +8,7 @@ Proposals are advisory until accepted through the normal repository flow. A prop
 
 ### Active Proposals
 
-Active proposals still have at least one `open` row in their `Progress Tracker`.
+Active proposals still have at least one non-terminal implementation status row or at least one untriaged finding in their `Progress Tracker`.
 
 - `PROP-02-pre-release-ux` - Pre-Release UX Work Stream ([PROP-02-pre-release-ux-2026-05-15T09-57.md](PROP-02-pre-release-ux-2026-05-15T09-57.md)), created 2026-05-15.
 - `PROP-03-repository-quality-lifecycle` - Repository Quality And Lifecycle Work Stream ([PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md)), created 2026-05-15.
@@ -16,11 +16,23 @@ Active proposals still have at least one `open` row in their `Progress Tracker`.
 
 ### Completed Proposals
 
-Completed proposals have no `open` rows in their `Progress Tracker`. Keep them listed here until they are moved to `archive/`.
+Completed proposals have no non-terminal implementation status rows and no untriaged findings in their `Progress Tracker`. Keep them listed here until they are moved to `archive/`.
 
 - `PROP-01-proposal-governance` - Proposal Governance Work Stream ([PROP-01-proposal-governance-2026-05-15T09-57.md](PROP-01-proposal-governance-2026-05-15T09-57.md)), completed 2026-05-17.
 
 Index entries should include the proposal ID, title, file link, and current status date when applicable.
+
+### Proposal Implementation Summary
+
+This summary lists accepted findings whose implementation status is not terminal. The per-finding YAML tracker remains the source of truth.
+
+| Proposal                                                                                         | Finding | Title                                                    | Priority | Status |
+|--------------------------------------------------------------------------------------------------|---------|----------------------------------------------------------|----------|--------|
+| [PROP-02-pre-release-ux](PROP-02-pre-release-ux-2026-05-15T09-57.md)                             | E001    | Clear the commit message before AI generation            | 1        | open   |
+| [PROP-02-pre-release-ux](PROP-02-pre-release-ux-2026-05-15T09-57.md)                             | E005    | Add a split-button decision tree and final-selection ADR | 2        | open   |
+| [PROP-02-pre-release-ux](PROP-02-pre-release-ux-2026-05-15T09-57.md)                             | E006    | Evaluate shortcut takeover with opt-out                  | 3        | open   |
+| [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E001    | Add Dependabot configuration                             | 1        | open   |
+| [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E002    | Add CodeQL analysis                                      | 1        | open   |
 
 ## When To Use A Proposal
 
@@ -185,16 +197,25 @@ Rules:
 
 ## Status Vocabulary
 
-Use these values for `status` and `decision`:
+Use these values for `status`:
 
-- `open` - not reviewed yet.
-- `in-progress` - work has started.
+- `open` - implementation has not started.
+- `planned` - implementation is covered by an approved plan or explicit open task.
+- `in-progress` - implementation work has started.
+- `blocked` - implementation is waiting on unresolved input, dependency, or external condition.
+- `done` - implemented and landed.
+- `not-required` - no separate implementation is required.
+
+Use these values for `decision`:
+
+- empty - not triaged yet.
 - `accepted` - will be done as proposed.
 - `rejected` - will not be done.
 - `deferred` - revisit later.
-- `done` - implemented and landed.
 
-Short lowercase tags may be used only when the standard vocabulary does not fit, and the `comment` must explain them.
+Rejected findings should use `decision: rejected` and `status: not-required`. Deferred findings should use `decision: deferred` and either `status: blocked` or `status: not-required`.
+
+Short lowercase tags may be used only in archived proposals when the standard vocabulary does not fit, and the `comment` must explain them.
 
 ## Priority Scale
 
@@ -215,8 +236,10 @@ Use the same priority in the tracker table and the per-finding YAML block.
 4. Leave `done` or `rejected` findings in place as history.
 5. When setting `decision: accepted`, set `accepted_at` to the decision timestamp.
 6. When setting a non-empty decision other than `accepted`, set `decided_at` to the decision timestamp.
-7. When no `open` rows remain, move the proposal from `Active Proposals` to `Completed Proposals` in this README and append the completion date.
-8. Move fully retired proposals to `archive/` only when their proposal ID, finding IDs, and filename can be preserved.
+7. Add accepted findings with non-terminal implementation status to the Proposal Implementation Summary.
+8. Remove accepted findings with terminal implementation status from the Proposal Implementation Summary.
+9. When no non-terminal implementation statuses and no untriaged findings remain, move the proposal from `Active Proposals` to `Completed Proposals` in this README and append the completion date.
+10. Move fully retired proposals to `archive/` only when their proposal ID, finding IDs, and filename can be preserved.
 
 ## Template
 

@@ -30,7 +30,7 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 ## Progress Tracker
 
-Compact overview only. Edit the YAML tracker inside each section below; this table mirrors statuses at a glance.
+Compact overview only. Edit the YAML tracker inside each section below; this table mirrors statuses at a glance. `Status` tracks implementation progress. `Decision` records maintainer triage.
 
 | Id   | Title         | Priority | Status | Decision |
 |------|---------------|----------|--------|----------|
@@ -41,8 +41,10 @@ Compact overview only. Edit the YAML tracker inside each section below; this tab
 - Edit the fenced `yaml` block inside the finding section.
 - Mirror `status`, `decision`, and `priority` to the row above.
 - Bump `updated` to the current timestamp.
+- Use `status` for implementation progress and `decision` for maintainer triage.
 - Leave `decision` empty when authoring new findings; only maintainer triage fills it.
 - Set `accepted_at` when `decision: accepted`; set `decided_at` for any other non-empty decision.
+- Update the Proposal Implementation Summary in `docs/proposals/README.md` for accepted findings with non-terminal implementation status.
 - Leave completed or rejected findings in place as history.
 
 ## Errors And Mistakes

@@ -430,6 +430,58 @@ else
 
 $proposalRoot = Join-Path $repoRoot 'docs/proposals'
 $proposalArchiveRoot = Resolve-Path (Join-Path $proposalRoot 'archive')
+$allowedProposalStatuses = @('open', 'planned', 'in-progress', 'blocked', 'done', 'not-required')
+$terminalProposalStatuses = @('done', 'not-required')
+$allowedProposalDecisions = @('', 'accepted', 'rejected', 'deferred')
+$proposalSummaryRowsByFinding = @{ }
+$expectedProposalSummaryKeys = New-Object System.Collections.Generic.HashSet[string]
+$proposalReadmePath = Join-Path $proposalRoot 'README.md'
+$proposalReadmeText = ''
+if (Test-Path -LiteralPath $proposalReadmePath)
+{
+    $proposalReadmeText = Get-Content -Raw -LiteralPath $proposalReadmePath
+}
+
+$proposalImplementationSummaryMatch = [regex]::Match($proposalReadmeText, '(?ms)^### Proposal Implementation Summary\s*(.*?)(?=^### |^## |\z)')
+if (-not $proposalImplementationSummaryMatch.Success)
+{
+    Add-ValidationError 'docs/proposals/README.md is missing ### Proposal Implementation Summary'
+}
+else
+{
+    $proposalImplementationSummaryText = $proposalImplementationSummaryMatch.Groups[1].Value
+    $proposalImplementationSummaryRows = [regex]::Matches(
+            $proposalImplementationSummaryText,
+            '(?m)^\|\s+\[(PROP-[A-Za-z0-9][A-Za-z0-9-]*)\]\(([^)]+)\)\s+\|\s+([EDS]\d{3})\s+\|\s+(.+?)\s+\|\s+([1-6])\s+\|\s+([a-z-]+)\s+\|$'
+    )
+
+    foreach ($row in $proposalImplementationSummaryRows)
+    {
+        $proposalId = $row.Groups[1].Value
+        $findingId = $row.Groups[3].Value
+        $key = "$proposalId $findingId"
+        $summaryStatus = $row.Groups[6].Value.Trim()
+
+        if ( $proposalSummaryRowsByFinding.ContainsKey($key))
+        {
+            Add-ValidationError "docs/proposals/README.md has duplicate proposal implementation summary row for $key"
+            continue
+        }
+
+        $proposalSummaryRowsByFinding[$key] = @{
+            ProposalTarget = $row.Groups[2].Value.Trim()
+            Title = $row.Groups[4].Value.Trim()
+            Priority = $row.Groups[5].Value.Trim()
+            Status = $summaryStatus
+        }
+
+        if ($allowedProposalStatuses -notcontains $summaryStatus)
+        {
+            Add-ValidationError "docs/proposals/README.md proposal implementation summary row $key has invalid status '$summaryStatus'; expected one of: $( $allowedProposalStatuses -join ', ' )"
+        }
+    }
+}
+
 $proposalFiles = Get-ChildItem -LiteralPath $proposalRoot -Recurse -File -Filter '*.md' |
     Where-Object { $_.Name -notin @('README.md', 'PROPOSAL_TEMPLATE.md') }
 
@@ -467,6 +519,24 @@ foreach ($proposal in $proposalFiles) {
 
     $sectionIds = [regex]::Matches($text, '(?m)^### ([EDS]\d+)\.') | ForEach-Object { $_.Groups[1].Value }
     $tableIds = [regex]::Matches($text, '(?m)^\|\s+([EDS]\d+)\s+\|') | ForEach-Object { $_.Groups[1].Value }
+    $tableRowsById = @{ }
+    foreach ($tableRow in [regex]::Matches($text, '(?m)^\|\s+([EDS]\d+)\s+\|\s+(.+?)\s+\|\s+([1-6])\s+\|\s+([a-z-]+)\s+\|\s*(.*?)\s*\|$'))
+    {
+        $tableId = $tableRow.Groups[1].Value
+        if ( $tableRowsById.ContainsKey($tableId))
+        {
+            Add-ValidationError "$relative Progress Tracker has duplicate row for $tableId"
+            continue
+        }
+
+        $tableRowsById[$tableId] = @{
+            Title = $tableRow.Groups[2].Value.Trim()
+            Priority = $tableRow.Groups[3].Value.Trim()
+            Status = $tableRow.Groups[4].Value.Trim()
+            Decision = $tableRow.Groups[5].Value.Trim()
+        }
+    }
+
     $findingIdPattern = if ($isArchivedProposal)
     {
         '^[EDS]\d+$'
@@ -506,10 +576,28 @@ foreach ($proposal in $proposalFiles) {
     {
         $findingId = $findingMatch.Groups[1].Value
         $yaml = $findingMatch.Groups[2].Value
+        $statusMatch = [regex]::Match($yaml, '(?m)^status:[ \t]*(.*?)[ \t]*$')
+        $status = if ($statusMatch.Success)
+        {
+            $statusMatch.Groups[1].Value.Trim()
+        }
+        else
+        {
+            ''
+        }
         $decisionMatch = [regex]::Match($yaml, '(?m)^decision:[ \t]*(.*?)[ \t]*$')
         $decision = if ($decisionMatch.Success)
         {
             $decisionMatch.Groups[1].Value.Trim()
+        }
+        else
+        {
+            ''
+        }
+        $priorityMatch = [regex]::Match($yaml, '(?m)^priority:[ \t]*(.*?)[ \t]*$')
+        $priority = if ($priorityMatch.Success)
+        {
+            $priorityMatch.Groups[1].Value.Trim()
         }
         else
         {
@@ -555,6 +643,55 @@ foreach ($proposal in $proposalFiles) {
 
         if (-not $isArchivedProposal)
         {
+            if ($allowedProposalStatuses -notcontains $status)
+            {
+                Add-ValidationError "$relative finding $findingId has invalid status '$status'; expected one of: $( $allowedProposalStatuses -join ', ' )"
+            }
+
+            if ($allowedProposalDecisions -notcontains $decision)
+            {
+                Add-ValidationError "$relative finding $findingId has invalid decision '$decision'; expected empty or one of: accepted, rejected, deferred"
+            }
+
+            if ($priority -notmatch '^[1-6]$')
+            {
+                Add-ValidationError "$relative finding $findingId priority must be 1-6"
+            }
+
+            if ( $tableRowsById.ContainsKey($findingId))
+            {
+                $tableRow = $tableRowsById[$findingId]
+                if ($tableRow['Status'] -ne $status)
+                {
+                    Add-ValidationError "$relative Progress Tracker row $findingId status '$( $tableRow['Status'] )' must match YAML status '$status'"
+                }
+
+                if ($tableRow['Decision'] -ne $decision)
+                {
+                    Add-ValidationError "$relative Progress Tracker row $findingId decision '$( $tableRow['Decision'] )' must match YAML decision '$decision'"
+                }
+
+                if ($tableRow['Priority'] -ne $priority)
+                {
+                    Add-ValidationError "$relative Progress Tracker row $findingId priority '$( $tableRow['Priority'] )' must match YAML priority '$priority'"
+                }
+            }
+
+            if ([string]::IsNullOrWhiteSpace($decision) -and $status -ne 'open')
+            {
+                Add-ValidationError "$relative finding $findingId has empty decision but status '$status'; use status 'open' until maintainer triage"
+            }
+
+            if ($decision -eq 'rejected' -and $status -ne 'not-required')
+            {
+                Add-ValidationError "$relative finding $findingId has decision rejected but status '$status'; use status 'not-required'"
+            }
+
+            if ($decision -eq 'deferred' -and $status -notin @('blocked', 'not-required'))
+            {
+                Add-ValidationError "$relative finding $findingId has decision deferred but status '$status'; use status 'blocked' or 'not-required'"
+            }
+
             if ($decision -eq 'accepted')
             {
                 if ( [string]::IsNullOrWhiteSpace($acceptedAt))
@@ -578,7 +715,41 @@ foreach ($proposal in $proposalFiles) {
             {
                 Add-ValidationError "$relative finding $findingId with a decision must use a timestamp in updated"
             }
+
+            if ($proposalIdMatch.Success -and
+                    $decision -eq 'accepted' -and
+                    $terminalProposalStatuses -notcontains $status)
+            {
+                $summaryKey = "$( $proposalIdMatch.Groups[1].Value ) $findingId"
+                $expectedProposalSummaryKeys.Add($summaryKey) | Out-Null
+
+                if (-not $proposalSummaryRowsByFinding.ContainsKey($summaryKey))
+                {
+                    Add-ValidationError "docs/proposals/README.md is missing proposal implementation summary row for $summaryKey"
+                }
+                else
+                {
+                    $summaryRow = $proposalSummaryRowsByFinding[$summaryKey]
+                    if ($summaryRow['Status'] -ne $status)
+                    {
+                        Add-ValidationError "docs/proposals/README.md proposal implementation summary row $summaryKey status '$( $summaryRow['Status'] )' must match YAML status '$status'"
+                    }
+
+                    if ($summaryRow['Priority'] -ne $priority)
+                    {
+                        Add-ValidationError "docs/proposals/README.md proposal implementation summary row $summaryKey priority '$( $summaryRow['Priority'] )' must match YAML priority '$priority'"
+                    }
+                }
+            }
         }
+    }
+}
+
+foreach ($summaryKey in $proposalSummaryRowsByFinding.Keys)
+{
+    if (-not $expectedProposalSummaryKeys.Contains($summaryKey))
+    {
+        Add-ValidationError "docs/proposals/README.md proposal implementation summary row $summaryKey does not match an accepted non-terminal active proposal finding"
     }
 }
 
@@ -601,6 +772,11 @@ if (Test-Path -LiteralPath $proposalTemplatePath)
     if ($templateText -notmatch '(?m)^decision:[ \t]*$')
     {
         Add-ValidationError "$templateRelative must start example findings with an empty decision"
+    }
+
+    if ($templateText -notmatch 'Proposal Implementation Summary')
+    {
+        Add-ValidationError "$templateRelative must mention Proposal Implementation Summary updates"
     }
 
     foreach ($key in @('accepted_at', 'decided_at'))
