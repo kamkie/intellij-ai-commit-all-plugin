@@ -44,7 +44,7 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 | E002 | Skip the push dialog only when safe                      | 1        | done    | accepted |
 | E003 | Capture split-button design intent                       | 1        | done    | accepted |
 | E004 | Run split-button visual draft experiments                | 2        | done    | accepted |
-| E005 | Add a split-button decision tree and final-selection ADR | 2        | blocked | accepted |
+| E005 | Add a split-button decision tree and final-selection ADR | 2        | done    | accepted |
 | E006 | Evaluate shortcut takeover with opt-out                  | 3        | blocked | accepted |
 
 ## How To Edit The Trackers
@@ -130,13 +130,13 @@ command: "Make the drafts closer to the IntelliJ run-widget reference: one round
 - Proposal: Add a compact decision tree beside the draft set, then create a follow-up ADR that records the selected final direction and supersedes ADR 0027 where appropriate.
 
 ```yaml
-status: blocked
+status: done
 decision: accepted
 priority: 2
 owner:
-updated: 2026-05-17T21:55:22+02:00
+updated: 2026-05-17T23:40:43+02:00
 accepted_at: 2026-05-15T11:43:16+02:00
-comment: "Source: PROP-split-button-look-experiments E3. Decision tree revised with run-widget-like one-button geometry and hover-state constraints; final-selection ADR remains pending until a draft is selected."
+comment: "Source: PROP-split-button-look-experiments E3. Decision tree revised and final style selected by accepted ADR 0053."
 ```
 
 ### E006. Evaluate shortcut takeover with opt-out
@@ -165,8 +165,8 @@ _No tracked findings._
 
 ## Smaller / Stylistic Items
 
-- Keep canonical action labels from ADR 0005: `AI Commit All` and `& Push`.
-- Keep split-button structure from ADR 0006 unless a later ADR explicitly supersedes it.
+- Keep product label `AI Commit All` from ADR 0005; ADR 0052 now governs the three-section `AI`, `Commit`, and `Push` control labels.
+- Keep ADR 0052's three-section control structure; ADR 0006 is superseded for future implementation.
 - Group any accepted runtime toggles under a small Settings section rather than scattering them.
 
 ## Suggested Priority Order

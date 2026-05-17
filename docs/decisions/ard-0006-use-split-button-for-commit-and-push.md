@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by ard-0052
 date: 2026-05-14
 decision-makers: Kamil Kiewisz <kamkie@outlook.com>
 consulted: Codex
@@ -14,7 +14,7 @@ The commit and push presentation was previously unresolved. Options included one
 
 The user decided the control should be a split button with `AI Commit All` and `& Push` segments. Detailed visual styling was deferred at the time of this decision.
 
-Current state: ADR 0027 later selected the generated placeholder graphic in `docs/concepts/graphics/split-button-placeholder.png` as the current detailed styling reference.
+Current state: ADR 0052 supersedes this two-segment control structure with a three-section `<icon> AI | Commit | Push` control. ADR 0053 supersedes the later placeholder styling reference from ADR 0027.
 
 ## Decision Drivers
 
@@ -43,7 +43,7 @@ The `& Push` segment starts the same AI-generated commit flow and then pushes af
 
 Use IntelliJ Platform default split-button behavior for the control structure. Detailed icon and styling choices were decided later by ADR 0015 and ADR 0027.
 
-Current implementation guidance should also follow ADR 0015 for final icon assets and ADR 0027 for split-button styling adaptation.
+Historical implementation guidance followed ADR 0015 for final icon assets and ADR 0027 for split-button styling adaptation. New implementation work should follow ADR 0052 and ADR 0053.
 
 Do not implement separate full-width `AI Commit All` and `AI Commit All & Push` buttons unless a later ADR supersedes this decision.
 
@@ -78,4 +78,4 @@ Compliance is checked through documentation review and `scripts/validate-docs.ps
 
 - Remove the open question for commit/push presentation.
 - Update `TASKS.md` to implement the split button instead of separate actions.
-- Historical note: icon direction was later decided by ADR 0015, and split-button styling was later decided by ADR 0027.
+- Historical note: icon direction was later decided by ADR 0015, split-button styling was later decided by ADR 0027, and the control structure was superseded by ADR 0052.

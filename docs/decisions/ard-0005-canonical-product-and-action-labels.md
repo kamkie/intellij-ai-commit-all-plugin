@@ -14,6 +14,8 @@ The repository used both `AI Commit All Files` and `AI Commit All` for the produ
 
 The project needs stable labels before implementation so `README.md`, `plugin.xml`, action classes, tests, and future screenshots use consistent names.
 
+Current state: ADR 0052 keeps `AI Commit All` as the product name but replaces the two-segment action labels with the accepted three-section control labels `AI`, `Commit`, and `Push` for the next runtime implementation.
+
 ## Decision Drivers
 
 * Preserve the repository context and constraints described in this decision.

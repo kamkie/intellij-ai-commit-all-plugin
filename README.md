@@ -23,6 +23,8 @@ The current implementation:
 - Executes commit and commit-and-push through the active IntelliJ commit workflow so IDE before-commit checks, confirmations, warnings, commit errors, and push errors stay in charge.
 - Skips the Push Commits dialog only when every affected Git root is on a normal tracked branch, the local branch exactly matches its tracked upstream before the commit, and the target is the standard tracked branch.
 
+Accepted follow-up direction: ADR 0052 and ADR 0053 replace this with a planned three-section `<AI icon> AI | Commit | Push` control using the selected violet AI snake styling reference. That runtime replacement is not implemented yet; the usage instructions below describe the current two-segment prerelease implementation.
+
 Manual sandbox validation is tracked in [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
 
 ## Requirements

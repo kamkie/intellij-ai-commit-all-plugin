@@ -18,6 +18,8 @@ Icon direction is already decided in ADR 0015: use AI-generated base concepts ad
 
 The user answered `Q-UX-5`: make a series of drafts.
 
+Current state: ADR 0053 selects `docs/concepts/graphics/split-button-drafts/01-blue-steel-compact-snake-violet-ai.svg` as the final styling reference for the ADR 0052 three-section control.
+
 ## Decision Drivers
 
 * Preserve the repository context and constraints described in this decision.

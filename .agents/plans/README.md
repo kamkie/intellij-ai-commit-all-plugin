@@ -17,7 +17,7 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- None.
+- `PLAN-three-section-ai-commit-push-control` - Three-Section AI Commit Push Control ([PLAN-three-section-ai-commit-push-control.md](PLAN-three-section-ai-commit-push-control.md)), draft as of 2026-05-17.
 
 ## Archived Plans
 

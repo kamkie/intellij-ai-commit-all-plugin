@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by ard-0053
 date: 2026-05-15
 decision-makers: Kamil Kiewisz <kamkie@outlook.com>
 consulted: Codex
@@ -39,7 +39,7 @@ Use a generated placeholder graphic as the selected split-button styling referen
 
 The placeholder graphic is stored at `docs/concepts/graphics/split-button-placeholder.png`.
 
-This is the current detailed styling owner for the split-button direction that ADR 0006 intentionally deferred.
+Current state: ADR 0053 supersedes this placeholder and selects `docs/concepts/graphics/split-button-drafts/01-blue-steel-compact-snake-violet-ai.svg` as the detailed styling owner for the accepted ADR 0052 three-section control.
 
 The placeholder should cover:
 
@@ -57,8 +57,8 @@ If implementation reveals that the generated placeholder cannot be represented c
 ### Consequences
 
 - `Q-UX-6` is closed.
-- Split-button progress or activity animation is unblocked.
-- The placeholder gives implementation a visual direction without treating raw generated bitmap output as final plugin UI.
+- Split-button progress or activity animation was unblocked for the historical two-segment control.
+- The placeholder gave implementation a visual direction without treating raw generated bitmap output as final plugin UI.
 - Final assets still need platform-quality adaptation and light/dark theme validation.
 
 ### Confirmation
@@ -89,4 +89,4 @@ Compliance is checked through documentation review and `scripts/validate-docs.ps
 
 - Remove `Q-UX-6` from `docs/decisions/OPEN_QUESTIONS.md`.
 - Update `TASKS.md` so progress/activity styling no longer depends on an open question.
-- Store the generated placeholder graphic under `docs/concepts/graphics/` for immediate visual reference.
+- Store the generated placeholder graphic under `docs/concepts/graphics/` for historical visual reference.

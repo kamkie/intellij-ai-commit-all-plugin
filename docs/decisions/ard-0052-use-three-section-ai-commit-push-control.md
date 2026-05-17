@@ -1,6 +1,7 @@
 ---
-status: proposed
+status: accepted
 date: 2026-05-17
+accepted_at: 2026-05-17T23:40:43+02:00
 decision-makers: Kamil Kiewisz <kamkie@outlook.com>
 consulted: Codex
 informed: Repository contributors
@@ -37,7 +38,7 @@ This changes both presentation and behavior. The first section should run only t
 
 Chosen option: "Use a three-section cumulative control: `<icon> AI | Commit | Push`", because it makes each workflow level visible while preserving one compact control.
 
-If accepted, replace the two-segment split-button structure from ADR 0006 with one three-section control:
+Replace the two-segment split-button structure from ADR 0006 with one three-section control:
 
 * `AI` section: include every non-ignored committable file in the IDE commit workflow, stage or select files where the IDE workflow requires that, invoke AI message generation, and stop before commit.
 * `Commit` section: perform the `AI` section behavior, then commit after successful AI generation and normal IDE commit checks.
@@ -51,7 +52,7 @@ Hover and active-state styling should be cumulative:
 * Hovering `Commit` visually selects `AI` and `Commit`.
 * Hovering `Push` visually selects `AI`, `Commit`, and `Push`.
 
-If accepted, this ADR supersedes ADR 0006 for commit/push control structure and refines ADR 0010 for the first section: the `AI` section does not auto-commit after generation. The `Commit` and `Push` sections still auto-continue after successful AI generation. ADR 0047 remains the push safety policy for the `Push` section.
+This ADR supersedes ADR 0006 for commit/push control structure and refines ADR 0010 for the first section: the `AI` section does not auto-commit after generation. The `Commit` and `Push` sections still auto-continue after successful AI generation. ADR 0047 remains the push safety policy for the `Push` section.
 
 ### Consequences
 
@@ -99,4 +100,4 @@ Compliance should be checked by implementation review and validation that covers
 
 - Source request: maintainer asked for a three-section button with `<icon> AI | Commit | Push`.
 - Related proposal: `docs/proposals/PROP-02-pre-release-ux-2026-05-15T09-57.md` `E005`.
-- If accepted, create or update an implementation plan before changing runtime behavior, draft graphics, README behavior, action labels, or tests.
+- Runtime implementation is planned by `.agents/plans/PLAN-three-section-ai-commit-push-control.md`.

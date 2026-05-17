@@ -1,6 +1,7 @@
 ---
-status: proposed
+status: accepted
 date: 2026-05-17
+accepted_at: 2026-05-17T23:40:43+02:00
 decision-makers: Kamil Kiewisz <kamkie@outlook.com>
 consulted: Codex
 informed: Repository contributors
@@ -12,7 +13,7 @@ informed: Repository contributors
 
 ADR 0027 selected a generated placeholder graphic as the temporary split-button styling reference. The design session for the ADR 0052 three-section control produced compact SVG drafts under `docs/concepts/graphics/split-button-drafts/`.
 
-The project now needs a durable final styling decision for the proposed `<icon> AI | Commit | Push` control before the design can be applied to runtime UI assets, user-facing documentation, tests, and validation records.
+The project needs a durable final styling decision for the accepted `<icon> AI | Commit | Push` control before the design can be applied to runtime UI assets, user-facing documentation, tests, and validation records.
 
 ## Decision Drivers
 
@@ -34,7 +35,7 @@ The project now needs a durable final styling decision for the proposed `<icon> 
 
 Chosen option: "Select `01-blue-steel-compact-snake-violet-ai.svg`", because it keeps the chosen compact snake-loop interaction while aligning the active `AI` section with the JetBrains AI Assistant commit-message action color.
 
-If accepted, `docs/concepts/graphics/split-button-drafts/01-blue-steel-compact-snake-violet-ai.svg` becomes the final styling reference for the three-section control.
+`docs/concepts/graphics/split-button-drafts/01-blue-steel-compact-snake-violet-ai.svg` is the final styling reference for the three-section control.
 
 The selected styling has these required traits:
 
@@ -47,7 +48,7 @@ The selected styling has these required traits:
 * The `Commit` section stays in the blue steel family and the `Push` section stays green.
 * The draft covers passive, `Staging + AI` hover, `Commit` hover, `Push` hover, `Staging + AI` clicked/running, `Commit` clicked/running, `Push` clicked/running, and disabled states in both light and dark themes.
 
-If accepted, this ADR supersedes ADR 0027 as the detailed split-button styling owner. It depends on accepting ADR 0052 for the three-section control structure and behavior.
+This ADR supersedes ADR 0027 as the detailed split-button styling owner. It depends on ADR 0052 for the three-section control structure and behavior.
 
 ### Consequences
 
@@ -102,5 +103,6 @@ Compliance should be checked by:
 
 - Selected draft: `docs/concepts/graphics/split-button-drafts/01-blue-steel-compact-snake-violet-ai.svg`.
 - Related structure decision: `docs/decisions/ard-0052-use-three-section-ai-commit-push-control.md`.
-- Superseded styling decision if this ADR is accepted: `docs/decisions/ard-0027-use-generated-placeholder-graphic-for-split-button-styling.md`.
+- Superseded styling decision: `docs/decisions/ard-0027-use-generated-placeholder-graphic-for-split-button-styling.md`.
+- Runtime implementation is planned by `.agents/plans/PLAN-three-section-ai-commit-push-control.md`.
 - Local AI Assistant icon evidence: the commit-message action declares `com.intellij.ml.llm.core.AIAssistantBrandingIcons.LogoColored`, whose local SVG resources use `#834DF0` for light theme and `#A571E6` for dark theme.

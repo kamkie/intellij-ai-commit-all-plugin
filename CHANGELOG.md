@@ -10,6 +10,7 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.2
 
 ### Changed
 
+- Accepted the three-section `<AI icon> AI | Commit | Push` control direction and the violet AI snake styling reference, with a draft implementation plan and backlog tasks for applying it to runtime UI.
 - Consolidated active proposal findings into four numbered work-stream proposals and archived the superseded source proposals with pointers to the new finding IDs.
 - Accepted and implemented artifact governance updates for scoped artifact lookup, proposal finding IDs, ADR acceptance timestamps, plan approval timestamps, and plan status history validation.
 

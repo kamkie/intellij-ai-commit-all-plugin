@@ -14,6 +14,8 @@ The commit flow previously left open whether the plugin should automatically com
 
 The user answered `Q-COMMIT-2` as `commit` and clarified that the built-in split button solves the commit-only versus commit-and-push flow choice.
 
+Current state: ADR 0052 refines this behavior for the accepted three-section control. The `AI` section generates or refreshes the message and stops before commit, while the `Commit` and `Push` sections still auto-continue after successful AI generation.
+
 ## Decision Drivers
 
 * Preserve the repository context and constraints described in this decision.

@@ -61,7 +61,7 @@ If a requested change needs an implementation plan, expect the AI to create or u
 - Minimum supported IntelliJ Platform version, currently 2026.1.
 - Target IDEs, currently all JetBrains IDEs with VCS commit UI.
 - Git-only first-version behavior, including multiple Git roots.
-- Split-button styling and icon choices beyond the accepted `AI Commit All` / `& Push` structure.
+- Three-section control implementation details beyond the accepted ADR 0052 structure and ADR 0053 styling reference.
 - Plugin ID and base package `pl.devopssolutions.aicommitall`; vendor `DevOps Solutions Kamil Kiewisz`.
 - Apache-2.0 repository and plugin license.
 - Open-source publication to the official JetBrains Marketplace, including signing, Marketplace metadata, and CI.

@@ -2,7 +2,7 @@
 
 These drafts implement ADR 0025's draft-series requirement for detailed split-button styling before final selection.
 
-Design-session premise: ADR 0052 is treated as accepted for this draft set. The draft graphics now explore the proposed three-section cumulative control rather than the older two-segment `AI Commit All` / `& Push` split button.
+ADR 0052 is accepted. The draft graphics explore the accepted three-section cumulative control rather than the older two-segment `AI Commit All` / `& Push` split button.
 
 The common design intent is:
 
@@ -28,23 +28,21 @@ The common design intent is:
 | [05 - Violet Mint](05-violet-mint.svg)                                                | Muted violet AI base with mint push progression.                                                                                                                                                   | Good AI signal without using a gradient-heavy look.                  | Purple family should stay muted if selected.                                   |
 | [05b - Violet Mint Alt](05-violet-mint-2.svg)                                         | Alternate violet and mint cumulative emphasis.                                                                                                                                                     | Tests a brighter final-step treatment.                               | May be too close to `05 - Violet Mint` to keep both.                           |
 
-`01c - Blue Steel Compact Snake` is the chosen animation direction for this design session.
+`01f - Blue Steel Compact Snake Violet AI` is the selected final styling reference recorded by ADR 0053.
 
-All listed drafts use the same compact run-widget-like one-control geometry after maintainer feedback on 2026-05-17 and the ADR 0052 design-session premise. Reviewers should compare color, icon fit, cumulative hover, per-section activity feedback, and disabled treatment rather than button shape.
+All listed drafts use the same compact run-widget-like one-control geometry after maintainer feedback on 2026-05-17 and the ADR 0052 structure decision. Reviewers should compare color, icon fit, cumulative hover, per-section activity feedback, and disabled treatment rather than button shape.
 
 ## State Coverage
 
-Each draft shows:
+The selected draft shows:
 
-- AI-only normal state.
-- AI-and-commit normal state.
-- AI-commit-and-push normal state.
-- AI-section hover state.
-- Commit-section cumulative hover state.
-- Push-section cumulative hover state.
-- Staging-and-AI-message running state.
-- Commit running state.
-- Push running state.
+- Passive state.
+- Hover on `Staging + AI`.
+- Hover on `Commit`.
+- Hover on `Push`.
+- Clicked/running `Staging + AI`.
+- Clicked/running `Commit`.
+- Clicked/running `Push`.
 - Disabled state.
 - Light theme.
 - Dark theme.
@@ -62,9 +60,6 @@ Use a 1-5 score during maintainer review:
 | Brand signal        | The AI sparkle is present without dominating the control.                                                              |
 | Accessibility       | Disabled, running, and cumulative hover states remain distinguishable without relying only on color.                   |
 
-## Suggested Review Flow
+## Review Outcome
 
-1. Remove any draft that fails legibility or IntelliJ fit.
-2. Compare remaining drafts in light and dark theme pairs.
-3. Pick the best segment contrast direction.
-4. Create a final-selection ADR that supersedes ADR 0027 where needed.
+The review selected [01-blue-steel-compact-snake-violet-ai.svg](01-blue-steel-compact-snake-violet-ai.svg). ADR 0053 records the final style selection and supersedes ADR 0027 as the styling owner.

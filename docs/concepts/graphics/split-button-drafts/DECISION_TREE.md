@@ -2,7 +2,7 @@
 
 Use this decision tree after reviewing the draft series.
 
-Design-session premise: ADR 0052 is treated as accepted for this draft set. Apply this tree to the three-section cumulative `<icon> AI | Commit | Push` control.
+ADR 0052 is accepted. Apply this tree to the three-section cumulative `<icon> AI | Commit | Push` control.
 
 ## 1. Does the draft preserve the accepted structure?
 
@@ -49,10 +49,13 @@ Required structure:
 
 ## 7. Final Selection
 
-When a draft is selected:
+ADR 0053 selects [01-blue-steel-compact-snake-violet-ai.svg](01-blue-steel-compact-snake-violet-ai.svg) and supersedes ADR 0027 as the detailed styling owner.
 
-1. Record the choice in a follow-up ADR.
-2. State whether the new ADR supersedes ADR 0027 or only refines it.
-3. Link the selected draft file.
-4. List required production asset or UI implementation changes.
-5. Define light, dark, running, disabled, AI-only, AI-and-commit, and AI-commit-and-push validation.
+The selected draft defines:
+
+- Passive, cumulative hover, clicked/running, and disabled state treatment.
+- Light and dark theme values.
+- Violet `AI` section styling based on the JetBrains AI Assistant commit-message action icon.
+- Snake-loop running indication on the active `Staging + AI`, `Commit`, or `Push` section.
+
+Production UI implementation is planned by `.agents/plans/PLAN-three-section-ai-commit-push-control.md`.
