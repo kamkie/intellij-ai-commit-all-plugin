@@ -60,14 +60,14 @@ intellijPlatform {
         version = providers.gradleProperty("pluginVersion").get()
         description = """
             <p>AI Commit All adds an AI-assisted Commit tool window workflow for Git projects.</p>
-            <p>The Commit tool window control has AI, Commit, and Push sections. AI selects every non-ignored committable Git change and asks JetBrains AI Assistant to generate the commit message without committing. Commit continues through the standard IntelliJ commit workflow. Push commits and then pushes immediately only for safe tracked-upstream Git states, otherwise falling back to the IDE commit-and-push executor.</p>
+            <p>The Commit tool window control has AI, Commit, and Push sections. AI selects or stages every non-ignored committable Git change and asks JetBrains AI Assistant to generate the commit message without committing. Commit continues through the standard IntelliJ commit workflow. Push commits and then pushes immediately only for safe tracked-upstream Git states, otherwise falling back to the IDE commit-and-push executor.</p>
             <p>Source code: <a href="https://github.com/kamkie/intellij-ai-commit-all-plugin">https://github.com/kamkie/intellij-ai-commit-all-plugin</a></p>
         """.trimIndent()
         changeNotes = """
             <p>v0.1.0-alpha.2 prerelease.</p>
             <ul>
                 <li>Adds the working AI, Commit, and Push control to the Commit tool window.</li>
-                <li>Selects non-ignored Git changes across changelists and Git roots, including unversioned and resolved-conflict files.</li>
+                <li>Selects or stages non-ignored Git changes across changelists, Git staging-area workflows, and Git roots, including unversioned and resolved-conflict files.</li>
                 <li>Invokes JetBrains AI Assistant commit-message generation through the IntelliJ action system and waits for completion.</li>
                 <li>Lets the AI section generate a message and stop before commit; Commit and Push continue only after successful AI generation.</li>
                 <li>Stops without committing when AI generation times out, remains running, produces no usable message, or the user edits the message.</li>

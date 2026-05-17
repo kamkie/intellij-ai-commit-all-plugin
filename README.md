@@ -17,6 +17,7 @@ The current implementation:
 - Targets the IntelliJ Platform 2026.1 release line.
 - Supports Git projects, including multiple Git roots.
 - Includes modified, added, deleted, moved or renamed, unversioned, and resolved-conflict paths exposed by IntelliJ VCS APIs.
+- Supports both changelist-backed commit workflows and the Git staging-area commit workflow.
 - Excludes ignored files through IntelliJ VCS APIs.
 - Invokes JetBrains AI Assistant commit-message generation through the IntelliJ action system.
 - Lets the `AI` section stop after AI generation without committing.
@@ -74,6 +75,8 @@ Pull-request CI runs `test`, `verifyPluginStructure`, and `buildPlugin` without 
 5. Use `AI` to generate a message without committing, `Commit` to generate and commit, or `Push` to generate, commit, and push.
 
 The control is hidden outside an active supported Git commit workflow. Sections are disabled when no non-ignored committable Git files are available or when the required workflow executor is unavailable.
+
+When the Git staging area commit workflow is active, the plugin stages eligible non-ignored paths before invoking AI Assistant so the IDE workflow can commit the intended content.
 
 For `Push`, missing upstreams, unresolved conflicts, non-normal Git states, ambiguous targets, protected targets, or already-diverged local and upstream branches use the standard IDE commit-and-push executor and Push Commits dialog.
 

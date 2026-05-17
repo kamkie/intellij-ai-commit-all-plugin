@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.ProjectLevelVcsManager
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.ChangeListManager
+import git4idea.index.GitStageTracker
 
 @Service(Service.Level.PROJECT)
 internal class GitChangeSelectionService(private val project: Project) {
@@ -21,6 +22,7 @@ internal class GitChangeSelectionService(private val project: Project) {
         return GitChangeSelection(
             trackedChanges = collectTrackedChanges(changeListManager, vcsManager),
             resolvedConflictPaths = collectResolvedConflictPaths(changeListManager, vcsManager),
+            stagingAreaPaths = collectStagingAreaPaths(vcsManager),
         )
     }
 
@@ -32,6 +34,7 @@ internal class GitChangeSelectionService(private val project: Project) {
             trackedChanges = collectTrackedChanges(changeListManager, vcsManager),
             unversionedFiles = collectUnversionedFiles(changeListManager, vcsManager),
             resolvedConflictPaths = collectResolvedConflictPaths(changeListManager, vcsManager),
+            stagingAreaPaths = collectStagingAreaPaths(vcsManager),
         )
     }
 
@@ -58,6 +61,15 @@ internal class GitChangeSelectionService(private val project: Project) {
     ) = changeListManager.resolvedConflictPaths
             .filter { path -> GitChangeSelectionFilters.isGitPath(path, vcsManager) }
             .distinctBy { path -> path.path }
+
+    private fun collectStagingAreaPaths(
+        vcsManager: ProjectLevelVcsManager,
+    ) = runCatching {
+        GitStageSelectionItems.committablePaths(
+            state = GitStageTracker.getInstance(project).state,
+            isGitPath = { path -> GitChangeSelectionFilters.isGitPath(path, vcsManager) },
+        )
+    }.getOrDefault(emptyList())
 
     private fun isEligibleGitChange(
         change: Change,

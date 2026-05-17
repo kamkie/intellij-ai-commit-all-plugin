@@ -9,7 +9,11 @@ internal data class GitChangeSelection(
     val trackedChanges: List<Change>,
     val unversionedFiles: List<FilePath> = emptyList(),
     val resolvedConflictPaths: List<FilePath> = emptyList(),
+    val stagingAreaPaths: List<FilePath> = emptyList(),
 ) {
     val hasCommittableContent: Boolean
-        get() = trackedChanges.isNotEmpty() || unversionedFiles.isNotEmpty() || resolvedConflictPaths.isNotEmpty()
+        get() = trackedChanges.isNotEmpty() ||
+            unversionedFiles.isNotEmpty() ||
+            resolvedConflictPaths.isNotEmpty() ||
+            stagingAreaPaths.isNotEmpty()
 }

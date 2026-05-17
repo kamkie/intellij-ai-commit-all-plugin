@@ -189,6 +189,7 @@ private fun GitChangeSelection.affectedPaths(): List<FilePath> =
         }
         addAll(unversionedFiles)
         addAll(resolvedConflictPaths)
+        addAll(stagingAreaPaths)
     }.distinctBy { path -> path.path }
 
 private fun MutableList<FilePath>.addAffectedPaths(change: Change) {

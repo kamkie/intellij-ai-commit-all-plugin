@@ -193,7 +193,7 @@ Archived as of `v0.1.0-alpha.1` release preparation.
 
 ### Bugs
 
-- [ ] T-BUG-001: plugin does not work when vsc changelists are disabled and git is in git stage mode
+- [x] T-BUG-001: plugin does not work when vsc changelists are disabled and git is in git stage mode
 
 ### Ideas
 
