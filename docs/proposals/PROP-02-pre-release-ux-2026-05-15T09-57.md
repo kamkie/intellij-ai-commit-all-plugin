@@ -38,14 +38,14 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 ## Progress Tracker
 
-| Id   | Title                                                    | Priority | Status | Decision |
-|------|----------------------------------------------------------|----------|--------|----------|
-| E001 | Clear the commit message before AI generation            | 1        | open   | accepted |
-| E002 | Skip the push dialog only when safe                      | 1        | done   | accepted |
-| E003 | Capture split-button design intent                       | 1        | done   | accepted |
-| E004 | Run split-button visual draft experiments                | 2        | done   | accepted |
-| E005 | Add a split-button decision tree and final-selection ADR | 2        | open   | accepted |
-| E006 | Evaluate shortcut takeover with opt-out                  | 3        | open   | accepted |
+| Id   | Title                                                    | Priority | Status  | Decision |
+|------|----------------------------------------------------------|----------|---------|----------|
+| E001 | Clear the commit message before AI generation            | 1        | open    | accepted |
+| E002 | Skip the push dialog only when safe                      | 1        | done    | accepted |
+| E003 | Capture split-button design intent                       | 1        | done    | accepted |
+| E004 | Run split-button visual draft experiments                | 2        | done    | accepted |
+| E005 | Add a split-button decision tree and final-selection ADR | 2        | blocked | accepted |
+| E006 | Evaluate shortcut takeover with opt-out                  | 3        | blocked | accepted |
 
 ## How To Edit The Trackers
 
@@ -53,7 +53,7 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 - Mirror `status`, `decision`, and `priority` to the row above.
 - Bump `updated` to the current timestamp.
 - Use `status` for implementation progress and `decision` for maintainer triage.
-- Update the Proposal Implementation Summary in `docs/proposals/README.md` for accepted findings with non-terminal implementation status.
+- Update the Proposal Implementation Summary in `docs/proposals/README.md` for accepted findings with non-terminal implementation status and an evidence path. A `TASKS.md` entry is optional when another evidence path is clearer.
 - Leave completed, rejected, or superseded findings in place as history.
 
 ## Errors And Mistakes
@@ -130,11 +130,11 @@ command: it should be closer to concept graphics but without an arrow in the mid
 - Proposal: Add a compact decision tree beside the draft set, then create a follow-up ADR that records the selected final direction and supersedes ADR 0027 where appropriate.
 
 ```yaml
-status: open
+status: blocked
 decision: accepted
 priority: 2
 owner:
-updated: 2026-05-17T19:47:19+02:00
+updated: 2026-05-17T21:07:47+02:00
 accepted_at: 2026-05-15T11:43:16+02:00
 comment: "Source: PROP-split-button-look-experiments E3. Decision tree added; final-selection ADR remains pending until a draft is selected."
 ```
@@ -146,13 +146,13 @@ comment: "Source: PROP-split-button-look-experiments E3. Decision tree added; fi
 - Proposal: Defer until `E001` and `E002` settle. If accepted, record a dedicated ADR, document the user-visible change, and provide an opt-out setting or clear keymap restoration path.
 
 ```yaml
-status: open
+status: blocked
 decision: accepted
 priority: 3
 owner:
-updated: 2026-05-15T11:43:16+02:00
+updated: 2026-05-17T21:07:47+02:00
 accepted_at: 2026-05-15T11:43:16+02:00
-comment: "Source: PROP-plugin-default-settings E3."
+comment: "Source: PROP-plugin-default-settings E3. Blocked until runtime behavior from E001 is settled."
 ```
 
 ## Duplications To Remove Or Reduce

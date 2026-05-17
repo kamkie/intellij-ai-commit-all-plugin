@@ -41,9 +41,11 @@ If accepted, proposal trackers should use separate meanings for `decision` and `
 * `decision` records maintainer triage. Valid standard values are empty, `accepted`, `rejected`, and `deferred`.
 * `status` records implementation progress. Valid standard values are `open`, `planned`, `in-progress`, `blocked`, `done`, and `not-required`.
 
-`docs/proposals/README.md` should add a `Proposal Implementation Summary` section. The summary should list accepted findings whose implementation status is not terminal. Terminal proposal implementation statuses are `done` and `not-required`.
+`docs/proposals/README.md` should add a `Proposal Implementation Summary` section. The summary should list accepted findings whose implementation status is not terminal and include an implementation evidence path. Terminal proposal implementation statuses are `done` and `not-required`.
 
 The per-finding YAML tracker remains the source of truth. The README summary is a maintained overview for currently actionable accepted proposal work.
+
+Implementation evidence may be a task, approved plan, ADR, changed file, commit, validation result, blocker, open question, or clear open-intake note. A `TASKS.md` entry is not required when another evidence path is clearer.
 
 Rejected findings should use `decision: rejected` and `status: not-required`. Deferred findings should use `decision: deferred` and either `status: blocked` or `status: not-required`, depending on whether future implementation is still expected.
 
@@ -62,6 +64,7 @@ Compliance should be checked by documentation validation and review:
 * `scripts/validate-docs.ps1` should validate separate proposal `status` and `decision` vocabularies.
 * Proposal progress-table rows should continue to mirror per-finding YAML.
 * Accepted findings with non-terminal implementation status should appear in the README implementation summary.
+* README implementation summary rows should include non-empty evidence and should not require `TASKS.md` when another evidence path is clearer.
 * Accepted findings with terminal implementation status should not appear in the README implementation summary.
 * Proposal README active and completed lists should be based on implementation status, not only on the literal `open` value.
 

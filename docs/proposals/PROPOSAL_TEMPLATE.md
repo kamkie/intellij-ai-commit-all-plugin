@@ -44,7 +44,7 @@ Compact overview only. Edit the YAML tracker inside each section below; this tab
 - Use `status` for implementation progress and `decision` for maintainer triage.
 - Leave `decision` empty when authoring new findings; only maintainer triage fills it.
 - Set `accepted_at` when `decision: accepted`; set `decided_at` for any other non-empty decision.
-- Update the Proposal Implementation Summary in `docs/proposals/README.md` for accepted findings with non-terminal implementation status.
+- Update the Proposal Implementation Summary in `docs/proposals/README.md` for accepted findings with non-terminal implementation status and an evidence path. A `TASKS.md` entry is optional when another evidence path is clearer.
 - Leave completed or rejected findings in place as history.
 
 ## Errors And Mistakes

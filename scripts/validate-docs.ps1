@@ -373,6 +373,11 @@ else
             Add-ValidationError "docs/decisions/README.md ADR implementation tracker row ard-$adrNumber is missing evidence"
         }
 
+        if ($evidence -match '^(?i)(tbd|unknown|none|n/a)$')
+        {
+            Add-ValidationError "docs/decisions/README.md ADR implementation tracker row ard-$adrNumber has ambiguous evidence '$evidence'"
+        }
+
         if ($updated -notmatch '^\d{4}-\d{2}-\d{2}$')
         {
             Add-ValidationError "docs/decisions/README.md ADR implementation tracker row ard-$adrNumber has invalid updated date"
@@ -403,20 +408,6 @@ else
             Add-ValidationError "docs/decisions/README.md ADR implementation tracker row ard-$adrNumber must link to $( $adrFile.Name )"
         }
 
-        $adrText = Get-Content -Raw -LiteralPath $adrFile.FullName
-        $frontMatterMatch = [regex]::Match($adrText, '(?s)^---\s(.*?)\s---\s*')
-        if ($frontMatterMatch.Success)
-        {
-            $frontMatter = $frontMatterMatch.Groups[1].Value
-            $adrStatusMatch = [regex]::Match($frontMatter, '(?m)^status:\s+(proposed|rejected|accepted|deprecated|superseded by .+)\s*$')
-            if ($adrStatusMatch.Success -and
-                    $adrStatusMatch.Groups[1].Value -eq 'accepted' -and
-                    $row.Status -eq 'pending' -and
-                    $row.Evidence -notmatch '(T-[A-Z]+-\d{3}|PLAN-[A-Za-z0-9][A-Za-z0-9-]*|OPEN_QUESTIONS|(?i)blocker|(?i)blocked)')
-            {
-                Add-ValidationError "docs/decisions/README.md ADR implementation tracker row ard-$adrNumber is pending without task, plan, open question, or blocker evidence"
-            }
-        }
     }
 
     foreach ($adrNumber in $implementationRowsByAdr.Keys)
@@ -452,7 +443,7 @@ else
     $proposalImplementationSummaryText = $proposalImplementationSummaryMatch.Groups[1].Value
     $proposalImplementationSummaryRows = [regex]::Matches(
             $proposalImplementationSummaryText,
-            '(?m)^\|\s+\[(PROP-[A-Za-z0-9][A-Za-z0-9-]*)\]\(([^)]+)\)\s+\|\s+([EDS]\d{3})\s+\|\s+(.+?)\s+\|\s+([1-6])\s+\|\s+([a-z-]+)\s+\|$'
+            '(?m)^\|\s+\[(PROP-[A-Za-z0-9][A-Za-z0-9-]*)\]\(([^)]+)\)\s+\|\s+([EDS]\d{3})\s+\|\s+(.+?)\s+\|\s+([1-6])\s+\|\s+([a-z-]+)\s+\|\s+(.+?)\s+\|$'
     )
 
     foreach ($row in $proposalImplementationSummaryRows)
@@ -461,6 +452,7 @@ else
         $findingId = $row.Groups[3].Value
         $key = "$proposalId $findingId"
         $summaryStatus = $row.Groups[6].Value.Trim()
+        $summaryEvidence = $row.Groups[7].Value.Trim()
 
         if ( $proposalSummaryRowsByFinding.ContainsKey($key))
         {
@@ -473,11 +465,22 @@ else
             Title = $row.Groups[4].Value.Trim()
             Priority = $row.Groups[5].Value.Trim()
             Status = $summaryStatus
+            Evidence = $summaryEvidence
         }
 
         if ($allowedProposalStatuses -notcontains $summaryStatus)
         {
             Add-ValidationError "docs/proposals/README.md proposal implementation summary row $key has invalid status '$summaryStatus'; expected one of: $( $allowedProposalStatuses -join ', ' )"
+        }
+
+        if ([string]::IsNullOrWhiteSpace($summaryEvidence) -or $summaryEvidence -eq '-')
+        {
+            Add-ValidationError "docs/proposals/README.md proposal implementation summary row $key is missing evidence"
+        }
+
+        if ($summaryEvidence -match '^(?i)(tbd|unknown|none|n/a)$')
+        {
+            Add-ValidationError "docs/proposals/README.md proposal implementation summary row $key has ambiguous evidence '$summaryEvidence'"
         }
     }
 }

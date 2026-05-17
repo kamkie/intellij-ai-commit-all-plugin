@@ -2,7 +2,7 @@
 
 This directory stores fully retired proposal documents.
 
-Move a proposal here only after it has no `open` tracker rows and its entry has been moved to `Archived Proposals` in [../README.md](../README.md).
+Move a proposal here only after it is implemented, superseded, or otherwise retired. Add archived entries to the index below.
 
 Preserve proposal IDs, proposal filenames, and finding IDs when archiving. Archived proposal filenames must start with the stable `PROP-<short-kebab-slug>` ID.
 
@@ -16,3 +16,4 @@ Preserve proposal IDs, proposal filenames, and finding IDs when archiving. Archi
 - `PROP-plugin-default-settings` - Plugin Default Settings Proposal ([PROP-plugin-default-settings-2026-05-15T07-08.md](PROP-plugin-default-settings-2026-05-15T07-08.md)), archived as superseded by work streams as of 2026-05-15.
 - `PROP-split-button-look-experiments` - Split Button Look Experiments Proposal ([PROP-split-button-look-experiments-2026-05-15T07-13.md](PROP-split-button-look-experiments-2026-05-15T07-13.md)), archived as superseded by work streams as of 2026-05-15.
 - `PROP-proposal-id-and-markdown-formatting` - Proposal Point IDs And Unified Markdown Formatting Proposal ([PROP-proposal-id-and-markdown-formatting-2026-05-15T07-20.md](PROP-proposal-id-and-markdown-formatting-2026-05-15T07-20.md)), archived as superseded by work streams as of 2026-05-15.
+- `PROP-01-proposal-governance` - Proposal Governance Work Stream ([PROP-01-proposal-governance-2026-05-15T09-57.md](PROP-01-proposal-governance-2026-05-15T09-57.md)), archived as implemented as of 2026-05-17.

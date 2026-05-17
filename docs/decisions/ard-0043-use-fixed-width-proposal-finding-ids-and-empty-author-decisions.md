@@ -86,6 +86,6 @@ The validator should continue to preserve archived history while enforcing the c
 
 ## More Information
 
-- Source proposal: `docs/proposals/PROP-01-proposal-governance-2026-05-15T09-57.md`.
+- Source proposal: `docs/proposals/archive/PROP-01-proposal-governance-2026-05-15T09-57.md`.
 - Prior proposal rules: ADR 0033 and ADR 0034.
 - Follow-up implementation, after this ADR is accepted: update the proposal README, proposal template, and documentation validation script in one change.

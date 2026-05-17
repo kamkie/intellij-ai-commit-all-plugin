@@ -47,7 +47,7 @@ The tracker should use these implementation statuses:
 * `implemented` - the required code, documentation, validation, or workflow changes have landed.
 * `blocked` - implementation is waiting on unresolved input, dependency, or external condition.
 
-Each tracker row should include the ADR link, implementation status, evidence, and last updated date. Evidence should point to the relevant plan, task, commit, file, or state `not required` when no separate implementation exists.
+Each tracker row should include the ADR link, implementation status, evidence, and last updated date. Evidence should point to the relevant task, plan, commit, file, validation, blocker, open question, or state `not required` when no separate implementation exists. A `TASKS.md` entry is not required when another evidence path is clearer.
 
 The existing ADR index should remain the decision-lifecycle index. The ADR implementation tracker should not replace MADR `status`, proposal finding status, plan status, or task checkboxes.
 
@@ -65,7 +65,7 @@ Compliance should be checked by documentation validation and review:
 
 * `scripts/validate-docs.ps1` should require one implementation tracker row for every ADR listed in the ADR index.
 * Tracker implementation status values should be limited to the accepted vocabulary.
-* New accepted ADRs that require follow-up work should not remain `pending` without a task, plan, or explicit blocker.
+* New accepted ADRs that require follow-up work should not remain without an evidence path such as a task, plan, direct implementation evidence, or explicit blocker.
 * Release-preparation review should check for accepted ADRs whose implementation status is not `implemented` or `not-required`.
 
 ## Pros and Cons of the Options
