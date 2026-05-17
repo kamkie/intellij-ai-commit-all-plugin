@@ -19,4 +19,4 @@ Draft series for ADR 0025 and `PROP-02-pre-release-ux` review:
 - [Draft series notes](split-button-drafts/README.md)
 - [Decision tree](split-button-drafts/DECISION_TREE.md)
 
-These drafts are concept references only. They intentionally keep the center join clean, with no arrow between the `AI Commit All` and `& Push` segments, and use slightly contrasting segment colors to make the two actions scan as related but distinct.
+These drafts are concept references only. They intentionally follow an IntelliJ run-widget-like split control: a text primary segment, a compact icon-forward push segment, a clean divider with no center arrow, rounded outer corners, compact internal margins, and slightly contrasting segment accents that keep the two actions related but distinct.

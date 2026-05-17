@@ -117,10 +117,10 @@ status: done
 decision: accepted
 priority: 2
 owner:
-updated: 2026-05-17T19:47:19+02:00
+updated: 2026-05-17T21:55:22+02:00
 accepted_at: 2026-05-15T11:43:16+02:00
 comment: "Source: PROP-split-button-look-experiments E2."
-command: it should be closer to concept graphics but without an arrow in the middle. left and right part of te button should have slightly different/contrasting color.
+command: "Make the drafts closer to the IntelliJ run-widget reference: one rounded toolbar-like body, a text primary segment, an icon-forward push segment, a straight divider, minimal middle gap, and hover examples for both segments."
 ```
 
 ### E005. Add a split-button decision tree and final-selection ADR
@@ -134,9 +134,9 @@ status: blocked
 decision: accepted
 priority: 2
 owner:
-updated: 2026-05-17T21:07:47+02:00
+updated: 2026-05-17T21:55:22+02:00
 accepted_at: 2026-05-15T11:43:16+02:00
-comment: "Source: PROP-split-button-look-experiments E3. Decision tree added; final-selection ADR remains pending until a draft is selected."
+comment: "Source: PROP-split-button-look-experiments E3. Decision tree revised with run-widget-like one-button geometry and hover-state constraints; final-selection ADR remains pending until a draft is selected."
 ```
 
 ### E006. Evaluate shortcut takeover with opt-out

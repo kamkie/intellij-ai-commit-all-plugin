@@ -28,13 +28,13 @@ This summary lists accepted findings whose implementation status is not terminal
 
 Implementation evidence can be a task, approved plan, ADR, changed file, commit, validation result, blocker, open question, or clear open-intake note. Do not create a `TASKS.md` entry solely to satisfy this summary when another evidence path is clearer.
 
-| Proposal                                                                                         | Finding | Title                                                    | Priority | Status  | Evidence                                              |
-|--------------------------------------------------------------------------------------------------|---------|----------------------------------------------------------|----------|---------|-------------------------------------------------------|
-| [PROP-02-pre-release-ux](PROP-02-pre-release-ux-2026-05-15T09-57.md)                             | E001    | Clear the commit message before AI generation            | 1        | open    | Open intake; no task or plan selected.                |
-| [PROP-02-pre-release-ux](PROP-02-pre-release-ux-2026-05-15T09-57.md)                             | E005    | Add a split-button decision tree and final-selection ADR | 2        | blocked | Blocked until a final split-button draft is selected. |
-| [PROP-02-pre-release-ux](PROP-02-pre-release-ux-2026-05-15T09-57.md)                             | E006    | Evaluate shortcut takeover with opt-out                  | 3        | blocked | Blocked until runtime behavior from E001 is settled.  |
-| [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E001    | Add Dependabot configuration                             | 1        | open    | Open intake; no task or plan selected.                |
-| [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E002    | Add CodeQL analysis                                      | 1        | open    | Open intake; no task or plan selected.                |
+| Proposal                                                                                         | Finding | Title                                                    | Priority | Status  | Evidence                                                                                          |
+|--------------------------------------------------------------------------------------------------|---------|----------------------------------------------------------|----------|---------|---------------------------------------------------------------------------------------------------|
+| [PROP-02-pre-release-ux](PROP-02-pre-release-ux-2026-05-15T09-57.md)                             | E001    | Clear the commit message before AI generation            | 1        | open    | Open intake; no task or plan selected.                                                            |
+| [PROP-02-pre-release-ux](PROP-02-pre-release-ux-2026-05-15T09-57.md)                             | E005    | Add a split-button decision tree and final-selection ADR | 2        | blocked | Decision tree revised with run-widget-like hover states; blocked until a final draft is selected. |
+| [PROP-02-pre-release-ux](PROP-02-pre-release-ux-2026-05-15T09-57.md)                             | E006    | Evaluate shortcut takeover with opt-out                  | 3        | blocked | Blocked until runtime behavior from E001 is settled.                                              |
+| [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E001    | Add Dependabot configuration                             | 1        | open    | Open intake; no task or plan selected.                                                            |
+| [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E002    | Add CodeQL analysis                                      | 1        | open    | Open intake; no task or plan selected.                                                            |
 
 ## When To Use A Proposal
 

@@ -1,100 +1,406 @@
-<svg width="900" height="520" viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Slate Cyan split-button draft">
-    <rect width="900" height="520" fill="#F7F9FC"/>
+<svg width="900" height="600" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Slate Cyan three-section control draft">
+    <defs>
+        <symbol id="ai-mark" viewBox="0 0 22 22">
+            <path fill="currentColor" d="M11 1.5l2.7 6.1 6.3 3-6.3 3L11 20l-2.7-6.4-6.3-3 6.3-3z"/>
+        </symbol>
+        <symbol id="push-mark" viewBox="0 0 18 18">
+            <path d="M9 3v9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="M5 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
+                  stroke-linejoin="round"/>
+            <path d="M4 15h10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </symbol>
+    </defs>
+    <rect width="900" height="600" fill="#F7F9FC"/>
     <text x="40" y="44" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700" fill="#1F2937">04 Slate Cyan</text>
-    <text x="40" y="72" font-family="Inter, Arial, sans-serif" font-size="14" fill="#4B5563">Subdued commit segment with a clear cyan push segment.</text>
+    <text x="40" y="72" font-family="Inter, Arial, sans-serif" font-size="14" fill="#4B5563">Slate body with cyan push
+        progression.
+    </text>
+
     <g transform="translate(40 110)">
-        <rect width="390" height="350" rx="8" fill="#FFFFFF" stroke="#D8DEE8"/>
+        <rect width="390" height="420" rx="8" fill="#FFFFFF" stroke="#D8DEE8"/>
         <text x="24" y="36" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700" fill="#1F2937">Light theme</text>
+
         <g transform="translate(24 64)">
-            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5E6B7A">Commit-only</text>
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5E6B7A">AI only</text>
             <g transform="translate(110 0)">
-                <rect x="0" y="0" width="166" height="34" rx="6" fill="#475569"/>
-                <rect x="166" y="0" width="92" height="34" rx="6" fill="#0891B2"/>
-                <rect x="165" y="4" width="1" height="26" fill="#E0F2FE" opacity=".72"/>
-                <path fill="#E0F2FE" d="M20 7l4 8 8 4-8 4-4 8-4-8-8-4 8-4z"/>
-                <text x="42" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">AI Commit All</text>
-                <text x="188" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">&amp; Push</text>
+                <rect width="226" height="30" rx="4" fill="#EDF2FB"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#475569"/>
+                <rect x="58" width="82" height="30" fill="#E2E8F0"/>
+                <path d="M140 0H222Q226 0 226 4V26Q226 30 222 30H140Z" fill="#D8F3F8"/>
+                <path d="M58 0v30M140 0v30" stroke="#67E8F9" opacity=".9"/>
+                <use href="#ai-mark" x="10" y="8" width="14" height="14" color="#FFFFFF"/>
+                <text x="30" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">AI
+                </text>
+                <text x="73" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#334155">Commit
+                </text>
+                <text x="153" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#0891B2">Push
+                </text>
+                <use href="#push-mark" x="194" y="7" width="18" height="16" color="#0891B2"/>
+                <rect x=".5" y=".5" width="225" height="29" rx="4" fill="none" stroke="#1F2937" opacity=".18"/>
             </g>
         </g>
-        <g transform="translate(24 122)">
-            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5E6B7A">Commit + push</text>
+
+        <g transform="translate(24 104)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5E6B7A">AI + commit</text>
             <g transform="translate(110 0)">
-                <rect x="0" y="0" width="166" height="34" rx="6" fill="#334155"/>
-                <rect x="166" y="0" width="92" height="34" rx="6" fill="#06B6D4"/>
-                <rect x="165" y="4" width="1" height="26" fill="#ECFEFF" opacity=".75"/>
-                <path fill="#E0F2FE" d="M20 7l4 8 8 4-8 4-4 8-4-8-8-4 8-4z"/>
-                <text x="42" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">AI Commit All</text>
-                <text x="188" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" fill="#0F172A">&amp; Push</text>
+                <rect width="226" height="30" rx="4" fill="#EDF2FB"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#475569"/>
+                <rect x="58" width="82" height="30" fill="#334155"/>
+                <path d="M140 0H222Q226 0 226 4V26Q226 30 222 30H140Z" fill="#D8F3F8"/>
+                <path d="M58 0v30M140 0v30" stroke="#DDE8FF" opacity=".55"/>
+                <use href="#ai-mark" x="10" y="8" width="14" height="14" color="#FFFFFF"/>
+                <text x="30" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">AI
+                </text>
+                <text x="73" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">Commit
+                </text>
+                <text x="153" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#0891B2">Push
+                </text>
+                <use href="#push-mark" x="194" y="7" width="18" height="16" color="#0891B2"/>
+                <rect x=".5" y=".5" width="225" height="29" rx="4" fill="none" stroke="#1F2937" opacity=".18"/>
             </g>
         </g>
-        <g transform="translate(24 180)">
+
+        <g transform="translate(24 144)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5E6B7A">AI + commit + push
+            </text>
+            <g transform="translate(110 0)">
+                <rect width="226" height="30" rx="4" fill="#EDF2FB"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#475569"/>
+                <rect x="58" width="82" height="30" fill="#334155"/>
+                <path d="M140 0H222Q226 0 226 4V26Q226 30 222 30H140Z" fill="#0891B2"/>
+                <path d="M58 0v30M140 0v30" stroke="#E9FFF3" opacity=".58"/>
+                <use href="#ai-mark" x="10" y="8" width="14" height="14" color="#FFFFFF"/>
+                <text x="30" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">AI
+                </text>
+                <text x="73" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">Commit
+                </text>
+                <text x="153" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">Push
+                </text>
+                <use href="#push-mark" x="194" y="7" width="18" height="16" color="#CFFAFE"/>
+                <rect x=".5" y=".5" width="225" height="29" rx="4" fill="none" stroke="#1F2937" opacity=".18"/>
+            </g>
+        </g>
+
+        <g transform="translate(24 184)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5E6B7A">AI hover</text>
+            <g transform="translate(110 0)">
+                <rect width="226" height="30" rx="4" fill="#EDF2FB"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#475569"/>
+                <rect x="58" width="82" height="30" fill="#E2E8F0"/>
+                <path d="M140 0H222Q226 0 226 4V26Q226 30 222 30H140Z" fill="#D8F3F8"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#FFFFFF" opacity=".16"/>
+                <path d="M58 0v30M140 0v30" stroke="#67E8F9" opacity=".9"/>
+                <use href="#ai-mark" x="10" y="8" width="14" height="14" color="#FFFFFF"/>
+                <text x="30" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">AI
+                </text>
+                <text x="73" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#334155">Commit
+                </text>
+                <text x="153" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#0891B2">Push
+                </text>
+                <use href="#push-mark" x="194" y="7" width="18" height="16" color="#0891B2"/>
+                <rect x=".5" y=".5" width="225" height="29" rx="4" fill="none" stroke="#1F2937" opacity=".18"/>
+            </g>
+        </g>
+
+        <g transform="translate(24 224)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5E6B7A">Commit hover</text>
+            <g transform="translate(110 0)">
+                <rect width="226" height="30" rx="4" fill="#EDF2FB"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#475569"/>
+                <rect x="58" width="82" height="30" fill="#334155"/>
+                <path d="M140 0H222Q226 0 226 4V26Q226 30 222 30H140Z" fill="#D8F3F8"/>
+                <path d="M4 0H140V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#FFFFFF" opacity=".14"/>
+                <path d="M58 0v30M140 0v30" stroke="#DDE8FF" opacity=".55"/>
+                <use href="#ai-mark" x="10" y="8" width="14" height="14" color="#FFFFFF"/>
+                <text x="30" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">AI
+                </text>
+                <text x="73" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">Commit
+                </text>
+                <text x="153" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#0891B2">Push
+                </text>
+                <use href="#push-mark" x="194" y="7" width="18" height="16" color="#0891B2"/>
+                <rect x=".5" y=".5" width="225" height="29" rx="4" fill="none" stroke="#1F2937" opacity=".18"/>
+            </g>
+        </g>
+
+        <g transform="translate(24 264)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5E6B7A">Push hover</text>
+            <g transform="translate(110 0)">
+                <rect width="226" height="30" rx="4" fill="#EDF2FB"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#475569"/>
+                <rect x="58" width="82" height="30" fill="#334155"/>
+                <path d="M140 0H222Q226 0 226 4V26Q226 30 222 30H140Z" fill="#0891B2"/>
+                <rect width="226" height="30" rx="4" fill="#FFFFFF" opacity=".13"/>
+                <path d="M58 0v30M140 0v30" stroke="#E9FFF3" opacity=".58"/>
+                <use href="#ai-mark" x="10" y="8" width="14" height="14" color="#FFFFFF"/>
+                <text x="30" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">AI
+                </text>
+                <text x="73" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">Commit
+                </text>
+                <text x="153" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">Push
+                </text>
+                <use href="#push-mark" x="194" y="7" width="18" height="16" color="#CFFAFE"/>
+                <rect x=".5" y=".5" width="225" height="29" rx="4" fill="none" stroke="#1F2937" opacity=".18"/>
+            </g>
+        </g>
+
+        <g transform="translate(24 304)">
             <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5E6B7A">Running</text>
             <g transform="translate(110 0)">
-                <rect x="0" y="0" width="166" height="34" rx="6" fill="#475569"/>
-                <rect x="166" y="0" width="92" height="34" rx="6" fill="#0891B2"/>
-                <rect x="0" y="30" width="258" height="4" rx="2" fill="#67E8F9"/>
-                <circle cx="22" cy="17" r="5" fill="#FFFFFF" opacity=".9"/>
-                <text x="42" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">Generating...</text>
-                <text x="188" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">&amp; Push</text>
+                <rect width="226" height="30" rx="4" fill="#EDF2FB"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#475569"/>
+                <rect x="58" width="82" height="30" fill="#334155"/>
+                <path d="M140 0H222Q226 0 226 4V26Q226 30 222 30H140Z" fill="#0891B2"/>
+                <rect x="0" y="27" width="226" height="3" fill="#67E8F9" opacity=".95"/>
+                <path d="M58 0v30M140 0v30" stroke="#E9FFF3" opacity=".50"/>
+                <circle cx="17" cy="15" r="4" fill="#FFFFFF" opacity=".92"/>
+                <text x="30" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">AI
+                </text>
+                <text x="73" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">Commit
+                </text>
+                <text x="153" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">Push
+                </text>
+                <use href="#push-mark" x="194" y="7" width="18" height="16" color="#CFFAFE"/>
+                <rect x=".5" y=".5" width="225" height="29" rx="4" fill="none" stroke="#1F2937" opacity=".18"/>
             </g>
         </g>
-        <g transform="translate(24 238)">
+
+        <g transform="translate(24 344)">
             <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5E6B7A">Disabled</text>
-            <g transform="translate(110 0)" opacity=".72">
-                <rect x="0" y="0" width="166" height="34" rx="6" fill="#E2E8F0" stroke="#C8D0DD"/>
-                <rect x="166" y="0" width="92" height="34" rx="6" fill="#D8F3F8" stroke="#C8D0DD"/>
-                <rect x="165" y="4" width="1" height="26" fill="#C3CBD8"/>
-                <path fill="#7A8698" d="M20 7l4 8 8 4-8 4-4 8-4-8-8-4 8-4z"/>
-                <text x="42" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#64748B">AI Commit All</text>
-                <text x="188" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#64748B">&amp; Push</text>
+            <g transform="translate(110 0)">
+                <rect width="226" height="30" rx="4" fill="#E4E8F0"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#E4E8F0"/>
+                <rect x="58" width="82" height="30" fill="#DFE5EF"/>
+                <path d="M140 0H222Q226 0 226 4V26Q226 30 222 30H140Z" fill="#DCEAE2"/>
+                <path d="M58 0v30M140 0v30" stroke="#C3CBD8"/>
+                <use href="#ai-mark" x="10" y="8" width="14" height="14" color="#8A94A6"/>
+                <text x="30" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#6B7280">AI
+                </text>
+                <text x="73" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#6B7280">Commit
+                </text>
+                <text x="153" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#6B7280">Push
+                </text>
+                <use href="#push-mark" x="194" y="7" width="18" height="16" color="#7E8A9A"/>
+                <rect x=".5" y=".5" width="225" height="29" rx="4" fill="none" stroke="#C8D0DD"/>
             </g>
         </g>
     </g>
+
     <g transform="translate(470 110)">
-        <rect width="390" height="350" rx="8" fill="#111827" stroke="#334155"/>
+        <rect width="390" height="420" rx="8" fill="#111827" stroke="#334155"/>
         <text x="24" y="36" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700" fill="#E5E7EB">Dark theme</text>
+
         <g transform="translate(24 64)">
-            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#AAB4C2">Commit-only</text>
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#AAB4C2">AI only</text>
             <g transform="translate(110 0)">
-                <rect x="0" y="0" width="166" height="34" rx="6" fill="#64748B"/>
-                <rect x="166" y="0" width="92" height="34" rx="6" fill="#22D3EE"/>
-                <rect x="165" y="4" width="1" height="26" fill="#ECFEFF" opacity=".55"/>
-                <path fill="#E0F2FE" d="M20 7l4 8 8 4-8 4-4 8-4-8-8-4 8-4z"/>
-                <text x="42" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">AI Commit All</text>
-                <text x="188" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" fill="#0F172A">&amp; Push</text>
+                <rect width="226" height="30" rx="4" fill="#2B3340"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#4B5B70"/>
+                <rect x="58" width="82" height="30" fill="#303946"/>
+                <path d="M140 0H222Q226 0 226 4V26Q226 30 222 30H140Z" fill="#24444D"/>
+                <path d="M58 0v30M140 0v30" stroke="#DBEAFE" opacity=".35"/>
+                <use href="#ai-mark" x="10" y="8" width="14" height="14" color="#D7E6FF"/>
+                <text x="30" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">AI
+                </text>
+                <text x="73" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#67E8F9">Commit
+                </text>
+                <text x="153" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#A5F3FC">Push
+                </text>
+                <use href="#push-mark" x="194" y="7" width="18" height="16" color="#A5F3FC"/>
+                <rect x=".5" y=".5" width="225" height="29" rx="4" fill="none" stroke="#FFFFFF" opacity=".20"/>
             </g>
         </g>
-        <g transform="translate(24 122)">
-            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#AAB4C2">Commit + push</text>
+
+        <g transform="translate(24 104)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#AAB4C2">AI + commit</text>
             <g transform="translate(110 0)">
-                <rect x="0" y="0" width="166" height="34" rx="6" fill="#526174"/>
-                <rect x="166" y="0" width="92" height="34" rx="6" fill="#67E8F9"/>
-                <rect x="165" y="4" width="1" height="26" fill="#ECFEFF" opacity=".55"/>
-                <path fill="#E0F2FE" d="M20 7l4 8 8 4-8 4-4 8-4-8-8-4 8-4z"/>
-                <text x="42" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">AI Commit All</text>
-                <text x="188" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" fill="#0F172A">&amp; Push</text>
+                <rect width="226" height="30" rx="4" fill="#2B3340"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#4B5B70"/>
+                <rect x="58" width="82" height="30" fill="#46576C"/>
+                <path d="M140 0H222Q226 0 226 4V26Q226 30 222 30H140Z" fill="#24444D"/>
+                <path d="M58 0v30M140 0v30" stroke="#DBEAFE" opacity=".35"/>
+                <use href="#ai-mark" x="10" y="8" width="14" height="14" color="#D7E6FF"/>
+                <text x="30" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">AI
+                </text>
+                <text x="73" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">Commit
+                </text>
+                <text x="153" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#A5F3FC">Push
+                </text>
+                <use href="#push-mark" x="194" y="7" width="18" height="16" color="#A5F3FC"/>
+                <rect x=".5" y=".5" width="225" height="29" rx="4" fill="none" stroke="#FFFFFF" opacity=".20"/>
             </g>
         </g>
-        <g transform="translate(24 180)">
+
+        <g transform="translate(24 144)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#AAB4C2">AI + commit + push
+            </text>
+            <g transform="translate(110 0)">
+                <rect width="226" height="30" rx="4" fill="#2B3340"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#4B5B70"/>
+                <rect x="58" width="82" height="30" fill="#46576C"/>
+                <path d="M140 0H222Q226 0 226 4V26Q226 30 222 30H140Z" fill="#22D3EE"/>
+                <path d="M58 0v30M140 0v30" stroke="#E9FFF3" opacity=".45"/>
+                <use href="#ai-mark" x="10" y="8" width="14" height="14" color="#EEF4FF"/>
+                <text x="30" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">AI
+                </text>
+                <text x="73" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">Commit
+                </text>
+                <text x="153" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">Push
+                </text>
+                <use href="#push-mark" x="194" y="7" width="18" height="16" color="#CFFAFE"/>
+                <rect x=".5" y=".5" width="225" height="29" rx="4" fill="none" stroke="#FFFFFF" opacity=".20"/>
+            </g>
+        </g>
+
+        <g transform="translate(24 184)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#AAB4C2">AI hover</text>
+            <g transform="translate(110 0)">
+                <rect width="226" height="30" rx="4" fill="#2B3340"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#4B5B70"/>
+                <rect x="58" width="82" height="30" fill="#303946"/>
+                <path d="M140 0H222Q226 0 226 4V26Q226 30 222 30H140Z" fill="#24444D"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#FFFFFF" opacity=".16"/>
+                <path d="M58 0v30M140 0v30" stroke="#DBEAFE" opacity=".35"/>
+                <use href="#ai-mark" x="10" y="8" width="14" height="14" color="#D7E6FF"/>
+                <text x="30" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">AI
+                </text>
+                <text x="73" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#67E8F9">Commit
+                </text>
+                <text x="153" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#A5F3FC">Push
+                </text>
+                <use href="#push-mark" x="194" y="7" width="18" height="16" color="#A5F3FC"/>
+                <rect x=".5" y=".5" width="225" height="29" rx="4" fill="none" stroke="#FFFFFF" opacity=".20"/>
+            </g>
+        </g>
+
+        <g transform="translate(24 224)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#AAB4C2">Commit hover</text>
+            <g transform="translate(110 0)">
+                <rect width="226" height="30" rx="4" fill="#2B3340"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#4B5B70"/>
+                <rect x="58" width="82" height="30" fill="#46576C"/>
+                <path d="M140 0H222Q226 0 226 4V26Q226 30 222 30H140Z" fill="#24444D"/>
+                <path d="M4 0H140V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#FFFFFF" opacity=".16"/>
+                <path d="M58 0v30M140 0v30" stroke="#DBEAFE" opacity=".35"/>
+                <use href="#ai-mark" x="10" y="8" width="14" height="14" color="#D7E6FF"/>
+                <text x="30" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">AI
+                </text>
+                <text x="73" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">Commit
+                </text>
+                <text x="153" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#A5F3FC">Push
+                </text>
+                <use href="#push-mark" x="194" y="7" width="18" height="16" color="#A5F3FC"/>
+                <rect x=".5" y=".5" width="225" height="29" rx="4" fill="none" stroke="#FFFFFF" opacity=".20"/>
+            </g>
+        </g>
+
+        <g transform="translate(24 264)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#AAB4C2">Push hover</text>
+            <g transform="translate(110 0)">
+                <rect width="226" height="30" rx="4" fill="#2B3340"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#4B5B70"/>
+                <rect x="58" width="82" height="30" fill="#46576C"/>
+                <path d="M140 0H222Q226 0 226 4V26Q226 30 222 30H140Z" fill="#22D3EE"/>
+                <rect width="226" height="30" rx="4" fill="#FFFFFF" opacity=".14"/>
+                <path d="M58 0v30M140 0v30" stroke="#E9FFF3" opacity=".45"/>
+                <use href="#ai-mark" x="10" y="8" width="14" height="14" color="#EEF4FF"/>
+                <text x="30" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">AI
+                </text>
+                <text x="73" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">Commit
+                </text>
+                <text x="153" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">Push
+                </text>
+                <use href="#push-mark" x="194" y="7" width="18" height="16" color="#CFFAFE"/>
+                <rect x=".5" y=".5" width="225" height="29" rx="4" fill="none" stroke="#FFFFFF" opacity=".20"/>
+            </g>
+        </g>
+
+        <g transform="translate(24 304)">
             <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#AAB4C2">Running</text>
             <g transform="translate(110 0)">
-                <rect x="0" y="0" width="166" height="34" rx="6" fill="#526174"/>
-                <rect x="166" y="0" width="92" height="34" rx="6" fill="#22D3EE"/>
-                <rect x="0" y="30" width="258" height="4" rx="2" fill="#A5F3FC"/>
-                <circle cx="22" cy="17" r="5" fill="#FFFFFF" opacity=".9"/>
-                <text x="42" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">Generating...</text>
-                <text x="188" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" fill="#0F172A">&amp; Push</text>
+                <rect width="226" height="30" rx="4" fill="#2B3340"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#526174"/>
+                <rect x="58" width="82" height="30" fill="#46576C"/>
+                <path d="M140 0H222Q226 0 226 4V26Q226 30 222 30H140Z" fill="#0891B2"/>
+                <rect x="0" y="27" width="226" height="3" fill="#A5F3FC" opacity=".95"/>
+                <path d="M58 0v30M140 0v30" stroke="#DBEAFE" opacity=".38"/>
+                <circle cx="17" cy="15" r="4" fill="#FFFFFF" opacity=".92"/>
+                <text x="30" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">AI
+                </text>
+                <text x="73" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">Commit
+                </text>
+                <text x="153" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#FFFFFF">Push
+                </text>
+                <use href="#push-mark" x="194" y="7" width="18" height="16" color="#CFFAFE"/>
+                <rect x=".5" y=".5" width="225" height="29" rx="4" fill="none" stroke="#FFFFFF" opacity=".20"/>
             </g>
         </g>
-        <g transform="translate(24 238)" opacity=".72">
+
+        <g transform="translate(24 344)">
             <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#AAB4C2">Disabled</text>
             <g transform="translate(110 0)">
-                <rect x="0" y="0" width="166" height="34" rx="6" fill="#303946" stroke="#4E5969"/>
-                <rect x="166" y="0" width="92" height="34" rx="6" fill="#24444D" stroke="#4E5969"/>
-                <rect x="165" y="4" width="1" height="26" fill="#596273"/>
-                <path fill="#A7B0BE" d="M20 7l4 8 8 4-8 4-4 8-4-8-8-4 8-4z"/>
-                <text x="42" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#B8C0CC">AI Commit All</text>
-                <text x="188" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#B8C0CC">&amp; Push</text>
+                <rect width="226" height="30" rx="4" fill="#333A45"/>
+                <path d="M4 0H58V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#333A45"/>
+                <rect x="58" width="82" height="30" fill="#303946"/>
+                <path d="M140 0H222Q226 0 226 4V26Q226 30 222 30H140Z" fill="#36443C"/>
+                <path d="M58 0v30M140 0v30" stroke="#596273"/>
+                <use href="#ai-mark" x="10" y="8" width="14" height="14" color="#9CA3AF"/>
+                <text x="30" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#B8C0CC">AI
+                </text>
+                <text x="73" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#B8C0CC">Commit
+                </text>
+                <text x="153" y="20" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700"
+                      fill="#B8C0CC">Push
+                </text>
+                <use href="#push-mark" x="194" y="7" width="18" height="16" color="#A7B0BE"/>
+                <rect x=".5" y=".5" width="225" height="29" rx="4" fill="none" stroke="#4B5563"/>
             </g>
         </g>
     </g>
