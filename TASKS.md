@@ -99,6 +99,7 @@ Archived as of orchestrated `AI Commit All` workflow implementation.
 
 ### Validation
 
+- [x] T-VAL-001: Run Gradle build. (Plan `PLAN-scaffold-plugin-project`, Task 3)
 - [x] T-VAL-002: Run plugin verifier for target IDE versions. (Plan `PLAN-validation-coverage`, Task 1 and `PLAN-marketplace-ci-release`, Task 4)
 - [x] T-VAL-003: Keep manual sandbox Git project validation in the scenario record. (Plan `PLAN-validation-coverage`, Task 3)
 - [x] T-VAL-004: Record exact current IDE product names and build numbers used for manual validation. (Plan `PLAN-validation-coverage`, Task 3)
@@ -184,10 +185,6 @@ Archived as of `v0.1.0-alpha.1` release preparation.
 ### Commit Tool Window Actions
 
 - [x] T-ACTIONS-003: Generate a placeholder split-button styling graphic covering normal, running, disabled, commit-only, and commit-and-push states: `docs/concepts/graphics/split-button-placeholder.png`. (ADR 0027)
-
-### Validation
-
-- [x] T-VAL-001: Run Gradle build. (Plan `PLAN-scaffold-plugin-project`, Task 3)
 
 ### Documentation
 
