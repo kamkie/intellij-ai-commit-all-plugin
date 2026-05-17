@@ -1,11 +1,11 @@
 package pl.devopssolutions.aicommitall.actions
 
+import com.intellij.openapi.actionSystem.ActionGroup
+import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionPopupMenu
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.ActionUiKind
-import com.intellij.openapi.actionSystem.ActionGroup
-import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -16,14 +16,14 @@ import com.intellij.openapi.actionSystem.TimerListener
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ActionCallback
-import com.intellij.ui.AnimatedIcon
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowMode
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowResult
 import java.awt.Component
 import java.awt.event.InputEvent
 import java.lang.reflect.Proxy
 import java.util.concurrent.CompletableFuture
-import javax.swing.Icon
+import javax.swing.JButton
+import javax.swing.JComponent
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -33,9 +33,51 @@ import kotlin.test.assertTrue
 
 internal class AiCommitAllActionsTest {
     @Test
-    fun `commit action starts commit workflow mode`() {
+    fun `ai section starts ai workflow mode`() {
         val starter = CapturingWorkflowStarter()
-        val action = AiCommitAllCommitAction(starter)
+        val action = AiCommitAllThreeSectionAction(starter)
+        val project = testProject()
+        val dataContext = testDataContext(project)
+
+        action.startSection(project, AiCommitAllControlSection.Ai, dataContext, null)
+
+        assertSame(project, starter.project)
+        assertSame(dataContext, starter.dataContext)
+        assertEquals(AiCommitAllWorkflowMode.Ai, starter.mode)
+    }
+
+    @Test
+    fun `commit section starts commit workflow mode`() {
+        val starter = CapturingWorkflowStarter()
+        val action = AiCommitAllThreeSectionAction(starter)
+        val project = testProject()
+        val dataContext = testDataContext(project)
+
+        action.startSection(project, AiCommitAllControlSection.Commit, dataContext, null)
+
+        assertSame(project, starter.project)
+        assertSame(dataContext, starter.dataContext)
+        assertEquals(AiCommitAllWorkflowMode.Commit, starter.mode)
+    }
+
+    @Test
+    fun `push section starts push workflow mode`() {
+        val starter = CapturingWorkflowStarter()
+        val action = AiCommitAllThreeSectionAction(starter)
+        val project = testProject()
+        val dataContext = testDataContext(project)
+
+        action.startSection(project, AiCommitAllControlSection.Push, dataContext, null)
+
+        assertSame(project, starter.project)
+        assertSame(dataContext, starter.dataContext)
+        assertEquals(AiCommitAllWorkflowMode.Push, starter.mode)
+    }
+
+    @Test
+    fun `fallback action invocation starts commit workflow mode`() {
+        val starter = CapturingWorkflowStarter()
+        val action = AiCommitAllThreeSectionAction(starter)
         val project = testProject()
         val dataContext = testDataContext(project)
 
@@ -47,23 +89,9 @@ internal class AiCommitAllActionsTest {
     }
 
     @Test
-    fun `commit and push action starts commit and push workflow mode`() {
-        val starter = CapturingWorkflowStarter()
-        val action = AiCommitAllCommitAndPushAction(starter)
-        val project = testProject()
-        val dataContext = testDataContext(project)
-
-        action.actionPerformed(testEvent(dataContext))
-
-        assertSame(project, starter.project)
-        assertSame(dataContext, starter.dataContext)
-        assertEquals(AiCommitAllWorkflowMode.CommitAndPush, starter.mode)
-    }
-
-    @Test
     fun `action does not start without project`() {
         val starter = CapturingWorkflowStarter()
-        val action = AiCommitAllCommitAction(starter)
+        val action = AiCommitAllThreeSectionAction(starter)
 
         action.actionPerformed(testEvent(DataContext.EMPTY_CONTEXT))
 
@@ -72,9 +100,9 @@ internal class AiCommitAllActionsTest {
 
     @Test
     fun `action update applies enabled availability`() {
-        val action = AiCommitAllCommitAction(
+        val action = AiCommitAllThreeSectionAction(
             workflowStarter = CapturingWorkflowStarter(),
-            availabilityProvider = StaticAvailabilityProvider(AiCommitAllWorkflowActionAvailability.Enabled),
+            availabilityProvider = StaticAvailabilityProvider(),
             activityProvider = StaticActivityProvider(),
         )
         val event = testEvent(testDataContext(testProject()))
@@ -86,10 +114,47 @@ internal class AiCommitAllActionsTest {
     }
 
     @Test
-    fun `action update applies disabled availability`() {
-        val action = AiCommitAllCommitAction(
+    fun `custom component exposes three ordered sections`() {
+        val action = AiCommitAllThreeSectionAction(
             workflowStarter = CapturingWorkflowStarter(),
-            availabilityProvider = StaticAvailabilityProvider(AiCommitAllWorkflowActionAvailability.Disabled),
+            availabilityProvider = StaticAvailabilityProvider(),
+            activityProvider = StaticActivityProvider(),
+        )
+        val event = testEvent(testDataContext(testProject()))
+
+        action.update(event)
+        val buttons = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).sectionButtons()
+
+        assertEquals(listOf("AI", "Commit", "Push"), buttons.map { button -> button.text })
+        assertTrue(buttons.all { button -> button.isEnabled })
+    }
+
+    @Test
+    fun `custom component disables unavailable section only`() {
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = CapturingWorkflowStarter(),
+            availabilityProvider = StaticAvailabilityProvider(
+                AiCommitAllWorkflowMode.Push to AiCommitAllWorkflowActionAvailability.Disabled,
+            ),
+            activityProvider = StaticActivityProvider(),
+        )
+        val event = testEvent(testDataContext(testProject()))
+
+        action.update(event)
+        val buttons = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).sectionButtons()
+
+        assertTrue(buttons[0].isEnabled)
+        assertTrue(buttons[1].isEnabled)
+        assertFalse(buttons[2].isEnabled)
+    }
+
+    @Test
+    fun `action update applies disabled availability`() {
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = CapturingWorkflowStarter(),
+            availabilityProvider = StaticAvailabilityProvider(
+                defaultAvailability = AiCommitAllWorkflowActionAvailability.Disabled,
+            ),
             activityProvider = StaticActivityProvider(),
         )
         val event = testEvent(testDataContext(testProject()))
@@ -101,25 +166,26 @@ internal class AiCommitAllActionsTest {
     }
 
     @Test
-    fun `action update applies running activity presentation`() {
-        val action = AiCommitAllCommitAction(
+    fun `action update disables all sections while running`() {
+        val action = AiCommitAllThreeSectionAction(
             workflowStarter = CapturingWorkflowStarter(),
-            availabilityProvider = StaticAvailabilityProvider(AiCommitAllWorkflowActionAvailability.Enabled),
-            activityProvider = StaticActivityProvider(running = true),
+            availabilityProvider = StaticAvailabilityProvider(),
+            activityProvider = StaticActivityProvider(runningSection = AiCommitAllControlSection.Commit),
         )
         val event = testEvent(testDataContext(testProject()))
 
         action.update(event)
+        val buttons = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).sectionButtons()
 
         assertTrue(event.presentation.isVisible)
         assertFalse(event.presentation.isEnabled)
-        assertSame(AnimatedIcon.Default.INSTANCE, event.presentation.icon)
+        assertTrue(buttons.all { button -> !button.isEnabled })
     }
 
     @Test
     fun `action update hides without project`() {
-        val provider = CapturingAvailabilityProvider(AiCommitAllWorkflowActionAvailability.Enabled)
-        val action = AiCommitAllCommitAction(
+        val provider = CapturingAvailabilityProvider()
+        val action = AiCommitAllThreeSectionAction(
             workflowStarter = CapturingWorkflowStarter(),
             availabilityProvider = provider,
             activityProvider = StaticActivityProvider(),
@@ -130,7 +196,7 @@ internal class AiCommitAllActionsTest {
 
         assertFalse(event.presentation.isVisible)
         assertFalse(event.presentation.isEnabled)
-        assertNull(provider.mode)
+        assertTrue(provider.modes.isEmpty())
     }
 
     private class CapturingWorkflowStarter : AiCommitAllWorkflowStarter {
@@ -154,46 +220,35 @@ internal class AiCommitAllActionsTest {
     }
 
     private open class CapturingAvailabilityProvider(
-        private val availability: AiCommitAllWorkflowActionAvailability,
+        private val defaultAvailability: AiCommitAllWorkflowActionAvailability =
+            AiCommitAllWorkflowActionAvailability.Enabled,
+        private val overrides: Map<AiCommitAllWorkflowMode, AiCommitAllWorkflowActionAvailability> = emptyMap(),
     ) : AiCommitAllWorkflowAvailabilityProvider {
-        var project: Project? = null
-        var mode: AiCommitAllWorkflowMode? = null
-        var dataContext: DataContext? = null
+        val modes = mutableListOf<AiCommitAllWorkflowMode>()
 
         override fun availability(
             project: Project,
             mode: AiCommitAllWorkflowMode,
             dataContext: DataContext,
         ): AiCommitAllWorkflowActionAvailability {
-            this.project = project
-            this.mode = mode
-            this.dataContext = dataContext
-            return availability
+            modes += mode
+            return overrides[mode] ?: defaultAvailability
         }
     }
 
     private class StaticAvailabilityProvider(
-        availability: AiCommitAllWorkflowActionAvailability,
-    ) : CapturingAvailabilityProvider(availability)
+        vararg overrides: Pair<AiCommitAllWorkflowMode, AiCommitAllWorkflowActionAvailability>,
+        defaultAvailability: AiCommitAllWorkflowActionAvailability = AiCommitAllWorkflowActionAvailability.Enabled,
+    ) : CapturingAvailabilityProvider(defaultAvailability, overrides.toMap())
 
     private class StaticActivityProvider(
-        private val running: Boolean = false,
+        private val runningSection: AiCommitAllControlSection? = null,
     ) : AiCommitAllWorkflowActivityProvider {
-        override fun applyActivityState(
-            project: Project,
-            presentation: Presentation,
-            idleIcon: Icon?,
-            enabledWhenIdle: Boolean,
-        ) {
-            if (running) {
-                presentation.setEnabled(false)
-                presentation.setIcon(AnimatedIcon.Default.INSTANCE)
-            } else {
-                presentation.setEnabled(enabledWhenIdle)
-                presentation.setIcon(idleIcon)
-            }
-        }
+        override fun runningSection(project: Project): AiCommitAllControlSection? = runningSection
     }
+
+    private fun JComponent.sectionButtons(): List<JButton> =
+        components.filterIsInstance<JButton>()
 
     private fun testEvent(
         dataContext: DataContext,

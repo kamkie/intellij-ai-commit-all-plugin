@@ -1,11 +1,19 @@
 package pl.devopssolutions.aicommitall.actions
 
+import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.project.Project
+import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
 import com.intellij.openapi.vcs.VcsDataKeys
+import com.intellij.ui.components.JBPanel
+import com.intellij.util.ui.JBUI
+import pl.devopssolutions.aicommitall.ai.AiGenerationActivityPhase
 import pl.devopssolutions.aicommitall.ai.AiGenerationActivityStateService
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelectionService
 import pl.devopssolutions.aicommitall.vcs.GitVcsSupportStatus
@@ -13,72 +21,168 @@ import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowCoordinator
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowMode
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowResult
 import pl.devopssolutions.aicommitall.workflow.CommitWorkflowExecutionService
+import java.awt.GridLayout
 import java.awt.event.InputEvent
 import java.util.concurrent.CompletableFuture
-import javax.swing.Icon
+import javax.swing.JButton
+import javax.swing.JComponent
 
-internal class AiCommitAllCommitAction(
-    workflowStarter: AiCommitAllWorkflowStarter = ProjectAiCommitAllWorkflowStarter,
-    availabilityProvider: AiCommitAllWorkflowAvailabilityProvider = ProjectAiCommitAllWorkflowAvailabilityProvider,
-    activityProvider: AiCommitAllWorkflowActivityProvider = ProjectAiCommitAllWorkflowActivityProvider,
-) : AiCommitAllWorkflowAction(AiCommitAllWorkflowMode.Commit, workflowStarter, availabilityProvider, activityProvider)
-
-internal class AiCommitAllCommitAndPushAction(
-    workflowStarter: AiCommitAllWorkflowStarter = ProjectAiCommitAllWorkflowStarter,
-    availabilityProvider: AiCommitAllWorkflowAvailabilityProvider = ProjectAiCommitAllWorkflowAvailabilityProvider,
-    activityProvider: AiCommitAllWorkflowActivityProvider = ProjectAiCommitAllWorkflowActivityProvider,
-) : AiCommitAllWorkflowAction(
-    AiCommitAllWorkflowMode.CommitAndPush,
-    workflowStarter,
-    availabilityProvider,
-    activityProvider,
-)
-
-internal abstract class AiCommitAllWorkflowAction(
-    private val mode: AiCommitAllWorkflowMode,
-    private val workflowStarter: AiCommitAllWorkflowStarter,
-    private val availabilityProvider: AiCommitAllWorkflowAvailabilityProvider,
-    private val activityProvider: AiCommitAllWorkflowActivityProvider,
-) : DumbAwareAction() {
+internal class AiCommitAllThreeSectionAction(
+    private val workflowStarter: AiCommitAllWorkflowStarter = ProjectAiCommitAllWorkflowStarter,
+    private val availabilityProvider: AiCommitAllWorkflowAvailabilityProvider =
+        ProjectAiCommitAllWorkflowAvailabilityProvider,
+    private val activityProvider: AiCommitAllWorkflowActivityProvider =
+        ProjectAiCommitAllWorkflowActivityProvider,
+) : DumbAwareAction(), CustomComponentAction {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(event: AnActionEvent) {
-        val project = event.project
-        val availability = if (project == null) {
-            AiCommitAllWorkflowActionAvailability.Hidden
-        } else {
-            availabilityProvider.availability(
-                project = project,
-                mode = mode,
-                dataContext = event.dataContext,
-            )
-        }
-
-        event.presentation.isVisible = availability.visible
-        if (!availability.visible || project == null) {
-            event.presentation.isEnabled = false
-            return
-        }
-
-        activityProvider.applyActivityState(
-            project = project,
-            presentation = event.presentation,
-            idleIcon = event.presentation.icon ?: templatePresentation.icon,
-            enabledWhenIdle = availability.enabled,
-        )
+        val state = controlState(event.project, event.dataContext)
+        event.presentation.putClientProperty(CONTROL_STATE_KEY, state)
+        event.presentation.isVisible = state.visible
+        event.presentation.isEnabled = state.enabled
     }
 
     override fun actionPerformed(event: AnActionEvent) {
-        val project = event.project ?: return
-        workflowStarter.start(
-            project = project,
-            mode = mode,
+        startSection(
+            project = event.project,
+            section = AiCommitAllControlSection.Commit,
             dataContext = event.dataContext,
             inputEvent = event.inputEvent,
         )
     }
 
-    protected fun mode(): AiCommitAllWorkflowMode = mode
+    override fun createCustomComponent(
+        presentation: Presentation,
+        place: String,
+    ): JComponent {
+        lateinit var control: AiCommitAllThreeSectionControl
+        control = AiCommitAllThreeSectionControl { section, inputEvent ->
+            startSection(
+                project = CommonDataKeys.PROJECT.getData(DataManager.getInstance().getDataContext(control)),
+                section = section,
+                dataContext = DataManager.getInstance().getDataContext(control),
+                inputEvent = inputEvent,
+            )
+        }
+        control.updateState(presentation.getClientProperty(CONTROL_STATE_KEY) ?: AiCommitAllControlState.Hidden)
+        return control
+    }
+
+    override fun updateCustomComponent(
+        component: JComponent,
+        presentation: Presentation,
+    ) {
+        val control = component as? AiCommitAllThreeSectionControl ?: return
+        control.updateState(presentation.getClientProperty(CONTROL_STATE_KEY) ?: AiCommitAllControlState.Hidden)
+    }
+
+    internal fun startSection(
+        project: Project?,
+        section: AiCommitAllControlSection,
+        dataContext: DataContext,
+        inputEvent: InputEvent?,
+    ): CompletableFuture<AiCommitAllWorkflowResult>? =
+        project?.let {
+            workflowStarter.start(
+                project = it,
+                mode = section.mode,
+                dataContext = dataContext,
+                inputEvent = inputEvent,
+            )
+        }
+
+    private fun controlState(
+        project: Project?,
+        dataContext: DataContext,
+    ): AiCommitAllControlState {
+        if (project == null) {
+            return AiCommitAllControlState.Hidden
+        }
+
+        val sections = AiCommitAllControlSection.entries.associateWith { section ->
+            availabilityProvider.availability(
+                project = project,
+                mode = section.mode,
+                dataContext = dataContext,
+            )
+        }
+        val runningSection = activityProvider.runningSection(project)
+        return AiCommitAllControlState(
+            sections = sections,
+            runningSection = runningSection,
+        )
+    }
+
+    companion object {
+        private val CONTROL_STATE_KEY =
+            Key.create<AiCommitAllControlState>("pl.devopssolutions.aicommitall.controlState")
+    }
+}
+
+internal enum class AiCommitAllControlSection(
+    val label: String,
+    val mode: AiCommitAllWorkflowMode,
+) {
+    Ai("AI", AiCommitAllWorkflowMode.Ai),
+    Commit("Commit", AiCommitAllWorkflowMode.Commit),
+    Push("Push", AiCommitAllWorkflowMode.Push),
+}
+
+internal data class AiCommitAllControlState(
+    val sections: Map<AiCommitAllControlSection, AiCommitAllWorkflowActionAvailability>,
+    val runningSection: AiCommitAllControlSection?,
+) {
+    val visible: Boolean = sections.values.any { availability -> availability.visible }
+    val enabled: Boolean = runningSection == null && sections.values.any { availability -> availability.enabled }
+
+    fun isSectionEnabled(section: AiCommitAllControlSection): Boolean =
+        runningSection == null && sections[section]?.enabled == true
+
+    companion object {
+        val Hidden = AiCommitAllControlState(
+            sections = AiCommitAllControlSection.entries.associateWith {
+                AiCommitAllWorkflowActionAvailability.Hidden
+            },
+            runningSection = null,
+        )
+    }
+}
+
+internal class AiCommitAllThreeSectionControl(
+    private val activateSection: (AiCommitAllControlSection, InputEvent?) -> Unit,
+) : JBPanel<AiCommitAllThreeSectionControl>(GridLayout(1, 0, 0, 0)) {
+    private var state: AiCommitAllControlState = AiCommitAllControlState.Hidden
+    private val buttons = AiCommitAllControlSection.entries.associateWith { section ->
+        JButton(section.label).apply {
+            margin = JBUI.insets(2, 8)
+            isFocusable = true
+            toolTipText = section.toolTipText
+            addActionListener {
+                if (state.isSectionEnabled(section)) {
+                    activateSection(section, null)
+                }
+            }
+        }
+    }
+
+    init {
+        isOpaque = false
+        border = JBUI.Borders.empty()
+        buttons.values.forEach(::add)
+    }
+
+    fun updateState(nextState: AiCommitAllControlState) {
+        state = nextState
+        isVisible = nextState.visible
+        isEnabled = nextState.enabled
+        buttons.forEach { (section, button) ->
+            button.isVisible = nextState.sections[section]?.visible == true
+            button.isEnabled = nextState.isSectionEnabled(section)
+        }
+        revalidate()
+        repaint()
+    }
 }
 
 internal data class AiCommitAllWorkflowActionAvailability(
@@ -104,12 +208,7 @@ internal interface AiCommitAllWorkflowAvailabilityProvider {
 }
 
 internal interface AiCommitAllWorkflowActivityProvider {
-    fun applyActivityState(
-        project: Project,
-        presentation: com.intellij.openapi.actionSystem.Presentation,
-        idleIcon: Icon?,
-        enabledWhenIdle: Boolean,
-    )
+    fun runningSection(project: Project): AiCommitAllControlSection?
 }
 
 internal interface AiCommitAllWorkflowStarter {
@@ -122,19 +221,8 @@ internal interface AiCommitAllWorkflowStarter {
 }
 
 private object ProjectAiCommitAllWorkflowActivityProvider : AiCommitAllWorkflowActivityProvider {
-    override fun applyActivityState(
-        project: Project,
-        presentation: com.intellij.openapi.actionSystem.Presentation,
-        idleIcon: Icon?,
-        enabledWhenIdle: Boolean,
-    ) {
-        AiGenerationActivityStateService.getInstance(project)
-            .applyToPresentation(
-                presentation = presentation,
-                idleIcon = idleIcon,
-                enabledWhenIdle = enabledWhenIdle,
-            )
-    }
+    override fun runningSection(project: Project): AiCommitAllControlSection? =
+        AiGenerationActivityStateService.getInstance(project).runningPhase()?.controlSection
 }
 
 private object ProjectAiCommitAllWorkflowStarter : AiCommitAllWorkflowStarter {
@@ -174,10 +262,10 @@ private object ProjectAiCommitAllWorkflowAvailabilityProvider : AiCommitAllWorkf
 
         val executionService = CommitWorkflowExecutionService.getInstance(project)
         val canExecute = when (mode) {
+            AiCommitAllWorkflowMode.Ai -> true
             AiCommitAllWorkflowMode.Commit ->
                 executionService.canExecuteCommit(workflowHandler)
-
-            AiCommitAllWorkflowMode.CommitAndPush ->
+            AiCommitAllWorkflowMode.Push ->
                 executionService.canExecuteCommitAndPush(workflowHandler)
         }
 
@@ -188,3 +276,17 @@ private object ProjectAiCommitAllWorkflowAvailabilityProvider : AiCommitAllWorkf
         }
     }
 }
+
+private val AiGenerationActivityPhase.controlSection: AiCommitAllControlSection
+    get() = when (this) {
+        AiGenerationActivityPhase.Ai -> AiCommitAllControlSection.Ai
+        AiGenerationActivityPhase.Commit -> AiCommitAllControlSection.Commit
+        AiGenerationActivityPhase.Push -> AiCommitAllControlSection.Push
+    }
+
+private val AiCommitAllControlSection.toolTipText: String
+    get() = when (this) {
+        AiCommitAllControlSection.Ai -> "Generate an AI commit message for all Git changes."
+        AiCommitAllControlSection.Commit -> "Generate an AI commit message and commit all Git changes."
+        AiCommitAllControlSection.Push -> "Generate an AI commit message, commit all Git changes, and push."
+    }

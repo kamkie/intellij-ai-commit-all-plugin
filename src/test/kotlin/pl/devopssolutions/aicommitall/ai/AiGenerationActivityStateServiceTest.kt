@@ -4,7 +4,9 @@ import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.ui.AnimatedIcon
 import javax.swing.Icon
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
@@ -16,8 +18,21 @@ internal class AiGenerationActivityStateServiceTest {
         val token = service.start()
 
         assertTrue(service.isRunning())
+        assertEquals(AiGenerationActivityPhase.Ai, service.runningPhase())
         token.close()
         assertFalse(service.isRunning())
+        assertNull(service.runningPhase())
+    }
+
+    @Test
+    fun `tracks requested activity phase`() {
+        val service = AiGenerationActivityStateService()
+
+        val token = service.start(AiGenerationActivityPhase.Push)
+
+        assertEquals(AiGenerationActivityPhase.Push, service.runningPhase())
+        token.close()
+        assertNull(service.runningPhase())
     }
 
     @Test

@@ -2,19 +2,24 @@
 
 Plan-ID: PLAN-three-section-ai-commit-push-control
 
-Status: Draft
+Status: In Progress
 
 Filename: `.agents/plans/PLAN-three-section-ai-commit-push-control.md`
 
 ## Readiness
 
-- Plan readiness: Not ready until the maintainer reviews and approves this plan.
+- Plan readiness: Ready; explicit implementation approval recorded from the maintainer request.
+- Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Approved at: 2026-05-17T23:59:08+02:00
 - Open questions: None.
-- Implementation progress: Not started.
+- Implementation progress: Task 1 completed; Task 2 pending.
 
 ## Status History
 
 - 2026-05-17T23:40:43+02:00: none -> Draft by Codex <codex@openai.com>; plan created after ADR 0052 and ADR 0053 acceptance.
+- 2026-05-17T23:59:08+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded from implementation request.
+- 2026-05-17T23:59:08+02:00: Approved -> In Progress by Codex <codex@openai.com>; implementation started.
+- 2026-05-18T00:04:28+02:00: In Progress -> In Progress by Codex <codex@openai.com>; Task 1 routing implementation completed.
 
 ## Goal
 

@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsDataKeys
 import pl.devopssolutions.aicommitall.ai.AiCommitMessageActionInvocationResult
 import pl.devopssolutions.aicommitall.ai.AiCommitMessageActionInvocationService
+import pl.devopssolutions.aicommitall.ai.AiGenerationActivityPhase
 import pl.devopssolutions.aicommitall.ai.AiGenerationActivityStateService
 import pl.devopssolutions.aicommitall.ai.AiGenerationCompletionResult
 import pl.devopssolutions.aicommitall.ai.AiGenerationCompletionService
@@ -39,7 +40,7 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
         return when (val selectionResult = CommitWorkflowSelectionService.getInstance(project)
             .prepareAllFilesSelection(workflowHandler, workflowUi)) {
             is CommitWorkflowSelectionResult.Prepared -> {
-                val activityToken = AiGenerationActivityStateService.getInstance(project).start()
+                val activityToken = AiGenerationActivityStateService.getInstance(project).start(mode.activityPhase)
                 val completionService = AiGenerationCompletionService.getInstance(project)
                 val snapshot = completionService.captureInitialMessage(workflowUi.commitMessageUi)
                 when (val invocation = AiCommitMessageActionInvocationService.getInstance(project)
@@ -115,11 +116,13 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
         selection: GitChangeSelection,
     ): AiCommitAllWorkflowResult =
         when (mode) {
+            AiCommitAllWorkflowMode.Ai ->
+                AiCommitAllWorkflowResult.Started
             AiCommitAllWorkflowMode.Commit ->
                 CommitWorkflowExecutionService.getInstance(project)
                     .executeCommit(workflowHandler)
                     .toWorkflowResult(AiCommitAllWorkflowStopReason.CommitExecutionUnavailable)
-            AiCommitAllWorkflowMode.CommitAndPush ->
+            AiCommitAllWorkflowMode.Push ->
                 CommitWorkflowExecutionService.getInstance(project)
                     .executeCommitAndPush(
                         workflowHandler = workflowHandler,
@@ -159,9 +162,17 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
 }
 
 internal enum class AiCommitAllWorkflowMode {
+    Ai,
     Commit,
-    CommitAndPush,
+    Push,
 }
+
+private val AiCommitAllWorkflowMode.activityPhase: AiGenerationActivityPhase
+    get() = when (this) {
+        AiCommitAllWorkflowMode.Ai -> AiGenerationActivityPhase.Ai
+        AiCommitAllWorkflowMode.Commit -> AiGenerationActivityPhase.Commit
+        AiCommitAllWorkflowMode.Push -> AiGenerationActivityPhase.Push
+    }
 
 internal sealed interface AiCommitAllWorkflowResult {
     data object Started : AiCommitAllWorkflowResult
