@@ -44,7 +44,7 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 | E002 | Skip the push dialog only when safe                      | 1        | open   | accepted |
 | E003 | Capture split-button design intent                       | 1        | open   | accepted |
 | E004 | Run split-button visual draft experiments                | 2        | open   | accepted |
-| E005 | Add a split-button decision tree and final-selection ADR | 2        | open   | deferred |
+| E005 | Add a split-button decision tree and final-selection ADR | 2        | open   | accepted |
 | E006 | Evaluate shortcut takeover with opt-out                  | 3        | open   | accepted |
 
 ## How To Edit The Trackers
@@ -129,11 +129,11 @@ command: it should be closer to concept graphics but without an arrow in the mid
 
 ```yaml
 status: open
-decision: deferred
+decision: accepted
 priority: 2
 owner:
 updated: 2026-05-15T11:43:16+02:00
-decided_at: 2026-05-15T11:43:16+02:00
+accepted_at: 2026-05-15T11:43:16+02:00
 comment: "Source: PROP-split-button-look-experiments E3."
 ```
 

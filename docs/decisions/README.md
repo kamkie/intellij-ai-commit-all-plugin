@@ -102,3 +102,4 @@ Set `decision-makers` to the configured Git identity in `Name <email>` form.
 | [ard-0044](ard-0044-use-filename-prefixes-for-artifact-lookup.md)                       | Use Filename Prefixes For Artifact Lookup                       | Accepted | 2026-05-15 |
 | [ard-0045](ard-0045-record-artifact-decision-and-status-timestamps.md)                  | Record Artifact Decision And Status Timestamps                  | Accepted | 2026-05-15 |
 | [ard-0046](ard-0046-record-plan-status-actor-source.md)                                 | Record Plan Status Actor Source                                 | Accepted | 2026-05-15 |
+| [ard-0047](ard-0047-use-safe-immediate-push-fallback.md)                                | Use Safe Immediate Push Fallback                                | Accepted | 2026-05-17 |

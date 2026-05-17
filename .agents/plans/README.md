@@ -27,6 +27,7 @@ This directory holds task-specific implementation plans for work that is too lar
 - `PLAN-validation-coverage` - Validation Coverage ([PLAN-validation-coverage.md](PLAN-validation-coverage.md)).
 - `PLAN-user-documentation` - User Documentation ([PLAN-user-documentation.md](PLAN-user-documentation.md)).
 - `PLAN-marketplace-ci-release` - Marketplace, CI, And Release Automation ([PLAN-marketplace-ci-release.md](PLAN-marketplace-ci-release.md)).
+- `PLAN-pre-release-adr-implementation` - Pre-Release ADR Implementation ([PLAN-pre-release-adr-implementation.md](PLAN-pre-release-adr-implementation.md)).
 
 ## Archived Plans
 
