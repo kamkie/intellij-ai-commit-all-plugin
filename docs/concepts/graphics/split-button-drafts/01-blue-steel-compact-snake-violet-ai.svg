@@ -30,7 +30,7 @@
                 <path d="M4 0H50V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#F0E9FF"/>
                 <rect x="50" width="70" height="30" fill="#EAF1FF"/>
                 <path d="M120 0H186Q190 0 190 4V26Q190 30 186 30H120Z" fill="#E8F5EC"/>
-                <path d="M50 0v30M120 0v30" stroke="#BFD5FF" opacity=".9"/>
+                <path d="M50 0v30M120 0v30" stroke="#CBD5E1" opacity=".75"/>
                 <use href="#ai-mark" x="8" y="8" width="14" height="14" color="#6F4BB8"/>
                 <text x="27" y="20" font-size="12" font-weight="700" fill="#6F4BB8">AI</text>
                 <text x="62" y="20" font-size="12" font-weight="700" fill="#315FAE">Commit</text>
@@ -47,7 +47,8 @@
                 <path d="M4 0H50V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#834DF0"/>
                 <rect x="50" width="70" height="30" fill="#EAF1FF"/>
                 <path d="M120 0H186Q190 0 190 4V26Q190 30 186 30H120Z" fill="#E8F5EC"/>
-                <path d="M50 0v30M120 0v30" stroke="#BFD5FF" opacity=".9"/>
+                <path d="M50 0v30" stroke="#DDE8FF" opacity=".6"/>
+                <path d="M120 0v30" stroke="#CBD5E1" opacity=".75"/>
                 <use href="#ai-mark" x="8" y="8" width="14" height="14" color="#FFFFFF"/>
                 <text x="27" y="20" font-size="12" font-weight="700" fill="#FFFFFF">AI</text>
                 <text x="62" y="20" font-size="12" font-weight="700" fill="#315FAE">Commit</text>
@@ -64,7 +65,8 @@
                 <path d="M4 0H50V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#834DF0"/>
                 <rect x="50" width="70" height="30" fill="#315FAE"/>
                 <path d="M120 0H186Q190 0 190 4V26Q190 30 186 30H120Z" fill="#E8F5EC"/>
-                <path d="M50 0v30M120 0v30" stroke="#DDE8FF" opacity=".55"/>
+                <path d="M50 0v30" stroke="#E9F0FF" opacity=".45"/>
+                <path d="M120 0v30" stroke="#DDE8FF" opacity=".6"/>
                 <use href="#ai-mark" x="8" y="8" width="14" height="14" color="#FFFFFF"/>
                 <text x="27" y="20" font-size="12" font-weight="700" fill="#FFFFFF">AI</text>
                 <text x="62" y="20" font-size="12" font-weight="700" fill="#FFFFFF">Commit</text>
@@ -81,7 +83,7 @@
                 <path d="M4 0H50V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#834DF0"/>
                 <rect x="50" width="70" height="30" fill="#315FAE"/>
                 <path d="M120 0H186Q190 0 190 4V26Q190 30 186 30H120Z" fill="#238449"/>
-                <path d="M50 0v30M120 0v30" stroke="#E9FFF3" opacity=".58"/>
+                <path d="M50 0v30M120 0v30" stroke="#E9F0FF" opacity=".45"/>
                 <use href="#ai-mark" x="8" y="8" width="14" height="14" color="#FFFFFF"/>
                 <text x="27" y="20" font-size="12" font-weight="700" fill="#FFFFFF">AI</text>
                 <text x="62" y="20" font-size="12" font-weight="700" fill="#FFFFFF">Commit</text>
@@ -98,7 +100,8 @@
                 <path d="M4 0H50V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#834DF0"/>
                 <rect x="50" width="70" height="30" fill="#EAF1FF"/>
                 <path d="M120 0H186Q190 0 190 4V26Q190 30 186 30H120Z" fill="#E8F5EC"/>
-                <path d="M50 0v30M120 0v30" stroke="#DDE8FF" opacity=".55"/>
+                <path d="M50 0v30" stroke="#DDE8FF" opacity=".6"/>
+                <path d="M120 0v30" stroke="#CBD5E1" opacity=".75"/>
                 <rect x="2" y="2" width="46" height="26" rx="3" fill="none" stroke="#D9EAFF" stroke-width="2"
                       stroke-linecap="round" stroke-dasharray="16 116">
                     <animate attributeName="stroke-dashoffset" values="0;-132" dur="1s" repeatCount="indefinite"/>
@@ -117,9 +120,10 @@
             <g transform="translate(142 0)">
                 <rect width="190" height="30" rx="4" fill="#EDF2FB"/>
                 <path d="M4 0H50V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#834DF0"/>
-                <rect x="50" width="70" height="30" fill="#2659C7"/>
+                <rect x="50" width="70" height="30" fill="#315FAE"/>
                 <path d="M120 0H186Q190 0 190 4V26Q190 30 186 30H120Z" fill="#E8F5EC"/>
-                <path d="M50 0v30M120 0v30" stroke="#DDE8FF" opacity=".55"/>
+                <path d="M50 0v30" stroke="#E9F0FF" opacity=".45"/>
+                <path d="M120 0v30" stroke="#DDE8FF" opacity=".6"/>
                 <rect x="52" y="2" width="66" height="26" rx="1.5" fill="none" stroke="#D9EAFF" stroke-width="2"
                       stroke-linecap="round" stroke-dasharray="18 144">
                     <animate attributeName="stroke-dashoffset" values="0;-162" dur="1s" repeatCount="indefinite"/>
@@ -139,8 +143,8 @@
                 <rect width="190" height="30" rx="4" fill="#EDF2FB"/>
                 <path d="M4 0H50V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#834DF0"/>
                 <rect x="50" width="70" height="30" fill="#315FAE"/>
-                <path d="M120 0H186Q190 0 190 4V26Q190 30 186 30H120Z" fill="#1F7D4A"/>
-                <path d="M50 0v30M120 0v30" stroke="#E9FFF3" opacity=".50"/>
+                <path d="M120 0H186Q190 0 190 4V26Q190 30 186 30H120Z" fill="#238449"/>
+                <path d="M50 0v30M120 0v30" stroke="#E9F0FF" opacity=".45"/>
                 <rect x="122" y="2" width="66" height="26" rx="3" fill="none" stroke="#D9FFE3" stroke-width="2"
                       stroke-linecap="round" stroke-dasharray="18 144">
                     <animate attributeName="stroke-dashoffset" values="0;-162" dur="1s" repeatCount="indefinite"/>
@@ -183,7 +187,7 @@
                 <path d="M4 0H50V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#342A47"/>
                 <rect x="50" width="70" height="30" fill="#28394E"/>
                 <path d="M120 0H186Q190 0 190 4V26Q190 30 186 30H120Z" fill="#263C32"/>
-                <path d="M50 0v30M120 0v30" stroke="#DBEAFE" opacity=".35"/>
+                <path d="M50 0v30M120 0v30" stroke="#4B5563" opacity=".85"/>
                 <use href="#ai-mark" x="8" y="8" width="14" height="14" color="#B99BE8"/>
                 <text x="27" y="20" font-size="12" font-weight="700" fill="#B99BE8">AI</text>
                 <text x="62" y="20" font-size="12" font-weight="700" fill="#9DB6E3">Commit</text>
@@ -200,7 +204,8 @@
                 <path d="M4 0H50V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#A571E6"/>
                 <rect x="50" width="70" height="30" fill="#28394E"/>
                 <path d="M120 0H186Q190 0 190 4V26Q190 30 186 30H120Z" fill="#263C32"/>
-                <path d="M50 0v30M120 0v30" stroke="#DBEAFE" opacity=".35"/>
+                <path d="M50 0v30" stroke="#DBEAFE" opacity=".35"/>
+                <path d="M120 0v30" stroke="#4B5563" opacity=".85"/>
                 <use href="#ai-mark" x="8" y="8" width="14" height="14" color="#D7E6FF"/>
                 <text x="27" y="20" font-size="12" font-weight="700" fill="#FFFFFF">AI</text>
                 <text x="62" y="20" font-size="12" font-weight="700" fill="#9DB6E3">Commit</text>
@@ -217,7 +222,8 @@
                 <path d="M4 0H50V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#A571E6"/>
                 <rect x="50" width="70" height="30" fill="#2F5AA0"/>
                 <path d="M120 0H186Q190 0 190 4V26Q190 30 186 30H120Z" fill="#263C32"/>
-                <path d="M50 0v30M120 0v30" stroke="#DBEAFE" opacity=".35"/>
+                <path d="M50 0v30" stroke="#E9F0FF" opacity=".35"/>
+                <path d="M120 0v30" stroke="#DBEAFE" opacity=".35"/>
                 <use href="#ai-mark" x="8" y="8" width="14" height="14" color="#D7E6FF"/>
                 <text x="27" y="20" font-size="12" font-weight="700" fill="#FFFFFF">AI</text>
                 <text x="62" y="20" font-size="12" font-weight="700" fill="#FFFFFF">Commit</text>
@@ -234,7 +240,7 @@
                 <path d="M4 0H50V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#A571E6"/>
                 <rect x="50" width="70" height="30" fill="#2F5AA0"/>
                 <path d="M120 0H186Q190 0 190 4V26Q190 30 186 30H120Z" fill="#2E9D50"/>
-                <path d="M50 0v30M120 0v30" stroke="#E9FFF3" opacity=".45"/>
+                <path d="M50 0v30M120 0v30" stroke="#E9F0FF" opacity=".35"/>
                 <use href="#ai-mark" x="8" y="8" width="14" height="14" color="#D7E6FF"/>
                 <text x="27" y="20" font-size="12" font-weight="700" fill="#FFFFFF">AI</text>
                 <text x="62" y="20" font-size="12" font-weight="700" fill="#FFFFFF">Commit</text>
@@ -251,7 +257,8 @@
                 <path d="M4 0H50V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#A571E6"/>
                 <rect x="50" width="70" height="30" fill="#28394E"/>
                 <path d="M120 0H186Q190 0 190 4V26Q190 30 186 30H120Z" fill="#263C32"/>
-                <path d="M50 0v30M120 0v30" stroke="#DBEAFE" opacity=".38"/>
+                <path d="M50 0v30" stroke="#DBEAFE" opacity=".35"/>
+                <path d="M120 0v30" stroke="#4B5563" opacity=".85"/>
                 <rect x="2" y="2" width="46" height="26" rx="3" fill="none" stroke="#D9EAFF" stroke-width="2"
                       stroke-linecap="round" stroke-dasharray="16 116">
                     <animate attributeName="stroke-dashoffset" values="0;-132" dur="1s" repeatCount="indefinite"/>
@@ -270,9 +277,10 @@
             <g transform="translate(142 0)">
                 <rect width="190" height="30" rx="4" fill="#2B3340"/>
                 <path d="M4 0H50V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#A571E6"/>
-                <rect x="50" width="70" height="30" fill="#2E5EC5"/>
+                <rect x="50" width="70" height="30" fill="#2F5AA0"/>
                 <path d="M120 0H186Q190 0 190 4V26Q190 30 186 30H120Z" fill="#263C32"/>
-                <path d="M50 0v30M120 0v30" stroke="#DBEAFE" opacity=".38"/>
+                <path d="M50 0v30" stroke="#E9F0FF" opacity=".35"/>
+                <path d="M120 0v30" stroke="#DBEAFE" opacity=".35"/>
                 <rect x="52" y="2" width="66" height="26" rx="1.5" fill="none" stroke="#D9EAFF" stroke-width="2"
                       stroke-linecap="round" stroke-dasharray="18 144">
                     <animate attributeName="stroke-dashoffset" values="0;-162" dur="1s" repeatCount="indefinite"/>
@@ -292,8 +300,8 @@
                 <rect width="190" height="30" rx="4" fill="#2B3340"/>
                 <path d="M4 0H50V30H4Q0 30 0 26V4Q0 0 4 0Z" fill="#A571E6"/>
                 <rect x="50" width="70" height="30" fill="#2F5AA0"/>
-                <path d="M120 0H186Q190 0 190 4V26Q190 30 186 30H120Z" fill="#238449"/>
-                <path d="M50 0v30M120 0v30" stroke="#DBEAFE" opacity=".38"/>
+                <path d="M120 0H186Q190 0 190 4V26Q190 30 186 30H120Z" fill="#2E9D50"/>
+                <path d="M50 0v30M120 0v30" stroke="#E9F0FF" opacity=".35"/>
                 <rect x="122" y="2" width="66" height="26" rx="3" fill="none" stroke="#D9FFE3" stroke-width="2"
                       stroke-linecap="round" stroke-dasharray="18 144">
                     <animate attributeName="stroke-dashoffset" values="0;-162" dur="1s" repeatCount="indefinite"/>

@@ -172,6 +172,39 @@ internal class AiCommitAllActionsTest {
     }
 
     @Test
+    fun `custom component keeps inactive divider passive while ai is running`() {
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = CapturingWorkflowStarter(),
+            availabilityProvider = StaticAvailabilityProvider(),
+            activityProvider = StaticActivityProvider(runningSection = AiCommitAllControlSection.Ai),
+        )
+        val event = testEvent(testDataContext(testProject()))
+
+        action.update(event)
+        val control = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).asControl()
+
+        val (aiCommitDivider, commitPushDivider) = control.dividerColorsForTest()
+        assertTrue(aiCommitDivider != commitPushDivider)
+    }
+
+    @Test
+    fun `custom component uses matching active dividers when all sections are highlighted`() {
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = CapturingWorkflowStarter(),
+            availabilityProvider = StaticAvailabilityProvider(),
+            activityProvider = StaticActivityProvider(),
+        )
+        val event = testEvent(testDataContext(testProject()))
+
+        action.update(event)
+        val control = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).asControl()
+        control.setHoverSectionForTest(AiCommitAllControlSection.Push)
+
+        val (aiCommitDivider, commitPushDivider) = control.dividerColorsForTest()
+        assertEquals(aiCommitDivider, commitPushDivider)
+    }
+
+    @Test
     fun `custom component paints segmented control`() {
         val action = AiCommitAllThreeSectionAction(
             workflowStarter = CapturingWorkflowStarter(),

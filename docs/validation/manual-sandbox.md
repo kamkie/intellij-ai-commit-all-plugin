@@ -37,6 +37,7 @@ The push scenario uses only repositories under the test temporary directory and 
 - `AI`, `Commit`, and `Push` section routing.
 - Cumulative section highlighting.
 - Disabled and running section state.
+- Divider shade selection for active-active, active-passive, and passive-passive section boundaries.
 - Nonblank custom rendering of the segmented control.
 
 ## Manual Sandbox Scenarios
@@ -55,7 +56,7 @@ Record manual results in this file or in a linked release validation report befo
 | T-VAL-011 | Ignored files are excluded. | `IIU`, plus representative non-IDEA IDE. | Not run in this automated task. | `.gitignore` content and absence from inclusion state. |
 | T-VAL-012 | `Commit` section commits after AI message generation. | `IIU`. | Not run in this automated task. | Generated message, resulting commit hash, no push attempted. |
 | T-VAL-013 | `Push` section pushes after a successful commit to a local remote. | `IIU`. | Not run in this automated task. | Local remote path, resulting commit hash, remote branch hash. |
-| T-VAL-014 | Three-section control renders passive, disabled, cumulative hover, and running states in light and dark themes. | `IIU`, plus representative non-IDEA IDE. | Not run in this automated task. | Theme names and screenshot or visual confirmation. |
+| T-VAL-014 | Three-section control renders passive, disabled, cumulative hover, running states, and inactive divider shades in light and dark themes. | `IIU`, plus representative non-IDEA IDE. | Not run in this automated task. | Theme names and screenshot or visual confirmation, including light `Clicked: Staging + AI` `Commit`/`Push` divider shade. |
 | T-VAL-015 | Missing or disabled JetBrains AI Assistant dependency fails installation or loading. | `IIU`. | Not run in this automated task. | Plugin manager or IDE log evidence. |
 | T-VAL-016 | AI Assistant present but unavailable or not signed in stops without commit or push. | `IIU`. | Not run in this automated task. | AI Assistant state, notification/error shown, git log unchanged. |
 | T-VAL-017 | Git staging area enabled and disabled both preserve intended inclusion. | `IIU`. | Not run in this automated task. | Staging setting state and inclusion result. |

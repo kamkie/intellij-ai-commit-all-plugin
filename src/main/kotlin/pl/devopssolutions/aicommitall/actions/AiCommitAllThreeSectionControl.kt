@@ -120,6 +120,14 @@ internal class AiCommitAllThreeSectionControl(
     internal fun highlightedSectionsForTest(): Set<AiCommitAllControlSection> =
         highlightedSections()
 
+    internal fun dividerColorsForTest(): Pair<Color, Color> {
+        val highlighted = highlightedSections()
+        return Pair(
+            dividerColor(AiCommitAllControlSection.Ai, AiCommitAllControlSection.Commit, highlighted),
+            dividerColor(AiCommitAllControlSection.Commit, AiCommitAllControlSection.Push, highlighted),
+        )
+    }
+
     private fun paintControl(graphics: Graphics2D) {
         val bounds = controlBounds()
         val sectionBounds = sectionBounds(bounds)
@@ -133,7 +141,7 @@ internal class AiCommitAllThreeSectionControl(
             graphics.fill(sectionShape(sectionRectangle, section))
         }
 
-        paintDividers(graphics, sectionBounds)
+        paintDividers(graphics, sectionBounds, highlighted)
         paintLabels(graphics, sectionBounds, highlighted)
         if (runningSection != null) {
             paintSnake(graphics, sectionBounds.getValue(runningSection), runningSection)
@@ -157,13 +165,15 @@ internal class AiCommitAllThreeSectionControl(
     private fun paintDividers(
         graphics: Graphics2D,
         sectionBounds: Map<AiCommitAllControlSection, Rectangle>,
+        highlighted: Set<AiCommitAllControlSection>,
     ) {
         val aiBounds = sectionBounds.getValue(AiCommitAllControlSection.Ai)
         val commitBounds = sectionBounds.getValue(AiCommitAllControlSection.Commit)
         val bounds = controlBounds()
-        graphics.color = ControlColors.divider
         graphics.stroke = BasicStroke(JBUI.scale(1).toFloat())
+        graphics.color = dividerColor(AiCommitAllControlSection.Ai, AiCommitAllControlSection.Commit, highlighted)
         graphics.drawLine(aiBounds.right, bounds.y, aiBounds.right, bounds.y + bounds.height)
+        graphics.color = dividerColor(AiCommitAllControlSection.Commit, AiCommitAllControlSection.Push, highlighted)
         graphics.drawLine(commitBounds.right, bounds.y, commitBounds.right, bounds.y + bounds.height)
     }
 
@@ -316,6 +326,26 @@ internal class AiCommitAllThreeSectionControl(
         } else {
             ControlColors.passiveForeground(section)
         }
+
+    private fun dividerColor(
+        leftSection: AiCommitAllControlSection,
+        rightSection: AiCommitAllControlSection,
+        highlighted: Set<AiCommitAllControlSection>,
+    ): Color {
+        if (state.runningSection == null &&
+            (!state.isSectionEnabled(leftSection) || !state.isSectionEnabled(rightSection))
+        ) {
+            return ControlColors.disabledDivider
+        }
+
+        val leftHighlighted = highlighted.contains(leftSection)
+        val rightHighlighted = highlighted.contains(rightSection)
+        return when {
+            leftHighlighted && rightHighlighted -> ControlColors.activeDivider
+            leftHighlighted || rightHighlighted -> ControlColors.activePassiveDivider
+            else -> ControlColors.passiveDivider
+        }
+    }
 
     private fun highlightedSections(): Set<AiCommitAllControlSection> {
         val activeSection = state.runningSection ?: hoverSection ?: return emptySet()
@@ -471,7 +501,10 @@ internal class AiCommitAllThreeSectionControl(
 
     private object ControlColors {
         val border = JBColor(Color(0xD1D5DB), Color(0x4B5563))
-        val divider = JBColor(Color(0xBF, 0xD5, 0xFF, 150), Color(0xDB, 0xEA, 0xFE, 90))
+        val activeDivider = JBColor(Color(0xE9, 0xF0, 0xFF, 110), Color(0xE9, 0xF0, 0xFF, 90))
+        val activePassiveDivider = JBColor(Color(0xDD, 0xE8, 0xFF, 150), Color(0xDB, 0xEA, 0xFE, 90))
+        val passiveDivider = JBColor(Color(0xCB, 0xD5, 0xE1, 190), Color(0x4B, 0x55, 0x63, 190))
+        val disabledDivider = JBColor(Color(0xC3CBD8), Color(0x4B5563))
         val activeForeground = JBColor(Color.WHITE, Color.WHITE)
         val disabledForeground = JBColor(Color(0x6B7280), Color(0x8792A1))
         val aiCommitSnake = JBColor(Color(0xD9EAFF), Color(0xD9EAFF))
