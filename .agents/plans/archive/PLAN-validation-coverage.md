@@ -2,13 +2,15 @@
 
 Plan-ID: PLAN-validation-coverage
 
-Status: Implemented
+Status: Closed
 
-Filename: `.agents/plans/PLAN-validation-coverage.md`
+Close-Reason: Archived
+
+Filename: `.agents/plans/archive/PLAN-validation-coverage.md`
 
 ## Readiness
 
-- Plan readiness: Approved; ready for implementation.
+- Plan readiness: Closed; archived by user request.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-15T04:23:08+02:00
 - Open questions: None.
@@ -20,6 +22,8 @@ Filename: `.agents/plans/PLAN-validation-coverage.md`
 - 2026-05-15T04:23:08+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
 - 2026-05-15T04:41:13+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; orchestrated implementation started.
 - 2026-05-15T06:39:50+02:00: In Progress -> Implemented by OpenAI Codex <codex@openai.com>; planned changes completed and validated.
+
+- 2026-05-17T22:40:44+02:00: Implemented -> Closed by Kamil Kiewisz <kamkie@outlook.com>; archived completed plan by user request.
 
 ## Goal
 

@@ -2,13 +2,15 @@
 
 Plan-ID: PLAN-pre-release-adr-implementation
 
-Status: Implemented
+Status: Closed
 
-Filename: `.agents/plans/PLAN-pre-release-adr-implementation.md`
+Close-Reason: Archived
+
+Filename: `.agents/plans/archive/PLAN-pre-release-adr-implementation.md`
 
 ## Readiness
 
-- Plan readiness: Ready for maintainer review; implementation must wait for explicit approval.
+- Plan readiness: Closed; archived by user request.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-17T19:45:43+02:00
 - Open questions: None.
@@ -20,6 +22,8 @@ Filename: `.agents/plans/PLAN-pre-release-adr-implementation.md`
 - 2026-05-17T19:45:43+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
 - 2026-05-17T19:45:43+02:00: Approved -> In Progress by Codex <codex@openai.com>; implementation started after approval.
 - 2026-05-17T20:25:39+02:00: In Progress -> Implemented by Codex <codex@openai.com>; Task 1 and Task 2 implementation and automated validation completed.
+
+- 2026-05-17T22:40:44+02:00: Implemented -> Closed by Kamil Kiewisz <kamkie@outlook.com>; archived completed plan by user request.
 
 ## Goal
 
@@ -111,4 +115,5 @@ Reference: ADR 0047 and `PROP-02-pre-release-ux` `E002`.
 - The plan was approved by the maintainer on 2026-05-17 and is being implemented sequentially.
 - 2026-05-17T19:50:02+02:00: Task 1 added five split-button draft SVGs, draft scoring notes, and a decision tree; `PROP-02` `E003` and `E004` are done while `E005` remains open until final draft selection ADR exists.
 - 2026-05-17T20:25:39+02:00: Task 2 added safe immediate push selection for tracked-upstream Git states, post-commit platform pusher execution, standard commit-and-push fallback, focused tests, Git4Idea dependency wiring, and user-facing documentation updates. `PROP-02` `E002` is done.
+- 2026-05-17T21:55:22+02:00: Maintainer feedback revised the split-button drafts toward an IntelliJ run-widget-like control: one rounded toolbar-like body, text primary segment, icon-forward push segment, straight divider, minimal middle gap, and primary/push hover-state examples. `PROP-02` `E005` remains blocked until a final draft is selected and recorded in an ADR.
 - Validation completed for Task 2: `.\gradlew.bat test --rerun-tasks --stacktrace`, `.\gradlew.bat buildPlugin --rerun-tasks --stacktrace`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1`, and `git diff --check`. Manual sandbox push-dialog and immediate-push checks remain release-preparation coverage.

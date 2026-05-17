@@ -17,21 +17,22 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- `PLAN-fastest-plan-execution` - Fastest Plan Execution ([PLAN-fastest-plan-execution.md](PLAN-fastest-plan-execution.md)).
-- `PLAN-commit-tool-window-actions` - Commit Tool Window Actions ([PLAN-commit-tool-window-actions.md](PLAN-commit-tool-window-actions.md)).
-- `PLAN-include-all-git-files` - Include All Git Files ([PLAN-include-all-git-files.md](PLAN-include-all-git-files.md)).
-- `PLAN-ai-assistant-message-generation` - AI Assistant Message Generation ([PLAN-ai-assistant-message-generation.md](PLAN-ai-assistant-message-generation.md)).
-- `PLAN-ai-generation-completion` - AI Generation Completion ([PLAN-ai-generation-completion.md](PLAN-ai-generation-completion.md)).
-- `PLAN-commit-and-push-execution` - Commit And Push Execution ([PLAN-commit-and-push-execution.md](PLAN-commit-and-push-execution.md)).
-- `PLAN-error-handling-ux` - Error Handling And UX ([PLAN-error-handling-ux.md](PLAN-error-handling-ux.md)).
-- `PLAN-validation-coverage` - Validation Coverage ([PLAN-validation-coverage.md](PLAN-validation-coverage.md)).
-- `PLAN-user-documentation` - User Documentation ([PLAN-user-documentation.md](PLAN-user-documentation.md)).
-- `PLAN-marketplace-ci-release` - Marketplace, CI, And Release Automation ([PLAN-marketplace-ci-release.md](PLAN-marketplace-ci-release.md)).
-- `PLAN-pre-release-adr-implementation` - Pre-Release ADR Implementation ([PLAN-pre-release-adr-implementation.md](PLAN-pre-release-adr-implementation.md)).
+- None.
 
 ## Archived Plans
 
 - `PLAN-scaffold-plugin-project` - Scaffold Plugin Project ([archive/PLAN-scaffold-plugin-project.md](archive/PLAN-scaffold-plugin-project.md)), archived as of 2026-05-15.
+- `PLAN-ai-assistant-message-generation` - AI Assistant Message Generation ([archive/PLAN-ai-assistant-message-generation.md](archive/PLAN-ai-assistant-message-generation.md)), archived as of 2026-05-17.
+- `PLAN-ai-generation-completion` - AI Generation Completion ([archive/PLAN-ai-generation-completion.md](archive/PLAN-ai-generation-completion.md)), archived as of 2026-05-17.
+- `PLAN-commit-and-push-execution` - Commit And Push Execution ([archive/PLAN-commit-and-push-execution.md](archive/PLAN-commit-and-push-execution.md)), archived as of 2026-05-17.
+- `PLAN-commit-tool-window-actions` - Commit Tool Window Actions ([archive/PLAN-commit-tool-window-actions.md](archive/PLAN-commit-tool-window-actions.md)), archived as of 2026-05-17.
+- `PLAN-error-handling-ux` - Error Handling And UX ([archive/PLAN-error-handling-ux.md](archive/PLAN-error-handling-ux.md)), archived as of 2026-05-17.
+- `PLAN-fastest-plan-execution` - Fastest Plan Execution ([archive/PLAN-fastest-plan-execution.md](archive/PLAN-fastest-plan-execution.md)), archived as of 2026-05-17.
+- `PLAN-include-all-git-files` - Include All Git Files ([archive/PLAN-include-all-git-files.md](archive/PLAN-include-all-git-files.md)), archived as of 2026-05-17.
+- `PLAN-marketplace-ci-release` - Marketplace, CI, And Release Automation ([archive/PLAN-marketplace-ci-release.md](archive/PLAN-marketplace-ci-release.md)), archived as of 2026-05-17.
+- `PLAN-pre-release-adr-implementation` - Pre-Release ADR Implementation ([archive/PLAN-pre-release-adr-implementation.md](archive/PLAN-pre-release-adr-implementation.md)), archived as of 2026-05-17.
+- `PLAN-user-documentation` - User Documentation ([archive/PLAN-user-documentation.md](archive/PLAN-user-documentation.md)), archived as of 2026-05-17.
+- `PLAN-validation-coverage` - Validation Coverage ([archive/PLAN-validation-coverage.md](archive/PLAN-validation-coverage.md)), archived as of 2026-05-17.
 
 ## Lifecycle
 
