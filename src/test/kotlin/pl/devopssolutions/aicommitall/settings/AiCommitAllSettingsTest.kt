@@ -11,6 +11,7 @@ internal class AiCommitAllSettingsTest {
 
         assertEquals(5_000, options.timeout.toMillis())
         assertEquals(500, options.checkInterval.toMillis())
+        assertEquals(true, AiCommitAllSettings().clearCommitMessageBeforeGeneration())
     }
 
     @Test
@@ -27,6 +28,7 @@ internal class AiCommitAllSettingsTest {
         val options = settings.completionOptions()
         assertEquals(5_000, options.timeout.toMillis())
         assertEquals(500, options.checkInterval.toMillis())
+        assertEquals(true, settings.clearCommitMessageBeforeGeneration())
     }
 
     @Test
@@ -41,6 +43,28 @@ internal class AiCommitAllSettingsTest {
         val options = settings.completionOptions()
         assertEquals(12_000, options.timeout.toMillis())
         assertEquals(250, options.checkInterval.toMillis())
+    }
+
+    @Test
+    fun `updates clear commit message before generation setting`() {
+        val settings = AiCommitAllSettings()
+
+        settings.updateClearCommitMessageBeforeGeneration(false)
+
+        assertEquals(false, settings.clearCommitMessageBeforeGeneration())
+    }
+
+    @Test
+    fun `preserves clear commit message setting when updating AI completion values`() {
+        val settings = AiCommitAllSettings()
+        settings.updateClearCommitMessageBeforeGeneration(false)
+
+        settings.updateCompletionOptions(
+            timeoutMillis = 12_000,
+            checkIntervalMillis = 250,
+        )
+
+        assertEquals(false, settings.clearCommitMessageBeforeGeneration())
     }
 
     @Test

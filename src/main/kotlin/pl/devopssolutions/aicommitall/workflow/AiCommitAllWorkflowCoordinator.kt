@@ -7,10 +7,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsDataKeys
 import pl.devopssolutions.aicommitall.ai.AiCommitMessageActionInvocationResult
 import pl.devopssolutions.aicommitall.ai.AiCommitMessageActionInvocationService
+import pl.devopssolutions.aicommitall.ai.AiCommitMessagePreparation
 import pl.devopssolutions.aicommitall.ai.AiGenerationActivityPhase
 import pl.devopssolutions.aicommitall.ai.AiGenerationActivityStateService
 import pl.devopssolutions.aicommitall.ai.AiGenerationCompletionResult
 import pl.devopssolutions.aicommitall.ai.AiGenerationCompletionService
+import pl.devopssolutions.aicommitall.settings.AiCommitAllSettings
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushService
 import java.awt.event.InputEvent
@@ -42,7 +44,11 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
             is CommitWorkflowSelectionResult.Prepared -> {
                 val activityToken = AiGenerationActivityStateService.getInstance(project).start(mode.activityPhase)
                 val completionService = AiGenerationCompletionService.getInstance(project)
-                val snapshot = completionService.captureInitialMessage(workflowUi.commitMessageUi)
+                val snapshot = AiCommitMessagePreparation.prepareInitialSnapshot(
+                    commitMessageUi = workflowUi.commitMessageUi,
+                    clearBeforeGeneration = AiCommitAllSettings.getInstance()
+                        .clearCommitMessageBeforeGeneration(),
+                )
                 when (val invocation = AiCommitMessageActionInvocationService.getInstance(project)
                     .invokeCommitMessageGeneration(
                         workflowHandler = workflowHandler,

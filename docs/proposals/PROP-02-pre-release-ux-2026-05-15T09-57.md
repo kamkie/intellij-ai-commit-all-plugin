@@ -40,7 +40,7 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 | Id   | Title                                                    | Priority | Status  | Decision |
 |------|----------------------------------------------------------|----------|---------|----------|
-| E001 | Clear the commit message before AI generation            | 1        | open    | accepted |
+| E001 | Clear the commit message before AI generation            | 1        | done    | accepted |
 | E002 | Skip the push dialog only when safe                      | 1        | done    | accepted |
 | E003 | Capture split-button design intent                       | 1        | done    | accepted |
 | E004 | Run split-button visual draft experiments                | 2        | done    | accepted |
@@ -65,13 +65,13 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 - Proposal: Default both `AI Commit All` and `& Push` to clear the commit message before invoking AI generation. Add a settings toggle defaulting to enabled, and ensure the programmatic clear is not treated as a user edit.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 1
 owner:
-updated: 2026-05-15T11:31:11+02:00
+updated: 2026-05-18T01:09:34+02:00
 accepted_at: 2026-05-15T11:31:11+02:00
-comment: "Source: PROP-plugin-default-settings E1."
+comment: "Implemented by clearing stale commit-message text before AI generation by default, with a settings toggle to preserve existing text."
 ```
 
 ### E002. Skip the push dialog only when safe
@@ -150,9 +150,9 @@ status: blocked
 decision: accepted
 priority: 3
 owner:
-updated: 2026-05-17T21:07:47+02:00
+updated: 2026-05-18T01:05:37+02:00
 accepted_at: 2026-05-15T11:43:16+02:00
-comment: "Source: PROP-plugin-default-settings E3. Blocked until runtime behavior from E001 is settled."
+comment: "Source: PROP-plugin-default-settings E3. Proposed ADR 0054 created; implementation waits for maintainer acceptance and must include a settings opt-out."
 ```
 
 ## Duplications To Remove Or Reduce

@@ -20,6 +20,7 @@ The current implementation:
 - Supports both changelist-backed commit workflows and the Git staging-area commit workflow.
 - Excludes ignored files through IntelliJ VCS APIs.
 - Invokes JetBrains AI Assistant commit-message generation through the IntelliJ action system.
+- Clears stale commit-message text before AI generation by default.
 - Lets the `AI` section stop after AI generation without committing.
 - Waits for AI generation to complete before the `Commit` or `Push` sections continue.
 - Stops without committing or pushing when AI generation times out, produces an empty or unchanged message, or the user edits the message while generation is running.
@@ -86,8 +87,9 @@ Open `Settings | Tools | AI Commit All` to configure:
 
 - AI generation timeout, default `5000` ms.
 - Completion check interval, default `500` ms.
+- Clear commit message before AI generation, default enabled.
 
-Both values must be positive. Timeout and user-edit paths stop without committing or pushing.
+Both timing values must be positive. Timeout and user-edit paths stop without committing or pushing.
 
 ## Known Limitations
 

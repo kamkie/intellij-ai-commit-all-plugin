@@ -25,24 +25,35 @@ internal class AiCommitAllSettings : PersistentStateComponent<AiCommitAllSetting
     fun completionOptions(): AiGenerationCompletionOptions =
         settingsState.normalized().toCompletionOptions()
 
+    fun clearCommitMessageBeforeGeneration(): Boolean =
+        settingsState.normalized().clearCommitMessageBeforeGeneration
+
     fun updateCompletionOptions(timeoutMillis: Long, checkIntervalMillis: Long) {
         require(timeoutMillis > 0) { "AI generation timeout must be positive." }
         require(checkIntervalMillis > 0) { "AI generation completion-check interval must be positive." }
-        settingsState = State(
+        settingsState = settingsState.normalized().copy(
             aiGenerationTimeoutMillis = timeoutMillis,
             completionCheckIntervalMillis = checkIntervalMillis,
+        )
+    }
+
+    fun updateClearCommitMessageBeforeGeneration(enabled: Boolean) {
+        settingsState = settingsState.normalized().copy(
+            clearCommitMessageBeforeGeneration = enabled,
         )
     }
 
     data class State(
         var aiGenerationTimeoutMillis: Long = DEFAULT_TIMEOUT_MILLIS,
         var completionCheckIntervalMillis: Long = DEFAULT_CHECK_INTERVAL_MILLIS,
+        var clearCommitMessageBeforeGeneration: Boolean = DEFAULT_CLEAR_COMMIT_MESSAGE_BEFORE_GENERATION,
     ) {
         fun normalized(): State =
             State(
                 aiGenerationTimeoutMillis = aiGenerationTimeoutMillis.takeIf { it > 0 } ?: DEFAULT_TIMEOUT_MILLIS,
                 completionCheckIntervalMillis = completionCheckIntervalMillis.takeIf { it > 0 }
                     ?: DEFAULT_CHECK_INTERVAL_MILLIS,
+                clearCommitMessageBeforeGeneration = clearCommitMessageBeforeGeneration,
             )
 
         fun toCompletionOptions(): AiGenerationCompletionOptions =
@@ -58,6 +69,7 @@ internal class AiCommitAllSettings : PersistentStateComponent<AiCommitAllSetting
         const val DISPLAY_NAME: String = "AI Commit All"
         val DEFAULT_TIMEOUT_MILLIS: Long = defaults.timeout.toMillis()
         val DEFAULT_CHECK_INTERVAL_MILLIS: Long = defaults.checkInterval.toMillis()
+        const val DEFAULT_CLEAR_COMMIT_MESSAGE_BEFORE_GENERATION: Boolean = true
 
         fun getInstance(): AiCommitAllSettings = service()
     }

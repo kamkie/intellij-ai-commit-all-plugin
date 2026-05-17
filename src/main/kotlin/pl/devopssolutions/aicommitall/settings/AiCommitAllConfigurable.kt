@@ -5,6 +5,7 @@ import com.intellij.openapi.options.SearchableConfigurable
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import javax.swing.JComponent
+import javax.swing.JCheckBox
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JSpinner
@@ -14,32 +15,42 @@ internal class AiCommitAllConfigurable : SearchableConfigurable {
     private var panel: JPanel? = null
     private var timeoutSpinner: JSpinner? = null
     private var checkIntervalSpinner: JSpinner? = null
+    private var clearCommitMessageCheckBox: JCheckBox? = null
 
     override fun getId(): String = AiCommitAllSettings.SETTINGS_ID
 
     override fun getDisplayName(): String = AiCommitAllSettings.DISPLAY_NAME
 
     override fun createComponent(): JComponent {
-        val settings = AiCommitAllSettings.getInstance().completionOptions()
-        timeoutSpinner = millisSpinner(settings.timeout.toMillis())
-        checkIntervalSpinner = millisSpinner(settings.checkInterval.toMillis())
+        val settings = AiCommitAllSettings.getInstance()
+        val completionOptions = settings.completionOptions()
+        timeoutSpinner = millisSpinner(completionOptions.timeout.toMillis())
+        checkIntervalSpinner = millisSpinner(completionOptions.checkInterval.toMillis())
+        clearCommitMessageCheckBox = JCheckBox(
+            "Clear commit message before AI generation",
+            settings.clearCommitMessageBeforeGeneration(),
+        )
 
         panel = JPanel(GridBagLayout()).apply {
             add(
+                requireNotNull(clearCommitMessageCheckBox),
+                constraints(row = 0, column = 0, width = 2),
+            )
+            add(
                 JLabel("AI generation timeout (ms)"),
-                constraints(row = 0, column = 0),
-            )
-            add(
-                requireNotNull(timeoutSpinner),
-                constraints(row = 0, column = 1),
-            )
-            add(
-                JLabel("Completion check interval (ms)"),
                 constraints(row = 1, column = 0),
             )
             add(
-                requireNotNull(checkIntervalSpinner),
+                requireNotNull(timeoutSpinner),
                 constraints(row = 1, column = 1),
+            )
+            add(
+                JLabel("Completion check interval (ms)"),
+                constraints(row = 2, column = 0),
+            )
+            add(
+                requireNotNull(checkIntervalSpinner),
+                constraints(row = 2, column = 1),
             )
         }
 
@@ -47,9 +58,11 @@ internal class AiCommitAllConfigurable : SearchableConfigurable {
     }
 
     override fun isModified(): Boolean {
-        val settings = AiCommitAllSettings.getInstance().completionOptions()
-        return timeoutSpinner?.longValue() != settings.timeout.toMillis() ||
-            checkIntervalSpinner?.longValue() != settings.checkInterval.toMillis()
+        val settings = AiCommitAllSettings.getInstance()
+        val completionOptions = settings.completionOptions()
+        return timeoutSpinner?.longValue() != completionOptions.timeout.toMillis() ||
+            checkIntervalSpinner?.longValue() != completionOptions.checkInterval.toMillis() ||
+            clearCommitMessageCheckBox?.isSelected != settings.clearCommitMessageBeforeGeneration()
     }
 
     override fun apply() {
@@ -67,18 +80,24 @@ internal class AiCommitAllConfigurable : SearchableConfigurable {
             timeoutMillis = timeoutMillis,
             checkIntervalMillis = checkIntervalMillis,
         )
+        AiCommitAllSettings.getInstance().updateClearCommitMessageBeforeGeneration(
+            enabled = clearCommitMessageCheckBox?.isSelected ?: return,
+        )
     }
 
     override fun reset() {
-        val settings = AiCommitAllSettings.getInstance().completionOptions()
-        timeoutSpinner?.value = settings.timeout.toMillis()
-        checkIntervalSpinner?.value = settings.checkInterval.toMillis()
+        val settings = AiCommitAllSettings.getInstance()
+        val completionOptions = settings.completionOptions()
+        timeoutSpinner?.value = completionOptions.timeout.toMillis()
+        checkIntervalSpinner?.value = completionOptions.checkInterval.toMillis()
+        clearCommitMessageCheckBox?.isSelected = settings.clearCommitMessageBeforeGeneration()
     }
 
     override fun disposeUIResources() {
         panel = null
         timeoutSpinner = null
         checkIntervalSpinner = null
+        clearCommitMessageCheckBox = null
     }
 
     private fun millisSpinner(value: Long): JSpinner =
@@ -94,13 +113,14 @@ internal class AiCommitAllConfigurable : SearchableConfigurable {
     private fun JSpinner.longValue(): Long =
         (value as Number).toLong()
 
-    private fun constraints(row: Int, column: Int): GridBagConstraints =
+    private fun constraints(row: Int, column: Int, width: Int = 1): GridBagConstraints =
         GridBagConstraints().apply {
             gridx = column
             gridy = row
+            gridwidth = width
             anchor = GridBagConstraints.WEST
-            fill = if (column == 1) GridBagConstraints.HORIZONTAL else GridBagConstraints.NONE
-            weightx = if (column == 1) 1.0 else 0.0
+            fill = if (column == 1 || width > 1) GridBagConstraints.HORIZONTAL else GridBagConstraints.NONE
+            weightx = if (column == 1 || width > 1) 1.0 else 0.0
             insets = java.awt.Insets(4, 4, 4, 4)
         }
 
