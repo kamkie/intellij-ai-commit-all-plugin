@@ -10,6 +10,8 @@ import pl.devopssolutions.aicommitall.ai.AiCommitMessageActionInvocationService
 import pl.devopssolutions.aicommitall.ai.AiGenerationActivityStateService
 import pl.devopssolutions.aicommitall.ai.AiGenerationCompletionResult
 import pl.devopssolutions.aicommitall.ai.AiGenerationCompletionService
+import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushService
 import java.awt.event.InputEvent
 import java.util.concurrent.CompletableFuture
 
@@ -57,7 +59,12 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
                             if (throwable != null) {
                                 stoppedResult(AiCommitAllWorkflowStopReason.AiCompletionFailed)
                             } else {
-                                completeAfterAiGeneration(mode, workflowHandler, completionResult)
+                                completeAfterAiGeneration(
+                                    mode = mode,
+                                    workflowHandler = workflowHandler,
+                                    selection = selectionResult.selection,
+                                    completionResult = completionResult,
+                                )
                             }
                         }
                     AiCommitMessageActionInvocationResult.MissingAction -> {
@@ -84,11 +91,12 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
     private fun completeAfterAiGeneration(
         mode: AiCommitAllWorkflowMode,
         workflowHandler: com.intellij.vcs.commit.CommitWorkflowHandler,
+        selection: GitChangeSelection,
         completionResult: AiGenerationCompletionResult,
     ): AiCommitAllWorkflowResult =
         when (completionResult) {
             is AiGenerationCompletionResult.Completed ->
-                executeCompletedWorkflow(mode, workflowHandler)
+                executeCompletedWorkflow(mode, workflowHandler, selection)
             is AiGenerationCompletionResult.Timeout ->
                 stoppedResult(AiCommitAllWorkflowStopReason.AiTimeout)
             AiGenerationCompletionResult.EmptyMessage ->
@@ -104,6 +112,7 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
     private fun executeCompletedWorkflow(
         mode: AiCommitAllWorkflowMode,
         workflowHandler: com.intellij.vcs.commit.CommitWorkflowHandler,
+        selection: GitChangeSelection,
     ): AiCommitAllWorkflowResult =
         when (mode) {
             AiCommitAllWorkflowMode.Commit ->
@@ -112,7 +121,11 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
                     .toWorkflowResult(AiCommitAllWorkflowStopReason.CommitExecutionUnavailable)
             AiCommitAllWorkflowMode.CommitAndPush ->
                 CommitWorkflowExecutionService.getInstance(project)
-                    .executeCommitAndPush(workflowHandler)
+                    .executeCommitAndPush(
+                        workflowHandler = workflowHandler,
+                        selection = selection,
+                        safeImmediatePushSupport = SafeImmediatePushService.getInstance(project),
+                    )
                     .toWorkflowResult(AiCommitAllWorkflowStopReason.PushExecutionUnavailable)
         }
 

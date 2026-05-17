@@ -18,6 +18,7 @@ val pluginVerifierIdeVersions = providers.gradleProperty("pluginVerifierIdeVersi
 dependencies {
     intellijPlatform {
         intellijIdea(providers.gradleProperty("platformVersion").get())
+        bundledPlugin("Git4Idea")
         plugin(
             providers.gradleProperty("aiAssistantPluginId").get(),
             providers.gradleProperty("aiAssistantPluginVersion").get(),
@@ -59,7 +60,7 @@ intellijPlatform {
         version = providers.gradleProperty("pluginVersion").get()
         description = """
             <p>AI Commit All adds an AI-assisted Commit tool window workflow for Git projects.</p>
-            <p>The split-button action selects every non-ignored committable Git change, asks JetBrains AI Assistant to generate the commit message, then commits through the standard IntelliJ commit workflow. The push segment uses the IDE commit-and-push executor.</p>
+            <p>The split-button action selects every non-ignored committable Git change, asks JetBrains AI Assistant to generate the commit message, then commits through the standard IntelliJ commit workflow. The push segment pushes immediately only for safe tracked-upstream Git states and otherwise falls back to the IDE commit-and-push executor.</p>
             <p>Source code: <a href="https://github.com/kamkie/intellij-ai-commit-all-plugin">https://github.com/kamkie/intellij-ai-commit-all-plugin</a></p>
         """.trimIndent()
         changeNotes = """
@@ -69,7 +70,7 @@ intellijPlatform {
                 <li>Selects non-ignored Git changes across changelists and Git roots, including unversioned and resolved-conflict files.</li>
                 <li>Invokes JetBrains AI Assistant commit-message generation through the IntelliJ action system and waits for completion.</li>
                 <li>Stops without committing when AI generation times out, remains running, produces no usable message, or the user edits the message.</li>
-                <li>Commits and commits-and-pushes through the standard IntelliJ workflow executors so IDE checks, warnings, commit errors, and push errors stay in charge.</li>
+                <li>Commits through the standard IntelliJ workflow and pushes immediately only when the tracked-upstream Git state is safe; otherwise falls back to the IDE commit-and-push executor.</li>
                 <li>Adds settings, validation tests, pull-request CI, Plugin Verifier CI, signing configuration, and gated Marketplace publishing automation.</li>
             </ul>
         """.trimIndent()

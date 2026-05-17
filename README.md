@@ -5,7 +5,7 @@ AI Commit All is an IntelliJ Platform plugin for committing every non-ignored Gi
 The Commit tool window gets an `AI Commit All` split-button group:
 
 - `AI Commit All` generates a commit message and commits all eligible Git changes.
-- `& Push` generates a commit message, commits all eligible Git changes, and then uses the IDE commit-and-push executor.
+- `& Push` generates a commit message, commits all eligible Git changes, and pushes immediately only when the Git state is safe and unambiguous; otherwise it falls back to the IDE commit-and-push executor.
 
 ## Current Status
 
@@ -21,6 +21,7 @@ The current implementation:
 - Waits for AI generation to complete before committing.
 - Stops without committing or pushing when AI generation times out, produces an empty or unchanged message, or the user edits the message while generation is running.
 - Executes commit and commit-and-push through the active IntelliJ commit workflow so IDE before-commit checks, confirmations, warnings, commit errors, and push errors stay in charge.
+- Skips the Push Commits dialog only when every affected Git root is on a normal tracked branch, the local branch exactly matches its tracked upstream before the commit, and the target is the standard tracked branch.
 
 Manual sandbox validation is tracked in [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
 
@@ -70,6 +71,8 @@ Pull-request CI runs `test`, `verifyPluginStructure`, and `buildPlugin` without 
 5. Use `AI Commit All` for commit-only, or `& Push` for commit-and-push.
 
 The actions are hidden outside an active supported Git commit workflow. They are disabled when no non-ignored committable Git files are available or when the required workflow executor is unavailable.
+
+For `& Push`, missing upstreams, unresolved conflicts, non-normal Git states, ambiguous targets, protected targets, or already-diverged local and upstream branches use the standard IDE commit-and-push executor and Push Commits dialog.
 
 ## Settings
 

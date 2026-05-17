@@ -41,7 +41,7 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 | Id   | Title                                                    | Priority | Status | Decision |
 |------|----------------------------------------------------------|----------|--------|----------|
 | E001 | Clear the commit message before AI generation            | 1        | open   | accepted |
-| E002 | Skip the push dialog only when safe                      | 1        | open   | accepted |
+| E002 | Skip the push dialog only when safe                      | 1        | done   | accepted |
 | E003 | Capture split-button design intent                       | 1        | done   | accepted |
 | E004 | Run split-button visual draft experiments                | 2        | done   | accepted |
 | E005 | Add a split-button decision tree and final-selection ADR | 2        | open   | accepted |
@@ -79,13 +79,13 @@ comment: "Source: PROP-plugin-default-settings E1."
 - Proposal: Default `& Push` to push immediately only when the repository state is safe: tracked upstreams are available, no force push is needed, no unresolved conflicts exist, and multi-root behavior is unambiguous. Fall back to the standard dialog otherwise. Record the narrowed behavior in a new ADR that explicitly relates to ADR 0017.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 1
 owner:
-updated: 2026-05-15T11:43:16+02:00
+updated: 2026-05-17T20:24:11+02:00
 accepted_at: 2026-05-15T11:43:16+02:00
-comment: "Source: PROP-plugin-default-settings E2."
+comment: "Safe immediate push implemented for tracked-upstream Git states with standard commit-and-push fallback."
 ```
 
 ### E003. Capture split-button design intent

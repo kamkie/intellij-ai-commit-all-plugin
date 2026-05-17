@@ -6,10 +6,16 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.vcs.commit.CommitExecutorListener
 import com.intellij.vcs.commit.CommitWorkflowHandler
+import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushDecision
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushFallbackReason
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushSupport
 
 @Service(Service.Level.PROJECT)
 internal class CommitWorkflowExecutionService(
     private val scheduler: CommitWorkflowExecutionScheduler = IntellijCommitWorkflowExecutionScheduler,
+    private val safeImmediatePushSupport: SafeImmediatePushSupport = FallbackSafeImmediatePushSupport,
+    private val postCommitPushRegistrar: PostCommitPushRegistrar = IntellijPostCommitPushRegistrar,
 ) {
     fun canExecuteCommit(workflowHandler: CommitWorkflowHandler?): Boolean =
         workflowHandler is CommitExecutorListener
@@ -37,7 +43,11 @@ internal class CommitWorkflowExecutionService(
         return workflowHandler.isExecutorEnabled(executor)
     }
 
-    fun executeCommitAndPush(workflowHandler: CommitWorkflowHandler?): CommitWorkflowExecutionResult {
+    fun executeCommitAndPush(
+        workflowHandler: CommitWorkflowHandler?,
+        selection: GitChangeSelection? = null,
+        safeImmediatePushSupport: SafeImmediatePushSupport = this.safeImmediatePushSupport,
+    ): CommitWorkflowExecutionResult {
         if (workflowHandler == null) {
             return CommitWorkflowExecutionResult.MissingWorkflow
         }
@@ -50,10 +60,42 @@ internal class CommitWorkflowExecutionService(
 
         scheduler.schedule {
             if (workflowHandler.isExecutorEnabled(executor)) {
-                workflowHandler.execute(executor)
+                val immediatePushStarted = selection != null &&
+                    executeImmediatePushWhenSafe(
+                        workflowHandler = workflowHandler,
+                        selection = selection,
+                        safeImmediatePushSupport = safeImmediatePushSupport,
+                    )
+                if (!immediatePushStarted) {
+                    workflowHandler.execute(executor)
+                }
             }
         }
         return CommitWorkflowExecutionResult.Started
+    }
+
+    private fun executeImmediatePushWhenSafe(
+        workflowHandler: CommitWorkflowHandler,
+        selection: GitChangeSelection,
+        safeImmediatePushSupport: SafeImmediatePushSupport,
+    ): Boolean {
+        val executorListener = workflowHandler as? CommitExecutorListener
+            ?: return false
+        val decision = safeImmediatePushSupport.prepare(selection)
+        if (decision !is SafeImmediatePushDecision.Immediate) {
+            return false
+        }
+
+        val registration = postCommitPushRegistrar.register(workflowHandler, decision.plan)
+            ?: return false
+
+        try {
+            executorListener.executorCalled(null)
+        } catch (throwable: Throwable) {
+            registration.dispose()
+            throw throwable
+        }
+        return true
     }
 
     companion object {
@@ -61,6 +103,11 @@ internal class CommitWorkflowExecutionService(
 
         private const val GIT_COMMIT_AND_PUSH_EXECUTOR_ID = "Git.Commit.And.Push.Executor"
     }
+}
+
+private object FallbackSafeImmediatePushSupport : SafeImmediatePushSupport {
+    override fun prepare(selection: GitChangeSelection): SafeImmediatePushDecision =
+        SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.UnsupportedPushApi)
 }
 
 internal fun interface CommitWorkflowExecutionScheduler {

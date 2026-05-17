@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-pre-release-adr-implementation
 
-Status: In Progress
+Status: Implemented
 
 Filename: `.agents/plans/PLAN-pre-release-adr-implementation.md`
 
@@ -12,13 +12,14 @@ Filename: `.agents/plans/PLAN-pre-release-adr-implementation.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-17T19:45:43+02:00
 - Open questions: None.
-- Implementation progress: Task 1 complete; Task 2 not started.
+- Implementation progress: Task 1 and Task 2 complete; automated validation passed.
 
 ## Status History
 
 - 2026-05-17T19:41:06+02:00: none -> Draft by Codex <codex@openai.com>; plan created for ADR 0025 and ADR 0047 implementation.
 - 2026-05-17T19:45:43+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
 - 2026-05-17T19:45:43+02:00: Approved -> In Progress by Codex <codex@openai.com>; implementation started after approval.
+- 2026-05-17T20:25:39+02:00: In Progress -> Implemented by Codex <codex@openai.com>; Task 1 and Task 2 implementation and automated validation completed.
 
 ## Goal
 
@@ -109,3 +110,5 @@ Reference: ADR 0047 and `PROP-02-pre-release-ux` `E002`.
 - The worktree already contains ADR 0047 acceptance and `PROP-02` tracker consistency changes from prior steps.
 - The plan was approved by the maintainer on 2026-05-17 and is being implemented sequentially.
 - 2026-05-17T19:50:02+02:00: Task 1 added five split-button draft SVGs, draft scoring notes, and a decision tree; `PROP-02` `E003` and `E004` are done while `E005` remains open until final draft selection ADR exists.
+- 2026-05-17T20:25:39+02:00: Task 2 added safe immediate push selection for tracked-upstream Git states, post-commit platform pusher execution, standard commit-and-push fallback, focused tests, Git4Idea dependency wiring, and user-facing documentation updates. `PROP-02` `E002` is done.
+- Validation completed for Task 2: `.\gradlew.bat test --rerun-tasks --stacktrace`, `.\gradlew.bat buildPlugin --rerun-tasks --stacktrace`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1`, and `git diff --check`. Manual sandbox push-dialog and immediate-push checks remain release-preparation coverage.

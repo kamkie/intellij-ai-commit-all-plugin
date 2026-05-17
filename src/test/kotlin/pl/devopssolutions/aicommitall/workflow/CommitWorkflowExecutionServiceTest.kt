@@ -5,6 +5,11 @@ import com.intellij.vcs.commit.AmendCommitHandler
 import com.intellij.vcs.commit.CommitExecutorListener
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowHandlerState
+import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushDecision
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushFallbackReason
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushPlan
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushSupport
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -81,6 +86,104 @@ internal class CommitWorkflowExecutionServiceTest {
 
         scheduler.runScheduledActions()
 
+        assertEquals(1, workflowHandler.executeCallCount)
+        assertSame(TestCommitAndPushExecutor, workflowHandler.executedExecutor)
+        assertEquals(0, workflowHandler.executorCallCount)
+    }
+
+    @Test
+    fun `starts safe immediate push through default commit and post-commit push listener`() {
+        val scheduler = CapturingScheduler()
+        val pushPlan = CapturingSafeImmediatePushPlan()
+        val registrar = CapturingPostCommitPushRegistrar()
+        val service = CommitWorkflowExecutionService(
+            scheduler = scheduler,
+            safeImmediatePushSupport = TestSafeImmediatePushSupport(
+                SafeImmediatePushDecision.Immediate(pushPlan),
+            ),
+            postCommitPushRegistrar = registrar,
+        )
+        val workflowHandler = CapturingCommitWorkflowHandler(
+            commitAndPushExecutor = TestCommitAndPushExecutor,
+            commitAndPushEnabled = true,
+        )
+
+        val result = service.executeCommitAndPush(
+            workflowHandler = workflowHandler,
+            selection = GitChangeSelection(emptyList()),
+        )
+
+        assertEquals(CommitWorkflowExecutionResult.Started, result)
+
+        scheduler.runScheduledActions()
+
+        assertEquals(1, registrar.registerCallCount)
+        assertSame(pushPlan, registrar.pushPlan)
+        assertEquals(1, workflowHandler.executorCallCount)
+        assertNull(workflowHandler.executor)
+        assertEquals(0, workflowHandler.executeCallCount)
+        assertEquals(0, pushPlan.pushCallCount)
+
+        registrar.pushPlan?.push()
+
+        assertEquals(1, pushPlan.pushCallCount)
+    }
+
+    @Test
+    fun `falls back to Git commit and push executor when safe immediate push is unavailable`() {
+        val scheduler = CapturingScheduler()
+        val service = CommitWorkflowExecutionService(
+            scheduler = scheduler,
+            safeImmediatePushSupport = TestSafeImmediatePushSupport(
+                SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.MissingTrackedUpstream),
+            ),
+            postCommitPushRegistrar = CapturingPostCommitPushRegistrar(),
+        )
+        val workflowHandler = CapturingCommitWorkflowHandler(
+            commitAndPushExecutor = TestCommitAndPushExecutor,
+            commitAndPushEnabled = true,
+        )
+
+        val result = service.executeCommitAndPush(
+            workflowHandler = workflowHandler,
+            selection = GitChangeSelection(emptyList()),
+        )
+
+        assertEquals(CommitWorkflowExecutionResult.Started, result)
+
+        scheduler.runScheduledActions()
+
+        assertEquals(1, workflowHandler.executeCallCount)
+        assertSame(TestCommitAndPushExecutor, workflowHandler.executedExecutor)
+        assertEquals(0, workflowHandler.executorCallCount)
+    }
+
+    @Test
+    fun `falls back to Git commit and push executor when post-commit listener cannot be registered`() {
+        val scheduler = CapturingScheduler()
+        val registrar = CapturingPostCommitPushRegistrar(registered = false)
+        val service = CommitWorkflowExecutionService(
+            scheduler = scheduler,
+            safeImmediatePushSupport = TestSafeImmediatePushSupport(
+                SafeImmediatePushDecision.Immediate(CapturingSafeImmediatePushPlan()),
+            ),
+            postCommitPushRegistrar = registrar,
+        )
+        val workflowHandler = CapturingCommitWorkflowHandler(
+            commitAndPushExecutor = TestCommitAndPushExecutor,
+            commitAndPushEnabled = true,
+        )
+
+        val result = service.executeCommitAndPush(
+            workflowHandler = workflowHandler,
+            selection = GitChangeSelection(emptyList()),
+        )
+
+        assertEquals(CommitWorkflowExecutionResult.Started, result)
+
+        scheduler.runScheduledActions()
+
+        assertEquals(1, registrar.registerCallCount)
         assertEquals(1, workflowHandler.executeCallCount)
         assertSame(TestCommitAndPushExecutor, workflowHandler.executedExecutor)
         assertEquals(0, workflowHandler.executorCallCount)
@@ -171,6 +274,40 @@ internal class CommitWorkflowExecutionServiceTest {
 
         fun runScheduledActions() {
             actions.forEach { action -> action() }
+        }
+    }
+
+    private class TestSafeImmediatePushSupport(
+        private val decision: SafeImmediatePushDecision,
+    ) : SafeImmediatePushSupport {
+        override fun prepare(selection: GitChangeSelection): SafeImmediatePushDecision = decision
+    }
+
+    private class CapturingSafeImmediatePushPlan : SafeImmediatePushPlan {
+        var pushCallCount = 0
+
+        override fun push() {
+            pushCallCount++
+        }
+    }
+
+    private class CapturingPostCommitPushRegistrar(
+        private val registered: Boolean = true,
+    ) : PostCommitPushRegistrar {
+        var registerCallCount = 0
+        var pushPlan: SafeImmediatePushPlan? = null
+
+        override fun register(
+            workflowHandler: CommitWorkflowHandler,
+            pushPlan: SafeImmediatePushPlan,
+        ): PostCommitPushRegistration? {
+            registerCallCount++
+            this.pushPlan = pushPlan
+            return if (registered) {
+                PostCommitPushRegistration { }
+            } else {
+                null
+            }
         }
     }
 
