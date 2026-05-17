@@ -12,6 +12,10 @@ Notation:
 
 ## Open Backlog
 
+### Gui changes
+
+- [ ] T-UI-002: move button to the right of the `Commit and Push...` button.
+
 ### Three-Section AI Commit Push Control
 
 - [x] T-ACTIONS-009: Replace the current `AI Commit All` / `& Push` Commit tool window control with the ADR 0052 three-section `<AI icon> AI | Commit | Push` control. (Plan `PLAN-three-section-ai-commit-push-control`, ADR 0052)

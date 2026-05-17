@@ -17,10 +17,11 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- `PLAN-three-section-ai-commit-push-control` - Three-Section AI Commit Push Control ([PLAN-three-section-ai-commit-push-control.md](PLAN-three-section-ai-commit-push-control.md)), implemented as of 2026-05-18.
+_No active plans._
 
 ## Archived Plans
 
+- `PLAN-three-section-ai-commit-push-control` - Three-Section AI Commit Push Control ([archive/PLAN-three-section-ai-commit-push-control.md](archive/PLAN-three-section-ai-commit-push-control.md)), archived as of 2026-05-18.
 - `PLAN-scaffold-plugin-project` - Scaffold Plugin Project ([archive/PLAN-scaffold-plugin-project.md](archive/PLAN-scaffold-plugin-project.md)), archived as of 2026-05-15.
 - `PLAN-ai-assistant-message-generation` - AI Assistant Message Generation ([archive/PLAN-ai-assistant-message-generation.md](archive/PLAN-ai-assistant-message-generation.md)), archived as of 2026-05-17.
 - `PLAN-ai-generation-completion` - AI Generation Completion ([archive/PLAN-ai-generation-completion.md](archive/PLAN-ai-generation-completion.md)), archived as of 2026-05-17.

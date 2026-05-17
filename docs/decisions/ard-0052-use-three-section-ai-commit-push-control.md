@@ -100,4 +100,4 @@ Compliance should be checked by implementation review and validation that covers
 
 - Source request: maintainer asked for a three-section button with `<icon> AI | Commit | Push`.
 - Related proposal: `docs/proposals/PROP-02-pre-release-ux-2026-05-15T09-57.md` `E005`.
-- Runtime implementation is planned by `.agents/plans/PLAN-three-section-ai-commit-push-control.md`.
+- Runtime implementation was completed by `.agents/plans/archive/PLAN-three-section-ai-commit-push-control.md`.

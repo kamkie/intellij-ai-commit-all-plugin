@@ -2,17 +2,19 @@
 
 Plan-ID: PLAN-three-section-ai-commit-push-control
 
-Status: Implemented
+Status: Closed
 
-Filename: `.agents/plans/PLAN-three-section-ai-commit-push-control.md`
+Close-Reason: Archived
+
+Filename: `.agents/plans/archive/PLAN-three-section-ai-commit-push-control.md`
 
 ## Readiness
 
-- Plan readiness: Implemented.
+- Plan readiness: Closed; archived by user request.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-17T23:59:08+02:00
 - Open questions: None.
-- Implementation progress: Planned tasks and automated validation completed.
+- Implementation progress: Planned tasks and automated validation completed; plan archived.
 
 ## Status History
 
@@ -22,6 +24,7 @@ Filename: `.agents/plans/PLAN-three-section-ai-commit-push-control.md`
 - 2026-05-18T00:04:28+02:00: In Progress -> In Progress by Codex <codex@openai.com>; Task 1 routing implementation completed.
 - 2026-05-18T00:12:13+02:00: In Progress -> In Progress by Codex <codex@openai.com>; Task 2 styling implementation completed.
 - 2026-05-18T00:15:20+02:00: In Progress -> Implemented by Codex <codex@openai.com>; Task 3 documentation and automated validation completed.
+- 2026-05-18T00:47:17+02:00: Implemented -> Closed by Kamil Kiewisz <kamkie@outlook.com>; archived by user request.
 
 ## Goal
 

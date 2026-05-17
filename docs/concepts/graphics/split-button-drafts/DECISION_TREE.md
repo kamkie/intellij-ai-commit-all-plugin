@@ -58,4 +58,4 @@ The selected draft defines:
 - Violet `AI` section styling based on the JetBrains AI Assistant commit-message action icon.
 - Snake-loop running indication on the active `Staging + AI`, `Commit`, or `Push` section.
 
-Production UI implementation is planned by `.agents/plans/PLAN-three-section-ai-commit-push-control.md`.
+Production UI implementation was completed by `.agents/plans/archive/PLAN-three-section-ai-commit-push-control.md`.
