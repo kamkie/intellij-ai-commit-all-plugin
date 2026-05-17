@@ -37,9 +37,9 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 | Id   | Title                                        | Priority | Status | Decision |
 |------|----------------------------------------------|----------|--------|----------|
-| S001 | Normalize active proposal finding IDs        | 1        | open   | accepted |
-| S002 | Require author-empty proposal decisions      | 1        | open   | accepted |
-| S003 | Update proposal docs and validation together | 2        | open   | accepted |
+| S001 | Normalize active proposal finding IDs        | 1        | done   | accepted |
+| S002 | Require author-empty proposal decisions      | 1        | done   | accepted |
+| S003 | Update proposal docs and validation together | 2        | done   | accepted |
 
 ## How To Edit The Trackers
 
@@ -66,11 +66,11 @@ _No tracked findings._
 - Proposal: Use zero-padded IDs in consolidated and future active proposals: `E001`, `D001`, and `S001`. Preserve historical IDs in archived source proposals, but use the consolidated ID in new ADRs, plans, reviews, and handoffs.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 1
 owner:
-updated: 2026-05-15T11:28:58+02:00
+updated: 2026-05-17T19:29:13+02:00
 accepted_at: 2026-05-15T11:28:58+02:00
 comment: "Source: PROP-proposal-id-and-markdown-formatting E001."
 ```
@@ -82,11 +82,11 @@ comment: "Source: PROP-proposal-id-and-markdown-formatting E001."
 - Proposal: Require every new proposal finding to start with an empty `decision` field in both the progress tracker and YAML tracker block. Only maintainer triage should fill the decision.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 1
 owner:
-updated: 2026-05-15T11:28:58+02:00
+updated: 2026-05-17T19:29:13+02:00
 accepted_at: 2026-05-15T11:28:58+02:00
 comment: "Source: PROP-orchestrator-worker-rules S8."
 ```
@@ -98,11 +98,11 @@ comment: "Source: PROP-orchestrator-worker-rules S8."
 - Proposal: After the ADR for `S001` and `S002` is accepted, update the proposal README, template, and validation script in one change. If the validation script enforces three-digit IDs, update only active proposal files that are materially touched and leave archived history intact.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 2
 owner:
-updated: 2026-05-15T11:28:58+02:00
+updated: 2026-05-17T19:29:13+02:00
 accepted_at: 2026-05-15T11:28:58+02:00
 comment: "Sources: PROP-proposal-id-and-markdown-formatting E002 and S001; PROP-orchestrator-worker-rules S8."
 ```

@@ -41,6 +41,7 @@ Compact overview only. Edit the YAML tracker inside each section below; this tab
 - Edit the fenced `yaml` block inside the finding section.
 - Mirror `status`, `decision`, and `priority` to the row above.
 - Bump `updated` to the current timestamp.
+- Leave `decision` empty when authoring new findings; only maintainer triage fills it.
 - Set `accepted_at` when `decision: accepted`; set `decided_at` for any other non-empty decision.
 - Leave completed or rejected findings in place as history.
 

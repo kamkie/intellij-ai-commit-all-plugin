@@ -187,4 +187,4 @@ Archived as of `v0.1.0-alpha.1` release preparation.
 ### Ideas
 
 - [ ] T-IDEA-001: plugin does not work when vsc changelists are disabled and git is in git stage mode
-- [ ] T-IDEA-002: docs/proposals/README.md does not need to know about archived proposals, docs/proposals/archive/README.md is doing that
+- [x] T-IDEA-002: docs/proposals/README.md does not need to know about archived proposals, docs/proposals/archive/README.md is doing that
