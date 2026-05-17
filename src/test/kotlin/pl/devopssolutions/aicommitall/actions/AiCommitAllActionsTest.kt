@@ -20,9 +20,9 @@ import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowMode
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowResult
 import java.awt.Component
 import java.awt.event.InputEvent
+import java.awt.image.BufferedImage
 import java.lang.reflect.Proxy
 import java.util.concurrent.CompletableFuture
-import javax.swing.JButton
 import javax.swing.JComponent
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -123,10 +123,10 @@ internal class AiCommitAllActionsTest {
         val event = testEvent(testDataContext(testProject()))
 
         action.update(event)
-        val buttons = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).sectionButtons()
+        val control = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).asControl()
 
-        assertEquals(listOf("AI", "Commit", "Push"), buttons.map { button -> button.text })
-        assertTrue(buttons.all { button -> button.isEnabled })
+        assertEquals(listOf("AI", "Commit", "Push"), control.sectionLabels())
+        assertTrue(AiCommitAllControlSection.entries.all { section -> control.isSectionEnabledForTest(section) })
     }
 
     @Test
@@ -141,11 +141,54 @@ internal class AiCommitAllActionsTest {
         val event = testEvent(testDataContext(testProject()))
 
         action.update(event)
-        val buttons = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).sectionButtons()
+        val control = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).asControl()
 
-        assertTrue(buttons[0].isEnabled)
-        assertTrue(buttons[1].isEnabled)
-        assertFalse(buttons[2].isEnabled)
+        assertTrue(control.isSectionEnabledForTest(AiCommitAllControlSection.Ai))
+        assertTrue(control.isSectionEnabledForTest(AiCommitAllControlSection.Commit))
+        assertFalse(control.isSectionEnabledForTest(AiCommitAllControlSection.Push))
+    }
+
+    @Test
+    fun `custom component highlights sections cumulatively`() {
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = CapturingWorkflowStarter(),
+            availabilityProvider = StaticAvailabilityProvider(),
+            activityProvider = StaticActivityProvider(),
+        )
+        val event = testEvent(testDataContext(testProject()))
+
+        action.update(event)
+        val control = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).asControl()
+        control.setHoverSectionForTest(AiCommitAllControlSection.Push)
+
+        assertEquals(
+            setOf(
+                AiCommitAllControlSection.Ai,
+                AiCommitAllControlSection.Commit,
+                AiCommitAllControlSection.Push,
+            ),
+            control.highlightedSectionsForTest(),
+        )
+    }
+
+    @Test
+    fun `custom component paints segmented control`() {
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = CapturingWorkflowStarter(),
+            availabilityProvider = StaticAvailabilityProvider(),
+            activityProvider = StaticActivityProvider(runningSection = AiCommitAllControlSection.Push),
+        )
+        val event = testEvent(testDataContext(testProject()))
+
+        action.update(event)
+        val control = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).asControl()
+        control.setSize(control.preferredSize)
+        val image = BufferedImage(control.width, control.height, BufferedImage.TYPE_INT_ARGB)
+        val graphics = image.createGraphics()
+        control.paint(graphics)
+        graphics.dispose()
+
+        assertTrue((image.getRGB(control.width / 2, control.height / 2) ushr 24) > 0)
     }
 
     @Test
@@ -175,11 +218,15 @@ internal class AiCommitAllActionsTest {
         val event = testEvent(testDataContext(testProject()))
 
         action.update(event)
-        val buttons = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).sectionButtons()
+        val control = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).asControl()
 
         assertTrue(event.presentation.isVisible)
         assertFalse(event.presentation.isEnabled)
-        assertTrue(buttons.all { button -> !button.isEnabled })
+        assertTrue(AiCommitAllControlSection.entries.all { section -> !control.isSectionEnabledForTest(section) })
+        assertEquals(
+            setOf(AiCommitAllControlSection.Ai, AiCommitAllControlSection.Commit),
+            control.highlightedSectionsForTest(),
+        )
     }
 
     @Test
@@ -247,8 +294,8 @@ internal class AiCommitAllActionsTest {
         override fun runningSection(project: Project): AiCommitAllControlSection? = runningSection
     }
 
-    private fun JComponent.sectionButtons(): List<JButton> =
-        components.filterIsInstance<JButton>()
+    private fun JComponent.asControl(): AiCommitAllThreeSectionControl =
+        this as AiCommitAllThreeSectionControl
 
     private fun testEvent(
         dataContext: DataContext,

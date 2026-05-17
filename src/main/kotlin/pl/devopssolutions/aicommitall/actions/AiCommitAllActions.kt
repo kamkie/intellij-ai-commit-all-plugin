@@ -11,8 +11,6 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vcs.VcsDataKeys
-import com.intellij.ui.components.JBPanel
-import com.intellij.util.ui.JBUI
 import pl.devopssolutions.aicommitall.ai.AiGenerationActivityPhase
 import pl.devopssolutions.aicommitall.ai.AiGenerationActivityStateService
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelectionService
@@ -21,10 +19,8 @@ import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowCoordinator
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowMode
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowResult
 import pl.devopssolutions.aicommitall.workflow.CommitWorkflowExecutionService
-import java.awt.GridLayout
 import java.awt.event.InputEvent
 import java.util.concurrent.CompletableFuture
-import javax.swing.JButton
 import javax.swing.JComponent
 
 internal class AiCommitAllThreeSectionAction(
@@ -149,42 +145,6 @@ internal data class AiCommitAllControlState(
     }
 }
 
-internal class AiCommitAllThreeSectionControl(
-    private val activateSection: (AiCommitAllControlSection, InputEvent?) -> Unit,
-) : JBPanel<AiCommitAllThreeSectionControl>(GridLayout(1, 0, 0, 0)) {
-    private var state: AiCommitAllControlState = AiCommitAllControlState.Hidden
-    private val buttons = AiCommitAllControlSection.entries.associateWith { section ->
-        JButton(section.label).apply {
-            margin = JBUI.insets(2, 8)
-            isFocusable = true
-            toolTipText = section.toolTipText
-            addActionListener {
-                if (state.isSectionEnabled(section)) {
-                    activateSection(section, null)
-                }
-            }
-        }
-    }
-
-    init {
-        isOpaque = false
-        border = JBUI.Borders.empty()
-        buttons.values.forEach(::add)
-    }
-
-    fun updateState(nextState: AiCommitAllControlState) {
-        state = nextState
-        isVisible = nextState.visible
-        isEnabled = nextState.enabled
-        buttons.forEach { (section, button) ->
-            button.isVisible = nextState.sections[section]?.visible == true
-            button.isEnabled = nextState.isSectionEnabled(section)
-        }
-        revalidate()
-        repaint()
-    }
-}
-
 internal data class AiCommitAllWorkflowActionAvailability(
     val visible: Boolean,
     val enabled: Boolean,
@@ -282,11 +242,4 @@ private val AiGenerationActivityPhase.controlSection: AiCommitAllControlSection
         AiGenerationActivityPhase.Ai -> AiCommitAllControlSection.Ai
         AiGenerationActivityPhase.Commit -> AiCommitAllControlSection.Commit
         AiGenerationActivityPhase.Push -> AiCommitAllControlSection.Push
-    }
-
-private val AiCommitAllControlSection.toolTipText: String
-    get() = when (this) {
-        AiCommitAllControlSection.Ai -> "Generate an AI commit message for all Git changes."
-        AiCommitAllControlSection.Commit -> "Generate an AI commit message and commit all Git changes."
-        AiCommitAllControlSection.Push -> "Generate an AI commit message, commit all Git changes, and push."
     }
