@@ -11,6 +11,7 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.2
 ### Changed
 
 - Implemented the three-section `<AI icon> AI | Commit | Push` Commit tool window control with an AI-only preparation path, commit and push routing, cumulative hover, and violet AI snake running styling.
+- Moved the three-section Commit tool window control to the right of the IDE `Commit and Push...` button.
 - Consolidated active proposal findings into four numbered work-stream proposals and archived the superseded source proposals with pointers to the new finding IDs.
 - Accepted and implemented artifact governance updates for scoped artifact lookup, proposal finding IDs, ADR acceptance timestamps, plan approval timestamps, and plan status history validation.
 

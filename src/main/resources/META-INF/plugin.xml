@@ -11,7 +11,7 @@
             text="AI Commit All"
             description="Generate an AI commit message, commit, or commit and push all Git changes."
             icon="/icons/aiCommitAll.svg">
-            <add-to-group group-id="Vcs.Commit.PrimaryCommitActions" anchor="first" />
+            <add-to-group group-id="Vcs.Commit.PrimaryCommitActions" anchor="after" relative-to-action="Git.Commit.And.Push.Executor" />
         </action>
     </actions>
 

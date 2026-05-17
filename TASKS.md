@@ -14,7 +14,7 @@ Notation:
 
 ### Gui changes
 
-- [ ] T-UI-002: move button to the right of the `Commit and Push...` button.
+- [x] T-UI-002: move button to the right of the `Commit and Push...` button.
 
 ### Three-Section AI Commit Push Control
 
