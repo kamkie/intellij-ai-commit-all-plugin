@@ -1,6 +1,7 @@
 ---
-status: proposed
+status: accepted
 date: 2026-05-18
+accepted_at: 2026-05-18T01:20:58+02:00
 decision-makers: Kamil Kiewisz <kamkie@outlook.com>
 consulted: Codex
 informed: Repository contributors

@@ -10,6 +10,7 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.2
 
 ### Changed
 
+- Added a lightweight Design task type for early AI-assisted idea shaping before proposals, ADRs, plans, or implementation.
 - Clear stale commit-message text before AI generation by default, with a settings toggle to keep existing text.
 - Implemented the three-section `<AI icon> AI | Commit | Push` Commit tool window control with an AI-only preparation path, commit and push routing, cumulative hover, and violet AI snake running styling.
 - Moved the three-section Commit tool window control to the right of the IDE `Commit and Push...` button.

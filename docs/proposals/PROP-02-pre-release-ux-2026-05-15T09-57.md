@@ -45,7 +45,7 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 | E003 | Capture split-button design intent                       | 1        | done    | accepted |
 | E004 | Run split-button visual draft experiments                | 2        | done    | accepted |
 | E005 | Add a split-button decision tree and final-selection ADR | 2        | done    | accepted |
-| E006 | Evaluate shortcut takeover with opt-out                  | 3        | blocked | accepted |
+| E006 | Evaluate shortcut takeover with opt-out                  | 3        | open    | accepted |
 
 ## How To Edit The Trackers
 
@@ -146,13 +146,13 @@ comment: "Source: PROP-split-button-look-experiments E3. Decision tree revised a
 - Proposal: Defer until `E001` and `E002` settle. If accepted, record a dedicated ADR, document the user-visible change, and provide an opt-out setting or clear keymap restoration path.
 
 ```yaml
-status: blocked
+status: open
 decision: accepted
 priority: 3
 owner:
-updated: 2026-05-18T01:05:37+02:00
+updated: 2026-05-18T01:20:58+02:00
 accepted_at: 2026-05-15T11:43:16+02:00
-comment: "Source: PROP-plugin-default-settings E3. Proposed ADR 0054 created; implementation waits for maintainer acceptance and must include a settings opt-out."
+comment: "Source: PROP-plugin-default-settings E3. ADR 0054 accepted; implementation has not started and must include a settings opt-out."
 ```
 
 ## Duplications To Remove Or Reduce

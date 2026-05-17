@@ -26,14 +26,30 @@ Constraints: Keep publishing, signing, and CI changes aligned with ADR 0019.
 Validation expected: gradle buildPlugin and gradle runIde startup.
 ```
 
+For design tasks, ask for early shaping before deciding whether the idea needs a proposal, ADR, implementation plan, task update, documentation change, or direct implementation:
+
+```text
+Design goal:
+Non-goals:
+Relevant constraints or decisions:
+Options wanted:
+Recommendation wanted:
+Next artifact expected:
+```
+
+Design tasks should usually ask the AI agent to identify the goal and non-goals, relevant constraints and existing decisions, one to three viable approaches, tradeoffs, risks, unanswered questions, and the likely next artifact.
+
 ## Useful Task Types
 
+- Design: ask for early exploration of new product behavior, UX, APIs, architecture, repository structure, or workflow ideas before choosing a durable artifact or implementation path. Design output can stay in chat when no durable record is needed.
 - Planning: ask for a plan when the target IDE version, supported IDEs, or commit/push behavior is not settled.
 - Implementation: name the user-facing behavior, target files, validation expected, and any decisions already made.
 - Review: ask for bugs, unintended commit risk, AI Assistant integration risk, and missing validation.
 - Documentation: state whether the change affects users, contributors, or AI agents.
 - Proposal: ask for a proposal when you want findings, duplications, simplifications, or improvement options collected for later triage without immediate implementation.
 - Release: ask only after implementation is integrated and validation evidence is ready.
+
+Design tasks do not replace the existing gates. If design work chooses or changes durable project direction, repository rules, compatibility policy, user behavior, validation expectations, or future maintenance policy, expect an ADR and a stop for explicit acceptance. If design work leads to multi-file implementation, behavior changes, or unresolved technical choices, expect an implementation plan and a stop for explicit approval. If the desired output is durable triage for findings or improvement options, use a proposal instead.
 
 ## What AI Should Read
 
