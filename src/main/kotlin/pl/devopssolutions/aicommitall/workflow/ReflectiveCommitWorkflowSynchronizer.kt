@@ -1,13 +1,17 @@
 package pl.devopssolutions.aicommitall.workflow
 
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.FilePath
 import com.intellij.openapi.vcs.changes.LocalChangeList
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import git4idea.index.GitStageCommitWorkflowHandler
 import git4idea.index.GitStageTracker
 import git4idea.util.GitFileUtils
 import pl.devopssolutions.aicommitall.vcs.GitStageSelectionItems
 import java.lang.reflect.Method
+
+private const val GIT_STAGE_CONFIRMATION_ATTEMPTS = 3
 
 internal object ReflectiveCommitWorkflowSynchronizer {
     fun synchronize(
@@ -54,18 +58,40 @@ internal object ReflectiveCommitWorkflowSynchronizer {
                 return@runCatching false
             }
 
-            pathsByRoot.forEach { (root, paths) ->
-                GitFileUtils.addPaths(project, root, paths, true)
-            }
-
-            tracker.updateTrackerState()
-            val refreshedState = tracker.state
+            val refreshedState = confirmStagedState(
+                project = project,
+                tracker = tracker,
+                pathsByRoot = pathsByRoot,
+            ) ?: return@runCatching false
             val includedRoots = pathsByRoot.keys
             gitStageHandler.state = refreshedState
             gitStageHandler.ui.setTrackerState(refreshedState)
             gitStageHandler.ui.setIncludedRoots(includedRoots)
             true
         }.getOrDefault(false)
+    }
+
+    private fun confirmStagedState(
+        project: Project,
+        tracker: GitStageTracker,
+        pathsByRoot: Map<VirtualFile, List<FilePath>>,
+    ): GitStageTracker.State? {
+        val expectedPaths = pathsByRoot.values.flatten()
+        repeat(GIT_STAGE_CONFIRMATION_ATTEMPTS) {
+            val refreshedState = runCatching {
+                pathsByRoot.forEach { (root, paths) ->
+                    GitFileUtils.addPaths(project, root, paths, true)
+                }
+                tracker.updateTrackerState()
+                tracker.state
+            }.getOrNull()
+
+            if (refreshedState != null && GitStageSelectionItems.containsAllStagedPaths(refreshedState, expectedPaths)) {
+                return refreshedState
+            }
+        }
+
+        return null
     }
 
     private fun Class<*>.findMethod(name: String, vararg parameterTypes: Class<*>): Method? =

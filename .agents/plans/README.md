@@ -17,7 +17,7 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-_No active plans._
+- `PLAN-confirm-staged-before-ai-generation` - Confirm Staged Before AI Generation ([PLAN-confirm-staged-before-ai-generation.md](PLAN-confirm-staged-before-ai-generation.md)).
 
 ## Archived Plans
 

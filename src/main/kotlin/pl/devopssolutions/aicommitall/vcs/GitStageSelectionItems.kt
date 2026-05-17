@@ -26,10 +26,40 @@ internal object GitStageSelectionItems {
             }
             .filterValues { paths -> paths.isNotEmpty() }
 
+    fun containsAllStagedPaths(
+        state: GitStageTracker.State,
+        expectedPaths: Collection<FilePath>,
+    ): Boolean = missingStagedPaths(state, expectedPaths).isEmpty()
+
+    fun missingStagedPaths(
+        state: GitStageTracker.State,
+        expectedPaths: Collection<FilePath>,
+    ): List<FilePath> {
+        val stagedPaths = state.rootStates.values
+            .asSequence()
+            .flatMap { rootState -> rootState.statuses.values.asSequence() }
+            .mapNotNull { status -> status.stagedPath() }
+            .map { path -> path.normalizedPath() }
+            .toSet()
+
+        return expectedPaths
+            .distinctBy { path -> path.normalizedPath() }
+            .filter { path -> path.normalizedPath() !in stagedPaths }
+    }
+
     private fun GitFileStatus.committablePath(): FilePath? =
         if (isIgnored() || isNotChanged()) {
             null
         } else {
             path
         }
+
+    private fun GitFileStatus.stagedPath(): FilePath? =
+        if (isIgnored() || isNotChanged() || isConflicted() || index == ' ' || index == '?') {
+            null
+        } else {
+            path
+        }
+
+    private fun FilePath.normalizedPath(): String = path.replace('\\', '/')
 }

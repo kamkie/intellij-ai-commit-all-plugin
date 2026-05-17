@@ -12,6 +12,10 @@ Notation:
 
 ## Open Backlog
 
+### Bugs
+
+- [x] T-BUG-002: `ai` `Staging + AI message generation` stage sometimes do not work the first time. it needs to recheck if in fact all files are included. and only then generate a commit message. (Plan `PLAN-confirm-staged-before-ai-generation`)
+
 ### Gui changes
 
 - [x] T-UI-002: move button to the right of the `Commit and Push...` button.

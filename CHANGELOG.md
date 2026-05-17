@@ -19,6 +19,7 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.2
 
 ### Fixed
 
+- Confirm Git staging-area inclusion before AI commit-message generation starts, avoiding intermittent first-run generation with incomplete staged input.
 - Fixed Git staging-area commit workflow support when IntelliJ changelists are disabled.
 
 ## [v0.1.0-alpha.2] - 2026-05-15

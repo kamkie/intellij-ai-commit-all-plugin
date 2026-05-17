@@ -10,6 +10,7 @@ import git4idea.index.GitFileStatus
 import git4idea.index.GitStageTracker
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import java.io.File
 import java.nio.charset.Charset
@@ -80,6 +81,34 @@ internal class GitStageSelectionItemsTest {
             ),
             result,
         )
+    }
+
+    @Test
+    fun `confirms expected paths only when they are staged`() {
+        val staged = TestFilePath("/repo/staged.txt")
+        val unstaged = TestFilePath("/repo/unstaged.txt")
+        val untracked = TestFilePath("/repo/untracked.txt")
+        val state = stageState(
+            gitStatus('M', ' ', staged),
+            gitStatus(' ', 'M', unstaged),
+            gitStatus('?', '?', untracked),
+        )
+
+        assertTrue(GitStageSelectionItems.containsAllStagedPaths(state, listOf(staged)))
+        assertFalse(GitStageSelectionItems.containsAllStagedPaths(state, listOf(staged, unstaged)))
+        assertEquals(
+            listOf(unstaged, untracked),
+            GitStageSelectionItems.missingStagedPaths(state, listOf(staged, unstaged, untracked)),
+        )
+    }
+
+    @Test
+    fun `matches refreshed staged paths by path text`() {
+        val expected = TestFilePath("/repo/modified.txt")
+        val refreshed = TestFilePath("/repo/modified.txt")
+        val state = stageState(gitStatus('M', ' ', refreshed))
+
+        assertTrue(GitStageSelectionItems.containsAllStagedPaths(state, listOf(expected)))
     }
 
     private fun stageState(vararg statuses: GitFileStatus): GitStageTracker.State {
