@@ -2,7 +2,7 @@
 
 Use this directory for project decisions, repository rule changes, and open questions that future work should preserve.
 
-`ard-NNNN-<slug>.md` Markdown files are ADRs. `OPEN_QUESTIONS.md` tracks unresolved user input and is not an ADR.
+`ard-NNNN-<slug>.md` Markdown files are ADRs. `OPEN_QUESTIONS.md` is the active register for unresolved user input and is not an ADR.
 
 Every project decision must be recorded as an ADR before or alongside the implementation it affects.
 
@@ -107,7 +107,8 @@ Set `decision-makers` to the configured Git identity in `Name <email>` form.
 | [ard-0047](ard-0047-use-safe-immediate-push-fallback.md)                                | Use Safe Immediate Push Fallback                                | Accepted | 2026-05-17 |
 | [ard-0048](ard-0048-track-adr-implementation-status.md)                                 | Track ADR Implementation Status                                 | Accepted | 2026-05-17 |
 | [ard-0049](ard-0049-track-proposal-implementation-status.md)                            | Track Proposal Implementation Status                            | Accepted | 2026-05-17 |
-| [ard-0050](ard-0050-reengineer-open-questions-as-active-register.md)                    | Reengineer Open Questions As Active Register                    | Proposed | 2026-05-17 |
+| [ard-0050](ard-0050-reengineer-open-questions-as-active-register.md)                    | Reengineer Open Questions As Active Register                    | Accepted | 2026-05-17 |
+| [ard-0051](ard-0051-treat-task-ids-as-tasks-lookup-shortcuts.md)                        | Treat Task IDs As TASKS Lookup Shortcuts                        | Proposed | 2026-05-17 |
 
 ## ADR Implementation Tracker
 
@@ -176,4 +177,5 @@ Implementation evidence can be a task, approved plan, commit, file, validation r
 | [ard-0047](ard-0047-use-safe-immediate-push-fallback.md)                                | implemented    | [PLAN-pre-release-adr-implementation](../../.agents/plans/PLAN-pre-release-adr-implementation.md)                                                                                               | 2026-05-17 |
 | [ard-0048](ard-0048-track-adr-implementation-status.md)                                 | implemented    | [docs/decisions/README.md](README.md), [validate-docs.ps1](../../scripts/validate-docs.ps1), [TASKS.md](../../TASKS.md)                                                                         | 2026-05-17 |
 | [ard-0049](ard-0049-track-proposal-implementation-status.md)                            | implemented    | [docs/proposals/README.md](../proposals/README.md), [PROPOSAL_TEMPLATE.md](../proposals/PROPOSAL_TEMPLATE.md), [validate-docs.ps1](../../scripts/validate-docs.ps1), [TASKS.md](../../TASKS.md) | 2026-05-17 |
-| [ard-0050](ard-0050-reengineer-open-questions-as-active-register.md)                    | pending        | [TASKS.md](../../TASKS.md) T-IDEA-005                                                                                                                                                           | 2026-05-17 |
+| [ard-0050](ard-0050-reengineer-open-questions-as-active-register.md)                    | implemented    | [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md), [validate-docs.ps1](../../scripts/validate-docs.ps1), [TASKS.md](../../TASKS.md) T-IDEA-005                                                             | 2026-05-17 |
+| [ard-0051](ard-0051-treat-task-ids-as-tasks-lookup-shortcuts.md)                        | pending        | User request for task-ID lookup rule; target [AGENTS.md](../../AGENTS.md)                                                                                                                       | 2026-05-17 |

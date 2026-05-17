@@ -1,6 +1,7 @@
 ---
-status: proposed
+status: accepted
 date: 2026-05-17
+accepted_at: 2026-05-17T21:18:25+02:00
 decision-makers: Kamil Kiewisz <kamkie@outlook.com>
 consulted: Codex
 informed: Repository contributors
@@ -35,7 +36,7 @@ This decision defines whether to retire the file or reengineer it before more qu
 
 Chosen option: "Reengineer `docs/decisions/OPEN_QUESTIONS.md` as an active question register", because unresolved input still needs a focused owner, but the file should carry enough structure to make future blockers auditable and automatically validated.
 
-If accepted, `docs/decisions/OPEN_QUESTIONS.md` remains the repository owner for unresolved user input that blocks an ADR, plan, proposal finding, task, implementation branch, or release decision.
+Under this decision, `docs/decisions/OPEN_QUESTIONS.md` remains the repository owner for unresolved user input that blocks an ADR, plan, proposal finding, task, implementation branch, or release decision.
 
 The file should contain:
 
@@ -105,4 +106,4 @@ Compliance should be checked by documentation validation and review:
 - Source task: `TASKS.md` `T-IDEA-005`.
 - Supersedes the operational details of ADR 0035 while preserving its owner-file decision.
 - Related artifact lookup guidance: ADR 0044.
-- Follow-up implementation, after this ADR is accepted: update `docs/decisions/OPEN_QUESTIONS.md`, `docs/decisions/README.md`, `AGENTS.md` if wording needs tightening, proposal and lifecycle references if needed, `scripts/validate-docs.ps1`, and `TASKS.md`.
+- Implementation evidence: `docs/decisions/OPEN_QUESTIONS.md`, `docs/decisions/README.md`, `scripts/validate-docs.ps1`, `.agents/references/documentation.md`, and `TASKS.md`.

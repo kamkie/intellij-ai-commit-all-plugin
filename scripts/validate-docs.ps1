@@ -65,6 +65,129 @@ if (Test-Path -LiteralPath $tasksPath) {
     }
 }
 
+$openQuestionsPath = Join-Path $repoRoot 'docs/decisions/OPEN_QUESTIONS.md'
+if (Test-Path -LiteralPath $openQuestionsPath)
+{
+    $openQuestionsRelative = Get-RelativePath $openQuestionsPath
+    $openQuestionsText = Get-Content -Raw -LiteralPath $openQuestionsPath
+
+    if ($openQuestionsText -notmatch '(?m)^# Open Questions\s*$')
+    {
+        Add-ValidationError "$openQuestionsRelative is missing the # Open Questions title"
+    }
+
+    $activeQuestionsMatch = [regex]::Match($openQuestionsText, '(?ms)^## Active Questions\s*(.*?)(?=^## |\z)')
+    if (-not $activeQuestionsMatch.Success)
+    {
+        Add-ValidationError "$openQuestionsRelative is missing ## Active Questions"
+    }
+    else
+    {
+        $activeQuestionsText = $activeQuestionsMatch.Groups[1].Value
+        $hasNoOpenQuestionsState = $activeQuestionsText -match '(?m)^_No open questions\._\s*$'
+        $activeQuestionRows = [regex]::Matches(
+                $activeQuestionsText,
+                '(?m)^\|\s+(Q-[A-Z][A-Z0-9]*-\d{3})\s+\|\s+(.+?)\s+\|\s+(.+?)\s+\|\s+(.+?)\s+\|\s+(\d{4}-\d{2}-\d{2})\s+\|$'
+        )
+        $hasActiveQuestionRows = $activeQuestionRows.Count -gt 0
+
+        if ($hasNoOpenQuestionsState -and $hasActiveQuestionRows)
+        {
+            Add-ValidationError "$openQuestionsRelative must not contain both _No open questions._ and active question rows"
+        }
+        elseif (-not $hasNoOpenQuestionsState -and -not $hasActiveQuestionRows)
+        {
+            Add-ValidationError "$openQuestionsRelative must contain either _No open questions._ or active question rows"
+        }
+
+        if ($hasNoOpenQuestionsState -and $activeQuestionsText -match '(?m)^\|\s*ID\s+\|\s*Question\s+\|\s*Blocks\s+\|\s*Needed For\s+\|\s*Updated\s+\|$')
+        {
+            Add-ValidationError "$openQuestionsRelative must not contain an active question table when there are no open questions"
+        }
+
+        if ($hasActiveQuestionRows)
+        {
+            if ($activeQuestionsText -notmatch '(?m)^\|\s*ID\s+\|\s*Question\s+\|\s*Blocks\s+\|\s*Needed For\s+\|\s*Updated\s+\|$')
+            {
+                Add-ValidationError "$openQuestionsRelative active question rows require the standard table header"
+            }
+
+            if ($activeQuestionsText -notmatch '(?m)^\|----\|----------\|--------\|------------\|---------\|$')
+            {
+                Add-ValidationError "$openQuestionsRelative active question rows require the standard table separator"
+            }
+        }
+
+        foreach ($invalidRow in [regex]::Matches($activeQuestionsText, '(?m)^\|\s*Q-[^|]+\|.*$'))
+        {
+            if ($invalidRow.Value -notmatch '^\|\s+(Q-[A-Z][A-Z0-9]*-\d{3})\s+\|\s+(.+?)\s+\|\s+(.+?)\s+\|\s+(.+?)\s+\|\s+(\d{4}-\d{2}-\d{2})\s+\|$')
+            {
+                Add-ValidationError "$openQuestionsRelative has invalid active question row: $( $invalidRow.Value )"
+            }
+        }
+
+        $questionIds = New-Object System.Collections.Generic.HashSet[string]
+        foreach ($row in $activeQuestionRows)
+        {
+            $questionId = $row.Groups[1].Value.Trim()
+            $question = $row.Groups[2].Value.Trim()
+            $blocks = $row.Groups[3].Value.Trim()
+            $neededFor = $row.Groups[4].Value.Trim()
+            $updated = $row.Groups[5].Value.Trim()
+
+            if (-not $questionIds.Add($questionId))
+            {
+                Add-ValidationError "$openQuestionsRelative has duplicate active question ID $questionId"
+            }
+
+            if ([string]::IsNullOrWhiteSpace($question) -or $question -eq '-')
+            {
+                Add-ValidationError "$openQuestionsRelative active question $questionId is missing Question"
+            }
+
+            if ([string]::IsNullOrWhiteSpace($blocks) -or $blocks -eq '-')
+            {
+                Add-ValidationError "$openQuestionsRelative active question $questionId is missing Blocks"
+            }
+            elseif ($blocks -match '^(?i)(tbd|unknown|none|n/a)$')
+            {
+                Add-ValidationError "$openQuestionsRelative active question $questionId has ambiguous Blocks '$blocks'"
+            }
+            elseif ($blocks -notmatch '(\[[^\]]+\]\([^)]+\)|\bT-[A-Z]+-\d{3}\b|\bPLAN-[A-Za-z0-9][A-Za-z0-9-]*\b|\bPROP-[A-Za-z0-9][A-Za-z0-9-]*\b|\bard-\d{4}\b|[A-Za-z0-9_./-]+\.[A-Za-z0-9]+)')
+            {
+                Add-ValidationError "$openQuestionsRelative active question $questionId Blocks must include an artifact evidence path"
+            }
+
+            if ([string]::IsNullOrWhiteSpace($neededFor) -or $neededFor -eq '-')
+            {
+                Add-ValidationError "$openQuestionsRelative active question $questionId is missing Needed For"
+            }
+
+            if ($updated -notmatch '^\d{4}-\d{2}-\d{2}$')
+            {
+                Add-ValidationError "$openQuestionsRelative active question $questionId has invalid Updated date"
+            }
+        }
+    }
+
+    $editingRulesMatch = [regex]::Match($openQuestionsText, '(?ms)^## Editing Rules\s*(.*?)(?=^## |\z)')
+    if (-not $editingRulesMatch.Success)
+    {
+        Add-ValidationError "$openQuestionsRelative is missing ## Editing Rules"
+    }
+    else
+    {
+        $editingRulesText = $editingRulesMatch.Groups[1].Value
+        foreach ($requiredText in @('Q-<AREA>-NNN', 'Blocks', 'Needed For', 'record it in the ADR, plan, proposal, task, or implementation artifact', '_No open questions._'))
+        {
+            if (-not $editingRulesText.Contains($requiredText))
+            {
+                Add-ValidationError "$openQuestionsRelative Editing Rules must mention '$requiredText'"
+            }
+        }
+    }
+}
+
 $allowedPlanStatuses = @('Draft', 'Approved', 'In Progress', 'Blocked', 'Implemented', 'Closed')
 $allowedPlanCloseReasons = @('Released', 'Rejected', 'Superseded', 'Deferred', 'Archived')
 $planStatusesRequiringApprovalIdentity = @('Approved', 'In Progress', 'Blocked', 'Implemented', 'Closed')
