@@ -42,8 +42,8 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 |------|----------------------------------------------------------|----------|--------|----------|
 | E001 | Clear the commit message before AI generation            | 1        | open   | accepted |
 | E002 | Skip the push dialog only when safe                      | 1        | open   | accepted |
-| E003 | Capture split-button design intent                       | 1        | open   | accepted |
-| E004 | Run split-button visual draft experiments                | 2        | open   | accepted |
+| E003 | Capture split-button design intent                       | 1        | done   | accepted |
+| E004 | Run split-button visual draft experiments                | 2        | done   | accepted |
 | E005 | Add a split-button decision tree and final-selection ADR | 2        | open   | accepted |
 | E006 | Evaluate shortcut takeover with opt-out                  | 3        | open   | accepted |
 
@@ -95,11 +95,11 @@ comment: "Source: PROP-plugin-default-settings E2."
 - Proposal: Add a `Q-UX-*` entry in `docs/decisions/OPEN_QUESTIONS.md` or equivalent ADR draft prompt that asks for the intended visual direction. Treat current placeholder graphics as non-final until the question is answered.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 1
 owner:
-updated: 2026-05-15T11:43:16+02:00
+updated: 2026-05-17T19:47:19+02:00
 accepted_at: 2026-05-15T11:43:16+02:00
 comment: "Source: PROP-split-button-look-experiments E1."
 ```
@@ -111,11 +111,11 @@ comment: "Source: PROP-split-button-look-experiments E1."
 - Proposal: Produce four to six draft split-button styles under `docs/concepts/graphics/split-button-drafts/`, including light, dark, running, disabled, commit-only, and commit-and-push states. Capture sandbox screenshots and score them for legibility, theme contrast, segment distinction, IntelliJ guideline fit, brand signal, and accessibility.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 2
 owner:
-updated: 2026-05-15T11:43:16+02:00
+updated: 2026-05-17T19:47:19+02:00
 accepted_at: 2026-05-15T11:43:16+02:00
 comment: "Source: PROP-split-button-look-experiments E2."
 command: it should be closer to concept graphics but without an arrow in the middle. left and right part of te button should have slightly different/contrasting color.
@@ -132,9 +132,9 @@ status: open
 decision: accepted
 priority: 2
 owner:
-updated: 2026-05-15T11:43:16+02:00
+updated: 2026-05-17T19:47:19+02:00
 accepted_at: 2026-05-15T11:43:16+02:00
-comment: "Source: PROP-split-button-look-experiments E3."
+comment: "Source: PROP-split-button-look-experiments E3. Decision tree added; final-selection ADR remains pending until a draft is selected."
 ```
 
 ### E006. Evaluate shortcut takeover with opt-out

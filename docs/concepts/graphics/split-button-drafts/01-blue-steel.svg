@@ -1,0 +1,101 @@
+<svg width="900" height="520" viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Blue Steel split-button draft">
+    <rect width="900" height="520" fill="#F5F7FB"/>
+    <text x="40" y="44" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700" fill="#1F2937">01 Blue Steel</text>
+    <text x="40" y="72" font-family="Inter, Arial, sans-serif" font-size="14" fill="#4B5563">Blue commit segment, green push segment, clean center join.</text>
+    <g transform="translate(40 110)">
+        <rect width="390" height="350" rx="8" fill="#FFFFFF" stroke="#D5D9E2"/>
+        <text x="24" y="36" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700" fill="#1F2937">Light theme</text>
+        <g transform="translate(24 64)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5E6B7A">Commit-only</text>
+            <g transform="translate(110 0)">
+                <rect x="0" y="0" width="166" height="34" rx="6" fill="#2F6EEA"/>
+                <rect x="166" y="0" width="92" height="34" rx="6" fill="#238449"/>
+                <rect x="165" y="4" width="1" height="26" fill="#DDE8FF" opacity=".65"/>
+                <path fill="#DDE8FF" d="M20 7l4 8 8 4-8 4-4 8-4-8-8-4 8-4z"/>
+                <text x="42" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">AI Commit All</text>
+                <text x="188" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">&amp; Push</text>
+            </g>
+        </g>
+        <g transform="translate(24 122)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5E6B7A">Commit + push</text>
+            <g transform="translate(110 0)">
+                <rect x="0" y="0" width="166" height="34" rx="6" fill="#315FAE"/>
+                <rect x="166" y="0" width="92" height="34" rx="6" fill="#0F9B57"/>
+                <rect x="165" y="4" width="1" height="26" fill="#E9FFF3" opacity=".65"/>
+                <path fill="#EAF2FF" d="M20 7l4 8 8 4-8 4-4 8-4-8-8-4 8-4z"/>
+                <text x="42" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">AI Commit All</text>
+                <text x="188" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" fill="#FFFFFF">&amp; Push</text>
+            </g>
+        </g>
+        <g transform="translate(24 180)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5E6B7A">Running</text>
+            <g transform="translate(110 0)">
+                <rect x="0" y="0" width="166" height="34" rx="6" fill="#2659C7"/>
+                <rect x="166" y="0" width="92" height="34" rx="6" fill="#1F7D4A"/>
+                <rect x="0" y="30" width="258" height="4" rx="2" fill="#BFD5FF"/>
+                <circle cx="22" cy="17" r="5" fill="#FFFFFF" opacity=".9"/>
+                <text x="42" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">Generating...</text>
+                <text x="188" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">&amp; Push</text>
+            </g>
+        </g>
+        <g transform="translate(24 238)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5E6B7A">Disabled</text>
+            <g transform="translate(110 0)" opacity=".72">
+                <rect x="0" y="0" width="166" height="34" rx="6" fill="#E4E8F0" stroke="#C8D0DD"/>
+                <rect x="166" y="0" width="92" height="34" rx="6" fill="#DCEAE2" stroke="#C8D0DD"/>
+                <rect x="165" y="4" width="1" height="26" fill="#C3CBD8"/>
+                <path fill="#8A94A6" d="M20 7l4 8 8 4-8 4-4 8-4-8-8-4 8-4z"/>
+                <text x="42" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#6B7280">AI Commit All</text>
+                <text x="188" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#6B7280">&amp; Push</text>
+            </g>
+        </g>
+    </g>
+    <g transform="translate(470 110)">
+        <rect width="390" height="350" rx="8" fill="#1E2229" stroke="#3A4350"/>
+        <text x="24" y="36" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700" fill="#E5E7EB">Dark theme</text>
+        <g transform="translate(24 64)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#AAB4C2">Commit-only</text>
+            <g transform="translate(110 0)">
+                <rect x="0" y="0" width="166" height="34" rx="6" fill="#3D7CFF"/>
+                <rect x="166" y="0" width="92" height="34" rx="6" fill="#2E9D50"/>
+                <rect x="165" y="4" width="1" height="26" fill="#DBEAFE" opacity=".55"/>
+                <path fill="#EEF4FF" d="M20 7l4 8 8 4-8 4-4 8-4-8-8-4 8-4z"/>
+                <text x="42" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">AI Commit All</text>
+                <text x="188" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">&amp; Push</text>
+            </g>
+        </g>
+        <g transform="translate(24 122)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#AAB4C2">Commit + push</text>
+            <g transform="translate(110 0)">
+                <rect x="0" y="0" width="166" height="34" rx="6" fill="#3469D8"/>
+                <rect x="166" y="0" width="92" height="34" rx="6" fill="#35B86A"/>
+                <rect x="165" y="4" width="1" height="26" fill="#E9FFF3" opacity=".55"/>
+                <path fill="#EEF4FF" d="M20 7l4 8 8 4-8 4-4 8-4-8-8-4 8-4z"/>
+                <text x="42" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">AI Commit All</text>
+                <text x="188" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" fill="#FFFFFF">&amp; Push</text>
+            </g>
+        </g>
+        <g transform="translate(24 180)">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#AAB4C2">Running</text>
+            <g transform="translate(110 0)">
+                <rect x="0" y="0" width="166" height="34" rx="6" fill="#2E5EC5"/>
+                <rect x="166" y="0" width="92" height="34" rx="6" fill="#238449"/>
+                <rect x="0" y="30" width="258" height="4" rx="2" fill="#93C5FD"/>
+                <circle cx="22" cy="17" r="5" fill="#FFFFFF" opacity=".9"/>
+                <text x="42" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">Generating...</text>
+                <text x="188" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">&amp; Push</text>
+            </g>
+        </g>
+        <g transform="translate(24 238)" opacity=".72">
+            <text x="0" y="19" font-family="Inter, Arial, sans-serif" font-size="12" fill="#AAB4C2">Disabled</text>
+            <g transform="translate(110 0)">
+                <rect x="0" y="0" width="166" height="34" rx="6" fill="#333A45" stroke="#4B5563"/>
+                <rect x="166" y="0" width="92" height="34" rx="6" fill="#36443C" stroke="#4B5563"/>
+                <rect x="165" y="4" width="1" height="26" fill="#596273"/>
+                <path fill="#9CA3AF" d="M20 7l4 8 8 4-8 4-4 8-4-8-8-4 8-4z"/>
+                <text x="42" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#B8C0CC">AI Commit All</text>
+                <text x="188" y="22" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#B8C0CC">&amp; Push</text>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -12,7 +12,7 @@ Filename: `.agents/plans/PLAN-pre-release-adr-implementation.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-17T19:45:43+02:00
 - Open questions: None.
-- Implementation progress: Started.
+- Implementation progress: Task 1 complete; Task 2 not started.
 
 ## Status History
 
@@ -107,4 +107,5 @@ Reference: ADR 0047 and `PROP-02-pre-release-ux` `E002`.
 ## Handoff Notes
 
 - The worktree already contains ADR 0047 acceptance and `PROP-02` tracker consistency changes from prior steps.
-- Implementation is not approved until the maintainer explicitly approves this plan and the `Status:` changes to `Approved`.
+- The plan was approved by the maintainer on 2026-05-17 and is being implemented sequentially.
+- 2026-05-17T19:50:02+02:00: Task 1 added five split-button draft SVGs, draft scoring notes, and a decision tree; `PROP-02` `E003` and `E004` are done while `E005` remains open until final draft selection ADR exists.
