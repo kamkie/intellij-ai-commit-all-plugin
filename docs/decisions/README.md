@@ -108,7 +108,7 @@ Set `decision-makers` to the configured Git identity in `Name <email>` form.
 | [ard-0048](ard-0048-track-adr-implementation-status.md)                                 | Track ADR Implementation Status                                 | Accepted | 2026-05-17 |
 | [ard-0049](ard-0049-track-proposal-implementation-status.md)                            | Track Proposal Implementation Status                            | Accepted | 2026-05-17 |
 | [ard-0050](ard-0050-reengineer-open-questions-as-active-register.md)                    | Reengineer Open Questions As Active Register                    | Accepted | 2026-05-17 |
-| [ard-0051](ard-0051-treat-task-ids-as-tasks-lookup-shortcuts.md)                        | Treat Task IDs As TASKS Lookup Shortcuts                        | Proposed | 2026-05-17 |
+| [ard-0051](ard-0051-treat-task-ids-as-tasks-lookup-shortcuts.md)                        | Treat Task IDs As TASKS Lookup Shortcuts                        | Accepted | 2026-05-17 |
 
 ## ADR Implementation Tracker
 
@@ -178,4 +178,4 @@ Implementation evidence can be a task, approved plan, commit, file, validation r
 | [ard-0048](ard-0048-track-adr-implementation-status.md)                                 | implemented    | [docs/decisions/README.md](README.md), [validate-docs.ps1](../../scripts/validate-docs.ps1), [TASKS.md](../../TASKS.md)                                                                         | 2026-05-17 |
 | [ard-0049](ard-0049-track-proposal-implementation-status.md)                            | implemented    | [docs/proposals/README.md](../proposals/README.md), [PROPOSAL_TEMPLATE.md](../proposals/PROPOSAL_TEMPLATE.md), [validate-docs.ps1](../../scripts/validate-docs.ps1), [TASKS.md](../../TASKS.md) | 2026-05-17 |
 | [ard-0050](ard-0050-reengineer-open-questions-as-active-register.md)                    | implemented    | [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md), [validate-docs.ps1](../../scripts/validate-docs.ps1), [TASKS.md](../../TASKS.md) T-IDEA-005                                                             | 2026-05-17 |
-| [ard-0051](ard-0051-treat-task-ids-as-tasks-lookup-shortcuts.md)                        | pending        | User request for task-ID lookup rule; target [AGENTS.md](../../AGENTS.md)                                                                                                                       | 2026-05-17 |
+| [ard-0051](ard-0051-treat-task-ids-as-tasks-lookup-shortcuts.md)                        | implemented    | [AGENTS.md](../../AGENTS.md) `T-<AREA>-NNN` task lookup rule                                                                                                                                    | 2026-05-17 |
