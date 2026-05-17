@@ -6,14 +6,19 @@ Status: Draft
 
 <!-- For Status: Closed, add `Close-Reason: Released|Rejected|Superseded|Deferred|Archived`. -->
 
-Filename: `.agents/plans/P-<short-kebab-slug>.md`
+Filename: `.agents/plans/PLAN-<short-kebab-slug>.md`
 
 ## Readiness
 
 - Plan readiness: Not ready until open questions and required decisions are resolved.
 - Approved by:
+- Approved at:
 - Open questions: Yes; see `## Open Questions`.
 - Implementation progress: Not started.
+
+## Status History
+
+- YYYY-MM-DDTHH:mm:ss+HH:mm: none -> Draft by <actor Name <email>>; plan created.
 
 ## Goal
 

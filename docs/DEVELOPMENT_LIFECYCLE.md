@@ -14,7 +14,7 @@ Use this lifecycle for changes that are larger than a direct documentation edit.
 
 Create a plan in `.agents/plans/` when the work spans multiple files, changes behavior, or depends on unresolved technical choices.
 
-After creating or updating a required plan, stop for user review. Implementation may start only after explicit user approval and `Status: Approved`.
+After creating or updating a required plan, stop for user review. Implementation may start only after explicit user approval, `Status: Approved`, `Approved by:`, `Approved at:`, and a matching status-history entry are recorded.
 
 Use `docs/proposals/` before planning when the task is to collect findings, duplications, simplifications, or improvement options for maintainer triage without immediate implementation.
 

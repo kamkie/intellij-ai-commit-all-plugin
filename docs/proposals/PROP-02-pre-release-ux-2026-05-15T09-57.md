@@ -40,12 +40,12 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 | Id   | Title                                                    | Priority | Status | Decision |
 |------|----------------------------------------------------------|----------|--------|----------|
-| E001 | Clear the commit message before AI generation            | 1        | open   |          |
-| E002 | Skip the push dialog only when safe                      | 1        | open   |          |
-| E003 | Capture split-button design intent                       | 1        | open   |          |
-| E004 | Run split-button visual draft experiments                | 2        | open   |          |
-| E005 | Add a split-button decision tree and final-selection ADR | 2        | open   |          |
-| E006 | Evaluate shortcut takeover with opt-out                  | 3        | open   |          |
+| E001 | Clear the commit message before AI generation            | 1        | open   | accepted |
+| E002 | Skip the push dialog only when safe                      | 1        | open   | accepted |
+| E003 | Capture split-button design intent                       | 1        | open   | accepted |
+| E004 | Run split-button visual draft experiments                | 2        | open   | accepted |
+| E005 | Add a split-button decision tree and final-selection ADR | 2        | open   | deferred |
+| E006 | Evaluate shortcut takeover with opt-out                  | 3        | open   | accepted |
 
 ## How To Edit The Trackers
 
@@ -64,10 +64,11 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 ```yaml
 status: open
-decision:
+decision: accepted
 priority: 1
 owner:
-updated: 2026-05-15
+updated: 2026-05-15T11:31:11+02:00
+accepted_at: 2026-05-15T11:31:11+02:00
 comment: "Source: PROP-plugin-default-settings E1."
 ```
 
@@ -79,10 +80,11 @@ comment: "Source: PROP-plugin-default-settings E1."
 
 ```yaml
 status: open
-decision:
+decision: accepted
 priority: 1
 owner:
-updated: 2026-05-15
+updated: 2026-05-15T11:43:16+02:00
+accepted_at: 2026-05-15T11:43:16+02:00
 comment: "Source: PROP-plugin-default-settings E2."
 ```
 
@@ -94,10 +96,11 @@ comment: "Source: PROP-plugin-default-settings E2."
 
 ```yaml
 status: open
-decision:
+decision: accepted
 priority: 1
 owner:
-updated: 2026-05-15
+updated: 2026-05-15T11:43:16+02:00
+accepted_at: 2026-05-15T11:43:16+02:00
 comment: "Source: PROP-split-button-look-experiments E1."
 ```
 
@@ -109,11 +112,13 @@ comment: "Source: PROP-split-button-look-experiments E1."
 
 ```yaml
 status: open
-decision:
+decision: accepted
 priority: 2
 owner:
-updated: 2026-05-15
+updated: 2026-05-15T11:43:16+02:00
+accepted_at: 2026-05-15T11:43:16+02:00
 comment: "Source: PROP-split-button-look-experiments E2."
+command: it should be closer to concept graphics but without an arrow in the middle. left and right part of te button should have slightly different/contrasting color.
 ```
 
 ### E005. Add a split-button decision tree and final-selection ADR
@@ -124,10 +129,11 @@ comment: "Source: PROP-split-button-look-experiments E2."
 
 ```yaml
 status: open
-decision:
+decision: deferred
 priority: 2
 owner:
-updated: 2026-05-15
+updated: 2026-05-15T11:43:16+02:00
+decided_at: 2026-05-15T11:43:16+02:00
 comment: "Source: PROP-split-button-look-experiments E3."
 ```
 
@@ -139,10 +145,11 @@ comment: "Source: PROP-split-button-look-experiments E3."
 
 ```yaml
 status: open
-decision:
+decision: accepted
 priority: 3
 owner:
-updated: 2026-05-15
+updated: 2026-05-15T11:43:16+02:00
+accepted_at: 2026-05-15T11:43:16+02:00
 comment: "Source: PROP-plugin-default-settings E3."
 ```
 

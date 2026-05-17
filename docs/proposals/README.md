@@ -129,29 +129,31 @@ Use one `#` H1 only. Use `###` headings for individual tracked findings.
 
 ## Finding IDs
 
-Tracked findings must use stable IDs:
+Tracked findings must use stable three-digit IDs:
 
-- `E<n>` for errors, mistakes, or rule violations.
-- `D<n>` for duplications.
-- `S<n>` for simplifications, removals, or reorganizations.
+- `E001`, `E002`, and so on for errors, mistakes, or rule violations.
+- `D001`, `D002`, and so on for duplications.
+- `S001`, `S002`, and so on for simplifications, removals, or reorganizations.
 
 Number findings sequentially per letter, starting at `1`, in the order they appear.
 
 Each ID must appear in:
 
-- The finding heading, for example `### E1. Missing support policy`.
+- The finding heading, for example `### E001. Missing support policy`.
 - The `Progress Tracker` table.
 - Any cross-reference inside the proposal.
 
 Do not reuse an ID for a different finding after publication.
 
+New proposal findings must start with an empty `decision` field in both the progress tracker and the per-finding YAML block. Only maintainer triage may set a decision.
+
 ## Progress Tracker
 
 Every proposal with tracked findings must contain one compact table under `## Progress Tracker`:
 
-| Id | Title           | Priority | Status | Decision |
-|----|-----------------|----------|--------|----------|
-| E1 | Example finding | 1        | open   |          |
+| Id   | Title           | Priority | Status | Decision |
+|------|-----------------|----------|--------|----------|
+| E001 | Example finding | 1        | open   |          |
 
 Rules:
 
@@ -176,7 +178,9 @@ status: open
 decision:
 priority: <1-6>
 owner:
-updated: <YYYY-MM-DD>
+updated: <YYYY-MM-DDTHH:mm:ss+HH:mm>
+accepted_at:
+decided_at:
 comment:
 ```
 ````
@@ -189,6 +193,9 @@ Rules:
 - Keep tracker keys in the order shown above.
 - Quote YAML values that contain `:` or other special characters.
 - Use `comment: |` for multi-line comments.
+- Set `accepted_at` to an ISO 8601 timestamp with timezone offset when `decision: accepted`.
+- Set `decided_at` to an ISO 8601 timestamp with timezone offset when `decision` is a non-empty value other than `accepted`.
+- Keep `accepted_at` and `decided_at` empty until maintainer triage sets `decision`.
 
 ## Status Vocabulary
 
@@ -218,10 +225,12 @@ Use the same priority in the tracker table and the per-finding YAML block.
 
 1. Edit the finding's YAML tracker block.
 2. Mirror `status`, `decision`, and `priority` into the `Progress Tracker` row.
-3. Bump `updated` to the current date.
+3. Bump `updated` to the current timestamp.
 4. Leave `done` or `rejected` findings in place as history.
-5. When no `open` rows remain, move the proposal from `Active Proposals` to `Completed Proposals` in this README and append the completion date.
-6. Move fully retired proposals to `archive/` only when their proposal ID, finding IDs, and filename can be preserved.
+5. When setting `decision: accepted`, set `accepted_at` to the decision timestamp.
+6. When setting a non-empty decision other than `accepted`, set `decided_at` to the decision timestamp.
+7. When no `open` rows remain, move the proposal from `Active Proposals` to `Completed Proposals` in this README and append the completion date.
+8. Move fully retired proposals to `archive/` only when their proposal ID, finding IDs, and filename can be preserved.
 
 ## Template
 

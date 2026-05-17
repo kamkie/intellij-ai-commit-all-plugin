@@ -28,6 +28,13 @@ This is the AI entry point for the repository. Keep task context small and read 
 - Proposals: `docs/proposals/`
 - Decision records: `docs/decisions/`
 
+## Artifact Lookup
+
+- Treat `ard-NNNN-<slug>.md` or `ard-NNNN` references as decision records and search `docs/decisions/` first.
+- Treat `PLAN-<short-kebab-slug>.md` or `PLAN-<short-kebab-slug>` references as plans and search `.agents/plans/` first, then `.agents/plans/archive/` when the active file is not found.
+- Treat `PROP-<short-kebab-slug>-<YYYY-MM-DD>T<HH-MM>.md` or `PROP-<short-kebab-slug>` references as proposals and search `docs/proposals/` first, then `docs/proposals/archive/` when the active file is not found.
+- Prefer exact filename lookup when a full filename is supplied. If only an ID or prefix is supplied, use a scoped search in the owning directory before falling back to a repository-wide search.
+
 ## Priority Order
 
 When instructions overlap, apply this project-specific order:

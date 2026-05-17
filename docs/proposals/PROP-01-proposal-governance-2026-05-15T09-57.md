@@ -37,9 +37,9 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 | Id   | Title                                        | Priority | Status | Decision |
 |------|----------------------------------------------|----------|--------|----------|
-| S001 | Normalize active proposal finding IDs        | 1        | open   |          |
-| S002 | Require author-empty proposal decisions      | 1        | open   |          |
-| S003 | Update proposal docs and validation together | 2        | open   |          |
+| S001 | Normalize active proposal finding IDs        | 1        | open   | accepted |
+| S002 | Require author-empty proposal decisions      | 1        | open   | accepted |
+| S003 | Update proposal docs and validation together | 2        | open   | accepted |
 
 ## How To Edit The Trackers
 
@@ -70,7 +70,8 @@ status: open
 decision: accepted
 priority: 1
 owner:
-updated: 2026-05-15
+updated: 2026-05-15T11:28:58+02:00
+accepted_at: 2026-05-15T11:28:58+02:00
 comment: "Source: PROP-proposal-id-and-markdown-formatting E001."
 ```
 
@@ -85,7 +86,8 @@ status: open
 decision: accepted
 priority: 1
 owner:
-updated: 2026-05-15
+updated: 2026-05-15T11:28:58+02:00
+accepted_at: 2026-05-15T11:28:58+02:00
 comment: "Source: PROP-orchestrator-worker-rules S8."
 ```
 
@@ -100,7 +102,8 @@ status: open
 decision: accepted
 priority: 2
 owner:
-updated: 2026-05-15
+updated: 2026-05-15T11:28:58+02:00
+accepted_at: 2026-05-15T11:28:58+02:00
 comment: "Sources: PROP-proposal-id-and-markdown-formatting E002 and S001; PROP-orchestrator-worker-rules S8."
 ```
 

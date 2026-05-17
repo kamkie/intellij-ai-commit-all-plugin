@@ -35,6 +35,8 @@ Use the MADR `status` front matter field with values such as:
 - `rejected`: intentionally not chosen.
 - `deprecated`: retained for history but no longer recommended.
 
+Accepted ADRs created or materially updated from ARD 0045 onward must include `accepted_at: <timestamp>` in front matter. Use ISO 8601 timestamps with timezone offsets, for example `2026-05-15T10:30:00+02:00`. Historical accepted ADRs may omit `accepted_at` unless they are materially updated.
+
 ## Naming
 
 Use a four-digit sequence and lowercase slug in this filename shape:
@@ -97,5 +99,6 @@ Set `decision-makers` to the configured Git identity in `Name <email>` form.
 | [ard-0041](ard-0041-gate-adr-and-plan-implementation.md)                                | Gate ADR And Plan Implementation                                | Accepted | 2026-05-15 |
 | [ard-0042](ard-0042-record-plan-approval-identity.md)                                   | Record Plan Approval Identity                                   | Accepted | 2026-05-15 |
 | [ard-0043](ard-0043-use-fixed-width-proposal-finding-ids-and-empty-author-decisions.md) | Use Fixed-Width Proposal Finding IDs And Empty Author Decisions | Accepted | 2026-05-15 |
-| [ard-0044](ard-0044-use-filename-prefixes-for-artifact-lookup.md)                       | Use Filename Prefixes For Artifact Lookup                       | Proposed | 2026-05-15 |
-| [ard-0045](ard-0045-record-artifact-decision-and-status-timestamps.md)                  | Record Artifact Decision And Status Timestamps                  | Proposed | 2026-05-15 |
+| [ard-0044](ard-0044-use-filename-prefixes-for-artifact-lookup.md)                       | Use Filename Prefixes For Artifact Lookup                       | Accepted | 2026-05-15 |
+| [ard-0045](ard-0045-record-artifact-decision-and-status-timestamps.md)                  | Record Artifact Decision And Status Timestamps                  | Accepted | 2026-05-15 |
+| [ard-0046](ard-0046-record-plan-status-actor-source.md)                                 | Record Plan Status Actor Source                                 | Accepted | 2026-05-15 |

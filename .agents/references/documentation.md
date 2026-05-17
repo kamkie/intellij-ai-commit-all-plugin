@@ -27,10 +27,13 @@ Use this guide when adding or updating repository documentation.
 - Do not imply plugin implementation has started until Gradle, Kotlin, or IntelliJ plugin scaffold files exist.
 - Prefer concrete commands and artifact names over generic process language.
 - Do not load every AI instruction file automatically. Start from `AGENTS.md`, use the guidance map, and load only the owner documents needed for the current documentation change unless the task is a broad guidance audit or cross-document consistency review.
+- Route artifact references by stable filename prefix before broad search: `ard-NNNN` to `docs/decisions/`, `PLAN-<slug>` to `.agents/plans/` then `.agents/plans/archive/`, and `PROP-<slug>` to `docs/proposals/` then `docs/proposals/archive/`.
 - Give open questions stable IDs in `docs/decisions/OPEN_QUESTIONS.md`.
 - Give every `TASKS.md` item a stable task ID in the form `T-AREA-NNN`, keep the ID stable when wording or ordering changes, and do not renumber existing task IDs.
 - Give every plan a stable `Plan-ID` in the form `PLAN-<short-kebab-slug>`, include it in active and archived filenames, keep it stable when title, filename, status, or wording changes, and avoid strictly number-based plan IDs.
 - Give every proposal a stable `proposal_id` in the form `PROP-<short-kebab-slug>`, include it in active and archived filenames, keep it stable when title, filename, status, wording, or archive location changes, and do not reuse retired proposal IDs.
+- Use three-digit proposal finding IDs such as `E001`, `D001`, and `S001` for active proposal findings; archived proposals may keep historical IDs unless materially updated.
+- Keep new proposal finding decisions empty until maintainer triage. When a finding decision is accepted, add `accepted_at:`; when a non-empty decision is not accepted, add `decided_at:`. Use ISO 8601 timestamps with timezone offsets.
 - Mark blocked `TASKS.md` items with `depends on: Q-ID`, and tasks that answer questions with `resolves: Q-ID`.
 - Follow `docs/decisions/README.md` for project decisions and repository rule changes.
 - When a requested documentation or workflow change requires creating an ADR, create the ADR first and stop. Continue with governed docs only after the user reviews and explicitly accepts it.

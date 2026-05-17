@@ -10,8 +10,16 @@ Filename: `.agents/plans/PLAN-commit-tool-window-actions.md`
 
 - Plan readiness: Approved; ready for implementation.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Approved at: 2026-05-15T04:23:08+02:00
 - Open questions: None.
 - Implementation progress: Implemented through committed plan tasks; automated validation passed.
+
+## Status History
+
+- 2026-05-15T03:55:19+02:00: none -> Draft by Kamil Kiewisz <kamkie@outlook.com>; plan created.
+- 2026-05-15T04:23:08+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
+- 2026-05-15T04:41:13+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; orchestrated implementation started.
+- 2026-05-15T06:39:50+02:00: In Progress -> Implemented by OpenAI Codex <codex@openai.com>; planned changes completed and validated.
 
 ## Goal
 

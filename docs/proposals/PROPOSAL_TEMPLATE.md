@@ -15,7 +15,7 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 - [Progress Tracker](#progress-tracker)
 - [How To Edit The Trackers](#how-to-edit-the-trackers)
 - [Errors And Mistakes](#errors-and-mistakes)
-    - [E1. Example error](#e1-example-error)
+    - [E001. Example error](#e001-example-error)
 - [Duplications To Remove Or Reduce](#duplications-to-remove-or-reduce)
 - [Simplification Opportunities](#simplification-opportunities)
 - [Smaller / Stylistic Items](#smaller--stylistic-items)
@@ -32,20 +32,21 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 Compact overview only. Edit the YAML tracker inside each section below; this table mirrors statuses at a glance.
 
-| Id | Title         | Priority | Status | Decision |
-|----|---------------|----------|--------|----------|
-| E1 | Example error | 1        | open   |          |
+| Id   | Title         | Priority | Status | Decision |
+|------|---------------|----------|--------|----------|
+| E001 | Example error | 1        | open   |          |
 
 ## How To Edit The Trackers
 
 - Edit the fenced `yaml` block inside the finding section.
 - Mirror `status`, `decision`, and `priority` to the row above.
-- Bump `updated` to the current date.
+- Bump `updated` to the current timestamp.
+- Set `accepted_at` when `decision: accepted`; set `decided_at` for any other non-empty decision.
 - Leave completed or rejected findings in place as history.
 
 ## Errors And Mistakes
 
-### E1. Example error
+### E001. Example error
 
 - Evidence: Cite files, line references, commands, or observable facts.
 - Impact: Explain why it matters.
@@ -56,17 +57,19 @@ status: open
 decision:
 priority: 1
 owner:
-updated: YYYY-MM-DD
+updated: YYYY-MM-DDTHH:mm:ss+HH:mm
+accepted_at:
+decided_at:
 comment:
 ```
 
 ## Duplications To Remove Or Reduce
 
-Add `D<n>` findings here, or write `_No tracked findings._`.
+Add `D001`, `D002`, and later findings here, or write `_No tracked findings._`.
 
 ## Simplification Opportunities
 
-Add `S<n>` findings here, or write `_No tracked findings._`.
+Add `S001`, `S002`, and later findings here, or write `_No tracked findings._`.
 
 ## Smaller / Stylistic Items
 
@@ -74,7 +77,7 @@ Add `S<n>` findings here, or write `_No tracked findings._`.
 
 ## Suggested Priority Order
 
-1. `E1` - explain why this should happen first.
+1. `E001` - explain why this should happen first.
 
 ## Out Of Scope
 

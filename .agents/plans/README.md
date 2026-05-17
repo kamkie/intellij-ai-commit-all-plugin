@@ -54,10 +54,22 @@ Every plan must keep a short `## Readiness` section near the top with:
 - Open questions.
 - Implementation progress.
 
-Approved and post-approval plans with `Status: Approved`, `In Progress`, `Blocked`, `Implemented`, or `Closed` must include a non-empty `Approved by:` entry in `## Readiness`.
+Approved and post-approval plans with `Status: Approved`, `In Progress`, `Blocked`, `Implemented`, or `Closed` must include non-empty `Approved by:` and `Approved at:` entries in `## Readiness`.
 
 Use the configured Git identity in `Name <email>` form when the configured repository user approved the plan, resolved from `git config user.name` and `git config user.email` when approval is recorded. Use another approver name only when the current user request explicitly supplies it.
 
 Draft or otherwise unapproved plans must not claim approval. They may omit `Approved by:` or leave it empty.
+
+Every plan must keep a `## Status History` section. Each status change must append a timestamped entry in this shape:
+
+```text
+- 2026-05-15T10:30:00+02:00: Draft -> Approved by Project Maintainer <maintainer@example.com>; explicit user approval recorded.
+```
+
+Status-history actors are separate from `Approved by:` and must identify who or what caused that specific transition. For direct human commands that record a decision or requested state change, use the configured Git identity in `Name <email>` form unless the request explicitly supplies another human identity. For autonomous, orchestrated, or delegated implementation work performed by Codex or another agent, use the responsible agent identity in `Name <email>` form, matching AI-created commit trailers.
+
+Do not copy the plan approver identity into later implementation status-history entries unless the later status change is itself a direct human command.
+
+The latest status-history entry must match the current `Status:` value. Use `none -> Draft` for the first creation entry when no previous status existed.
 
 Keep `Plan-ID` stable when the plan title, filename, status, or wording changes. If a plan is renamed, preserve the `Plan-ID` in the filename. If a plan is split, keep the original ID for the closest surviving plan and assign new meaningful IDs to new plans.

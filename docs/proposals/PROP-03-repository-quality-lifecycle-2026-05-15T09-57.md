@@ -47,8 +47,8 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 | Id   | Title                                                      | Priority | Status | Decision |
 |------|------------------------------------------------------------|----------|--------|----------|
-| E001 | Add Dependabot configuration                               | 1        | open   |          |
-| E002 | Add CodeQL analysis                                        | 1        | open   |          |
+| E001 | Add Dependabot configuration                               | 1        | open   | accepted |
+| E002 | Add CodeQL analysis                                        | 1        | open   | accepted |
 | E003 | Add unified formatting and linting enforcement             | 2        | open   |          |
 | E004 | Validate Gradle wrapper integrity in CI                    | 2        | open   |          |
 | E005 | Add security policy and secret-scanning guidance           | 2        | open   |          |
@@ -77,10 +77,11 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 ```yaml
 status: open
-decision:
+decision: accepted
 priority: 1
 owner:
-updated: 2026-05-15
+updated: 2026-05-15T11:43:16+02:00
+accepted_at: 2026-05-15T11:43:16+02:00
 comment: "Source: PROP-repo-hygiene-automation E3."
 ```
 
@@ -92,10 +93,11 @@ comment: "Source: PROP-repo-hygiene-automation E3."
 
 ```yaml
 status: open
-decision:
+decision: accepted
 priority: 1
 owner:
-updated: 2026-05-15
+updated: 2026-05-15T11:43:16+02:00
+accepted_at: 2026-05-15T11:43:16+02:00
 comment: "Source: PROP-repo-hygiene-automation E1."
 ```
 
