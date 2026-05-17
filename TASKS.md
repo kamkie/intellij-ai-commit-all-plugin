@@ -19,7 +19,7 @@ Notation:
 - [x] T-COMMIT-006: Wire the `Commit` section to run the `AI` section behavior and then commit after successful AI generation and normal IDE commit checks. (Plan `PLAN-three-section-ai-commit-push-control`, ADR 0052)
 - [x] T-COMMIT-007: Wire the `Push` section to run the `Commit` section behavior and then push with the ADR 0047 safe immediate push fallback. (Plan `PLAN-three-section-ai-commit-push-control`, ADR 0052, ADR 0047)
 - [x] T-UI-001: Apply the ADR 0053 selected violet AI snake styling reference, including passive, cumulative hover, clicked/running, disabled, light, and dark states. (Plan `PLAN-three-section-ai-commit-push-control`, ADR 0053)
-- [ ] T-VAL-023: Add or refresh automated, documentation, and manual sandbox validation for `AI`, `Commit`, and `Push` section behavior and rendering. (Plan `PLAN-three-section-ai-commit-push-control`, ADR 0052, ADR 0053)
+- [x] T-VAL-023: Add or refresh automated, documentation, and manual sandbox validation for `AI`, `Commit`, and `Push` section behavior and rendering. (Plan `PLAN-three-section-ai-commit-push-control`, ADR 0052, ADR 0053)
 
 ## Completed Task Archive
 

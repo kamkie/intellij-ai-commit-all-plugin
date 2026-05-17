@@ -1,11 +1,12 @@
 # AI Commit All
 
-AI Commit All is an IntelliJ Platform plugin for committing every non-ignored Git change through the IDE Commit tool window after JetBrains AI Assistant generates the commit message.
+AI Commit All is an IntelliJ Platform plugin for preparing, committing, and pushing every non-ignored Git change through the IDE Commit tool window after JetBrains AI Assistant generates the commit message.
 
-The Commit tool window gets an `AI Commit All` split-button group:
+The Commit tool window gets a compact `<AI icon> AI | Commit | Push` control:
 
-- `AI Commit All` generates a commit message and commits all eligible Git changes.
-- `& Push` generates a commit message, commits all eligible Git changes, and pushes immediately only when the Git state is safe and unambiguous; otherwise it falls back to the IDE commit-and-push executor.
+- `AI` includes every eligible Git change, generates a commit message, and stops before committing.
+- `Commit` runs the `AI` section behavior, then commits all eligible Git changes through the standard IDE commit workflow.
+- `Push` runs the `Commit` section behavior, then pushes immediately only when the Git state is safe and unambiguous; otherwise it falls back to the IDE commit-and-push executor.
 
 ## Current Status
 
@@ -18,12 +19,12 @@ The current implementation:
 - Includes modified, added, deleted, moved or renamed, unversioned, and resolved-conflict paths exposed by IntelliJ VCS APIs.
 - Excludes ignored files through IntelliJ VCS APIs.
 - Invokes JetBrains AI Assistant commit-message generation through the IntelliJ action system.
-- Waits for AI generation to complete before committing.
+- Lets the `AI` section stop after AI generation without committing.
+- Waits for AI generation to complete before the `Commit` or `Push` sections continue.
 - Stops without committing or pushing when AI generation times out, produces an empty or unchanged message, or the user edits the message while generation is running.
 - Executes commit and commit-and-push through the active IntelliJ commit workflow so IDE before-commit checks, confirmations, warnings, commit errors, and push errors stay in charge.
 - Skips the Push Commits dialog only when every affected Git root is on a normal tracked branch, the local branch exactly matches its tracked upstream before the commit, and the target is the standard tracked branch.
-
-Accepted follow-up direction: ADR 0052 and ADR 0053 replace this with a planned three-section `<AI icon> AI | Commit | Push` control using the selected violet AI snake styling reference. That runtime replacement is not implemented yet; the usage instructions below describe the current two-segment prerelease implementation.
+- Uses the ADR 0053 violet AI, blue Commit, green Push segmented styling with cumulative hover and a snake-loop running indication on the active section.
 
 Manual sandbox validation is tracked in [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
 
@@ -70,11 +71,11 @@ Pull-request CI runs `test`, `verifyPluginStructure`, and `buildPlugin` without 
 2. Open the Commit tool window.
 3. Make sure JetBrains AI Assistant is installed, enabled, and available for commit-message generation.
 4. Create committable Git changes.
-5. Use `AI Commit All` for commit-only, or `& Push` for commit-and-push.
+5. Use `AI` to generate a message without committing, `Commit` to generate and commit, or `Push` to generate, commit, and push.
 
-The actions are hidden outside an active supported Git commit workflow. They are disabled when no non-ignored committable Git files are available or when the required workflow executor is unavailable.
+The control is hidden outside an active supported Git commit workflow. Sections are disabled when no non-ignored committable Git files are available or when the required workflow executor is unavailable.
 
-For `& Push`, missing upstreams, unresolved conflicts, non-normal Git states, ambiguous targets, protected targets, or already-diverged local and upstream branches use the standard IDE commit-and-push executor and Push Commits dialog.
+For `Push`, missing upstreams, unresolved conflicts, non-normal Git states, ambiguous targets, protected targets, or already-diverged local and upstream branches use the standard IDE commit-and-push executor and Push Commits dialog.
 
 ## Settings
 
@@ -90,7 +91,7 @@ Both values must be positive. Timeout and user-edit paths stop without committin
 - Git is the only supported VCS for the first implementation.
 - The plugin relies on compatible IntelliJ Commit tool window APIs and fail-closed reflection boundaries for inclusion state.
 - AI Assistant action discovery uses known action IDs and action presentation fallback; AI Assistant UI, sign-in, and runtime availability messages remain owned by JetBrains AI Assistant where available.
-- Manual sandbox validation for icon rendering, staging-area modes, AI Assistant unavailable states, and full commit/push UI behavior is not yet complete. See [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
+- Manual sandbox validation for final three-section control rendering, staging-area modes, AI Assistant unavailable states, and full commit/push UI behavior is not yet complete. See [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
 - Marketplace signing and publishing automation is configured but has not been executed for a public release. The first Marketplace upload may still require manual JetBrains setup.
 
 ## Source Repository
