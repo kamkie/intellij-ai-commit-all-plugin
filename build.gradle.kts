@@ -64,13 +64,15 @@ intellijPlatform {
             <p>Source code: <a href="https://github.com/kamkie/intellij-ai-commit-all-plugin">https://github.com/kamkie/intellij-ai-commit-all-plugin</a></p>
         """.trimIndent()
         changeNotes = """
-            <p>v0.1.0-alpha.2 prerelease.</p>
+            <p>v0.1.0-alpha.3 prerelease.</p>
             <ul>
                 <li>Adds the working AI, Commit, and Push control to the Commit tool window.</li>
                 <li>Selects or stages non-ignored Git changes across changelists, Git staging-area workflows, and Git roots, including unversioned and resolved-conflict files.</li>
                 <li>Invokes JetBrains AI Assistant commit-message generation through the IntelliJ action system and waits for completion.</li>
                 <li>Lets the AI section generate a message and stop before commit; Commit and Push continue only after successful AI generation.</li>
                 <li>Stops without committing when AI generation times out, remains running, produces no usable message, or the user edits the message.</li>
+                <li>Clears stale commit-message text before AI generation by default, with a settings opt-out.</li>
+                <li>Confirms Git staging-area inclusion before AI generation, including nested module and product paths.</li>
                 <li>Commits through the standard IntelliJ workflow and pushes immediately only when the tracked-upstream Git state is safe; otherwise falls back to the IDE commit-and-push executor.</li>
                 <li>Routes IDE commit shortcuts to AI Commit All Commit and Push workflows by default, with a settings opt-out.</li>
                 <li>Adds settings, validation tests, pull-request CI, Plugin Verifier CI, signing configuration, and gated Marketplace publishing automation.</li>
