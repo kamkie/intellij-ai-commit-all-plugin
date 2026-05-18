@@ -22,6 +22,7 @@ Notation:
 - [ ] T-REL-012: add a `release` workflow to publish the plugin to the marketplace
 - [ ] T-REL-013: add a `sign` workflow to sign the plugin jar with a private key
 - [ ] T-REL-014: add a `ci` workflow to run the plugin verifier on the latest stable IDE build
+- [ ] T-REL-015: add Gradle dependencies submission to GitHub actions.
 
 ## Completed Task Archive
 
