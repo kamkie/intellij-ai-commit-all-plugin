@@ -88,7 +88,7 @@ For `Push`, missing upstreams, unresolved conflicts, non-normal Git states, ambi
 
 Open `Settings | Tools | AI Commit All` to configure:
 
-- AI generation timeout, default `5000` ms.
+- AI generation timeout, default `30000` ms.
 - Completion check interval, default `500` ms.
 - Clear commit message before AI generation, default enabled.
 - Use AI Commit All for IDE commit shortcuts, default enabled.

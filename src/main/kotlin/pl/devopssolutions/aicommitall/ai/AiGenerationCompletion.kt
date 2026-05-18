@@ -142,7 +142,7 @@ internal data class AiGenerationCompletionOptions(
 
     companion object {
         val DEFAULT: AiGenerationCompletionOptions = AiGenerationCompletionOptions(
-            timeout = Duration.ofSeconds(5),
+            timeout = Duration.ofSeconds(30),
             checkInterval = Duration.ofMillis(500),
         )
     }

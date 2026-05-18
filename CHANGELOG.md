@@ -21,6 +21,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 - Cleared commit-message control and document data before AI generation, not only the public `CommitMessageUi` text accessor.
 - Moved all-files selection and Git staging confirmation off the UI event thread while returning Commit UI updates and AI invocation to the UI thread, so staging-area mode can reach AI commit-message generation.
 - Prevented the running indicator from throwing a `negative dash phase` paint exception after animation starts.
+- Increased the default AI generation timeout to 30 seconds so cold AI Assistant requests can finish in the first Commit or Push attempt.
 
 ## [v0.1.0-alpha.5] - 2026-05-18
 

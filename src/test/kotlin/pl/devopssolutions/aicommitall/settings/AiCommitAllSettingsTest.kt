@@ -9,7 +9,7 @@ internal class AiCommitAllSettingsTest {
     fun `uses accepted AI completion defaults`() {
         val options = AiCommitAllSettings().completionOptions()
 
-        assertEquals(5_000, options.timeout.toMillis())
+        assertEquals(30_000, options.timeout.toMillis())
         assertEquals(500, options.checkInterval.toMillis())
         assertEquals(true, AiCommitAllSettings().clearCommitMessageBeforeGeneration())
         assertEquals(true, AiCommitAllSettings().useVcsShortcutsForAiCommitAll())
@@ -27,7 +27,7 @@ internal class AiCommitAllSettingsTest {
         )
 
         val options = settings.completionOptions()
-        assertEquals(5_000, options.timeout.toMillis())
+        assertEquals(30_000, options.timeout.toMillis())
         assertEquals(500, options.checkInterval.toMillis())
         assertEquals(true, settings.clearCommitMessageBeforeGeneration())
         assertEquals(true, settings.useVcsShortcutsForAiCommitAll())
