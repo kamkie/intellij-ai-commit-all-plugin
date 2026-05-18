@@ -218,13 +218,19 @@ internal class AiCommitAllThreeSectionControl(
             AiCommitAllControlSection.Push -> ControlColors.pushSnake
             else -> ControlColors.aiCommitSnake
         }
+        val dashLength = JBUI.scale(18).toFloat()
+        val gapLength = max(JBUI.scale(116).toFloat(), snakeBounds.width * 2f)
+        val dashPhase = positiveReversePhase(
+            offset = snakeOffset,
+            cycleLength = dashLength + gapLength,
+        )
         graphics.stroke = BasicStroke(
             strokeWidth,
             BasicStroke.CAP_ROUND,
             BasicStroke.JOIN_ROUND,
             JBUI.scale(10).toFloat(),
-            floatArrayOf(JBUI.scale(18).toFloat(), max(JBUI.scale(116).toFloat(), snakeBounds.width * 2f)),
-            -snakeOffset,
+            floatArrayOf(dashLength, gapLength),
+            dashPhase,
         )
         graphics.draw(RoundRectangle2D.Float(
             snakeBounds.x.toFloat(),
@@ -477,6 +483,22 @@ internal class AiCommitAllThreeSectionControl(
 
     private fun Int.floorMod(other: Int): Int =
         ((this % other) + other) % other
+
+    private fun positiveReversePhase(
+        offset: Float,
+        cycleLength: Float,
+    ): Float {
+        if (cycleLength <= 0f) {
+            return 0f
+        }
+
+        val normalizedOffset = ((offset % cycleLength) + cycleLength) % cycleLength
+        return if (normalizedOffset == 0f) {
+            0f
+        } else {
+            cycleLength - normalizedOffset
+        }
+    }
 
     private val Rectangle.right: Int
         get() = x + width

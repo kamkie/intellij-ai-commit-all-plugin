@@ -72,6 +72,7 @@ intellijPlatform {
                 <li>Binds plugin shortcut actions directly to the IDE commit shortcuts so takeover is registered even when shortcut mirroring is insufficient.</li>
                 <li>Clears commit-message control and document data before AI generation, not only the public CommitMessageUi text accessor.</li>
                 <li>Moves all-files selection and Git staging confirmation off the UI event thread while returning Commit UI updates and AI invocation to the UI thread, so staging-area mode can reach AI commit-message generation.</li>
+                <li>Prevents the running indicator from throwing a negative dash phase paint exception after animation starts.</li>
                 <li>Preserves Git staging-area paths when synchronizing fallback Commit tool window inclusion, so already staged files are not dropped from the plugin workflow.</li>
                 <li>Ensures the three-section control exposes its fallback accessibility description when Swing provides a blank description.</li>
                 <li>Refreshes the three-section control running indicator immediately when AI activity starts or finishes.</li>

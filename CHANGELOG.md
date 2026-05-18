@@ -20,6 +20,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 - Bound plugin shortcut actions directly to the IDE commit shortcuts so takeover is registered even when shortcut mirroring is insufficient.
 - Cleared commit-message control and document data before AI generation, not only the public `CommitMessageUi` text accessor.
 - Moved all-files selection and Git staging confirmation off the UI event thread while returning Commit UI updates and AI invocation to the UI thread, so staging-area mode can reach AI commit-message generation.
+- Prevented the running indicator from throwing a `negative dash phase` paint exception after animation starts.
 
 ## [v0.1.0-alpha.5] - 2026-05-18
 

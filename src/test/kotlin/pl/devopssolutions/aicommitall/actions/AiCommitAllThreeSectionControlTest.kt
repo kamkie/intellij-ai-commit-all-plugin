@@ -3,6 +3,7 @@ package pl.devopssolutions.aicommitall.actions
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
+import java.awt.image.BufferedImage
 import javax.swing.KeyStroke
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -168,6 +169,24 @@ internal class AiCommitAllThreeSectionControlTest {
         assertTrue(!control.isEnabled)
     }
 
+    @Test
+    fun `running indicator paints after animation offset advances`() {
+        val control = testControl(
+            state = testState(runningSection = AiCommitAllControlSection.Commit),
+        )
+        control.setSnakeOffsetForTest(8f)
+        val image = BufferedImage(control.width, control.height, BufferedImage.TYPE_INT_ARGB)
+        val graphics = image.createGraphics()
+
+        try {
+            control.paint(graphics)
+        } finally {
+            graphics.dispose()
+        }
+
+        assertTrue((image.getRGB(control.width / 2, control.height / 2) ushr 24) > 0)
+    }
+
     private fun testControl(
         state: AiCommitAllControlState = testState(),
         activateSection: (AiCommitAllControlSection, java.awt.event.InputEvent?) -> Unit = { _, _ -> },
@@ -249,5 +268,11 @@ internal class AiCommitAllThreeSectionControlTest {
         val actionKey = requireNotNull(inputMap.get(KeyStroke.getKeyStroke(keyCode, 0)))
         val action = requireNotNull(actionMap.get(actionKey))
         action.actionPerformed(ActionEvent(this, ActionEvent.ACTION_PERFORMED, actionKey.toString()))
+    }
+
+    private fun AiCommitAllThreeSectionControl.setSnakeOffsetForTest(offset: Float) {
+        val field = AiCommitAllThreeSectionControl::class.java.getDeclaredField("snakeOffset")
+        field.isAccessible = true
+        field.setFloat(this, offset)
     }
 }
