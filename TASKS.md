@@ -12,14 +12,9 @@ Notation:
 
 ## Open Backlog
 
-### Bugs
-
-- [ ] T-BUG-010: tasks should be marked completed after all the work is finished and verified
-
 ### Ideas
 
 - [ ] T-IDEA-006: proposals file ergonomics improvements
-- [ ] T-IDEA-007: externalize changelog org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformExtension.PluginConfiguration.getChangeNotes
 
 ### Publishing, Signing, Marketplace, And CI
 
@@ -221,6 +216,7 @@ Archived as of `v0.1.0-alpha.1` release preparation.
 - [x] T-BUG-007: Trigger synchronous external file reloads after staging paths, retry the add/reload/recheck loop, and stop before AI generation until every expected path is confirmed staged.
 - [x] T-BUG-008: changelist workflow works ok. staging still have problems. all files in the staging area disappear momentarily, and the workflow stops
 - [x] T-BUG-009: keep the commit push button animation running through the post-commit push handoff.
+- [x] T-BUG-010: require task completion moves only after the work is finished, validated, and self-reviewed.
 
 ### Ideas
 
@@ -228,7 +224,7 @@ Archived as of `v0.1.0-alpha.1` release preparation.
 - [x] T-IDEA-003: Add an ADR implementation tracker to `docs/decisions/README.md`. (ADR 0048)
 - [x] T-IDEA-004: Add proposal implementation status tracking through per-finding status values and a README summary. (ADR 0049)
 - [x] T-IDEA-005: Reengineer `docs/decisions/OPEN_QUESTIONS.md` as an active question register. (ADR 0050)
-- [x] T-IDEA-007: extend animation to go through all stages `ai -> commit -> push`
+- [x] T-IDEA-007: extend animation to go through all stages `ai -> commit -> push`; externalize IntelliJ Platform Gradle plugin change notes from the build script.
 - [x] T-IDEA-008: commit animation should wait for all commits checks to finish before starting the push.
 - [x] T-IDEA-010: keep `Push` clickable for already-created outgoing commits when there are no committable changes.
 - [x] T-IDEA-011: remove the standard IntelliJ `Commit and Push...` toolbar action while this plugin control is enabled.

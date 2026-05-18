@@ -14,6 +14,18 @@ This file also owns AI-facing commit-message rules. The repository root `.gitmes
 6. Self-review: use `.agents/references/reviews.md` to check for behavior, compatibility, and validation gaps.
 7. Report evidence: summarize changed files, validation run, and any remaining risk.
 
+## Task Completion Timing
+
+For `TASKS.md` items, keep the task in the open backlog while implementing. Do not move it to the completed archive as part of the initial documentation alignment.
+
+Move a task to the completed archive only after:
+
+- The requested implementation or documentation change is finished.
+- Task-appropriate validation from `.agents/references/testing.md` has passed or an explicit skipped-check reason is recorded.
+- Self-review has checked for behavior, compatibility, documentation, and validation gaps.
+
+After moving a `TASKS.md` task to the completed archive, rerun documentation validation and `git diff --check` so the final task-state edit is also verified before handoff or commit.
+
 ## Multi-Task Plans
 
 When working from a plan with `Status: Approved` that contains multiple implementation tasks, treat each named task as its own execution unit:

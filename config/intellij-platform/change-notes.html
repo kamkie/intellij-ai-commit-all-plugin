@@ -1,0 +1,66 @@
+<p>v0.1.0-alpha.7 prerelease.</p>
+<ul>
+    <li>Keeps the Push section available for already-created outgoing Git commits when there are no committable changes,
+        delegating that case to the IDE push workflow.
+    </li>
+    <li>Replaces the standard Commit tool window Commit and Push toolbar action with the plugin's three-section control
+        while preserving standard IDE executor and shortcut delegation paths.
+    </li>
+    <li>Matches the three-section control corner radius to neighboring IDE toolbar buttons.</li>
+    <li>Advances the progress animation from AI to Commit to Push, and keeps it active through the post-commit push
+        handoff.
+    </li>
+    <li>Adds repository quality and security automation for wrapper validation, source formatting, documentation
+        validation, CodeQL scanning, Dependabot, CODEOWNERS, security reporting, and contribution templates.
+    </li>
+    <li>Waits through initial AI Assistant startup polling so Commit and Push workflows do not stop before generation
+        begins.
+    </li>
+    <li>Prevents duplicate workflow starts from rapid repeated action or shortcut invocations.</li>
+    <li>Allows safe immediate push on protected branches when no force push is required.</li>
+    <li>Binds plugin shortcut actions directly to the IDE commit shortcuts so takeover is registered even when shortcut
+        mirroring is insufficient.
+    </li>
+    <li>Clears commit-message control and document data before AI generation, not only the public CommitMessageUi text
+        accessor.
+    </li>
+    <li>Moves all-files selection and Git staging confirmation off the UI event thread while returning Commit UI updates
+        and AI invocation to the UI thread, so staging-area mode can reach AI commit-message generation.
+    </li>
+    <li>Prevents the running indicator from throwing a negative dash phase paint exception after animation starts.</li>
+    <li>Increases the default AI generation timeout to 30 seconds so cold AI Assistant requests can finish in the first
+        Commit or Push attempt.
+    </li>
+    <li>Preserves Git staging-area paths when synchronizing fallback Commit tool window inclusion, so already staged
+        files are not dropped from the plugin workflow.
+    </li>
+    <li>Ensures the three-section control exposes its fallback accessibility description when Swing provides a blank
+        description.
+    </li>
+    <li>Refreshes the three-section control running indicator immediately when AI activity starts or finishes.</li>
+    <li>Reloads externally changed staged files before each Git staging tracker recheck, with bounded retries before AI
+        commit-message generation.
+    </li>
+    <li>Adds the working AI, Commit, and Push control to the Commit tool window.</li>
+    <li>Selects or stages non-ignored Git changes across changelists, Git staging-area workflows, and Git roots,
+        including unversioned and resolved-conflict files.
+    </li>
+    <li>Invokes JetBrains AI Assistant commit-message generation through the IntelliJ action system and waits for
+        completion.
+    </li>
+    <li>Lets the AI section generate a message and stop before commit; Commit and Push continue only after successful AI
+        generation.
+    </li>
+    <li>Stops without committing when AI generation times out, remains running, produces no usable message, or the user
+        edits the message.
+    </li>
+    <li>Clears stale commit-message text before AI generation by default, with a settings opt-out.</li>
+    <li>Confirms Git staging-area inclusion before AI generation, including nested module and product paths.</li>
+    <li>Commits through the standard IntelliJ workflow and pushes immediately only when the tracked-upstream Git state
+        is safe; otherwise falls back to the IDE commit-and-push executor.
+    </li>
+    <li>Routes IDE commit shortcuts to AI Commit All Commit and Push workflows by default, with a settings opt-out.</li>
+    <li>Adds settings, validation tests, pull-request CI, Plugin Verifier CI, signing configuration, and gated
+        Marketplace publishing automation.
+    </li>
+</ul>
