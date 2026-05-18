@@ -21,11 +21,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.vcs.commit.CommitExecutorListener
 import com.intellij.vcs.commit.CommitWorkflowHandler
-import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
-import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushDecision
-import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushFallbackReason
-import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushPlan
-import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushSupport
+import pl.devopssolutions.aicommitall.vcs.*
 import java.util.concurrent.CompletableFuture
 
 @Service(Service.Level.PROJECT)
@@ -98,7 +94,11 @@ internal class CommitWorkflowExecutionService(
                         completion = completion,
                     )
                 if (!immediatePushStarted) {
-                    val registration = registerCompletion(workflowHandler, completion)
+                    val registration = registerCommitAndPushCompletion(
+                        workflowHandler = workflowHandler,
+                        completion = completion,
+                        onPushStarted = onPushStarted,
+                    )
                     try {
                         workflowHandler.execute(executor)
                         if (registration == null) {
@@ -171,6 +171,18 @@ internal class CommitWorkflowExecutionService(
         ),
     )
 
+    private fun registerCommitAndPushCompletion(
+        workflowHandler: CommitWorkflowHandler,
+        completion: CompletableFuture<Unit>,
+        onPushStarted: () -> Unit,
+    ): CommitWorkflowResultRegistration? = commitResultRegistrar.register(
+        workflowHandler = workflowHandler,
+        resultHandler = CommitAndPushResultHandler(
+            completion = completion,
+            onPushStarted = onPushStarted,
+        ),
+    )
+
     companion object {
         fun getInstance(project: Project): CommitWorkflowExecutionService = project.service()
 
@@ -191,6 +203,34 @@ private class CompletionResultHandler(
 
     override fun onFailure() {
         completion.complete(Unit)
+    }
+}
+
+private class CommitAndPushResultHandler(
+    private val completion: CompletableFuture<Unit>,
+    private val onPushStarted: () -> Unit,
+) : CommitWorkflowResultHandler {
+    override val waitForAfterRefreshOnSuccess: Boolean = true
+
+    private var commitSucceeded = false
+
+    override fun onSuccess() {
+        commitSucceeded = true
+        onPushStarted()
+    }
+
+    override fun onCancel() {
+        completion.complete(Unit)
+    }
+
+    override fun onFailure() {
+        completion.complete(Unit)
+    }
+
+    override fun onAfterRefresh() {
+        if (commitSucceeded) {
+            completion.complete(Unit)
+        }
     }
 }
 

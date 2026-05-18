@@ -18,7 +18,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 ### Fixed
 
 - Matched the three-section control corner radius to the IDE button arc so it aligns with neighboring Commit toolbar buttons.
-- Progress animation now starts on `AI`, advances to `Commit` after AI generation, and switches to `Push` only after commit checks finish and the immediate push begins.
+- Progress animation now starts on `AI`, advances to `Commit` after AI generation, switches to `Push` only after commit checks finish, and stays active through the post-commit push handoff.
 
 ## [v0.1.0-alpha.6] - 2026-05-18
 

@@ -27,11 +27,16 @@ internal fun interface CommitWorkflowResultRegistrar {
 }
 
 internal interface CommitWorkflowResultHandler {
+    val waitForAfterRefreshOnSuccess: Boolean
+        get() = false
+
     fun onSuccess()
 
     fun onCancel()
 
     fun onFailure()
+
+    fun onAfterRefresh() = Unit
 }
 
 internal fun interface CommitWorkflowResultRegistration {
@@ -59,10 +64,14 @@ internal object IntellijCommitWorkflowResultRegistrar : CommitWorkflowResultRegi
             }
         }
 
+        var successPendingAfterRefresh = false
         abstractHandler.workflow.addVcsCommitListener(
             object : com.intellij.vcs.commit.CommitterResultHandler {
                 override fun onSuccess() {
-                    disposeListener()
+                    if (!resultHandler.waitForAfterRefreshOnSuccess) {
+                        disposeListener()
+                    }
+                    successPendingAfterRefresh = resultHandler.waitForAfterRefreshOnSuccess
                     resultHandler.onSuccess()
                 }
 
@@ -74,6 +83,13 @@ internal object IntellijCommitWorkflowResultRegistrar : CommitWorkflowResultRegi
                 override fun onFailure() {
                     disposeListener()
                     resultHandler.onFailure()
+                }
+
+                override fun onAfterRefresh() {
+                    if (successPendingAfterRefresh) {
+                        disposeListener()
+                        resultHandler.onAfterRefresh()
+                    }
                 }
             },
             listenerDisposable,

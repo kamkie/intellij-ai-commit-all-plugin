@@ -20,18 +20,8 @@ import com.intellij.vcs.commit.AmendCommitHandler
 import com.intellij.vcs.commit.CommitExecutorListener
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowHandlerState
-import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
-import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushDecision
-import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushFallbackReason
-import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushPlan
-import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushSupport
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import kotlin.test.assertSame
-import kotlin.test.assertTrue
+import pl.devopssolutions.aicommitall.vcs.*
+import kotlin.test.*
 
 internal class CommitWorkflowExecutionServiceTest {
     private val gitCommitAndPushExecutorId = "Git.Commit.And.Push.Executor"
@@ -182,6 +172,42 @@ internal class CommitWorkflowExecutionServiceTest {
         assertEquals(1, workflowHandler.executeCallCount)
         assertSame(TestCommitAndPushExecutor, workflowHandler.executedExecutor)
         assertEquals(0, workflowHandler.executorCallCount)
+    }
+
+    @Test
+    fun `fallback commit and push stays active between commit success and workflow refresh`() {
+        val scheduler = CapturingScheduler()
+        val registrar = CapturingCommitResultRegistrar()
+        var pushStartedCount = 0
+        val service = CommitWorkflowExecutionService(
+            scheduler = scheduler,
+            safeImmediatePushSupport = TestSafeImmediatePushSupport(
+                SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.MissingTrackedUpstream),
+            ),
+            commitResultRegistrar = registrar,
+        )
+        val workflowHandler = CapturingCommitWorkflowHandler(
+            commitAndPushExecutor = TestCommitAndPushExecutor,
+            commitAndPushEnabled = true,
+        )
+
+        val result = service.executeCommitAndPush(
+            workflowHandler = workflowHandler,
+            selection = GitChangeSelection(emptyList()),
+            onPushStarted = { pushStartedCount++ },
+        )
+
+        val started = result.asStarted()
+
+        scheduler.runScheduledActions()
+        registrar.resultHandler?.onSuccess()
+
+        assertFalse(started.completion.isDone)
+        assertEquals(1, pushStartedCount)
+
+        registrar.resultHandler?.onAfterRefresh()
+
+        assertTrue(started.completion.isDone)
     }
 
     @Test

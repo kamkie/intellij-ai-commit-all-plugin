@@ -12,15 +12,17 @@ Notation:
 
 ## Open Backlog
 
-### Bugs
-
-- [ ] T-BUG-009: the commit push button animation should be running until pushing if finished
-
 ### Ideas
 
 - [ ] T-IDEA-006: proposals file ergonomics improvements
 - [ ] T-IDEA-010: the push button should be clickable if there are commits to push.
 - [ ] T-IDEA-011: intellij standard `commit and push...` button should be removed when this plugin is enabled
+
+### Publishing, Signing, Marketplace, And CI
+
+- [ ] T-REL-012: add a `release` workflow to publish the plugin to the marketplace
+- [ ] T-REL-013: add a `sign` workflow to sign the plugin jar with a private key
+- [ ] T-REL-014: add a `ci` workflow to run the plugin verifier on the latest stable IDE build
 
 ## Completed Task Archive
 
@@ -215,6 +217,7 @@ Archived as of `v0.1.0-alpha.1` release preparation.
 - [x] T-BUG-006: reopens T-BUG-002. when there are multiple gradle modules, or multiple intellij products in repo
 - [x] T-BUG-007: Trigger synchronous external file reloads after staging paths, retry the add/reload/recheck loop, and stop before AI generation until every expected path is confirmed staged.
 - [x] T-BUG-008: changelist workflow works ok. staging still have problems. all files in the staging area disappear momentarily, and the workflow stops
+- [x] T-BUG-009: keep the commit push button animation running through the post-commit push handoff.
 
 ### Ideas
 
