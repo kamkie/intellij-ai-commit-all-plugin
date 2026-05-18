@@ -28,6 +28,9 @@ description: TDD workflow for IntelliJ plugin tests in this repository. Use when
 - Test behavior, not private method structure.
 - Give each test one clear reason to fail.
 - Map every new regression test to the bug or workflow invariant it protects.
+- For manual sandbox checks, larger workflows, or bug reports that need translation into coverage, capture a compact case first: traceability link, title, preconditions, exact test data or repository state, action steps, and expected result.
+- Keep each structured case atomic: one observable outcome, no unrelated assertions, and under 10 manual steps when a human must execute it.
+- Shape automated tests as Arrange-Act-Assert; put repeated setup in fixtures or preconditions, but keep important assumptions visible at the call site.
 - Cover success, failure, retry/timeout, empty input, duplicate input, multi-root, staging-enabled, staging-disabled, and user-edit stop paths when those cases are relevant to the bug.
 - Prefer deterministic fakes and captured calls for platform seams that are expensive to initialize.
 - Keep fixture setup small and explicit; avoid hidden global state, order dependencies, and data that matters only by convention.

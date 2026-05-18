@@ -12,6 +12,7 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.4
 
 - Added repository-local agent skills for IntelliJ Platform plugin development, Kotlin plugin style, and TDD-focused plugin tests.
 - Added repository-local platform docs research, repository documentation, and plugin review skills, with expanded Kotlin and TDD skill checks adapted from selected Codex subagent patterns.
+- Expanded the plugin TDD skill with structured test-case design guidance for manual sandbox checks, bug reports, and automated regression coverage.
 
 ## [v0.1.0-alpha.4] - 2026-05-18
 
