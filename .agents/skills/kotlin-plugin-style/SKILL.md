@@ -21,6 +21,9 @@ description: Kotlin style guidance for this IntelliJ Platform plugin. Use when w
 - Keep extension functions close to the domain they clarify. Do not use them to hide platform side effects.
 - Prefer sealed types or simple data classes for finite workflow states only when they remove branching ambiguity.
 - Add comments only where IntelliJ Platform lifecycle, threading, reflection, or compatibility behavior is not obvious.
+- For coroutine or asynchronous paths, make cancellation, completion, dispatcher, and lifetime assumptions explicit.
+- For Java platform API interop, verify nullability against runtime behavior rather than Kotlin type hints alone.
+- Keep exception-to-result mapping consistent in changed workflows; do not mix thrown failures and result states without a boundary reason.
 
 ## IntelliJ Kotlin Boundaries
 
@@ -30,6 +33,7 @@ description: Kotlin style guidance for this IntelliJ Platform plugin. Use when w
 - Use platform disposables, listeners, message bus subscriptions, and action update threading according to IntelliJ Platform expectations.
 - Keep reflection boundaries narrow, named, and covered by tests when direct API access is unavailable.
 - Keep UI strings stable and user-facing text in action presentations, settings, or notifications precise.
+- Preserve thread-safety assumptions for shared state. Prefer immutable snapshots when crossing background, EDT, VCS, or callback boundaries.
 
 ## Tests
 

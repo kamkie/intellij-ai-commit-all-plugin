@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plugin Review"
+  short_description: "Review plugin changes for real risk"
+  default_prompt: "Use $plugin-review to review this IntelliJ plugin change for correctness and risk."

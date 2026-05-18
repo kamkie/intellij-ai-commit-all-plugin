@@ -1,0 +1,4 @@
+interface:
+  display_name: "Platform Docs Research"
+  short_description: "Verify platform behavior from official docs"
+  default_prompt: "Use $platform-docs-research to verify the current platform API behavior before changing this repository."

@@ -27,12 +27,15 @@ description: TDD workflow for IntelliJ plugin tests in this repository. Use when
 
 - Test behavior, not private method structure.
 - Give each test one clear reason to fail.
+- Map every new regression test to the bug or workflow invariant it protects.
 - Cover success, failure, retry/timeout, empty input, duplicate input, multi-root, staging-enabled, staging-disabled, and user-edit stop paths when those cases are relevant to the bug.
 - Prefer deterministic fakes and captured calls for platform seams that are expensive to initialize.
+- Keep fixture setup small and explicit; avoid hidden global state, order dependencies, and data that matters only by convention.
 - Use local repositories only; never push to a real remote from automated tests.
 - Do not use sleeps for async behavior. Use controlled callbacks, latches, polling with timeout helpers, or platform test utilities.
 - Avoid OS-specific assumptions about separators, case sensitivity, default encoding, and line endings.
 - For IntelliJ Platform tests, prefer the lightest fixture that proves the behavior. Use heavier IDE or sandbox coverage only when the bug is in platform wiring.
+- When a test depends on mocks or environment assumptions, name the limitation in the handoff so the remaining confidence gap is visible.
 
 ## Green And Refactor
 

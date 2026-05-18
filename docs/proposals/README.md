@@ -16,7 +16,7 @@ Active proposals still have at least one non-terminal implementation status row 
 
 Completed proposals have no non-terminal implementation status rows and no untriaged findings in their `Progress Tracker`. Keep them listed here until they are moved to `archive/`.
 
-_No completed proposals pending archive._
+- `PROP-import-codex-subagents-as-skills` - Import Codex Subagents As Skills ([PROP-import-codex-subagents-as-skills-2026-05-18T13-03.md](PROP-import-codex-subagents-as-skills-2026-05-18T13-03.md)), completed 2026-05-18.
 
 Index entries should include the proposal ID, title, file link, and current status date when applicable.
 

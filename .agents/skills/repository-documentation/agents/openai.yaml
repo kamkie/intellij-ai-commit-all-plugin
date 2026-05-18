@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repository Documentation"
+  short_description: "Update governed repository docs"
+  default_prompt: "Use $repository-documentation to update repository documentation according to local governance."
