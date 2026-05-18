@@ -68,6 +68,66 @@ internal class SafeImmediatePushDecisionPolicyTest {
         assertEquals(SafeImmediatePushFallbackReason.AmbiguousTarget, result)
     }
 
+    @Test
+    fun `falls back when repository state is not normal`() {
+        val result = SafeImmediatePushDecisionPolicy.fallbackReason(
+            repositories = listOf(safeRepositoryState(repositoryStateIsNormal = false)),
+            hasUnresolvedConflicts = false,
+        )
+
+        assertEquals(SafeImmediatePushFallbackReason.UnsafeRepositoryState, result)
+    }
+
+    @Test
+    fun `falls back when target is not the tracking branch`() {
+        val result = SafeImmediatePushDecisionPolicy.fallbackReason(
+            repositories = listOf(safeRepositoryState(targetIsTrackingBranch = false)),
+            hasUnresolvedConflicts = false,
+        )
+
+        assertEquals(SafeImmediatePushFallbackReason.AmbiguousTarget, result)
+    }
+
+    @Test
+    fun `falls back when target would create a new branch`() {
+        val result = SafeImmediatePushDecisionPolicy.fallbackReason(
+            repositories = listOf(safeRepositoryState(targetIsNewBranch = true)),
+            hasUnresolvedConflicts = false,
+        )
+
+        assertEquals(SafeImmediatePushFallbackReason.AmbiguousTarget, result)
+    }
+
+    @Test
+    fun `falls back when target is a special ref`() {
+        val result = SafeImmediatePushDecisionPolicy.fallbackReason(
+            repositories = listOf(safeRepositoryState(targetIsSpecialRef = true)),
+            hasUnresolvedConflicts = false,
+        )
+
+        assertEquals(SafeImmediatePushFallbackReason.AmbiguousTarget, result)
+    }
+
+    @Test
+    fun `falls back when target cannot be pushed by platform support`() {
+        val result = SafeImmediatePushDecisionPolicy.fallbackReason(
+            repositories = listOf(safeRepositoryState(targetCanBePushed = false)),
+            hasUnresolvedConflicts = false,
+        )
+
+        assertEquals(SafeImmediatePushFallbackReason.UnsupportedPushApi, result)
+    }
+
+    @Test
+    fun `falls back when standard push rules do not allow target`() {
+        val result = SafeImmediatePushDecisionPolicy.fallbackReason(
+            repositories = listOf(safeRepositoryState(targetAllowedByStandardPushRules = false)),
+            hasUnresolvedConflicts = false,
+        )
+
+        assertEquals(SafeImmediatePushFallbackReason.UnsupportedPushApi, result)
+    }
+
     private fun safeRepositoryState(
         hasTrackedUpstream: Boolean = true,
         localMatchesTrackedUpstream: Boolean = true,
