@@ -6,6 +6,8 @@ Status: Closed
 
 Close-Reason: Archived
 
+Workers: 1
+
 Filename: `.agents/plans/archive/PLAN-pre-release-adr-implementation.md`
 
 ## Readiness
@@ -92,6 +94,16 @@ Reference: ADR 0047 and `PROP-02-pre-release-ux` `E002`.
 - Use normal sequential execution.
 - Task 1 and Task 2 have different primary write areas, but they both update `PROP-02`; run them sequentially to avoid tracker conflicts.
 - After approval, each task is an independent plan task and should be committed before starting the next task.
+
+## Execution Graph
+
+```mermaid
+flowchart TD
+    O1["O1[code]<br/>orchestrator"]
+    W1["W1[code]<br/>Task 1: Create Split-Button Draft Series"]
+    W2["W2[code]<br/>Task 2: Implement Safe Immediate Push Fallback"]
+    O1 --> W1 --> W2
+```
 
 ## Validation
 

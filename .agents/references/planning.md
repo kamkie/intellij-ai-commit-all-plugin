@@ -32,6 +32,7 @@ A useful plan should include:
 
 - Stable `Plan-ID` in the form `PLAN-<short-kebab-slug>`, not a strictly number-based ID.
 - Compact `Status`: `Draft`, `Approved`, `In Progress`, `Blocked`, `Implemented`, or `Closed`.
+- `Workers:` metadata. Use `Workers: 1` for sequential plans and `Workers: N (parallel, tasks: <task ids or labels>)` only for approved independent tasks with disjoint write scopes.
 - `Readiness` section that summarizes plan readiness, approval identity and timestamp when approved, open questions, and implementation progress.
 - `Status History` section that records every status transition with timestamp, from-status, to-status, actor identity and action source, and short reason.
 - Goal.
@@ -39,6 +40,7 @@ A useful plan should include:
 - Assumptions.
 - Open questions.
 - Proposed changes, split into named implementation tasks when the work has multiple tasks.
+- `Execution Graph` section with a fenced Mermaid graph that labels orchestrator nodes as `O<n>`, worker nodes as `W<n>`, includes worker agent modes, and shows task assignment plus sequence or wave ordering.
 - Validation.
 - Risks and fallback behavior.
 
@@ -47,7 +49,9 @@ A useful plan should include:
 - Keep plans short enough to maintain.
 - Give every plan a stable, human-readable `Plan-ID` such as `PLAN-scaffold-plugin-project`; avoid strictly number-based IDs such as `PLAN-0001`.
 - Include the stable `Plan-ID` in the plan filename for active and archived plans.
+- Include `Workers:` metadata near the plan status.
 - Keep `Plan-ID` stable when plan title, filename, status, or wording changes.
+- Include `## Execution Graph` in every plan. Sequential plans may use a compact graph; parallel plans must show waves that match `Workers:` and ADR 0026 disjoint write scopes.
 - Use only canonical plan statuses from `.agents/plans/README.md`; `Closed` plans must include a `Close-Reason`.
 - Treat `Approved` as an explicit user approval state, not an agent-assumed readiness label.
 - Do not implement from a plan until the user has reviewed it, explicitly approved it, the plan status is `Approved`, and `Approved by:` records the approver.
@@ -73,7 +77,8 @@ A useful plan should include:
 - For multi-task plan execution, use an orchestrator plus one fresh task worker per plan task when the environment supports agent delegation.
 - The orchestrator owns plan state, task sequencing, question handling, validation evidence, review evidence, changelog maintenance, and commit verification.
 - Each task worker gets only the task-shaped context needed for its assigned plan task, not accumulated context from previous tasks.
-- Do not run task workers in parallel unless the `Approved` plan explicitly identifies independent tasks with disjoint write scopes.
+- Do not run task workers in parallel unless the `Approved` plan explicitly identifies independent tasks with disjoint write scopes, declares a parallel `Workers:` value, and shows the parallel wave in `## Execution Graph`.
+- Use the current branch for orchestrated multi-agent execution. Per-worker git worktrees require a future accepted ADR before use.
 
 ## Before Implementation
 
@@ -109,6 +114,8 @@ When using delegated agents for an `Approved` multi-task plan:
 - Give the worker `AGENTS.md`, the approved plan, the current task name, relevant ADRs, relevant source files, expected validation, and commit metadata requirements.
 - Have the worker stop and report immediately if the task reveals a new question, missing decision, unsafe assumption, or scope conflict.
 - Have the worker report suggested `CHANGELOG.md` entries for notable task outcomes, but keep final changelog edits with the orchestrator.
+- Have the worker update the governing plan file for the assigned task in the same task commit. If the worker cannot or should not update the plan file, the worker must explicitly hand that responsibility to the orchestrator in the same execution step.
+- When plan-file responsibility is handed off, have the orchestrator update the plan file before dispatching the next dependent task.
 - Have the orchestrator update the owning document and obtain the missing decision before resuming.
 - Have the orchestrator review worker output, confirm validation and self-review evidence, maintain `CHANGELOG.md` for notable changes, and verify the task commit before starting the next task.
 - Have the orchestrator update the plan status to `Implemented` when all planned changes are complete and validated, using the responsible agent identity for the autonomous status-history entry.

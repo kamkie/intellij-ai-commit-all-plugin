@@ -6,6 +6,8 @@ Status: Closed
 
 Close-Reason: Archived
 
+Workers: 1
+
 Filename: `.agents/plans/archive/PLAN-three-section-ai-commit-push-control.md`
 
 ## Readiness
@@ -73,6 +75,17 @@ The implementation should apply the ADR 0053 selected visual reference, includin
 
 - This plan can be split into action-routing, styling, and validation/documentation tasks after approval.
 - Avoid parallel edits to the same UI registration or workflow service files unless ownership is split explicitly.
+
+## Execution Graph
+
+```mermaid
+flowchart TD
+    O1["O1[code]<br/>orchestrator"]
+    W1["W1[code]<br/>Task 1: Update action registration and routing"]
+    W2["W2[code]<br/>Task 2: Apply selected styling"]
+    W3["W3[run-verify]<br/>Task 3: Update tests, manual validation records, and user-facing docs"]
+    O1 --> W1 --> W2 --> W3
+```
 
 ## Validation
 

@@ -6,6 +6,8 @@ Status: Closed
 
 Close-Reason: Archived
 
+Workers: 1
+
 Filename: `.agents/plans/archive/PLAN-marketplace-ci-release.md`
 
 ## Readiness
@@ -65,6 +67,18 @@ No open plan questions.
 Use one orchestrator and one fresh task worker per named task when agent delegation is available. Do not run signing, publishing, and CI tasks in parallel unless an approved revision assigns disjoint files and secret surfaces.
 
 Each named task should be implemented, validated, self-reviewed, and committed before the next task starts.
+
+## Execution Graph
+
+```mermaid
+flowchart TD
+    O1["O1[code]<br/>orchestrator"]
+    W1["W1[setup]<br/>Task 1: Add Marketplace-ready metadata"]
+    W2["W2[setup]<br/>Task 2: Configure signing and publishing"]
+    W3["W3[setup]<br/>Task 3: Add pull-request and packaging CI"]
+    W4["W4[run-verify]<br/>Task 4: Add verifier and gated release workflow"]
+    O1 --> W1 --> W2 --> W3 --> W4
+```
 
 ## Validation
 

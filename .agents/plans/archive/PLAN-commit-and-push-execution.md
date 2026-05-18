@@ -6,6 +6,8 @@ Status: Closed
 
 Close-Reason: Archived
 
+Workers: 1
+
 Filename: `.agents/plans/archive/PLAN-commit-and-push-execution.md`
 
 ## Readiness
@@ -62,6 +64,17 @@ No open plan questions.
 Use one orchestrator and one fresh task worker per named task when agent delegation is available. Do not run these tasks in parallel because commit-only and commit-and-push share workflow state and safety checks.
 
 Each named task should be implemented, validated, self-reviewed, and committed before the next task starts.
+
+## Execution Graph
+
+```mermaid
+flowchart TD
+    O1["O1[code]<br/>orchestrator"]
+    W1["W1[code]<br/>Task 1: Commit through the current workflow"]
+    W2["W2[code]<br/>Task 2: Execute commit-and-push through the platform executor"]
+    W3["W3[code]<br/>Task 3: Report unsupported states through standard messages"]
+    O1 --> W1 --> W2 --> W3
+```
 
 ## Validation
 

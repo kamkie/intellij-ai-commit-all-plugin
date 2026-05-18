@@ -6,6 +6,8 @@ Status: Closed
 
 Close-Reason: Archived
 
+Workers: 1
+
 Filename: `.agents/plans/archive/PLAN-validation-coverage.md`
 
 ## Readiness
@@ -62,6 +64,17 @@ No open plan questions.
 Use one orchestrator and one fresh task worker per named task when agent delegation is available. Task 1 and Task 2 can be parallelized only if an approved revision assigns disjoint Gradle/test write scopes.
 
 Each named task should be implemented, validated, self-reviewed, and committed before the next task starts.
+
+## Execution Graph
+
+```mermaid
+flowchart TD
+    O1["O1[code]<br/>orchestrator"]
+    W1["W1[setup]<br/>Task 1: Configure compatibility and packaging validation"]
+    W2["W2[code]<br/>Task 2: Add local-repository end-to-end coverage"]
+    W3["W3[run-verify]<br/>Task 3: Keep manual sandbox coverage"]
+    O1 --> W1 --> W2 --> W3
+```
 
 ## Validation
 

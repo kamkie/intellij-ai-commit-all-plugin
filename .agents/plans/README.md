@@ -8,8 +8,10 @@ This directory holds task-specific implementation plans for work that is too lar
 - Use `PLAN_TEMPLATE.md` as the starting point.
 - Give every plan a stable `Plan-ID` in the form `PLAN-<short-kebab-slug>`, such as `PLAN-scaffold-plugin-project`.
 - Include the stable `Plan-ID` in the plan filename, such as `PLAN-scaffold-plugin-project.md`.
+- Include `Workers: 1` for sequential plans. Use `Workers: N (parallel, tasks: <task ids or labels>)` only when the approved plan marks those tasks independent and assigns disjoint write scopes.
 - Do not use a strictly number-based plan ID such as `PLAN-0001`; the ID should carry enough meaning to recognize the plan without its file path.
 - Keep plans focused on one task or milestone.
+- Include an `## Execution Graph` section with a fenced Mermaid graph. Label orchestrators as `O<n>` and workers as `W<n>`, include planned worker modes, and encode task assignment and ordering.
 - Link unresolved user input back to `docs/decisions/OPEN_QUESTIONS.md`, and move accepted project decisions or repository rule changes to `docs/decisions/`.
 - Follow `.agents/references/planning.md` and `.agents/references/execution.md` for plan readiness, per-task commits, and orchestrator or task-worker execution.
 - Creating or updating a plan is not approval to implement. Implementation may start only after explicit user review and approval, recorded in `Approved by:` when the plan becomes approved.
@@ -76,3 +78,23 @@ Do not copy the plan approver identity into later implementation status-history 
 The latest status-history entry must match the current `Status:` value. Use `none -> Draft` for the first creation entry when no previous status existed.
 
 Keep `Plan-ID` stable when the plan title, filename, status, or wording changes. If a plan is renamed, preserve the `Plan-ID` in the filename. If a plan is split, keep the original ID for the closest surviving plan and assign new meaningful IDs to new plans.
+
+## Worker Count And Execution Graph
+
+Every plan must include a `Workers:` metadata field near `Status:`.
+
+Sequential plans use:
+
+```text
+Workers: 1
+```
+
+Parallel plans use:
+
+```text
+Workers: N (parallel, tasks: <task ids or labels>)
+```
+
+`N` is the maximum intended active worker count. Parallel worker counts are valid only when the plan also marks the referenced tasks independent and assigns disjoint write scopes under ADR 0026.
+
+Every plan must also include an `## Execution Graph` section with a fenced Mermaid graph. Use `O<n>` labels for orchestrator nodes and `W<n>` labels for worker nodes. Each worker node must include its planned agent mode: `code`, `fast-code`, `setup`, `advanced-chat`, `run-verify`, `niche`, or `chat`. The graph must encode task assignment by plan task id or stable task label, and it must show sequence, wave, or handoff ordering. Parallel waves in the graph must match `Workers:` and the disjoint write scopes described in the plan.

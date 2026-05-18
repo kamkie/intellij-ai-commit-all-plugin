@@ -6,6 +6,8 @@ Status: Closed
 
 Close-Reason: Archived
 
+Workers: 4 (parallel, tasks: W1-W14 by wave)
+
 Filename: `.agents/plans/archive/PLAN-fastest-plan-execution.md`
 
 ## Readiness
@@ -47,6 +49,61 @@ Run all active implementation plans in the fastest safe order by making cross-pl
 ## Open Questions
 
 No open plan questions.
+
+## Execution Graph
+
+```mermaid
+flowchart TD
+    O1["O1[code]<br/>orchestrator"]
+
+    subgraph Wave1["Wave 1: Independent Foundations"]
+        W1["W1[code]<br/>Track A: PLAN-include-all-git-files"]
+        W2["W2[code]<br/>Track B: PLAN-ai-assistant-message-generation"]
+        W3["W3[code]<br/>Track C: PLAN-commit-tool-window-actions Task 1"]
+        W4["W4[setup]<br/>Track D: PLAN-validation-coverage Task 1"]
+    end
+
+    subgraph Wave2["Wave 2: AI Completion And Workflow Shell"]
+        W5["W5[code]<br/>PLAN-ai-generation-completion"]
+        W6["W6[code]<br/>PLAN-error-handling-ux Task 1"]
+        W7["W7[code]<br/>PLAN-commit-tool-window-actions Tasks 2-3"]
+    end
+
+    subgraph Wave3["Wave 3: Commit, Push, Final Actions, Final Errors"]
+        W8["W8[code]<br/>PLAN-commit-and-push-execution"]
+        W9["W9[code]<br/>PLAN-commit-tool-window-actions Task 4"]
+        W10["W10[code]<br/>PLAN-error-handling-ux Tasks 2-5"]
+    end
+
+    subgraph Wave4["Wave 4: E2E Validation And User Docs"]
+        W11["W11[run-verify]<br/>PLAN-validation-coverage Tasks 2-3"]
+        W12["W12[chat]<br/>PLAN-user-documentation Task 1"]
+    end
+
+    subgraph Wave5["Wave 5: Marketplace, CI, Release Docs"]
+        W13["W13[setup]<br/>PLAN-marketplace-ci-release"]
+        W14["W14[chat]<br/>PLAN-user-documentation Tasks 2-3"]
+    end
+
+    O1 --> W1
+    O1 --> W2
+    O1 --> W3
+    O1 --> W4
+    W1 --> W5
+    W2 --> W5
+    W3 --> W7
+    W4 --> W11
+    W5 --> W8
+    W6 --> W10
+    W7 --> W9
+    W8 --> W11
+    W9 --> W11
+    W10 --> W11
+    W11 --> W13
+    W12 --> W14
+    W13 --> O1
+    W14 --> O1
+```
 
 ## Dependency Graph
 
@@ -116,19 +173,19 @@ flowchart LR
 
 Two views are shown:
 
-- **Before** — current repository rules only (ADR 0026 + ADR 0030). Workers are anonymous, agent modes are implicit, no `Project-Worker` / `Project-Orchestrator` / `Project-Agent-Mode` trailers exist, no orchestrator start/stop log is required, no `Workers:` field is required on plans, and execution stays on a single branch.
-- **After** — `docs/proposals/PROP-orchestrator-worker-rules-2026-05-15T05-31.md` findings S1–S4 adopted (ADRs A–D accepted). Workers carry stable ids and modes, the orchestrator emits structured start/stop log events, commit trailers identify worker/orchestrator/mode, plans declare an explicit `Workers:` count, and worktree topology is an allowed option under ADR 0026's disjoint-scope rule.
+- **Before** — historical repository rules before ADR 0056 through ADR 0061. Workers were anonymous, agent modes were implicit, no `Project-Worker` / `Project-Orchestrator` / `Project-Agent-Mode` trailers existed, no orchestrator start/stop log was required, no `Workers:` field was required on plans, and execution stayed on a single branch.
+- **After** — ADR 0056 through ADR 0061 accepted. Workers carry stable ids and modes, the orchestrator emits structured start/stop/fail chat log events, commit trailers identify worker/orchestrator/mode, plans declare an explicit `Workers:` count, and topology remains single-branch unless a future accepted ADR authorizes worktrees.
 
 Conventions used in both graphs:
 
 - `O[mode]` = orchestrator with its agent mode. The orchestrator owns plan state, dispatch, integration review, commit verification, and the changelog (ADR 0026, ADR 0030).
 - `W#[mode]` = task worker with a worker id and its agent mode. Workers use fresh context per plan task (ADR 0026).
 - Solid arrows show dispatch and result flow inside a wave; dashed arrows show wave-to-wave handoff.
-- Mode vocabulary in the **After** view follows `PROP-orchestrator-worker-rules` finding S1 (`code`, `fast-code`, `setup`, `advanced-chat`, `run-verify`, `niche`, `chat`); in the **Before** view the bracketed mode is informational only and is not encoded in commits or logs.
+- Mode vocabulary in the **After** view follows ADR 0057 (`code`, `fast-code`, `setup`, `advanced-chat`, `run-verify`, `niche`, `chat`); in the **Before** view the bracketed mode is informational only and is not encoded in commits or logs.
 
-#### Before — Current Rules (PROP-orchestrator-worker-rules not yet accepted)
+#### Before — Historical Baseline
 
-Under today's rules, ADR 0026 already allows parallel workers when the approved plan marks tasks independent with disjoint write scopes, but workers have no stable id, no mode is recorded in commits, and the orchestrator is not required to log start/stop events. Commits carry only the trailers defined by `.gitmessage` today (`Project-Source`, `Project-Plan`, `Project-Plan-Task`, etc.).
+Under the historical baseline, ADR 0026 already allowed parallel workers when the approved plan marked tasks independent with disjoint write scopes, but workers had no stable id, no mode was recorded in commits, and the orchestrator was not required to log start/stop events. Commits carried only the earlier trailers defined by `.gitmessage` (`Project-Source`, `Project-Plan`, `Project-Plan-Task`, etc.).
 
 ```mermaid
 flowchart TD
@@ -230,9 +287,9 @@ Properties of the **Before** graph:
 - Parallel fan-out inside a wave is allowed only by ADR 0026 (independent tasks, disjoint write scopes) and is implicit in this plan's wave structure.
 - Topology is single-branch. Worktrees are not an authorized execution option.
 
-#### After — PROP-orchestrator-worker-rules Findings S1–S4 Adopted
+#### After — ADR 0056 Through ADR 0061 Accepted
 
-Once ADRs A–D from `docs/proposals/PROP-orchestrator-worker-rules-2026-05-15T05-31.md` are accepted, every actor in the graph carries a stable id and an explicit mode, the orchestrator emits structured `start` / `stop` log events around each worker, and commits carry `Project-Worker` / `Project-Orchestrator` / `Project-Agent-Mode` trailers. Worktree usage becomes a documented option for waves whose tasks are independent with disjoint write scopes.
+With ADR 0056 through ADR 0061 accepted, every actor in the graph carries a stable id and an explicit mode, the orchestrator emits structured `start` / `stop` / `fail` chat log events around each worker, and commits carry `Project-Worker` / `Project-Orchestrator` / `Project-Agent-Mode` trailers when multi-agent attribution applies. ADR 0061 keeps execution on the current branch unless a future accepted ADR authorizes worktrees.
 
 ```mermaid
 flowchart TD
@@ -332,13 +389,13 @@ Properties of the **After** graph (delta vs. **Before**):
 - Worker ids `W1`–`W14` are illustrative labels for this plan's visualization. Real dispatch-time worker ids would appear in every commit via the new `Project-Worker: <worker-id>` trailer (Rule 3).
 - Each orchestrator and worker node carries an explicit `[mode]` (`code`, `setup`, `run-verify`, …). The same value is recorded in commits via the new `Project-Agent-Mode: <mode>` trailer with a fixed vocabulary (Rule 5).
 - Every commit also carries `Project-Orchestrator: <orchestrator-id>` so a worker's commit can be linked back to its dispatcher (Rule 4). None of these three trailers appears in the **Before** graph.
-- The orchestrator emits a structured `start` / `stop` / `fail` log entry around each worker arrow (timestamp, worker id, plan id, plan task id, agent mode, active count). Destination is decided in ADR B (chat transcript vs `.agents/runs/<plan-id>/orchestrator.log`) (Rule 2).
+- The orchestrator emits a structured `start` / `stop` / `fail` chat log entry around each worker arrow, including timestamp, worker id, plan id, plan task id, agent mode, active count, and active worker ids.
 - Synchronization is explicit: the orchestrator does not advance to the next wave until every worker arrow in the current wave has produced a verified commit or commit-ready diff (Rule 1).
-- Topology is optional: each wave may run on a single branch or in per-worker git worktrees, but worktrees are allowed only when the approved plan marks the parallelized tasks as independent with disjoint write scopes (Rule 6, consistent with ADR 0026). The per-task commit rule from ADR 0023 still holds after merge-back.
-- The plan itself declares the worker count up front (Rule 7). For this plan that would be `Workers: 14 (parallel by wave, tasks: as labeled W1–W14)` once `.agents/plans/PLAN_TEMPLATE.md` and `scripts/validate-docs.ps1` are updated.
+- Topology is single-branch. Per-worker git worktrees are not authorized unless a future accepted ADR defines merge-back, validation, failed-worker handoff, and conflict-resolution rules.
+- The plan itself declares the maximum active worker count up front: `Workers: 4 (parallel, tasks: W1-W14 by wave)`.
 - ADR 0026's parallel-execution condition and ADR 0030's "orchestrator alone touches `CHANGELOG.md`" rule are unchanged; the After view layers metadata and observability on top of them rather than replacing them.
 
-The **After** graph is descriptive only at this stage: it relies on `Project-Worker`, `Project-Orchestrator`, `Project-Agent-Mode`, the orchestrator log, the `Workers:` plan field, and authorized worktree usage — none of which are active until ADRs A–D from `docs/proposals/PROP-orchestrator-worker-rules-2026-05-15T05-31.md` are accepted.
+The top-level `## Execution Graph` above is the required graph for this archived plan. The detailed Before/After graphs remain as historical explanatory detail.
 
 ### Dependency Table
 

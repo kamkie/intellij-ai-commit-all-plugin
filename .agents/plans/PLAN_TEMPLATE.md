@@ -6,6 +6,8 @@ Status: Draft
 
 <!-- For Status: Closed, add `Close-Reason: Released|Rejected|Superseded|Deferred|Archived`. -->
 
+Workers: 1
+
 Filename: `.agents/plans/PLAN-<short-kebab-slug>.md`
 
 ## Readiness
@@ -46,8 +48,19 @@ List work that is intentionally out of scope.
 
 ## Execution Model
 
+- `Workers: 1` for sequential execution, or `Workers: N (parallel, tasks: <task ids or labels>)` when the approved plan marks those tasks independent with disjoint write scopes.
 - For multi-task plans, use an orchestrator plus one fresh task worker per named task when agent delegation is available.
 - Record any task that is safe to run in parallel only when it has a disjoint write scope.
+- Use the current branch only unless a later accepted ADR authorizes per-worker git worktrees.
+
+## Execution Graph
+
+```mermaid
+flowchart TD
+    O1["O1[code]<br/>orchestrator"]
+    W1["W1[code]<br/>Task 1: <stable task label>"]
+    O1 --> W1
+```
 
 ## Validation
 

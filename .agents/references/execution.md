@@ -47,12 +47,27 @@ The task worker owns only its assigned task:
 - Implement the task according to this execution loop.
 - Run task-appropriate validation from `.agents/references/testing.md`.
 - Self-review using `.agents/references/reviews.md`.
+- Update the governing plan file for the assigned task in the same commit as the task work. If that is unsafe or inappropriate, explicitly hand the plan-file update back to the orchestrator within the same execution step.
 - Commit the completed task when the task scope requires it, or return the exact commit-ready diff and evidence when the environment prevents worker commits.
 - Stop immediately and report if a new question, missing decision, unsafe assumption, or scope conflict appears.
 
 Use a fresh task worker context for each plan task. Do not carry worker context from one plan task to the next.
 
-Run only one task worker at a time unless the approved plan explicitly marks tasks as independent and gives them disjoint write scopes.
+Run only one task worker at a time unless the approved plan explicitly marks tasks as independent, gives them disjoint write scopes, declares a parallel `Workers:` value, and shows the parallel wave in `## Execution Graph`.
+
+Use the current branch for orchestrated multi-agent execution. Do not use per-worker git worktrees unless a later accepted ADR explicitly authorizes worktrees and defines merge-back, validation, failed-worker handoff, and conflict-resolution rules.
+
+For a parallel worker wave, the orchestrator must wait for every worker in the current execution step to report success or failure before moving to the next step. The orchestrator must verify each worker's committed result or commit-ready diff before advancing.
+
+The orchestrator must log structured worker events in the chat transcript:
+
+- Log `start`, `stop`, or `fail` for each worker.
+- Log whenever the active worker count changes.
+- Include ISO 8601 timestamp, event type, worker id, plan id, plan task id, agent mode, active worker count, and active worker ids.
+
+The chat transcript is the log destination. Do not create `.agents/runs/` logs unless a later accepted ADR defines ownership, retention, cleanup, and commit rules.
+
+Before dispatching the next dependent task, the orchestrator must ensure the plan file reflects the completed, failed, blocked, or otherwise current task state. If a task produces a user-visible, contributor-visible, workflow-visible, compatibility, support, release, or validation-policy change, the orchestrator updates the next unreleased `CHANGELOG.md` section before dispatching the next task. Purely internal tasks with no notable external or workflow effect may be grouped into a later entry, but the orchestrator must record the grouping reason in the chat transcript.
 
 ## Context Rules
 
@@ -84,6 +99,14 @@ When creating a commit for AI-authored work:
 - When committing non-interactively, use a commit-message file or one final message paragraph for all trailer lines. Do not pass each footer as a separate `git commit -m` argument because Git inserts blank lines between message paragraphs.
 
 Use `Project-Source: prompt` for direct ad hoc user requests, `task` for `TASKS.md` items, `plan` or `plan-task` for approved plan work, and `manual` only for human-authored commits outside the AI workflow. For `TASKS.md` work, include the stable `T-AREA-NNN` task ID in `Project-Task:`.
+
+For orchestrated multi-agent commits:
+
+- `Project-Worker: <worker-id>` is required on every commit authored by a task worker.
+- `Project-Orchestrator: <orchestrator-id>` is required on every commit produced under orchestrated multi-agent execution, whether authored by the orchestrator or by a worker.
+- `Project-Agent-Mode: <mode>` is required on every orchestrator and worker commit created in multi-agent execution.
+- Allowed `Project-Agent-Mode:` values are `code`, `fast-code`, `setup`, `advanced-chat`, `run-verify`, `niche`, and `chat`.
+- Worker and orchestrator identifiers must stay in trailers and must not be added to the Conventional Commits subject line.
 
 ## Stop Conditions
 

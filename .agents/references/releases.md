@@ -21,6 +21,10 @@ The orchestrator owns `CHANGELOG.md` maintenance for orchestrated plan execution
 
 Task workers may propose changelog entries in their handoff evidence, but they should not decide final wording, category, placement, or whether an entry is notable. The orchestrator decides that while reviewing each task and before starting the next task.
 
+After every worker handoff for a task that produces a user-visible, contributor-visible, workflow-visible, compatibility, support, release, or validation-policy change, the orchestrator updates the next unreleased `CHANGELOG.md` section before dispatching the next task. Purely internal tasks with no notable external or workflow effect may be grouped into one later entry when the orchestrator records the grouping reason in the chat transcript.
+
+The changelog edit should ride along in the same task commit when feasible and when it does not break the one-commit-per-task boundary. If a separate orchestrator commit is needed, it must be created before the next task starts and must use the multi-agent attribution trailers required by `.gitmessage` when those trailers apply.
+
 For release preparation, the release orchestrator owns moving accepted `Unreleased` entries into the versioned release section.
 
 ## Changelog Entries

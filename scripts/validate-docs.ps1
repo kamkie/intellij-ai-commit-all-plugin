@@ -236,6 +236,32 @@ foreach ($plan in $planFiles) {
         }
     }
 
+    $workersMatches = [regex]::Matches($text, '(?m)^Workers:\s+(.+?)\s*$')
+    if ($workersMatches.Count -eq 0)
+    {
+        Add-ValidationError "$relative is missing Workers metadata"
+    }
+    elseif ($workersMatches.Count -gt 1)
+    {
+        Add-ValidationError "$relative has duplicate Workers metadata"
+    }
+    else
+    {
+        $workersValue = $workersMatches[0].Groups[1].Value.Trim()
+        $hasSequentialWorkers = $workersValue -eq '1'
+        $hasParallelWorkers = $workersValue -match '^[2-9]\d* \(parallel, tasks: [^)]+\)$'
+        if (-not $hasSequentialWorkers -and -not $hasParallelWorkers)
+        {
+            Add-ValidationError "$relative has malformed Workers metadata '$workersValue'; use 'Workers: 1' or 'Workers: N (parallel, tasks: <task ids or labels>)'"
+        }
+    }
+
+    $executionGraphMatch = [regex]::Match($text, '(?ms)^## Execution Graph\s*```mermaid\s+.*?```')
+    if (-not $executionGraphMatch.Success)
+    {
+        Add-ValidationError "$relative is missing a ## Execution Graph section with a fenced mermaid graph"
+    }
+
     $readinessMatch = [regex]::Match($text, '(?ms)^## Readiness\s*(.*?)(?=^## |\z)')
     if (-not $readinessMatch.Success) {
         Add-ValidationError "$relative is missing a ## Readiness section"

@@ -6,6 +6,8 @@ Status: Closed
 
 Close-Reason: Archived
 
+Workers: 1
+
 Filename: `.agents/plans/archive/PLAN-commit-tool-window-actions.md`
 
 ## Readiness
@@ -65,6 +67,18 @@ No open plan questions.
 Use one orchestrator and one fresh task worker per named task when agent delegation is available. Do not run these tasks in parallel because they share action classes, plugin descriptor registration, and resources.
 
 Each named task should be implemented, validated, self-reviewed, and committed before the next task starts.
+
+## Execution Graph
+
+```mermaid
+flowchart TD
+    O1["O1[code]<br/>orchestrator"]
+    W1["W1[code]<br/>Task 1: Produce final IntelliJ-style action icons"]
+    W2["W2[code]<br/>Task 2: Register the split-button actions"]
+    W3["W3[code]<br/>Task 3: Route split-button segments into workflow entry points"]
+    W4["W4[code]<br/>Task 4: Implement visibility and enablement rules"]
+    O1 --> W1 --> W2 --> W3 --> W4
+```
 
 ## Validation
 

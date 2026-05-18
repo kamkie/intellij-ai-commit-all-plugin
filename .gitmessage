@@ -7,6 +7,9 @@ Project-Plan: <PLAN-slug plan ID and/or .agents/plans/*.md or omit>
 Project-Plan-Task: <plan task name or omit>
 Project-Task: <TASKS.md T-AREA-NNN task ID/title or omit>
 Project-Prompt: <short direct-request summary or omit>
+Project-Worker: <worker-id for task-worker commits or omit>
+Project-Orchestrator: <orchestrator-id for orchestrated multi-agent commits or omit>
+Project-Agent-Mode: <code|fast-code|setup|advanced-chat|run-verify|niche|chat or omit>
 Co-authored-by: <agent-name> <agent-email>
 Refs: <paths/issues/ADRs or omit>
 Validation: <command/result>
@@ -35,6 +38,10 @@ Validation: <command/result>
 #
 # Project metadata footers:
 #   Project-Source is required for AI-created commits.
+#   Project-Worker is required on commits authored by task workers.
+#   Project-Orchestrator is required on every orchestrated multi-agent commit.
+#   Project-Agent-Mode is required on every orchestrator and worker commit in multi-agent execution.
+#   Project-Agent-Mode values are: code, fast-code, setup, advanced-chat, run-verify, niche, chat.
 #   Co-authored-by footer is required for AI-created commits.
 #   Keep all metadata footers contiguous; do not put blank lines between trailer lines.
 #   Use plan for whole-plan or plan/spec-only commits.

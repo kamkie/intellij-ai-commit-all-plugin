@@ -8,6 +8,10 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.3
 
 ## [Unreleased]
 
+### Changed
+
+- Added multi-agent execution governance for plan worker counts, execution graphs, commit attribution trailers, orchestrator synchronization logs, plan/changelog handoffs, and single-branch topology.
+
 ## [v0.1.0-alpha.3] - 2026-05-18
 
 ### Changed

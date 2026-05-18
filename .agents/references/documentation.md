@@ -31,6 +31,7 @@ Use this guide when adding or updating repository documentation.
 - Give open questions stable IDs in `docs/decisions/OPEN_QUESTIONS.md` using `Q-<AREA>-NNN`, for example `Q-UX-001`.
 - Give every `TASKS.md` item a stable task ID in the form `T-AREA-NNN`, keep the ID stable when wording or ordering changes, and do not renumber existing task IDs.
 - Give every plan a stable `Plan-ID` in the form `PLAN-<short-kebab-slug>`, include it in active and archived filenames, keep it stable when title, filename, status, or wording changes, and avoid strictly number-based plan IDs.
+- Give every plan `Workers:` metadata and an `## Execution Graph` section with a fenced Mermaid graph.
 - Give every proposal a stable `proposal_id` in the form `PROP-<short-kebab-slug>`, include it in active and archived filenames, keep it stable when title, filename, status, wording, or archive location changes, and do not reuse retired proposal IDs.
 - Use three-digit proposal finding IDs such as `E001`, `D001`, and `S001` for active proposal findings; archived proposals may keep historical IDs unless materially updated.
 - Keep new proposal finding decisions empty until maintainer triage. When a finding decision is accepted, add `accepted_at:`; when a non-empty decision is not accepted, add `decided_at:`. Use ISO 8601 timestamps with timezone offsets.

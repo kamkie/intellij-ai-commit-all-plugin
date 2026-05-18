@@ -6,6 +6,8 @@ Status: Closed
 
 Close-Reason: Archived
 
+Workers: 1
+
 ## Readiness
 
 - Plan readiness: Complete.
@@ -53,6 +55,17 @@ No open plan questions.
 Use one orchestrator and one fresh task worker per named task when agent delegation is available. Do not run these tasks in parallel because they share Gradle, plugin descriptor, and documentation surfaces.
 
 Each named task should be implemented, validated, self-reviewed, and committed before the next task starts, following `.agents/references/planning.md` and `.agents/references/execution.md`.
+
+## Execution Graph
+
+```mermaid
+flowchart TD
+    O1["O1[code]<br/>orchestrator"]
+    W1["W1[setup]<br/>Task 1: Add Gradle and Kotlin scaffold"]
+    W2["W2[setup]<br/>Task 2: Add plugin descriptor and required metadata"]
+    W3["W3[run-verify]<br/>Task 3: Validate scaffold startup"]
+    O1 --> W1 --> W2 --> W3
+```
 
 ## Validation
 

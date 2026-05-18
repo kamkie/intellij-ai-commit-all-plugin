@@ -11,7 +11,6 @@ Proposals are advisory until accepted through the normal repository flow. A prop
 Active proposals still have at least one non-terminal implementation status row or at least one untriaged finding in their `Progress Tracker`.
 
 - `PROP-03-repository-quality-lifecycle` - Repository Quality And Lifecycle Work Stream ([PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md)), created 2026-05-15.
-- `PROP-04-multi-agent-execution` - Multi-Agent Execution Work Stream ([PROP-04-multi-agent-execution-2026-05-15T09-57.md](PROP-04-multi-agent-execution-2026-05-15T09-57.md)), created 2026-05-15.
 
 ### Completed Proposals
 
@@ -38,13 +37,6 @@ Implementation evidence can be a task, approved plan, ADR, changed file, commit,
 | [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E007    | Add CODEOWNERS after reviewer identity is known          | 3        | open    | Open intake; reviewer GitHub handle still needs to be supplied.                                    |
 | [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E008    | Enforce Apache-2.0 source headers                        | 4        | open    | Open intake; no task or plan selected.                                                            |
 | [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E010    | Preserve completed task history outside the active backlog | 4        | open    | Open intake; archive path not selected.                                                           |
-| [PROP-04-multi-agent-execution](PROP-04-multi-agent-execution-2026-05-15T09-57.md)               | S001    | Add a plan worker-count field                            | 2        | open    | Open intake; ADR not created.                                                                     |
-| [PROP-04-multi-agent-execution](PROP-04-multi-agent-execution-2026-05-15T09-57.md)               | S002    | Add worker, orchestrator, and agent-mode commit trailers | 3        | open    | Open intake; ADR not created.                                                                     |
-| [PROP-04-multi-agent-execution](PROP-04-multi-agent-execution-2026-05-15T09-57.md)               | S003    | Define orchestrator synchronization and logging          | 4        | open    | Open intake; ADR not created.                                                                     |
-| [PROP-04-multi-agent-execution](PROP-04-multi-agent-execution-2026-05-15T09-57.md)               | S004    | Clarify worker plan-file update responsibility           | 3        | open    | Open intake; ADR not created.                                                                     |
-| [PROP-04-multi-agent-execution](PROP-04-multi-agent-execution-2026-05-15T09-57.md)               | S005    | Define orchestrator changelog update cadence             | 3        | open    | Open intake; ADR follow-up not created.                                                           |
-| [PROP-04-multi-agent-execution](PROP-04-multi-agent-execution-2026-05-15T09-57.md)               | S006    | Add a plan execution graph                               | 4        | open    | Open intake; ADR not created.                                                                     |
-| [PROP-04-multi-agent-execution](PROP-04-multi-agent-execution-2026-05-15T09-57.md)               | S007    | Decide worktree versus single-branch execution topology  | 5        | open    | Open intake; ADR not created.                                                                     |
 
 ## When To Use A Proposal
 

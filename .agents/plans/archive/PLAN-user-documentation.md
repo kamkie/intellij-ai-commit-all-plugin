@@ -6,6 +6,8 @@ Status: Closed
 
 Close-Reason: Archived
 
+Workers: 1
+
 Filename: `.agents/plans/archive/PLAN-user-documentation.md`
 
 ## Readiness
@@ -62,6 +64,17 @@ No open plan questions.
 Use one orchestrator and one fresh task worker per named task when agent delegation is available. Task 1 should wait until the workflow behavior is implemented enough to document accurately.
 
 Each named task should be implemented, validated, self-reviewed, and committed before the next task starts.
+
+## Execution Graph
+
+```mermaid
+flowchart TD
+    O1["O1[code]<br/>orchestrator"]
+    W1["W1[chat]<br/>Task 1: Update setup, usage, dependency, and sandbox docs"]
+    W2["W2[chat]<br/>Task 2: Document source and release process"]
+    W3["W3[chat]<br/>Task 3: Align support and changelog docs"]
+    O1 --> W1 --> W2 --> W3
+```
 
 ## Validation
 

@@ -4,6 +4,8 @@ Plan-ID: PLAN-confirm-staged-before-ai-generation
 
 Status: Implemented
 
+Workers: 1
+
 Filename: `.agents/plans/PLAN-confirm-staged-before-ai-generation.md`
 
 ## Readiness
@@ -60,6 +62,15 @@ Fix `T-BUG-002` so the `AI` section does not invoke JetBrains AI Assistant until
 
 - Single implementation task.
 - No agent delegation or parallel implementation is needed.
+
+## Execution Graph
+
+```mermaid
+flowchart TD
+    O1["O1[code]<br/>orchestrator"]
+    W1["W1[code]<br/>Task 1: Verify Staged Paths Before AI Invocation"]
+    O1 --> W1
+```
 
 ## Validation
 

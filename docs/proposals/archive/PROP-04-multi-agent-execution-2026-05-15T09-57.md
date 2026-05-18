@@ -43,13 +43,13 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 | Id   | Title                                                    | Priority | Status | Decision |
 |------|----------------------------------------------------------|----------|--------|----------|
-| S001 | Add a plan worker-count field                            | 2        | open   | accepted |
-| S002 | Add worker, orchestrator, and agent-mode commit trailers | 3        | open   | accepted |
-| S003 | Define orchestrator synchronization and logging          | 4        | open   | accepted |
-| S004 | Clarify worker plan-file update responsibility           | 3        | open   | accepted |
-| S005 | Define orchestrator changelog update cadence             | 3        | open   | accepted |
-| S006 | Add a plan execution graph                               | 4        | open   | accepted |
-| S007 | Decide worktree versus single-branch execution topology  | 5        | open   | accepted |
+| S001 | Add a plan worker-count field                            | 2        | done   | accepted |
+| S002 | Add worker, orchestrator, and agent-mode commit trailers | 3        | done   | accepted |
+| S003 | Define orchestrator synchronization and logging          | 4        | done   | accepted |
+| S004 | Clarify worker plan-file update responsibility           | 3        | done   | accepted |
+| S005 | Define orchestrator changelog update cadence             | 3        | done   | accepted |
+| S006 | Add a plan execution graph                               | 4        | done   | accepted |
+| S007 | Decide worktree versus single-branch execution topology  | 5        | done   | accepted |
 
 ## How To Edit The Trackers
 
@@ -83,13 +83,13 @@ _No tracked findings._
     - Validation should require presence of the field and should reject malformed values; deeper checks against the execution graph can be deferred to `S006`.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 2
 owner:
-updated: 2026-05-18T01:43:37+02:00
+updated: 2026-05-18T11:28:00+02:00
 accepted_at: 2026-05-18T01:43:37+02:00
-comment: "Supersedes PROP-orchestrator-worker-rules S4; active decision details are maintained here."
+comment: "Implemented through accepted ADR adr-0056. Supersedes PROP-orchestrator-worker-rules S4."
 ```
 
 ### S002. Add worker, orchestrator, and agent-mode commit trailers
@@ -107,13 +107,13 @@ comment: "Supersedes PROP-orchestrator-worker-rules S4; active decision details 
     - The ADR should reference ADR 0007 as the prior commit-message decision and ADR 0026 as the delegated-worker execution decision.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 3
 owner:
-updated: 2026-05-18T01:43:37+02:00
+updated: 2026-05-18T11:28:00+02:00
 accepted_at: 2026-05-18T01:43:37+02:00
-comment: "Supersedes PROP-orchestrator-worker-rules S1; active decision details are maintained here."
+comment: "Implemented through accepted ADR adr-0057. Supersedes PROP-orchestrator-worker-rules S1."
 ```
 
 ### S003. Define orchestrator synchronization and logging
@@ -132,13 +132,13 @@ comment: "Supersedes PROP-orchestrator-worker-rules S1; active decision details 
     - Update `.agents/references/execution.md`; if durable logs are chosen, also update `AGENTS.md` guidance map and any validation or documentation references needed for `.agents/runs/`.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 4
 owner:
-updated: 2026-05-18T01:43:37+02:00
+updated: 2026-05-18T11:28:00+02:00
 accepted_at: 2026-05-18T01:43:37+02:00
-comment: "Supersedes PROP-orchestrator-worker-rules S2; active decision details are maintained here."
+comment: "Implemented through accepted ADR adr-0058. Supersedes PROP-orchestrator-worker-rules S2."
 ```
 
 ### S004. Clarify worker plan-file update responsibility
@@ -156,13 +156,13 @@ comment: "Supersedes PROP-orchestrator-worker-rules S2; active decision details 
     - The ADR should reference ADR 0023, ADR 0026, and the accepted plan status lifecycle rules.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 3
 owner:
-updated: 2026-05-18T01:43:37+02:00
+updated: 2026-05-18T11:28:00+02:00
 accepted_at: 2026-05-18T01:43:37+02:00
-comment: "Supersedes PROP-orchestrator-worker-rules S5; active decision details are maintained here."
+comment: "Implemented through accepted ADR adr-0059. Supersedes PROP-orchestrator-worker-rules S5."
 ```
 
 ### S005. Define orchestrator changelog update cadence
@@ -180,13 +180,13 @@ comment: "Supersedes PROP-orchestrator-worker-rules S5; active decision details 
     - The ADR or follow-up should reference ADR 0030, ADR 0023, and ADR 0026.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 3
 owner:
-updated: 2026-05-18T01:43:37+02:00
+updated: 2026-05-18T11:28:00+02:00
 accepted_at: 2026-05-18T01:43:37+02:00
-comment: "Supersedes PROP-orchestrator-worker-rules S6; active decision details are maintained here."
+comment: "Implemented through accepted ADR adr-0059. Supersedes PROP-orchestrator-worker-rules S6."
 ```
 
 ### S006. Add a plan execution graph
@@ -207,13 +207,13 @@ comment: "Supersedes PROP-orchestrator-worker-rules S6; active decision details 
     - Backfill existing plan files that validation scans. `PLAN-fastest-plan-execution` is the known example whose existing graph can be brought into the required shape.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 4
 owner:
-updated: 2026-05-18T01:43:37+02:00
+updated: 2026-05-18T11:28:00+02:00
 accepted_at: 2026-05-18T01:43:37+02:00
-comment: "Supersedes PROP-orchestrator-worker-rules S7; active decision details are maintained here."
+comment: "Implemented through accepted ADR adr-0060. Supersedes PROP-orchestrator-worker-rules S7."
 ```
 
 ### S007. Decide worktree versus single-branch execution topology
@@ -231,13 +231,13 @@ comment: "Supersedes PROP-orchestrator-worker-rules S7; active decision details 
     - The ADR should reference ADR 0003, ADR 0009, ADR 0023, and ADR 0026.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 5
 owner:
-updated: 2026-05-18T01:43:37+02:00
+updated: 2026-05-18T11:28:00+02:00
 accepted_at: 2026-05-18T01:43:37+02:00
-comment: "Supersedes PROP-orchestrator-worker-rules S3; active decision details are maintained here."
+comment: "Implemented through accepted ADR adr-0061. Supersedes PROP-orchestrator-worker-rules S3."
 ```
 
 ## Smaller / Stylistic Items
