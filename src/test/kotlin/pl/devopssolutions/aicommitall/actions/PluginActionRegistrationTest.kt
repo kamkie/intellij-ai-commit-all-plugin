@@ -47,15 +47,15 @@ internal class PluginActionRegistrationTest {
     }
 
     @Test
-    fun `push shortcut action mirrors ide commit and push shortcut`() {
+    fun `push shortcut action mirrors ide push shortcut`() {
         val action = pluginAction(AI_COMMIT_ALL_PUSH_SHORTCUT_ACTION_ID)
 
         assertEquals(
             "pl.devopssolutions.aicommitall.actions.AiCommitAllPushShortcutAction",
             action.getAttribute("class"),
         )
-        assertEquals(IDE_COMMIT_AND_PUSH_ACTION_ID, action.getAttribute("use-shortcut-of"))
-        assertHasKeyboardShortcut(action, "control alt K")
+        assertEquals(IDE_PUSH_ACTION_ID, action.getAttribute("use-shortcut-of"))
+        assertHasKeyboardShortcut(action, "control shift K")
     }
 
     @Test

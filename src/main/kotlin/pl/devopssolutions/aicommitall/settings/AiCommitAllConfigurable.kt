@@ -47,7 +47,7 @@ internal class AiCommitAllConfigurable : SearchableConfigurable {
             settings.clearCommitMessageBeforeGeneration(),
         )
         useVcsShortcutsCheckBox = JCheckBox(
-            "Use AI Commit All for IDE commit shortcuts",
+            "Use AI Commit All for IDE commit and push shortcuts",
             settings.useVcsShortcutsForAiCommitAll(),
         )
 

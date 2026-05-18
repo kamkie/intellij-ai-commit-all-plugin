@@ -26,8 +26,8 @@
             class="pl.devopssolutions.aicommitall.actions.AiCommitAllPushShortcutAction"
             text="AI Commit All: Push"
             description="Generate an AI commit message, commit all Git changes, and push."
-            use-shortcut-of="Git.Commit.And.Push.Executor">
-            <keyboard-shortcut first-keystroke="control alt K" keymap="$default" />
+            use-shortcut-of="Vcs.Push">
+            <keyboard-shortcut first-keystroke="control shift K" keymap="$default" />
         </action>
     </actions>
 

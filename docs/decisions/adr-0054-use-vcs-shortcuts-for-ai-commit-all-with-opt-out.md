@@ -11,9 +11,9 @@ informed: Repository contributors
 
 ## Context and Problem Statement
 
-`PROP-02-pre-release-ux` `E006` accepts evaluating whether `AI Commit All` should take over the standard IDE commit shortcuts before release. ADR 0052 now defines one three-section control with `AI`, `Commit`, and `Push` sections, so shortcut ownership needs to map to those sections rather than the older two-segment split button.
+`PROP-02-pre-release-ux` `E006` accepts evaluating whether `AI Commit All` should take over the standard IDE commit and push shortcuts before release. ADR 0052 now defines one three-section control with `AI`, `Commit`, and `Push` sections, so shortcut ownership needs to map to those sections rather than the older two-segment split button.
 
-The current local IntelliJ Platform 2026.1.1 descriptors assign `CheckinProject` to `control K` and `Git.Commit.And.Push.Executor` to `control alt K` in the default keymap. The proposal text also mentions older shortcut wording such as `Ctrl+K` / `Ctrl+Shift+K` and macOS equivalents, so implementation should follow IDE action IDs and keymap equivalents rather than hard-coding stale shortcut text.
+The current local IntelliJ Platform 2026.1.1 descriptors assign `CheckinProject` to the commit shortcut and `Vcs.Push` to the push shortcut. The proposal text also mentions shortcut wording such as `Ctrl+K` / `Ctrl+Shift+K` and macOS equivalents, so implementation should follow IDE action IDs and keymap equivalents rather than hard-coding shortcut text beyond fallback descriptor bindings.
 
 ## Decision Drivers
 
@@ -26,32 +26,31 @@ The current local IntelliJ Platform 2026.1.1 descriptors assign `CheckinProject`
 
 ## Considered Options
 
-* Take over commit shortcuts by default with settings opt-out
+* Take over commit and push shortcuts by default with settings opt-out
 * Add plugin shortcuts only when users opt in
-* Leave IDE commit shortcuts untouched
+* Leave IDE commit and push shortcuts untouched
 
 ## Decision Outcome
 
-Chosen option: "Take over commit shortcuts by default with settings opt-out", because shortcut takeover makes `AI Commit All` the primary commit workflow while the opt-out keeps standard IDE muscle memory recoverable.
+Chosen option: "Take over commit and push shortcuts by default with settings opt-out", because shortcut takeover makes `AI Commit All` the primary commit workflow while the opt-out keeps standard IDE muscle memory recoverable.
 
 If accepted, implementation should add keyboard-targetable plugin actions that dispatch to the same workflow sections as the visual control:
 
 * The action using the IDE commit shortcut should run the `Commit` section behavior.
-* The action using the IDE commit-and-push shortcut should run the `Push` section behavior.
-* The plugin should not take over the plain push-only action because `AI Commit All` `Push` includes AI generation and commit first.
+* The action using the IDE push shortcut should run the `Push` section behavior.
 * The `AI` section should not receive a standard VCS shortcut unless a later decision assigns one.
 
 Shortcut bindings should follow the IDE actions rather than fixed human-readable key text:
 
 * `CheckinProject` is the source action for commit shortcut equivalence.
-* `Git.Commit.And.Push.Executor` is the source action for commit-and-push shortcut equivalence where that Git action exists.
+* `Vcs.Push` is the source action for push shortcut equivalence where that VCS action exists.
 * Platform, OS, and keymap variants should be inherited or mirrored only when the IntelliJ action system can do so predictably.
 
-Add a settings option under `Settings | Tools | AI Commit All`, enabled by default, for using `AI Commit All` on IDE commit shortcuts. When the option is disabled, pressing those shortcuts must execute the standard IDE action behavior rather than the plugin workflow. The implementation may achieve that by delegating to the original IDE action, by avoiding active plugin shortcut registration, or by another action-system approach that leaves user keymaps intact.
+Add a settings option under `Settings | Tools | AI Commit All`, enabled by default, for using `AI Commit All` on IDE commit and push shortcuts. When the option is disabled, pressing those shortcuts must execute the standard IDE action behavior rather than the plugin workflow. The implementation may achieve that by delegating to the original IDE action, by avoiding active plugin shortcut registration, or by another action-system approach that leaves user keymaps intact.
 
 ### Consequences
 
-* Good, because keyboard users can trigger the AI-backed commit and commit-and-push workflows without reaching for the mouse.
+* Good, because keyboard users can trigger the AI-backed commit and push workflows without reaching for the mouse.
 * Good, because the setting provides a clear restoration path for users who prefer standard IDE behavior.
 * Good, because the decision maps shortcuts to `Commit` and `Push` sections without inventing a shortcut for the `AI` preparation-only section.
 * Bad, because registering shortcut-equivalent plugin actions may expose IntelliJ action-system conflicts that need careful testing.
@@ -63,14 +62,14 @@ Compliance should be checked by implementation review and validation that covers
 
 * Shortcut action registration for the `Commit` and `Push` section workflows.
 * Default enabled setting dispatching the commit shortcut to `Commit`.
-* Default enabled setting dispatching the commit-and-push shortcut to `Push`.
-* Disabled setting preserving or delegating to standard IDE commit and commit-and-push behavior.
+* Default enabled setting dispatching the push shortcut to `Push`.
+* Disabled setting preserving or delegating to standard IDE commit and push behavior.
 * Documentation of the setting and user-visible shortcut behavior.
 * Manual sandbox validation for the default Windows/Linux keymap and the macOS keymap equivalents available in the supported IDE line.
 
 ## Pros and Cons of the Options
 
-### Take over commit shortcuts by default with settings opt-out
+### Take over commit and push shortcuts by default with settings opt-out
 
 * Good, because it makes the plugin the default keyboard path for the workflow it replaces.
 * Good, because it keeps the pre-release user experience aligned with the toolbar control.
@@ -84,7 +83,7 @@ Compliance should be checked by implementation review and validation that covers
 * Bad, because new users may never discover the plugin keyboard workflow.
 * Bad, because the accepted proposal asks for takeover with an opt-out, not a hidden opt-in.
 
-### Leave IDE commit shortcuts untouched
+### Leave IDE commit and push shortcuts untouched
 
 * Good, because it is the least risky action-system change.
 * Good, because standard IDE muscle memory remains untouched.

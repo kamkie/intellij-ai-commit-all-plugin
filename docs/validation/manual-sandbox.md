@@ -44,10 +44,10 @@ The push scenario uses only repositories under the test temporary directory and 
 `src/test/kotlin/pl/devopssolutions/aicommitall/actions/AiCommitAllShortcutActionsTest.kt` and
 `src/test/kotlin/pl/devopssolutions/aicommitall/actions/PluginActionRegistrationTest.kt` cover:
 
-- Registration of shortcut-target actions that mirror `CheckinProject` and `Git.Commit.And.Push.Executor`.
+- Registration of shortcut-target actions that mirror `CheckinProject` and `Vcs.Push`.
 - Registration of the Commit toolbar startup activity that removes the standard `Commit and Push...` toolbar action.
 - Routing the commit shortcut action to the `Commit` workflow mode.
-- Routing the commit-and-push shortcut action to the `Push` workflow mode.
+- Routing the push shortcut action to the `Push` workflow mode.
 - Disabling takeover when the settings opt-out is off.
 - Promoting plugin shortcut actions over the mirrored IDE actions only when takeover is available.
 
@@ -77,9 +77,9 @@ Record manual results in this file or in a linked release validation report befo
 | T-IDEA-010 | `Push` is enabled and opens the IDE push workflow when only outgoing commits are present. | `IIU`. | Not run in this automated task. | Local and remote branch hashes before and after push, plus Commit tool window enabled state. |
 | T-IDEA-011 | The plugin control replaces the standard `Commit and Push...` toolbar action in the Commit tool window. | `IIU`, plus representative non-IDEA IDE. | Not run in this automated task. | Commit toolbar screenshot or observation showing plugin control visible and standard action absent. |
 | ADR-0054-1 | With shortcut takeover enabled, the IDE commit shortcut runs the `Commit` section workflow. | `IIU`, plus macOS keymap equivalent where practical. | Not run in this automated task. | Keymap name, setting value, generated message, resulting commit hash. |
-| ADR-0054-2 | With shortcut takeover enabled, the IDE commit-and-push shortcut runs the `Push` section workflow. | `IIU`, plus macOS keymap equivalent where practical. | Not run in this automated task. | Keymap name, setting value, local remote path, resulting commit and remote branch hashes. |
+| ADR-0054-2 | With shortcut takeover enabled, the IDE push shortcut runs the `Push` section workflow. | `IIU`, plus macOS keymap equivalent where practical. | Not run in this automated task. | Keymap name, setting value, local remote path, resulting commit and remote branch hashes. |
 | ADR-0054-3 | With shortcut takeover disabled, the IDE commit shortcut runs the standard IDE commit action. | `IIU`, plus macOS keymap equivalent where practical. | Not run in this automated task. | Keymap name, setting value, observed standard Commit action behavior. |
-| ADR-0054-4 | With shortcut takeover disabled, the IDE commit-and-push shortcut runs the standard IDE commit-and-push action. | `IIU`, plus macOS keymap equivalent where practical. | Not run in this automated task. | Keymap name, setting value, observed standard Commit and Push action behavior. |
+| ADR-0054-4 | With shortcut takeover disabled, the IDE push shortcut runs the standard IDE push action. | `IIU`, plus macOS keymap equivalent where practical. | Not run in this automated task. | Keymap name, setting value, observed standard Push action behavior. |
 
 ## Scenario Coverage Register
 

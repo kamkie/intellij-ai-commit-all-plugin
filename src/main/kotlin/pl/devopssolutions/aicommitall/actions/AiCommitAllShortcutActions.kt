@@ -36,7 +36,7 @@ internal class AiCommitAllCommitShortcutAction :
 internal class AiCommitAllPushShortcutAction :
     AiCommitAllShortcutAction(
         section = AiCommitAllControlSection.Push,
-        sourceActionId = IDE_COMMIT_AND_PUSH_ACTION_ID,
+        sourceActionId = IDE_PUSH_ACTION_ID,
     )
 
 internal abstract class AiCommitAllShortcutAction(
@@ -182,6 +182,7 @@ internal object IntellijAiCommitAllActionIdProvider : AiCommitAllActionIdProvide
 
 internal const val IDE_COMMIT_ACTION_ID: String = "CheckinProject"
 internal const val IDE_COMMIT_AND_PUSH_ACTION_ID: String = "Git.Commit.And.Push.Executor"
+internal const val IDE_PUSH_ACTION_ID: String = "Vcs.Push"
 internal const val AI_COMMIT_ALL_COMMIT_SHORTCUT_ACTION_ID: String =
     "pl.devopssolutions.aicommitall.actions.CommitShortcut"
 internal const val AI_COMMIT_ALL_PUSH_SHORTCUT_ACTION_ID: String =

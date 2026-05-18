@@ -68,7 +68,7 @@ internal class AiCommitAllShortcutActionsTest {
         val starter = CapturingWorkflowStarter()
         val action = testShortcutAction(
             section = AiCommitAllControlSection.Push,
-            sourceActionId = IDE_COMMIT_AND_PUSH_ACTION_ID,
+            sourceActionId = IDE_PUSH_ACTION_ID,
             starter = starter,
         )
         val project = testProject()
@@ -77,6 +77,11 @@ internal class AiCommitAllShortcutActionsTest {
 
         assertSame(project, starter.project)
         assertEquals(AiCommitAllWorkflowMode.Push, starter.mode)
+    }
+
+    @Test
+    fun `push shortcut delegates to ide push action when takeover is unavailable`() {
+        assertEquals(IDE_PUSH_ACTION_ID, AiCommitAllPushShortcutAction().sourceActionId)
     }
 
     @Test
@@ -139,7 +144,7 @@ internal class AiCommitAllShortcutActionsTest {
         val delegate = CapturingStandardActionDelegate()
         val action = testShortcutAction(
             section = AiCommitAllControlSection.Push,
-            sourceActionId = IDE_COMMIT_AND_PUSH_ACTION_ID,
+            sourceActionId = IDE_PUSH_ACTION_ID,
             starter = starter,
             availability = AiCommitAllWorkflowActionAvailability.Disabled,
             delegate = delegate,
@@ -149,7 +154,7 @@ internal class AiCommitAllShortcutActionsTest {
         action.actionPerformed(event)
 
         assertEquals(null, starter.mode)
-        assertEquals(IDE_COMMIT_AND_PUSH_ACTION_ID, delegate.sourceActionId)
+        assertEquals(IDE_PUSH_ACTION_ID, delegate.sourceActionId)
         assertSame(event, delegate.event)
     }
 

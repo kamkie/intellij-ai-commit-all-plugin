@@ -29,7 +29,7 @@ The current implementation:
 - Keeps `Push` available for already-created outgoing commits even when there are no committable Git changes.
 - Replaces the standard Commit tool window `Commit and Push...` toolbar button with the plugin's three-section control while keeping standard IDE commit, push, and shortcut delegation paths available.
 - Uses the ADR 0053 violet AI, blue Commit, green Push segmented styling with cumulative hover and a snake-loop running indication on the active section.
-- Uses the IDE commit shortcut for the `Commit` section and the IDE commit-and-push shortcut for the `Push` section by default, with a settings opt-out.
+- Uses the IDE commit shortcut for the `Commit` section and the IDE push shortcut for the `Push` section by default, with a settings opt-out.
 
 Manual sandbox validation is tracked in [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
 
@@ -91,7 +91,7 @@ Pull-request CI validates the Gradle wrapper, source formatting, documentation, 
 4. Create committable Git changes, or create local commits that are not pushed yet.
 5. Use `AI` to generate a message without committing, `Commit` to generate and commit, or `Push` to generate, commit, and push. If only outgoing commits are present, use `Push` to open the standard IDE push workflow.
 
-With the default shortcut setting enabled, the IDE's commit shortcut runs the plugin `Commit` workflow and the IDE's commit-and-push shortcut runs the plugin `Push` workflow when the Commit tool window workflow is available. Disable the shortcut setting to return those shortcuts to the standard IDE actions.
+With the default shortcut setting enabled, the IDE's commit shortcut runs the plugin `Commit` workflow and the IDE's push shortcut runs the plugin `Push` workflow when the Commit tool window workflow is available. On the default Windows/Linux keymap, this makes `Ctrl+Shift+K` equivalent to clicking the `Push` section. Disable the shortcut setting to return those shortcuts to the standard IDE actions.
 
 The control is hidden outside an active supported Git commit workflow. `AI` and `Commit` are disabled when no non-ignored committable Git files are available. `Push` stays enabled when outgoing Git commits are available to push, and otherwise follows the required workflow executor availability.
 
@@ -106,7 +106,7 @@ Open `Settings | Tools | AI Commit All` to configure:
 - AI generation timeout, default `30000` ms.
 - Completion check interval, default `500` ms.
 - Clear commit message before AI generation, default enabled.
-- Use AI Commit All for IDE commit shortcuts, default enabled.
+- Use AI Commit All for IDE commit and push shortcuts, default enabled.
 
 Both timing values must be positive. Timeout and user-edit paths stop without committing or pushing.
 
