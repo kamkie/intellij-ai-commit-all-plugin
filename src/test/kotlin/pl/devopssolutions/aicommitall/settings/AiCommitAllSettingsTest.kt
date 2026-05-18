@@ -34,6 +34,23 @@ internal class AiCommitAllSettingsTest {
     }
 
     @Test
+    fun `normalization preserves persisted runtime toggles`() {
+        val settings = AiCommitAllSettings()
+
+        settings.loadState(
+            AiCommitAllSettings.State(
+                aiGenerationTimeoutMillis = 0,
+                completionCheckIntervalMillis = -1,
+                clearCommitMessageBeforeGeneration = false,
+                useVcsShortcutsForAiCommitAll = false,
+            ),
+        )
+
+        assertEquals(false, settings.clearCommitMessageBeforeGeneration())
+        assertEquals(false, settings.useVcsShortcutsForAiCommitAll())
+    }
+
+    @Test
     fun `updates positive AI completion values`() {
         val settings = AiCommitAllSettings()
 

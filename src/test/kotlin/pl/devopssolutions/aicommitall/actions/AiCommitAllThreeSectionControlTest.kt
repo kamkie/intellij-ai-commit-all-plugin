@@ -113,6 +113,18 @@ internal class AiCommitAllThreeSectionControlTest {
     }
 
     @Test
+    fun `left arrow moves keyboard activation to ai section`() {
+        val activations = mutableListOf<AiCommitAllControlSection>()
+        val control = testControl { section, _ -> activations += section }
+
+        control.performKey(KeyEvent.VK_LEFT)
+        control.performKey(KeyEvent.VK_ENTER)
+
+        assertEquals(listOf(AiCommitAllControlSection.Ai), activations)
+        assertEquals(setOf(AiCommitAllControlSection.Ai), control.highlightedSectionsForTest())
+    }
+
+    @Test
     fun `keyboard navigation skips disabled sections`() {
         val activations = mutableListOf<AiCommitAllControlSection>()
         val control = testControl(

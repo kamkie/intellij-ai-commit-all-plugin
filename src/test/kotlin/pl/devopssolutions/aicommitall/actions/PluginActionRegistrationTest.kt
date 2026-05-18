@@ -5,6 +5,7 @@ import java.nio.file.Path
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.io.path.inputStream
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 internal class PluginActionRegistrationTest {
@@ -50,6 +51,32 @@ internal class PluginActionRegistrationTest {
         assertEquals(
             listOf("pl.devopssolutions.aicommitall.actions.AiCommitAllShortcutActionPromoter"),
             implementations,
+        )
+    }
+
+    @Test
+    fun `plugin declares required AI Assistant dependency`() {
+        val dependencies = pluginDocument().getElementsByTagName("depends")
+        val dependencyIds = (0 until dependencies.length).map { index ->
+            dependencies.item(index).textContent.trim()
+        }
+
+        assertContains(dependencyIds, "com.intellij.ml.llm")
+    }
+
+    @Test
+    fun `settings configurable is registered`() {
+        val configurables = pluginDocument().getElementsByTagName("applicationConfigurable")
+        val configurable = (0 until configurables.length)
+            .map { index -> configurables.item(index) as Element }
+            .single { element ->
+                element.getAttribute("id") == "pl.devopssolutions.aicommitall.settings"
+            }
+
+        assertEquals("AI Commit All", configurable.getAttribute("displayName"))
+        assertEquals(
+            "pl.devopssolutions.aicommitall.settings.AiCommitAllConfigurable",
+            configurable.getAttribute("instance"),
         )
     }
 

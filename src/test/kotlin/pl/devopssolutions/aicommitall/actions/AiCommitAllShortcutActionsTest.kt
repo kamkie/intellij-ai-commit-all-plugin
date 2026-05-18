@@ -100,6 +100,45 @@ internal class AiCommitAllShortcutActionsTest {
     }
 
     @Test
+    fun `shortcut delegates to source action without project`() {
+        val starter = CapturingWorkflowStarter()
+        val delegate = CapturingStandardActionDelegate()
+        val action = testShortcutAction(
+            section = AiCommitAllControlSection.Commit,
+            sourceActionId = IDE_COMMIT_ACTION_ID,
+            starter = starter,
+            delegate = delegate,
+        )
+        val event = testEvent(DataContext.EMPTY_CONTEXT)
+
+        action.actionPerformed(event)
+
+        assertEquals(null, starter.mode)
+        assertEquals(IDE_COMMIT_ACTION_ID, delegate.sourceActionId)
+        assertSame(event, delegate.event)
+    }
+
+    @Test
+    fun `shortcut delegates to source action when workflow is unavailable`() {
+        val starter = CapturingWorkflowStarter()
+        val delegate = CapturingStandardActionDelegate()
+        val action = testShortcutAction(
+            section = AiCommitAllControlSection.Push,
+            sourceActionId = IDE_COMMIT_AND_PUSH_ACTION_ID,
+            starter = starter,
+            availability = AiCommitAllWorkflowActionAvailability.Disabled,
+            delegate = delegate,
+        )
+        val event = testEvent(testDataContext(testProject()))
+
+        action.actionPerformed(event)
+
+        assertEquals(null, starter.mode)
+        assertEquals(IDE_COMMIT_AND_PUSH_ACTION_ID, delegate.sourceActionId)
+        assertSame(event, delegate.event)
+    }
+
+    @Test
     fun `promoter promotes available plugin shortcut and suppresses matching source action`() {
         val sourceAction = testSourceAction()
         val shortcutAction = testShortcutAction(
@@ -134,6 +173,45 @@ internal class AiCommitAllShortcutActionsTest {
 
         assertEquals(emptyList(), promoter.promote(actions, testDataContext(testProject())))
         assertEquals(emptyList(), promoter.suppress(actions, testDataContext(testProject())))
+    }
+
+    @Test
+    fun `promoter leaves source action alone when plugin shortcut is unavailable`() {
+        val sourceAction = testSourceAction()
+        val shortcutAction = testShortcutAction(
+            section = AiCommitAllControlSection.Commit,
+            sourceActionId = IDE_COMMIT_ACTION_ID,
+            availability = AiCommitAllWorkflowActionAvailability.Disabled,
+        )
+        val promoter = AiCommitAllShortcutActionPromoter(
+            settingsProvider = StaticShortcutSettingsProvider(enabled = true),
+            actionIdProvider = MapActionIdProvider(sourceAction to IDE_COMMIT_ACTION_ID),
+        )
+        val actions = listOf<AnAction>(sourceAction, shortcutAction)
+
+        assertEquals(emptyList(), promoter.promote(actions, testDataContext(testProject())))
+        assertEquals(emptyList(), promoter.suppress(actions, testDataContext(testProject())))
+    }
+
+    @Test
+    fun `promoter suppresses only the source action matching promoted shortcuts`() {
+        val commitSourceAction = testSourceAction()
+        val unrelatedSourceAction = testSourceAction()
+        val shortcutAction = testShortcutAction(
+            section = AiCommitAllControlSection.Commit,
+            sourceActionId = IDE_COMMIT_ACTION_ID,
+        )
+        val promoter = AiCommitAllShortcutActionPromoter(
+            settingsProvider = StaticShortcutSettingsProvider(enabled = true),
+            actionIdProvider = MapActionIdProvider(
+                commitSourceAction to IDE_COMMIT_ACTION_ID,
+                unrelatedSourceAction to "Unrelated.Action",
+            ),
+        )
+        val actions = listOf<AnAction>(commitSourceAction, unrelatedSourceAction, shortcutAction)
+
+        assertEquals(listOf(shortcutAction), promoter.promote(actions, testDataContext(testProject())))
+        assertEquals(listOf(commitSourceAction), promoter.suppress(actions, testDataContext(testProject())))
     }
 
     private fun testShortcutAction(

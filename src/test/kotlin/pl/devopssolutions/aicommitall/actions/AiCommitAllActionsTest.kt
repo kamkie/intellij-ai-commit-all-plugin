@@ -292,6 +292,23 @@ internal class AiCommitAllActionsTest {
         assertTrue(provider.modes.isEmpty())
     }
 
+    @Test
+    fun `action update hides when every section is unavailable`() {
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = CapturingWorkflowStarter(),
+            availabilityProvider = StaticAvailabilityProvider(
+                defaultAvailability = AiCommitAllWorkflowActionAvailability.Hidden,
+            ),
+            activityProvider = StaticActivityProvider(),
+        )
+        val event = testEvent(testDataContext(testProject()))
+
+        action.update(event)
+
+        assertFalse(event.presentation.isVisible)
+        assertFalse(event.presentation.isEnabled)
+    }
+
     private class CapturingWorkflowStarter : AiCommitAllWorkflowStarter {
         var project: Project? = null
         var mode: AiCommitAllWorkflowMode? = null

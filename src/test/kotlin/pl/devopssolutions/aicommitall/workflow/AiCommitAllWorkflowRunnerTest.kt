@@ -164,6 +164,105 @@ internal class AiCommitAllWorkflowRunnerTest {
         assertEquals(0, dependencies.pushCallCount)
     }
 
+    @Test
+    fun `missing workflow stops before readiness check`() {
+        val dependencies = CapturingWorkflowDependencies()
+
+        val result = AiCommitAllWorkflowRunner(dependencies)
+            .start(AiCommitAllWorkflowMode.Commit, DataContext.EMPTY_CONTEXT)
+            .join()
+
+        assertEquals(
+            AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.MissingWorkflow),
+            result,
+        )
+        assertEquals(listOf("stop:MissingWorkflow"), dependencies.events)
+        assertEquals(0, dependencies.commitCallCount)
+        assertEquals(0, dependencies.pushCallCount)
+    }
+
+    @Test
+    fun `frozen vcs state stops before selection preparation`() {
+        val dependencies = CapturingWorkflowDependencies(
+            readinessResult = VcsOperationReadinessResult.Frozen,
+        )
+
+        val result = AiCommitAllWorkflowRunner(dependencies)
+            .start(AiCommitAllWorkflowMode.Commit, testDataContext())
+            .join()
+
+        assertEquals(
+            AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.VcsFrozen),
+            result,
+        )
+        assertEquals(listOf("readiness", "stop:VcsFrozen"), dependencies.events)
+        assertEquals(0, dependencies.commitCallCount)
+        assertEquals(0, dependencies.pushCallCount)
+    }
+
+    @Test
+    fun `background vcs operation stops before selection preparation`() {
+        val dependencies = CapturingWorkflowDependencies(
+            readinessResult = VcsOperationReadinessResult.BackgroundOperationRunning,
+        )
+
+        val result = AiCommitAllWorkflowRunner(dependencies)
+            .start(AiCommitAllWorkflowMode.Push, testDataContext())
+            .join()
+
+        assertEquals(
+            AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.VcsBackgroundOperationRunning),
+            result,
+        )
+        assertEquals(listOf("readiness", "stop:VcsBackgroundOperationRunning"), dependencies.events)
+        assertEquals(0, dependencies.commitCallCount)
+        assertEquals(0, dependencies.pushCallCount)
+    }
+
+    @Test
+    fun `commit mode stops when commit execution is unavailable after AI completion`() {
+        val dependencies = CapturingWorkflowDependencies(
+            commitResult = CommitWorkflowExecutionResult.UnsupportedExecutor,
+        )
+
+        val result = AiCommitAllWorkflowRunner(dependencies)
+            .start(AiCommitAllWorkflowMode.Commit, testDataContext())
+            .join()
+
+        assertEquals(
+            AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.CommitExecutionUnavailable),
+            result,
+        )
+        assertEquals(
+            listOf("readiness", "prepare", "ai:Commit", "commit", "stop:CommitExecutionUnavailable"),
+            dependencies.events,
+        )
+        assertEquals(1, dependencies.commitCallCount)
+        assertEquals(0, dependencies.pushCallCount)
+    }
+
+    @Test
+    fun `push mode stops when push execution is unavailable after AI completion`() {
+        val dependencies = CapturingWorkflowDependencies(
+            pushResult = CommitWorkflowExecutionResult.DisabledExecutor,
+        )
+
+        val result = AiCommitAllWorkflowRunner(dependencies)
+            .start(AiCommitAllWorkflowMode.Push, testDataContext())
+            .join()
+
+        assertEquals(
+            AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.PushExecutionUnavailable),
+            result,
+        )
+        assertEquals(
+            listOf("readiness", "prepare", "ai:Push", "push", "stop:PushExecutionUnavailable"),
+            dependencies.events,
+        )
+        assertEquals(0, dependencies.commitCallCount)
+        assertEquals(1, dependencies.pushCallCount)
+    }
+
     private class CapturingWorkflowDependencies(
         val selection: GitChangeSelection = GitChangeSelection(emptyList()),
         private val aiCompletion: CompletableFuture<AiGenerationCompletionResult> =
@@ -171,6 +270,9 @@ internal class AiCommitAllWorkflowRunnerTest {
         private val selectionResult: CommitWorkflowSelectionResult =
             CommitWorkflowSelectionResult.Prepared(selection),
         private val aiGenerationResult: AiCommitAllAiGenerationResult? = null,
+        private val readinessResult: VcsOperationReadinessResult = VcsOperationReadinessResult.Ready,
+        private val commitResult: CommitWorkflowExecutionResult = CommitWorkflowExecutionResult.Started,
+        private val pushResult: CommitWorkflowExecutionResult = CommitWorkflowExecutionResult.Started,
     ) : AiCommitAllWorkflowDependencies {
         val events = mutableListOf<String>()
         var commitCallCount = 0
@@ -179,7 +281,7 @@ internal class AiCommitAllWorkflowRunnerTest {
 
         override fun checkReadiness(): VcsOperationReadinessResult {
             events += "readiness"
-            return VcsOperationReadinessResult.Ready
+            return readinessResult
         }
 
         override fun prepareAllFilesSelection(
@@ -204,7 +306,7 @@ internal class AiCommitAllWorkflowRunnerTest {
         override fun executeCommit(workflowHandler: CommitWorkflowHandler): CommitWorkflowExecutionResult {
             events += "commit"
             commitCallCount++
-            return CommitWorkflowExecutionResult.Started
+            return commitResult
         }
 
         override fun executeCommitAndPush(
@@ -214,7 +316,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             events += "push"
             pushCallCount++
             pushedSelection = selection
-            return CommitWorkflowExecutionResult.Started
+            return pushResult
         }
 
         override fun reportStop(reason: AiCommitAllWorkflowStopReason) {

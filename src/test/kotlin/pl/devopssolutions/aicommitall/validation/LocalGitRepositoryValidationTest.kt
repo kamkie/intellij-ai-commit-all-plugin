@@ -2,11 +2,7 @@ package pl.devopssolutions.aicommitall.validation
 
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.createDirectories
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.writeText
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -36,10 +32,8 @@ internal class LocalGitRepositoryValidationTest {
         repository.write("unversioned.txt", "unversioned\n")
         repository.write("ignored.txt", "ignored\n")
 
-        val committableStatus = repository.git("status", "--porcelain").stdout.lines()
-            .filter { line -> line.isNotBlank() }
-        val ignoredStatus = repository.git("status", "--porcelain", "--ignored").stdout.lines()
-            .filter { line -> line.isNotBlank() }
+        val committableStatus = repository.statusLines()
+        val ignoredStatus = repository.statusLines("--ignored")
 
         assertContains(committableStatus, " M tracked.txt")
         assertContains(committableStatus, "A  staged-added.txt")
@@ -68,13 +62,104 @@ internal class LocalGitRepositoryValidationTest {
         firstRoot.write("tracked-a.txt", "changed a\n")
         secondRoot.write("unversioned-b.txt", "new b\n")
 
-        val firstStatus = firstRoot.git("status", "--porcelain").stdout.lines()
-            .filter { line -> line.isNotBlank() }
-        val secondStatus = secondRoot.git("status", "--porcelain").stdout.lines()
-            .filter { line -> line.isNotBlank() }
+        val firstStatus = firstRoot.statusLines()
+        val secondStatus = secondRoot.statusLines()
 
         assertContains(firstStatus, " M tracked-a.txt")
         assertContains(secondStatus, "?? unversioned-b.txt")
+    }
+
+    @Test
+    fun `already staged files stay staged when unstaged files are added`() {
+        assumeTrue(GitCli.isAvailable(), "git executable is required for local-repository validation")
+        val repository = LocalGitRepository.init(tempDirectory.resolve("mixed-staging"))
+        repository.write("already-staged.txt", "original\n")
+        repository.write("unstaged.txt", "original\n")
+        repository.git("add", ".")
+        repository.git("commit", "-m", "initial")
+
+        repository.write("already-staged.txt", "staged change\n")
+        repository.git("add", "already-staged.txt")
+        repository.write("unstaged.txt", "unstaged change\n")
+        repository.write("new-file.txt", "new\n")
+        repository.git("add", "--all")
+
+        val status = repository.statusLines()
+        assertContains(status, "M  already-staged.txt")
+        assertContains(status, "A  new-file.txt")
+        assertContains(status, "M  unstaged.txt")
+    }
+
+    @Test
+    fun `all intended file states can already be staged before the workflow runs`() {
+        assumeTrue(GitCli.isAvailable(), "git executable is required for local-repository validation")
+        val repository = LocalGitRepository.init(tempDirectory.resolve("all-staged"))
+        repository.write("modified.txt", "original\n")
+        repository.write("delete-me.txt", "delete\n")
+        repository.write("rename-source.txt", "rename\n")
+        repository.git("add", ".")
+        repository.git("commit", "-m", "initial")
+
+        repository.write("modified.txt", "modified\n")
+        repository.delete("delete-me.txt")
+        repository.git("mv", "rename-source.txt", "rename-target.txt")
+        repository.write("unversioned.txt", "new\n")
+        repository.git("add", "--all")
+
+        val status = repository.statusLines()
+        assertContains(status, "M  modified.txt")
+        assertContains(status, "D  delete-me.txt")
+        assertContains(status, "R  rename-source.txt -> rename-target.txt")
+        assertContains(status, "A  unversioned.txt")
+    }
+
+    @Test
+    fun `unstaged fixture can stage all eligible paths without ignored files`() {
+        assumeTrue(GitCli.isAvailable(), "git executable is required for local-repository validation")
+        val repository = LocalGitRepository.init(tempDirectory.resolve("unstaged-to-staged"))
+        repository.write("modified.txt", "original\n")
+        repository.write(".gitignore", "ignored.txt\n")
+        repository.git("add", ".")
+        repository.git("commit", "-m", "initial")
+
+        repository.write("modified.txt", "modified\n")
+        repository.write("unversioned.txt", "new\n")
+        repository.write("ignored.txt", "ignored\n")
+        assertContains(repository.statusLines(), " M modified.txt")
+        assertContains(repository.statusLines(), "?? unversioned.txt")
+
+        repository.git("add", "--all")
+
+        val status = repository.statusLines()
+        assertContains(status, "M  modified.txt")
+        assertContains(status, "A  unversioned.txt")
+        assertFalse(
+            status.any { line -> line.contains("ignored.txt") },
+            "Ignored files must remain outside the staged fixture.",
+        )
+    }
+
+    @Test
+    fun `multi-root nested repository fixture preserves staged paths per root`() {
+        assumeTrue(GitCli.isAvailable(), "git executable is required for local-repository validation")
+        val firstRoot = LocalGitRepository.init(tempDirectory.resolve("nested-root-a"))
+        val secondRoot = LocalGitRepository.init(tempDirectory.resolve("nested-root-b"))
+        firstRoot.write("modules/core/build.gradle.kts", "plugins {}\n")
+        secondRoot.write("products/webstorm/plugin/src/Main.kt", "fun main() {}\n")
+        firstRoot.git("add", ".")
+        secondRoot.git("add", ".")
+        firstRoot.git("commit", "-m", "initial a")
+        secondRoot.git("commit", "-m", "initial b")
+
+        firstRoot.write("modules/core/build.gradle.kts", "plugins { kotlin(\"jvm\") }\n")
+        firstRoot.write("products/idea/plugin/src/Main.kt", "fun idea() {}\n")
+        secondRoot.write("products/webstorm/plugin/src/Main.kt", "fun webstorm() {}\n")
+        firstRoot.git("add", "--all")
+        secondRoot.git("add", "--all")
+
+        assertContains(firstRoot.statusLines(), "M  modules/core/build.gradle.kts")
+        assertContains(firstRoot.statusLines(), "A  products/idea/plugin/src/Main.kt")
+        assertContains(secondRoot.statusLines(), "M  products/webstorm/plugin/src/Main.kt")
     }
 
     @Test
@@ -100,66 +185,44 @@ internal class LocalGitRepositoryValidationTest {
         )
     }
 
-    private class LocalGitRepository private constructor(val root: Path) {
-        fun git(vararg arguments: String): GitResult = GitCli.run(root, *arguments)
+    @Test
+    fun `local repository fixture detects a missing tracked upstream`() {
+        assumeTrue(GitCli.isAvailable(), "git executable is required for local-repository validation")
+        val repository = LocalGitRepository.init(tempDirectory.resolve("missing-upstream"))
+        repository.write("README.md", "initial\n")
+        repository.git("add", ".")
+        repository.git("commit", "-m", "initial")
 
-        fun write(relativePath: String, content: String) {
-            val file = root.resolve(relativePath)
-            file.parent?.createDirectories()
-            file.writeText(content)
-        }
+        val upstream = repository.gitAllowingFailure("rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}")
 
-        fun delete(relativePath: String) {
-            root.resolve(relativePath).deleteIfExists()
-        }
-
-        companion object {
-            fun init(root: Path): LocalGitRepository {
-                Files.createDirectories(root)
-                val repository = LocalGitRepository(root)
-                repository.git("init")
-                repository.git("config", "user.email", "validation@example.invalid")
-                repository.git("config", "user.name", "AI Commit All Validation")
-                return repository
-            }
-
-            fun initBare(root: Path): LocalGitRepository {
-                Files.createDirectories(root.parent)
-                GitCli.run(root.parent, "init", "--bare", root.fileName.toString())
-                return LocalGitRepository(root)
-            }
-        }
+        assertTrue(upstream.exitCode != 0)
     }
 
-    private object GitCli {
-        fun isAvailable(): Boolean =
-            runCatching {
-                val process = ProcessBuilder("git", "--version")
-                    .redirectErrorStream(true)
-                    .start()
-                process.waitFor()
-                process.exitValue() == 0
-            }.getOrDefault(false)
+    @Test
+    fun `local repository fixture detects diverged local and upstream hashes`() {
+        assumeTrue(GitCli.isAvailable(), "git executable is required for local-repository validation")
+        val remote = LocalGitRepository.initBare(tempDirectory.resolve("diverged-remote.git"))
+        val repository = LocalGitRepository.init(tempDirectory.resolve("diverged-work"))
+        repository.git("checkout", "-b", "main")
+        repository.git("remote", "add", "origin", remote.root.toString())
+        repository.write("README.md", "initial\n")
+        repository.git("add", ".")
+        repository.git("commit", "-m", "initial")
+        repository.git("push", "-u", "origin", "HEAD:main")
 
-        fun run(
-            workingDirectory: Path,
-            vararg arguments: String,
-        ): GitResult {
-            val command = listOf("git", "-C", workingDirectory.toString()) + arguments
-            val process = ProcessBuilder(command)
-                .redirectErrorStream(true)
-                .start()
-            val output = process.inputStream.bufferedReader().use { reader -> reader.readText() }
-            val finished = process.waitFor(30, java.util.concurrent.TimeUnit.SECONDS)
-            check(finished) {
-                "Timed out running `${command.joinToString(" ")}`."
-            }
-            check(process.exitValue() == 0) {
-                "Command `${command.joinToString(" ")}` failed with exit ${process.exitValue()}:\n$output"
-            }
-            return GitResult(stdout = output)
-        }
+        val secondClone = LocalGitRepository.clone(remote.root, tempDirectory.resolve("diverged-other"))
+        secondClone.git("checkout", "main")
+        secondClone.write("remote.txt", "remote change\n")
+        secondClone.git("add", ".")
+        secondClone.git("commit", "-m", "remote change")
+        secondClone.git("push", "origin", "HEAD:main")
+
+        repository.write("local.txt", "local change\n")
+        repository.git("add", ".")
+        repository.git("commit", "-m", "local change")
+
+        val localHead = repository.git("rev-parse", "HEAD").stdout.trim()
+        val remoteHead = remote.git("rev-parse", "refs/heads/main").stdout.trim()
+        assertTrue(localHead != remoteHead)
     }
-
-    private data class GitResult(val stdout: String)
 }

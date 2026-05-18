@@ -65,6 +65,30 @@ internal class AiCommitAllWorkflowStopReporterTest {
         assertEquals(emptyList(), notifier.warnings)
     }
 
+    @Test
+    fun `does not report AI assistant and platform owned stop reasons`() {
+        val reasons = listOf(
+            AiCommitAllWorkflowStopReason.MissingWorkflow,
+            AiCommitAllWorkflowStopReason.VcsFrozen,
+            AiCommitAllWorkflowStopReason.VcsBackgroundOperationRunning,
+            AiCommitAllWorkflowStopReason.UnsupportedVcs,
+            AiCommitAllWorkflowStopReason.UnsupportedWorkflow,
+            AiCommitAllWorkflowStopReason.MissingAiAction,
+            AiCommitAllWorkflowStopReason.AiCompletionFailed,
+            AiCommitAllWorkflowStopReason.UserEditedMessage,
+            AiCommitAllWorkflowStopReason.CommitExecutionUnavailable,
+            AiCommitAllWorkflowStopReason.PushExecutionUnavailable,
+        )
+
+        reasons.forEach { reason ->
+            val notifier = CapturingWorkflowStopNotifier()
+
+            WorkflowStopReporter(notifier).report(reason)
+
+            assertEquals(emptyList(), notifier.warnings, "Unexpected notification for $reason.")
+        }
+    }
+
     private class CapturingWorkflowStopNotifier : WorkflowStopNotifier {
         val warnings = mutableListOf<WarningNotification>()
 

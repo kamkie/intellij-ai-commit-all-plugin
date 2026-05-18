@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-automate-manual-scenarios
 
-Status: Draft
+Status: Implemented
 
 Workers: 1
 
@@ -10,13 +10,18 @@ Filename: `.agents/plans/PLAN-automate-manual-scenarios.md`
 
 ## Readiness
 
-- Plan readiness: Ready for maintainer review; not approved for implementation.
+- Plan readiness: Implemented.
+- Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Approved at: 2026-05-18T15:06:11+02:00
 - Open questions: None. The plan assumes manual scenarios may gain automated counterpart rows while retaining residual manual checks when live IDE or AI Assistant behavior remains the primary evidence.
-- Implementation progress: Not started.
+- Implementation progress: Complete; automated counterparts, scenario registry updates, and validation completed.
 
 ## Status History
 
 - 2026-05-18T14:56:52+02:00: none -> Draft by Codex <codex@openai.com>; plan created to design automated coverage for scenarios currently limited to `Manual` execution.
+- 2026-05-18T15:06:11+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
+- 2026-05-18T15:06:11+02:00: Approved -> In Progress by Codex <codex@openai.com>; implementation started after approval.
+- 2026-05-18T15:13:00+02:00: In Progress -> Implemented by Codex <codex@openai.com>; automated counterpart tests, scenario registry updates, and validation completed.
 
 ## Goal
 
@@ -134,5 +139,6 @@ Run `.\gradlew.bat buildPlugin` only if implementation changes plugin descriptor
 
 ## Handoff Notes
 
-- This plan is a design artifact only. Implementation must wait for explicit user approval and a status change to `Approved`.
-- The existing uncommitted safe-push coverage edits are separate work and should not be reverted while implementing this plan.
+- Implementation started after explicit user approval on 2026-05-18.
+- Added automated counterparts while retaining residual manual checks for live IDE, AI Assistant, platform-owned UI, and product-specific behavior.
+- Validation completed with targeted changed test classes, full Gradle tests, docs validation, and whitespace checks.

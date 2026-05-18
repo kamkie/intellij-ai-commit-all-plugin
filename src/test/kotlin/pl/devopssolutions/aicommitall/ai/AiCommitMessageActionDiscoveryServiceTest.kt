@@ -77,6 +77,25 @@ internal class AiCommitMessageActionDiscoveryServiceTest {
     }
 
     @Test
+    fun `falls back to AI Assistant presentation text variants`() {
+        val fallbackAction = TestAction("AI Assistant: Write Commit Message")
+        val lookup = TestActionLookup(
+            actionsById = mapOf(
+                "Vcs.AiAssistantCommitText" to fallbackAction,
+            ),
+            idsByPrefix = mapOf(
+                "Vcs." to listOf("Vcs.AiAssistantCommitText"),
+            ),
+        )
+
+        val result = AiCommitMessageActionDiscovery(lookup).findCommitMessageAction()
+
+        assertSame(fallbackAction, result?.action)
+        assertEquals("Vcs.AiAssistantCommitText", result?.actionId)
+        assertEquals(AiCommitMessageActionSource.PresentationText, result?.source)
+    }
+
+    @Test
     fun `uses matching action ids in presentation search before presentation text`() {
         val idMatchedAction = TestAction("Unexpected Localized Text")
         val textMatchedAction = TestAction("Generate Commit Message")
@@ -108,6 +127,21 @@ internal class AiCommitMessageActionDiscoveryServiceTest {
             idsByPrefix = mapOf(
                 "Vcs.LLM" to listOf("Vcs.LLMRewordCommitAction"),
                 "Vcs." to listOf("Vcs.LLMRewordCommitAction"),
+            ),
+        )
+
+        val result = AiCommitMessageActionDiscovery(lookup).findCommitMessageAction()
+
+        assertNull(result)
+    }
+
+    @Test
+    fun `does not use conflict resolution presentation as the commit message generator`() {
+        val conflictAction = TestAction("Generate Commit Message For Resolve Conflict")
+        val lookup = TestActionLookup(
+            actionsById = mapOf("Vcs.GenerateConflictCommitMessage" to conflictAction),
+            idsByPrefix = mapOf(
+                "Vcs." to listOf("Vcs.GenerateConflictCommitMessage"),
             ),
         )
 
