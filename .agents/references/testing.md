@@ -17,6 +17,8 @@ Use `gradle runIde` for manual sandbox testing once the scaffold exists.
 
 Use current stable JetBrains IDE builds available through the user's All Products Pack. Record exact product names and build numbers in validation reports.
 
+When a problem is reported from manual testing in a real IDE or Gradle sandbox IDE, ask whether the user wants the agent to analyze the relevant IDE logs before inferring the cause. Request sanitized log excerpts or explicit permission to inspect the local logs folder, and remind the user not to share secrets, tokens, proprietary source content, or private commit messages.
+
 Create end-to-end tests against local Git repositories where the IntelliJ test framework, Gradle sandbox, and CI environment make that practical. Keep manual sandbox coverage for scenarios that cannot be automated reliably yet.
 
 Manual scenarios for this plugin:

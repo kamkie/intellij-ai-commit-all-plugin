@@ -36,6 +36,8 @@ Include as much of this context as applies:
 - Expected and actual behavior.
 - Relevant logs or screenshots with secrets removed.
 
+Tip: Use `Help | Show Log in Explorer` from the IDE to open the active logs folder. On Windows, IntelliJ Platform IDE logs are usually under `%LOCALAPPDATA%\JetBrains\<Product><Version>\log`, for example `%LOCALAPPDATA%\JetBrains\IntelliJIdea<Version>\log`.
+
 ## Out Of Scope
 
 This project does not provide support for:
