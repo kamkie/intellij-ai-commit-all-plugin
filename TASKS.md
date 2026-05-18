@@ -30,6 +30,8 @@ Notation:
 ### Ideas
 
 - [ ] T-IDEA-006: proposals file ergonomics improvements
+- [ ] T-IDEA-007: extend animation to go through all stages `ai -> commit -> push`
+- [ ] T-IDEA-008: commit animation should wait for all commits checks to finish before starting the push.
 
 ### Gui changes
 

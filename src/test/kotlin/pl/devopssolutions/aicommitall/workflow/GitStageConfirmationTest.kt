@@ -39,6 +39,29 @@ internal class GitStageConfirmationTest {
     }
 
     @Test
+    fun `marks staged paths dirty and waits for status refresh before tracker refresh`() {
+        val root = LightVirtualFile("repo")
+        val modified = TestFilePath("/repo/modified.txt")
+        val confirmed = stageState(root, gitStatus('M', ' ', modified))
+        val operations = CapturingOperations(confirmed)
+
+        val result = confirmation(operations, attempts = 1)
+            .confirm(mapOf(root to listOf(modified)))
+
+        assertSame(confirmed, result)
+        assertEquals(
+            listOf(
+                "stage:/repo/modified.txt",
+                "reload:/repo/modified.txt",
+                "dirty:/repo/modified.txt",
+                "wait-status",
+                "refresh",
+            ),
+            operations.refreshBoundaryEvents,
+        )
+    }
+
+    @Test
     fun `retries staging reload and tracker refresh until every expected path is staged`() {
         val root = LightVirtualFile("repo")
         val modified = TestFilePath("/repo/modified.txt")
@@ -316,6 +339,7 @@ internal class GitStageConfirmationTest {
     ) : GitStageConfirmationOperations {
         private val states = ArrayDeque(states.toList())
         val events = mutableListOf<String>()
+        val refreshBoundaryEvents = mutableListOf<String>()
         val failStageCalls = mutableSetOf<Int>()
         val failReloadCalls = mutableSetOf<Int>()
         val failRefreshCalls = mutableSetOf<Int>()
@@ -327,6 +351,7 @@ internal class GitStageConfirmationTest {
         override fun stagePaths(root: VirtualFile, paths: List<FilePath>) {
             stageCallCount += 1
             events += "stage:${root.name}:${pathEventText(paths)}"
+            refreshBoundaryEvents += "stage:${pathEventText(paths)}"
             if (stageCallCount in failStageCalls) {
                 error("staging failed")
             }
@@ -337,14 +362,24 @@ internal class GitStageConfirmationTest {
             val pathList = paths.toList()
             reloadedPaths += pathList
             events += "reload:${pathEventText(pathList)}"
+            refreshBoundaryEvents += "reload:${pathEventText(pathList)}"
             if (reloadCallCount in failReloadCalls) {
                 error("reload failed")
             }
         }
 
+        override fun markPathsDirty(paths: Collection<FilePath>) {
+            refreshBoundaryEvents += "dirty:${pathEventText(paths)}"
+        }
+
+        override fun waitForStatusRefresh() {
+            refreshBoundaryEvents += "wait-status"
+        }
+
         override fun refreshTrackerState(): GitStageTracker.State {
             refreshCallCount += 1
             events += "refresh"
+            refreshBoundaryEvents += "refresh"
             if (refreshCallCount in failRefreshCalls) {
                 error("tracker refresh failed")
             }
