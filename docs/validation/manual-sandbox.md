@@ -77,6 +77,10 @@ Record manual results in this file or in a linked release validation report befo
 | ADR-0054-3 | With shortcut takeover disabled, the IDE commit shortcut runs the standard IDE commit action. | `IIU`, plus macOS keymap equivalent where practical. | Not run in this automated task. | Keymap name, setting value, observed standard Commit action behavior. |
 | ADR-0054-4 | With shortcut takeover disabled, the IDE commit-and-push shortcut runs the standard IDE commit-and-push action. | `IIU`, plus macOS keymap equivalent where practical. | Not run in this automated task. | Keymap name, setting value, observed standard Commit and Push action behavior. |
 
+## Scenario Coverage Register
+
+Project-wide scenario counts, automated coverage, manual coverage, and test cases are tracked in [Scenario Coverage](../scenario-coverage.md).
+
 ## Run Command
 
 Use the Gradle sandbox as the default manual validation entry point:

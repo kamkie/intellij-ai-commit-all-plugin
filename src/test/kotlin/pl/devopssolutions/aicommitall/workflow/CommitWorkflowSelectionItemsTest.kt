@@ -50,6 +50,20 @@ internal class CommitWorkflowSelectionItemsTest {
         assertEquals(listOf(trackedChange, unversioned, resolvedConflict), result)
     }
 
+    @Test
+    fun `keeps staging-area paths in fallback inclusion items`() {
+        val stagedPath = TestFilePath("/repo/staged-only.txt")
+
+        val result = CommitWorkflowSelectionItems.inclusionItems(
+            GitChangeSelection(
+                trackedChanges = emptyList(),
+                stagingAreaPaths = listOf(stagedPath),
+            ),
+        )
+
+        assertEquals(listOf(stagedPath), result)
+    }
+
     private fun modification(path: String): Change {
         val filePath = TestFilePath(path)
         return Change(TestContentRevision(filePath), TestContentRevision(filePath), FileStatus.MODIFIED)
