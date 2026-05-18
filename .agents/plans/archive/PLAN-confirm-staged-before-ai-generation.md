@@ -2,19 +2,21 @@
 
 Plan-ID: PLAN-confirm-staged-before-ai-generation
 
-Status: Implemented
+Status: Closed
+
+Close-Reason: Archived
 
 Workers: 1
 
-Filename: `.agents/plans/PLAN-confirm-staged-before-ai-generation.md`
+Filename: `.agents/plans/archive/PLAN-confirm-staged-before-ai-generation.md`
 
 ## Readiness
 
-- Plan readiness: Implemented.
+- Plan readiness: Closed; archived by user request.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-18T01:36:59+02:00
 - Open questions: No task-local questions.
-- Implementation progress: Complete; `scripts/validate-docs.ps1` is blocked by unrelated dirty proposal tracker edits.
+- Implementation progress: Complete; plan archived.
 
 ## Status History
 
@@ -22,6 +24,7 @@ Filename: `.agents/plans/PLAN-confirm-staged-before-ai-generation.md`
 - 2026-05-18T01:36:59+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit implementation request approved the plan.
 - 2026-05-18T01:36:59+02:00: Approved -> In Progress by Codex <codex@openai.com>; implementation started for approved plan.
 - 2026-05-18T01:42:30+02:00: In Progress -> Implemented by Codex <codex@openai.com>; staged-path confirmation implemented and targeted validation completed.
+- 2026-05-18T11:40:31+02:00: Implemented -> Closed by Kamil Kiewisz <kamkie@outlook.com>; archived completed plan by user request.
 
 ## Goal
 

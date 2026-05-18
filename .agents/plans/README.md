@@ -19,10 +19,11 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- `PLAN-confirm-staged-before-ai-generation` - Confirm Staged Before AI Generation ([PLAN-confirm-staged-before-ai-generation.md](PLAN-confirm-staged-before-ai-generation.md)).
+_No active plans._
 
 ## Archived Plans
 
+- `PLAN-confirm-staged-before-ai-generation` - Confirm Staged Before AI Generation ([archive/PLAN-confirm-staged-before-ai-generation.md](archive/PLAN-confirm-staged-before-ai-generation.md)), archived as of 2026-05-18.
 - `PLAN-three-section-ai-commit-push-control` - Three-Section AI Commit Push Control ([archive/PLAN-three-section-ai-commit-push-control.md](archive/PLAN-three-section-ai-commit-push-control.md)), archived as of 2026-05-18.
 - `PLAN-scaffold-plugin-project` - Scaffold Plugin Project ([archive/PLAN-scaffold-plugin-project.md](archive/PLAN-scaffold-plugin-project.md)), archived as of 2026-05-15.
 - `PLAN-ai-assistant-message-generation` - AI Assistant Message Generation ([archive/PLAN-ai-assistant-message-generation.md](archive/PLAN-ai-assistant-message-generation.md)), archived as of 2026-05-17.
