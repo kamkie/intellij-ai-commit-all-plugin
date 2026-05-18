@@ -64,6 +64,53 @@ internal class CommitWorkflowSelectionItemsTest {
         assertEquals(listOf(stagedPath), result)
     }
 
+    @Test
+    fun `keeps already staged paths in fallback inclusion when unstaged paths are also selected`() {
+        val unstaged = TestFilePath("/repo/unstaged.txt")
+        val alreadyStaged = TestFilePath("/repo/already-staged.txt")
+
+        val result = CommitWorkflowSelectionItems.inclusionItems(
+            GitChangeSelection(
+                trackedChanges = emptyList(),
+                unversionedFiles = listOf(unstaged),
+                stagingAreaPaths = listOf(alreadyStaged),
+            ),
+        )
+
+        assertEquals(listOf(unstaged, alreadyStaged), result)
+    }
+
+    @Test
+    fun `keeps all already staged paths in fallback inclusion`() {
+        val modified = TestFilePath("/repo/modified.txt")
+        val deleted = TestFilePath("/repo/delete-me.txt")
+        val renamed = TestFilePath("/repo/rename-target.txt")
+
+        val result = CommitWorkflowSelectionItems.inclusionItems(
+            GitChangeSelection(
+                trackedChanges = emptyList(),
+                stagingAreaPaths = listOf(modified, deleted, renamed),
+            ),
+        )
+
+        assertEquals(listOf(modified, deleted, renamed), result)
+    }
+
+    @Test
+    fun `keeps staging-area paths from multiple roots in fallback inclusion`() {
+        val firstRootPath = TestFilePath("/repo-a/products/idea/plugin/src/Main.kt")
+        val secondRootPath = TestFilePath("/repo-b/modules/core/src/Main.kt")
+
+        val result = CommitWorkflowSelectionItems.inclusionItems(
+            GitChangeSelection(
+                trackedChanges = emptyList(),
+                stagingAreaPaths = listOf(firstRootPath, secondRootPath),
+            ),
+        )
+
+        assertEquals(listOf(firstRootPath, secondRootPath), result)
+    }
+
     private fun modification(path: String): Change {
         val filePath = TestFilePath(path)
         return Change(TestContentRevision(filePath), TestContentRevision(filePath), FileStatus.MODIFIED)

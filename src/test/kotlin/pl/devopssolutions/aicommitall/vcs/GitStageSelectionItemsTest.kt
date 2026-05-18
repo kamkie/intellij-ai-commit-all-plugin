@@ -48,6 +48,25 @@ internal class GitStageSelectionItemsTest {
     }
 
     @Test
+    fun `keeps already staged and unstaged paths from git staging state`() {
+        val alreadyStaged = TestFilePath("/repo/already-staged.txt")
+        val unstaged = TestFilePath("/repo/unstaged.txt")
+        val untracked = TestFilePath("/repo/untracked.txt")
+        val state = stageState(
+            gitStatus('M', ' ', alreadyStaged),
+            gitStatus(' ', 'M', unstaged),
+            gitStatus('?', '?', untracked),
+        )
+
+        val result = GitStageSelectionItems.committablePaths(
+            state = state,
+            isGitPath = { true },
+        )
+
+        assertEquals(listOf(alreadyStaged, unstaged, untracked), result)
+    }
+
+    @Test
     fun `groups committable staging paths by git root`() {
         val firstRoot = LightVirtualFile("root-a")
         val secondRoot = LightVirtualFile("root-b")

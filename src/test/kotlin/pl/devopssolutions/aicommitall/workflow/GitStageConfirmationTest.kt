@@ -72,6 +72,31 @@ internal class GitStageConfirmationTest {
     }
 
     @Test
+    fun `retries after transient empty tracker state before treating staged paths as missing`() {
+        val root = LightVirtualFile("repo")
+        val alreadyStaged = TestFilePath("/repo/already-staged.txt")
+        val empty = GitStageTracker.State(emptyMap())
+        val confirmed = stageState(root, gitStatus('M', ' ', alreadyStaged))
+        val operations = CapturingOperations(empty, confirmed)
+
+        val result = confirmation(operations, attempts = 3)
+            .confirm(mapOf(root to listOf(alreadyStaged)))
+
+        assertSame(confirmed, result)
+        assertEquals(
+            listOf(
+                "stage:repo:/repo/already-staged.txt",
+                "reload:/repo/already-staged.txt",
+                "refresh",
+                "stage:repo:/repo/already-staged.txt",
+                "reload:/repo/already-staged.txt",
+                "refresh",
+            ),
+            operations.events,
+        )
+    }
+
+    @Test
     fun `fails closed after the bounded retry count when staged paths never appear`() {
         val root = LightVirtualFile("repo")
         val modified = TestFilePath("/repo/modified.txt")

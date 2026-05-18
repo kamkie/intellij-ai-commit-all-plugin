@@ -16,14 +16,14 @@ This public project document tracks validation scenarios across the plugin. Use 
 
 | Total scenarios | Automated | Manual | Happy path | Failure path | Edge case |
 |-----------------|-----------|--------|------------|--------------|-----------|
-| 194             | 139       | 55     | 61         | 73           | 60        |
+| 199             | 144       | 55     | 61         | 73           | 65        |
 
 Automated status:
 
 | Status                       | Count |
 |------------------------------|-------|
-| Existing automated coverage  | 138   |
-| Known red automated coverage | 1     |
+| Existing automated coverage  | 140   |
+| Known red automated coverage | 4     |
 
 Manual status:
 
@@ -36,7 +36,7 @@ Manual status:
 
 | Set ID       | Area                                 | Requirement source                                                   | Total | Automated | Manual | Notes                                                                                                             |
 |--------------|--------------------------------------|----------------------------------------------------------------------|-------|-----------|--------|-------------------------------------------------------------------------------------------------------------------|
-| SCN-STAGE    | Git staging-area workflow            | `T-BUG-008`                                                          | 33    | 15        | 18     | Covers staging-area disappearance and workflow-stop regression paths.                                             |
+| SCN-STAGE    | Git staging-area workflow            | `T-BUG-008`                                                          | 38    | 20        | 18     | Covers staging-area disappearance and workflow-stop regression paths.                                             |
 | SCN-CONTROL  | Three-section control UI             | `T-ACTIONS-009`, `T-UI-001`, `T-VAL-023`, `T-TEST-001`, `T-TEST-002` | 31    | 28        | 3      | Covers action routing, availability, running state, interaction, accessibility, rendering, and toolbar placement. |
 | SCN-SHORTCUT | IDE shortcut takeover                | `ADR-0054`, `T-ACTIONS-009`                                          | 10    | 6         | 4      | Covers commit and commit-and-push shortcut takeover and opt-out behavior.                                         |
 | SCN-AI       | AI message generation                | `T-AI-*`, `T-WAIT-*`, `ADR-0012`, `ADR-0014`                         | 40    | 33        | 7      | Covers AI action discovery, invocation context, completion evidence, activity state, and user-edit stops.         |
@@ -64,6 +64,11 @@ Manual status:
 | SCN-STAGE-AUT-013    | SCN-STAGE    | Failure path | Automated | Existing                | Tracker refresh failure is retried before confirming staged state.                                                             | `GitStageConfirmationTest.retries after tracker refresh failure and then confirms refreshed state`                                             |
 | SCN-STAGE-AUT-014    | SCN-STAGE    | Edge case    | Automated | Existing                | Staging confirmation stops after the first confirmed staged state.                                                             | `GitStageConfirmationTest.stops retrying after the first confirmed staged state`                                                               |
 | SCN-STAGE-AUT-015    | SCN-STAGE    | Happy path   | Automated | Existing                | Local Git repositories cover modified, staged added, deleted, renamed, unversioned, and ignored states.                        | `LocalGitRepositoryValidationTest.local repositories cover committable file states without ignored files`                                      |
+| SCN-STAGE-AUT-016    | SCN-STAGE    | Edge case    | Automated | Known red               | Fallback inclusion keeps already staged paths when unstaged paths are also selected.                                           | `CommitWorkflowSelectionItemsTest.keeps already staged paths in fallback inclusion when unstaged paths are also selected`                      |
+| SCN-STAGE-AUT-017    | SCN-STAGE    | Edge case    | Automated | Known red               | Fallback inclusion keeps every already staged path when all intended files are staged.                                          | `CommitWorkflowSelectionItemsTest.keeps all already staged paths in fallback inclusion`                                                        |
+| SCN-STAGE-AUT-018    | SCN-STAGE    | Edge case    | Automated | Known red               | Fallback inclusion keeps staging-area paths from multiple Git roots.                                                           | `CommitWorkflowSelectionItemsTest.keeps staging-area paths from multiple roots in fallback inclusion`                                          |
+| SCN-STAGE-AUT-019    | SCN-STAGE    | Edge case    | Automated | Existing                | Staging state keeps already staged and unstaged paths together.                                                                | `GitStageSelectionItemsTest.keeps already staged and unstaged paths from git staging state`                                                    |
+| SCN-STAGE-AUT-020    | SCN-STAGE    | Edge case    | Automated | Existing                | Staging confirmation retries after a transient empty tracker state.                                                            | `GitStageConfirmationTest.retries after transient empty tracker state before treating staged paths as missing`                                 |
 | SCN-STAGE-MAN-001    | SCN-STAGE    | Happy path   | Manual    | Manual sandbox required | `AI` stages every supported file-state path and starts generation.                                                             | Sandbox IDE result and `git status --porcelain --ignored`                                                                                      |
 | SCN-STAGE-MAN-002    | SCN-STAGE    | Happy path   | Manual    | Manual sandbox required | `Commit` stages every supported file-state path and creates one local commit.                                                  | Sandbox IDE result and `git show --name-status --oneline HEAD`                                                                                 |
 | SCN-STAGE-MAN-003    | SCN-STAGE    | Happy path   | Manual    | Manual sandbox required | `Push` stages every supported file-state path and pushes to a temporary local remote.                                          | Sandbox IDE result and local/remote branch hashes                                                                                              |
@@ -404,6 +409,6 @@ Use IntelliJ IDEA `IIU` first. Repeat representative happy-path and failure-path
 
 Prefer automation for cases that can be isolated from the live Commit tool window:
 
-- Promote `SCN-STAGE-MAN-004`, `SCN-STAGE-MAN-005`, and `SCN-STAGE-MAN-006` into unit coverage around staging-area selection once the production boundary exposes staged-set transitions cleanly.
+- Keep the new `SCN-STAGE-AUT-016` through `SCN-STAGE-AUT-020` unit coverage paired with sandbox checks, because the automated cases cover selection boundaries and transient tracker states but do not render the real Commit tool window staged-file list.
 - Keep `SCN-STAGE-MAN-001`, `SCN-STAGE-MAN-002`, and `SCN-STAGE-MAN-003` manual until a reliable IntelliJ fixture can drive the Git staging Commit UI and JetBrains AI Assistant path.
 - Keep `SCN-STAGE-MAN-011` through `SCN-STAGE-MAN-018` manual unless the relevant platform or AI Assistant stop paths can be simulated without masking standard IDE behavior.
