@@ -7,7 +7,7 @@ Use this guide when adding or updating repository documentation.
 - `README.md`: user-facing project description, setup, usage, supported IDE versions, limitations, and sandbox instructions after implementation exists.
 - `TASKS.md`: backlog, implementation decisions still pending, and validation tasks.
 - `docs/decisions/OPEN_QUESTIONS.md`: missing user input and unresolved product or implementation choices.
-- `CHANGELOG.md`: notable unreleased changes and released history.
+- `CHANGELOG.md`: public release-note history for plugin behavior, public plugin docs, compatibility, support, and release pipeline changes.
 - `SUPPORT.md`: support status, supported-scope summary, issue-reporting expectations, and privacy guidance.
 - `AGENTS.md`: short AI entry point, guidance map, priority order, and high-level workflow rules.
 - `docs/WORKING_WITH_AI.md`: human-facing guide for asking AI agents to work on the repository.
@@ -39,7 +39,8 @@ Use this guide when adding or updating repository documentation.
 - Follow `docs/decisions/README.md` for project decisions and repository rule changes.
 - When a requested documentation or workflow change requires creating an ADR, create the ADR first and stop. Continue with governed docs only after the user reviews and explicitly accepts it.
 - Update documentation before or alongside behavior changes that affect users, validation, supported IDEs, or AI agent workflow.
-- Update `CHANGELOG.md` for notable user-facing, contributor-facing, compatibility, support, release, or workflow changes.
+- Update `CHANGELOG.md` only for notable public plugin-facing changes: plugin source or runtime behavior, public plugin documentation, compatibility, support, security or privacy behavior, or CI and release pipeline behavior that affects the plugin artifact or publication.
+- Do not update `CHANGELOG.md` for AI-agent documentation, `.agents/` skills or references, plans, proposals, ADR maintenance, scenario-coverage or test-case inventories, manual validation logs, or internal repository workflow changes unless they also change public plugin behavior, public docs, support promises, or release artifacts.
 - In orchestrated plan execution and release preparation, `CHANGELOG.md` maintenance belongs to the orchestrator; task workers may suggest entries but do not own final changelog edits.
 - Update `SUPPORT.md` when supported IDE versions, supported VCS scope, plugin dependency requirements, Marketplace availability, or support channels change.
 - Use `docs/proposals/` for analysis documents that list findings, duplications, simplifications, or improvement options for maintainer triage.

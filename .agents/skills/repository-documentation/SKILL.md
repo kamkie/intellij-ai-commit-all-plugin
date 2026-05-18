@@ -25,7 +25,8 @@ description: Repository documentation workflow for this IntelliJ plugin. Use whe
 - If a requested change needs an implementation plan, create or update the plan first and stop until explicit approval.
 - Keep proposal decisions empty unless the user explicitly triages them; when accepted, set `decision: accepted`, `accepted_at`, and the implementation status required by `docs/proposals/README.md`.
 - Preserve stable IDs for tasks, open questions, ADRs, proposals, findings, and plans.
-- Update `CHANGELOG.md` for notable user-facing, contributor-facing, compatibility, support, release, or AI workflow changes.
+- Update `CHANGELOG.md` only for notable public plugin-facing changes: plugin source or runtime behavior, public plugin docs, compatibility, support, security or privacy behavior, or CI and release pipelines affecting the plugin artifact or publication.
+- Do not update `CHANGELOG.md` for AI-agent docs, skills, plans, proposals, ADR maintenance, scenario or test coverage inventory, manual validation logs, or internal repository workflow changes unless they also affect public plugin behavior, public docs, support promises, or release artifacts.
 - Keep docs proportional and repository-specific. Do not copy generic Spring, REST, OpenAPI, deployment, operations, benchmark, frontend, or unrelated guidance from external repositories.
 
 ## Validation

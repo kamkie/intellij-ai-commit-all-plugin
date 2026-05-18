@@ -13,6 +13,7 @@ This guide is adapted for this IntelliJ Platform plugin repository from the rele
 - Create releases only from `main` after intended implementation work is integrated.
 - Use annotated tags for intentional releases.
 - Keep `CHANGELOG.md` aligned with released versions.
+- Treat `CHANGELOG.md` as public release notes for plugin-facing changes, not as an internal repository activity log.
 - Keep `SUPPORT.md` aligned when supported IDE versions, plugin dependency requirements, Marketplace availability, or support channels change.
 
 ## Changelog Ownership
@@ -21,7 +22,9 @@ The orchestrator owns `CHANGELOG.md` maintenance for orchestrated plan execution
 
 Task workers may propose changelog entries in their handoff evidence, but they should not decide final wording, category, placement, or whether an entry is notable. The orchestrator decides that while reviewing each task and before starting the next task.
 
-After every worker handoff for a task that produces a user-visible, contributor-visible, workflow-visible, compatibility, support, release, or validation-policy change, the orchestrator updates the next unreleased `CHANGELOG.md` section before dispatching the next task. Purely internal tasks with no notable external or workflow effect may be grouped into one later entry when the orchestrator records the grouping reason in the chat transcript.
+After every worker handoff for a task that produces a public plugin-facing change, the orchestrator updates the next unreleased `CHANGELOG.md` section before dispatching the next task. Public plugin-facing changes include plugin source or runtime behavior, public plugin documentation such as `README.md`, `SUPPORT.md`, Marketplace text, compatibility or support scope, security or privacy behavior, and CI, signing, publishing, or release workflow changes that affect the plugin artifact or publication.
+
+Omit internal repository activity from `CHANGELOG.md`, including AI-agent documentation, skills, plans, proposals, ADR maintenance, internal workflow rules, scenario-coverage registers, test-case inventories, manual validation logs, and test-only changes unless they also change public plugin behavior, public docs, support promises, or release artifacts.
 
 The changelog edit should ride along in the same task commit when feasible and when it does not break the one-commit-per-task boundary. If a separate orchestrator commit is needed, it must be created before the next task starts and must use the multi-agent attribution trailers required by `.gitmessage` when those trailers apply.
 
@@ -29,7 +32,7 @@ For release preparation, the release orchestrator owns moving accepted `Unreleas
 
 ## Changelog Entries
 
-Use `CHANGELOG.md` for notable project changes.
+Use `CHANGELOG.md` for notable public plugin-facing changes only.
 
 Before the first release, keep entries under `## [Unreleased]`.
 
@@ -39,7 +42,8 @@ During release preparation:
 - Leave a fresh empty `## [Unreleased]` section above the released section.
 - Use Keep a Changelog categories when useful: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, and `Security`.
 - Do not record unreleased work as released.
-- Do not copy routine task execution notes into the changelog unless they matter to users, contributors, release operators, or compatibility.
+- Do not copy routine task execution notes into the changelog unless they matter to plugin users, public documentation readers, release operators, compatibility, support, security, privacy, or the published plugin artifact.
+- Do not add entries for AI-agent documentation, repository workflow governance, ADR/proposal/plan maintenance, scenario-coverage tracking, validation inventories, or test-case documentation by themselves.
 
 ## Release Preconditions
 

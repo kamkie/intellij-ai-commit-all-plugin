@@ -113,9 +113,9 @@ When using delegated agents for an `Approved` multi-task plan:
 - Start one fresh task worker for the current named plan task.
 - Give the worker `AGENTS.md`, the approved plan, the current task name, relevant ADRs, relevant source files, expected validation, and commit metadata requirements.
 - Have the worker stop and report immediately if the task reveals a new question, missing decision, unsafe assumption, or scope conflict.
-- Have the worker report suggested `CHANGELOG.md` entries for notable task outcomes, but keep final changelog edits with the orchestrator.
+- Have the worker report suggested `CHANGELOG.md` entries only for public plugin-facing task outcomes, but keep final changelog edits with the orchestrator.
 - Have the worker update the governing plan file for the assigned task in the same task commit. If the worker cannot or should not update the plan file, the worker must explicitly hand that responsibility to the orchestrator in the same execution step.
 - When plan-file responsibility is handed off, have the orchestrator update the plan file before dispatching the next dependent task.
 - Have the orchestrator update the owning document and obtain the missing decision before resuming.
-- Have the orchestrator review worker output, confirm validation and self-review evidence, maintain `CHANGELOG.md` for notable changes, and verify the task commit before starting the next task.
+- Have the orchestrator review worker output, confirm validation and self-review evidence, maintain `CHANGELOG.md` for notable public plugin-facing changes, and verify the task commit before starting the next task.
 - Have the orchestrator update the plan status to `Implemented` when all planned changes are complete and validated, using the responsible agent identity for the autonomous status-history entry.

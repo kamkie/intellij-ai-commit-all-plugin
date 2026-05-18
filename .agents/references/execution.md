@@ -67,7 +67,7 @@ The orchestrator must log structured worker events in the chat transcript:
 
 The chat transcript is the log destination. Do not create `.agents/runs/` logs unless a later accepted ADR defines ownership, retention, cleanup, and commit rules.
 
-Before dispatching the next dependent task, the orchestrator must ensure the plan file reflects the completed, failed, blocked, or otherwise current task state. If a task produces a user-visible, contributor-visible, workflow-visible, compatibility, support, release, or validation-policy change, the orchestrator updates the next unreleased `CHANGELOG.md` section before dispatching the next task. Purely internal tasks with no notable external or workflow effect may be grouped into a later entry, but the orchestrator must record the grouping reason in the chat transcript.
+Before dispatching the next dependent task, the orchestrator must ensure the plan file reflects the completed, failed, blocked, or otherwise current task state. If a task produces a public plugin-facing change, the orchestrator updates the next unreleased `CHANGELOG.md` section before dispatching the next task. Public plugin-facing changes include plugin source or runtime behavior, public plugin documentation, compatibility, support, security or privacy behavior, and CI, signing, publishing, or release workflow changes that affect the plugin artifact or publication. Omit internal AI-agent docs, skills, plans, proposals, ADR maintenance, workflow governance, scenario-coverage registers, test-case inventories, manual validation logs, and test-only changes unless they also change public plugin behavior, public docs, support promises, or release artifacts.
 
 ## Context Rules
 
