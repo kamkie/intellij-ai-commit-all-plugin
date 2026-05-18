@@ -10,6 +10,10 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ## [Unreleased]
 
+### Fixed
+
+- Avoided duplicated standalone Gradle wrapper validation in GitHub Actions while keeping wrapper validation enabled through `setup-gradle`.
+
 ## [v0.1.0-alpha.7] - 2026-05-18
 
 ### Added
