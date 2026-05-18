@@ -64,8 +64,10 @@ intellijPlatform {
             <p>Source code: <a href="https://github.com/kamkie/intellij-ai-commit-all-plugin">https://github.com/kamkie/intellij-ai-commit-all-plugin</a></p>
         """.trimIndent()
         changeNotes = """
-            <p>v0.1.0-alpha.4 prerelease.</p>
+            <p>v0.1.0-alpha.5 prerelease.</p>
             <ul>
+                <li>Preserves Git staging-area paths when synchronizing fallback Commit tool window inclusion, so already staged files are not dropped from the plugin workflow.</li>
+                <li>Ensures the three-section control exposes its fallback accessibility description when Swing provides a blank description.</li>
                 <li>Refreshes the three-section control running indicator immediately when AI activity starts or finishes.</li>
                 <li>Reloads externally changed staged files before each Git staging tracker recheck, with bounded retries before AI commit-message generation.</li>
                 <li>Adds the working AI, Commit, and Push control to the Commit tool window.</li>
