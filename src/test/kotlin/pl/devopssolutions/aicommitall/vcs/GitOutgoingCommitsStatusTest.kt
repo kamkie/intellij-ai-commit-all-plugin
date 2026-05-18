@@ -74,6 +74,57 @@ internal class GitOutgoingCommitsStatusTest {
         assertEquals(0, scheduler.pendingCount)
     }
 
+    @Test
+    fun `requested refresh bypasses throttle and updates stale cached value`() {
+        val scheduler = CapturingRefreshScheduler()
+        val actionRefresh = CountingActionRefresh()
+        val values = ArrayDeque(listOf(true, false))
+        val status = GitOutgoingCommitsStatus(
+            loader = { values.removeFirst() },
+            scheduler = scheduler,
+            actionRefresh = actionRefresh,
+            nowMillis = { 0L },
+        )
+
+        assertTrue(status.hasOutgoingCommitsToPush())
+        assertTrue(status.cachedHasOutgoingCommitsToPush())
+        assertEquals(0, scheduler.pendingCount)
+
+        status.requestRefresh()
+        scheduler.runNext()
+
+        assertFalse(status.cachedHasOutgoingCommitsToPush())
+        assertEquals(2, actionRefresh.count)
+    }
+
+    @Test
+    fun `requested refresh runs after refresh already in progress`() {
+        val scheduler = CapturingRefreshScheduler()
+        val actionRefresh = CountingActionRefresh()
+        val values = ArrayDeque(listOf(true, false))
+        val status = GitOutgoingCommitsStatus(
+            loader = { values.removeFirst() },
+            scheduler = scheduler,
+            actionRefresh = actionRefresh,
+            nowMillis = { 0L },
+        )
+
+        status.cachedHasOutgoingCommitsToPush()
+        status.requestRefresh()
+
+        assertEquals(1, scheduler.pendingCount)
+
+        scheduler.runNext()
+
+        assertTrue(status.cachedHasOutgoingCommitsToPush())
+        assertEquals(1, scheduler.pendingCount)
+
+        scheduler.runNext()
+
+        assertFalse(status.cachedHasOutgoingCommitsToPush())
+        assertEquals(2, actionRefresh.count)
+    }
+
     private class CapturingRefreshScheduler : GitOutgoingCommitsRefreshScheduler {
         private val pendingRefreshes = mutableListOf<() -> Unit>()
         val pendingCount: Int

@@ -20,27 +20,57 @@ import com.intellij.dvcs.push.PushSpec
 import com.intellij.dvcs.push.PushSupport
 import com.intellij.dvcs.repo.Repository
 import com.intellij.ide.ActivityTracker
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import git4idea.GitVcs
+import git4idea.push.GitPushListener
+import git4idea.push.GitPushRepoResult
 import git4idea.push.GitPushSource
 import git4idea.push.GitPushSupport
 import git4idea.push.GitPushTarget
 import git4idea.repo.GitRepository
+import git4idea.repo.GitRepositoryChangeListener
 import git4idea.repo.GitRepositoryManager
 
 @Service(Service.Level.PROJECT)
-internal class GitOutgoingCommitsService(private val project: Project) {
+internal class GitOutgoingCommitsService(private val project: Project) : Disposable {
     private val outgoingCommitsStatus = GitOutgoingCommitsStatus(
         loader = ::loadHasOutgoingCommitsToPush,
         scheduler = IntellijGitOutgoingCommitsRefreshScheduler,
         actionRefresh = IntellijGitOutgoingCommitsActionRefresh,
     )
 
+    init {
+        project.messageBus.connect(this).apply {
+            subscribe(
+                GitRepository.GIT_REPO_CHANGE,
+                GitRepositoryChangeListener { refreshHasOutgoingCommitsToPush() },
+            )
+            subscribe(
+                GitPushListener.TOPIC,
+                object : GitPushListener {
+                    override fun onCompleted(
+                        repository: GitRepository,
+                        pushResult: GitPushRepoResult,
+                    ) {
+                        refreshHasOutgoingCommitsToPush()
+                    }
+                },
+            )
+        }
+    }
+
     fun hasOutgoingCommitsToPush(): Boolean = outgoingCommitsStatus.hasOutgoingCommitsToPush()
 
     fun cachedHasOutgoingCommitsToPush(): Boolean = outgoingCommitsStatus.cachedHasOutgoingCommitsToPush()
+
+    private fun refreshHasOutgoingCommitsToPush() {
+        outgoingCommitsStatus.requestRefresh()
+    }
+
+    override fun dispose() = Unit
 
     private fun loadHasOutgoingCommitsToPush(): Boolean {
         if (project.isDisposed) {
@@ -96,11 +126,16 @@ internal class GitOutgoingCommitsStatus(
     @Volatile
     private var cachedHasOutgoingCommitsToPush = false
     private var refreshInProgress = false
+    private var refreshPending = false
     private var lastRefreshRequestMillis: Long? = null
 
     fun cachedHasOutgoingCommitsToPush(): Boolean {
-        scheduleRefreshIfNeeded()
+        scheduleRefresh(force = false)
         return cachedHasOutgoingCommitsToPush
+    }
+
+    fun requestRefresh() {
+        scheduleRefresh(force = true)
     }
 
     fun hasOutgoingCommitsToPush(): Boolean {
@@ -115,10 +150,14 @@ internal class GitOutgoingCommitsStatus(
         return value
     }
 
-    private fun scheduleRefreshIfNeeded() {
+    private fun scheduleRefresh(force: Boolean) {
         val shouldSchedule = synchronized(lock) {
             val now = nowMillis()
-            if (refreshInProgress || !isRefreshDue(now)) {
+            if (!force && !isRefreshDue(now)) {
+                false
+            } else if (refreshInProgress) {
+                refreshPending = true
+                lastRefreshRequestMillis = now
                 false
             } else {
                 refreshInProgress = true
@@ -134,17 +173,25 @@ internal class GitOutgoingCommitsStatus(
 
     private fun refreshInBackground() {
         val loadedValue = runCatching { loader() }.getOrNull()
-        val changed = synchronized(lock) {
-            refreshInProgress = false
+        val refreshResult = synchronized(lock) {
             if (loadedValue != null) {
-                updateCachedValueLocked(loadedValue)
+                GitOutgoingCommitsRefreshResult(
+                    changed = updateCachedValueLocked(loadedValue),
+                    reschedule = completeRefreshLocked(),
+                )
             } else {
-                false
+                GitOutgoingCommitsRefreshResult(
+                    changed = false,
+                    reschedule = completeRefreshLocked(),
+                )
             }
         }
 
-        if (changed) {
+        if (refreshResult.changed) {
             actionRefresh.refreshActions()
+        }
+        if (refreshResult.reschedule) {
+            scheduler.schedule { refreshInBackground() }
         }
     }
 
@@ -153,12 +200,25 @@ internal class GitOutgoingCommitsStatus(
         return now - lastRefresh >= refreshIntervalMillis
     }
 
+    private fun completeRefreshLocked(): Boolean = if (refreshPending) {
+        refreshPending = false
+        true
+    } else {
+        refreshInProgress = false
+        false
+    }
+
     private fun updateCachedValueLocked(value: Boolean): Boolean {
         val changed = cachedHasOutgoingCommitsToPush != value
         cachedHasOutgoingCommitsToPush = value
         return changed
     }
 }
+
+private data class GitOutgoingCommitsRefreshResult(
+    val changed: Boolean,
+    val reschedule: Boolean,
+)
 
 internal fun interface GitOutgoingCommitsRefreshScheduler {
     fun schedule(refresh: () -> Unit)
