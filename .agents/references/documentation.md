@@ -33,8 +33,8 @@ Use this guide when adding or updating repository documentation.
 - Give every plan a stable `Plan-ID` in the form `PLAN-<short-kebab-slug>`, include it in active and archived filenames, keep it stable when title, filename, status, or wording changes, and avoid strictly number-based plan IDs.
 - Give every plan `Workers:` metadata and an `## Execution Graph` section with a fenced Mermaid graph.
 - Give every proposal a stable `proposal_id` in the form `PROP-<short-kebab-slug>`, include it in active and archived filenames, keep it stable when title, filename, status, wording, or archive location changes, and do not reuse retired proposal IDs.
-- Use three-digit proposal finding IDs such as `E001`, `D001`, and `S001` for active proposal findings; archived proposals may keep historical IDs unless materially updated.
-- Keep new proposal finding decisions empty until maintainer triage. When a finding decision is accepted, add `accepted_at:`; when a non-empty decision is not accepted, add `decided_at:`. Use ISO 8601 timestamps with timezone offsets.
+- Use three-digit proposal finding IDs such as `F001`, `E001`, `D001`, and `S001` for active proposal findings; archived proposals may keep historical IDs unless materially updated.
+- Keep new proposal finding decisions empty until maintainer triage. When a finding decision becomes non-empty, set the finding metadata table's `Decision at` field to an ISO 8601 timestamp with timezone offset.
 - Mark blocked `TASKS.md` items with `depends on: Q-ID`, and tasks that answer questions with `resolves: Q-ID`.
 - Follow `docs/decisions/README.md` for project decisions and repository rule changes.
 - When a requested documentation or workflow change requires creating an ADR, create the ADR first and stop. Continue with governed docs only after the user reviews and explicitly accepts it.

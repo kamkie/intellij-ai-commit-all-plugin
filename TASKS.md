@@ -12,9 +12,12 @@ Notation:
 
 ## Open Backlog
 
-### Ideas
+### Bugs
 
-- [ ] T-IDEA-006: proposals file ergonomics improvements
+- [ ] T-BUG-011: the push button stays active after the push is finished. only after another click status is correctly set.
+- [ ] T-BUG-012: the push button animation is cut short.
+- [ ] T-BUG-013: in commit dialog `Ctrl + Shift + K` should be the same as clicking the push section of a button.
+- [ ] T-BUG-014: github actions builds are failing.
 
 ### Publishing, Signing, Marketplace, And CI
 
@@ -224,6 +227,7 @@ Archived as of `v0.1.0-alpha.1` release preparation.
 - [x] T-IDEA-003: Add an ADR implementation tracker to `docs/decisions/README.md`. (ADR 0048)
 - [x] T-IDEA-004: Add proposal implementation status tracking through per-finding status values and a README summary. (ADR 0049)
 - [x] T-IDEA-005: Reengineer `docs/decisions/OPEN_QUESTIONS.md` as an active question register. (ADR 0050)
+- [x] T-IDEA-006: Implement proposal file ergonomics improvements. (ADR 0065)
 - [x] T-IDEA-007: extend animation to go through all stages `ai -> commit -> push`; externalize IntelliJ Platform Gradle plugin change notes from the build script.
 - [x] T-IDEA-008: commit animation should wait for all commits checks to finish before starting the push.
 - [x] T-IDEA-010: keep `Push` clickable for already-created outgoing commits when there are no committable changes.

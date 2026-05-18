@@ -1,6 +1,6 @@
 # Proposals
 
-Use this directory for repository analysis and proposal documents that list findings, duplications, simplifications, or improvement options for maintainer triage.
+Use this directory for repository analysis and proposal documents that list new features, findings, duplications, simplifications, or improvement options for maintainer triage.
 
 Proposals are advisory until accepted through the normal repository flow. A proposal does not replace an ADR, approved plan, task update, implementation, validation, or release work.
 
@@ -22,7 +22,7 @@ Index entries should include the proposal ID, title, file link, and current stat
 
 ### Proposal Implementation Summary
 
-This summary lists accepted findings whose implementation status is not terminal. The per-finding YAML tracker remains the source of truth.
+This summary lists accepted findings whose implementation status is not terminal. The per-finding metadata table remains the source of truth.
 
 Implementation evidence can be a task, approved plan, ADR, changed file, commit, validation result, blocker, open question, or clear open-intake note. Do not create a `TASKS.md` entry solely to satisfy this summary when another evidence path is clearer.
 
@@ -36,6 +36,7 @@ Create a proposal when a task asks for any of:
 
 - Repository, folder, or file analysis with recommendations.
 - Errors, mistakes, duplications, simplifications, removals, or improvement opportunities.
+- New feature or workflow ideas that need maintainer triage before planning.
 - A review document that mixes findings with per-item decisions.
 - A triage document the maintainer will revisit and mark inline.
 
@@ -94,12 +95,15 @@ Every proposal must start with:
 ---
 proposal_id: PROP-<short-kebab-slug>
 generated_at: <YYYY-MM-DDTHH-MM>
+created_from: <user request, task ID, review, audit, design pass, or other trigger>
 purpose: <one sentence describing what this document proposes>
 scope: <one sentence describing what part of the repository is covered>
 ---
 ```
 
-Optional keys such as `author`, `related`, or `supersedes` may be added, but they must not replace the four required keys.
+Optional keys such as `author`, `related`, or `supersedes` may be added, but they must not replace the five required keys.
+
+Archived proposals may keep historical front matter unless materially updated.
 
 ## Required Structure
 
@@ -109,22 +113,24 @@ Use this order:
 2. Short intro paragraph naming the repository contract anchors the proposal respects.
 3. `## Table of Contents`
 4. `## Summary`
-5. `## Progress Tracker`
-6. `## How To Edit The Trackers`
-7. Finding groups, when present:
-    - `## Errors And Mistakes`
-    - `## Duplications To Remove Or Reduce`
-    - `## Simplification Opportunities`
-    - `## Smaller / Stylistic Items`
+5. `## Creation Context`
+6. `## Progress Tracker`
+7. `## Proposal Items`, containing finding groups when present:
+    - `### New Features`
+    - `### Errors And Mistakes`
+    - `### Duplications To Remove Or Reduce`
+    - `### Simplification Opportunities`
+    - `### Smaller / Stylistic Items`
 8. `## Suggested Priority Order`
 9. `## Out Of Scope`
 
-Use one `#` H1 only. Use `###` headings for individual tracked findings.
+Use one `#` H1 only. Use `####` headings for individual tracked findings.
 
 ## Finding IDs
 
 Tracked findings must use stable three-digit IDs:
 
+- `F001`, `F002`, and so on for new features or larger new capabilities.
 - `E001`, `E002`, and so on for errors, mistakes, or rule violations.
 - `D001`, `D002`, and so on for duplications.
 - `S001`, `S002`, and so on for simplifications, removals, or reorganizations.
@@ -133,13 +139,13 @@ Number findings sequentially per letter, starting at `1`, in the order they appe
 
 Each ID must appear in:
 
-- The finding heading, for example `### E001. Missing support policy`.
+- The finding heading, for example `#### E001. Missing support policy`.
 - The `Progress Tracker` table.
 - Any cross-reference inside the proposal.
 
 Do not reuse an ID for a different finding after publication.
 
-New proposal findings must start with an empty `decision` field in both the progress tracker and the per-finding YAML block. Only maintainer triage may set a decision.
+New proposal findings must start with an empty `Decision` field in both the progress tracker and the per-finding metadata table. Only maintainer triage may set a decision.
 
 ## Progress Tracker
 
@@ -151,49 +157,63 @@ Every proposal with tracked findings must contain one compact table under `## Pr
 
 Rules:
 
-- The table lists every `E*`, `D*`, and `S*` finding in document order.
+- The table lists every `F*`, `E*`, `D*`, and `S*` finding in document order.
 - The table must not include IDs without matching sections.
-- `## Smaller / Stylistic Items` bullets are not tracked in this table.
-- The per-finding YAML block is the source of truth; mirror `status`, `decision`, and `priority` into the table after edits.
+- `### Smaller / Stylistic Items` bullets are not tracked in this table.
+- The per-finding metadata table is the source of truth; mirror `Status`, `Decision`, and `Priority` into the progress tracker after edits.
 
 ## Per-Finding Layout
 
 Each tracked finding should use:
 
 ````markdown
-### <Id>. <Short title>
+#### <Id>. <Short title>
+
+| Field       | Value                     |
+|-------------|---------------------------|
+| Status      | open                      |
+| Decision    |                           |
+| Decision at |                           |
+| Priority    | <1-6>                     |
+| Owner       |                           |
+| Updated     | <YYYY-MM-DDTHH:mm:ss+HH:mm> |
+
+##### Context
 
 - Evidence: <observable facts, file paths, line references>
 - Impact: <why it matters>
-- Proposal: <concrete action>
+- Non-goals:
+    - <thing this item deliberately does not do>
+- Acceptance criteria:
+    - <what must be true when this item is done>
 
-```yaml
-status: open
-decision:
-priority: <1-6>
-owner:
-updated: <YYYY-MM-DDTHH:mm:ss+HH:mm>
-accepted_at:
-decided_at:
-comment:
-```
+##### Recommended Change
+
+<Concrete action>
+
+##### Review Notes
+
+- none
+
+##### Follow-Up
+
+- Artifact: <ADR, approved plan, task, direct docs edit, changed file, open question, or none>
+- Validation: <command, review check, manual check, or none>
 ````
 
 Rules:
 
-- `Evidence` and `Proposal` are required.
+- `Evidence`, `Recommended Change`, and `Follow-Up` are required.
 - `Impact` should be present unless the finding is very small.
-- Use exactly one fenced `yaml` tracker block per tracked finding.
-- Keep tracker keys in the order shown above.
-- Quote YAML values that contain `:` or other special characters.
-- Use `comment: |` for multi-line comments.
-- Set `accepted_at` to an ISO 8601 timestamp with timezone offset when `decision: accepted`.
-- Set `decided_at` to an ISO 8601 timestamp with timezone offset when `decision` is a non-empty value other than `accepted`.
-- Keep `accepted_at` and `decided_at` empty until maintainer triage sets `decision`.
+- Use exactly one metadata table per tracked finding.
+- Keep metadata fields in the order shown above.
+- Leave `Decision` and `Decision at` empty until maintainer triage sets `Decision`.
+- Set `Decision at` to an ISO 8601 timestamp with timezone offset when `Decision` is non-empty.
+- Use `Review Notes` for reviewer questions, requested changes, or decision rationale; use `- none` when there are no notes.
 
 ## Status Vocabulary
 
-Use these values for `status`:
+Use these values for `Status`:
 
 - `open` - implementation has not started.
 - `planned` - implementation is covered by an approved plan or explicit open task.
@@ -202,18 +222,18 @@ Use these values for `status`:
 - `done` - implemented and landed.
 - `not-required` - no separate implementation is required.
 
-Use these values for `decision`:
+Use these values for `Decision`:
 
 - empty - not triaged yet.
 - `accepted` - will be done as proposed.
 - `rejected` - will not be done.
 - `deferred` - revisit later.
 
-Rejected findings should use `decision: rejected` and `status: not-required`. Deferred findings should use `decision: deferred` and either `status: blocked` or `status: not-required`.
+Rejected findings should use `Decision` `rejected` and `Status` `not-required`. Deferred findings should use `Decision` `deferred` and either `Status` `blocked` or `Status` `not-required`.
 
 Accepted findings with non-terminal implementation status must have a visible evidence path in the Proposal Implementation Summary. The evidence path does not have to be a `TASKS.md` task.
 
-Short lowercase tags may be used only in archived proposals when the standard vocabulary does not fit, and the `comment` must explain them.
+Short lowercase tags may be used only in archived proposals when the standard vocabulary does not fit.
 
 ## Priority Scale
 
@@ -224,16 +244,16 @@ Short lowercase tags may be used only in archived proposals when the standard vo
 - `5` - tooling or workflow improvement with dependencies.
 - `6` - broad reorganization, rename, or churn-heavy cleanup.
 
-Use the same priority in the tracker table and the per-finding YAML block.
+Use the same priority in the progress tracker and the per-finding metadata table.
 
 ## Editing Workflow
 
-1. Edit the finding's YAML tracker block.
-2. Mirror `status`, `decision`, and `priority` into the `Progress Tracker` row.
-3. Bump `updated` to the current timestamp.
+1. Edit the finding's metadata table.
+2. Mirror `Status`, `Decision`, and `Priority` into the `Progress Tracker` row.
+3. Bump `Updated` to the current timestamp.
 4. Leave `done` or `rejected` findings in place as history.
-5. When setting `decision: accepted`, set `accepted_at` to the decision timestamp.
-6. When setting a non-empty decision other than `accepted`, set `decided_at` to the decision timestamp.
+5. When setting any non-empty `Decision`, set `Decision at` to the decision timestamp.
+6. Keep `Decision at` empty while `Decision` is empty.
 7. Add accepted findings with non-terminal implementation status to the Proposal Implementation Summary with an evidence path.
 8. Remove accepted findings with terminal implementation status from the Proposal Implementation Summary.
 9. When no non-terminal implementation statuses and no untriaged findings remain, move the proposal from `Active Proposals` to `Completed Proposals` in this README and append the completion date.

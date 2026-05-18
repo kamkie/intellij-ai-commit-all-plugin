@@ -1,82 +1,114 @@
 ---
 proposal_id: PROP-<short-kebab-slug>
 generated_at: YYYY-MM-DDTHH-MM
+created_from: User request, task ID, review, audit, design pass, or other trigger.
 purpose: One sentence describing what this document proposes.
 scope: One sentence describing what part of the repository is covered.
 ---
 
 # Proposal title
 
-This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.md`, and `docs/decisions/`. It lists findings for maintainer triage only; it does not implement changes by itself.
+This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.md`, `docs/decisions/`, and `docs/proposals/README.md`. It lists findings for maintainer triage only; it does not implement changes by itself.
 
 ## Table of Contents
 
 - [Summary](#summary)
+- [Creation Context](#creation-context)
 - [Progress Tracker](#progress-tracker)
-- [How To Edit The Trackers](#how-to-edit-the-trackers)
-- [Errors And Mistakes](#errors-and-mistakes)
-    - [E001. Example error](#e001-example-error)
-- [Duplications To Remove Or Reduce](#duplications-to-remove-or-reduce)
-- [Simplification Opportunities](#simplification-opportunities)
-- [Smaller / Stylistic Items](#smaller--stylistic-items)
+- [Proposal Items](#proposal-items)
+    - [New Features](#new-features)
+    - [Errors And Mistakes](#errors-and-mistakes)
+        - [E001. Example error](#e001-example-error)
+    - [Duplications To Remove Or Reduce](#duplications-to-remove-or-reduce)
+    - [Simplification Opportunities](#simplification-opportunities)
+    - [Smaller / Stylistic Items](#smaller--stylistic-items)
 - [Suggested Priority Order](#suggested-priority-order)
 - [Out Of Scope](#out-of-scope)
 
 ## Summary
 
-- Replace this bullet with the main finding.
-- Replace this bullet with the intended triage scope.
+- Replace this bullet with the main evidence-backed finding.
+- Replace this bullet with the intended triage outcome.
 - State clearly that no implementation is performed by the proposal.
+
+## Creation Context
+
+- Why this proposal exists: Describe the request, observation, review finding, open task, or repository friction that triggered this proposal.
+- How it was created: List the main files, commands, reviews, interviews, or comparison sources used to produce the findings.
+- Scope guardrails: Name the repository contracts, ADRs, plans, or user constraints that shaped what the proposal includes and excludes.
 
 ## Progress Tracker
 
-Compact overview only. Edit the YAML tracker inside each section below; this table mirrors statuses at a glance. `Status` tracks implementation progress. `Decision` records maintainer triage.
+Compact overview only. The metadata table inside each finding remains the source of truth; this table mirrors statuses at a glance. Tracker mirroring, status and decision vocabulary, and Proposal Implementation Summary updates live in `docs/proposals/README.md`.
 
 | Id   | Title         | Priority | Status | Decision |
 |------|---------------|----------|--------|----------|
 | E001 | Example error | 1        | open   |          |
 
-## How To Edit The Trackers
+## Proposal Items
 
-- Edit the fenced `yaml` block inside the finding section.
-- Mirror `status`, `decision`, and `priority` to the row above.
-- Bump `updated` to the current timestamp.
-- Use `status` for implementation progress and `decision` for maintainer triage.
-- Leave `decision` empty when authoring new findings; only maintainer triage fills it.
-- Set `accepted_at` when `decision: accepted`; set `decided_at` for any other non-empty decision.
-- Update the Proposal Implementation Summary in `docs/proposals/README.md` for accepted findings with non-terminal implementation status and an evidence path. A `TASKS.md` entry is optional when another evidence path is clearer.
-- Leave completed or rejected findings in place as history.
+### New Features
 
-## Errors And Mistakes
+Use this section for `F` findings, or write `_No tracked findings._`.
 
-### E001. Example error
+### Errors And Mistakes
 
-- Evidence: Cite files, line references, commands, or observable facts.
-- Impact: Explain why it matters.
-- Proposal: State the concrete change to make.
+Use this section for `E` findings: wrong, stale, misleading, broken, contract-violating, or risky repository content.
 
-```yaml
-status: open
-decision:
-priority: 1
-owner:
-updated: YYYY-MM-DDTHH:mm:ss+HH:mm
-accepted_at:
-decided_at:
-comment:
-```
+#### E001. Example error
 
-## Duplications To Remove Or Reduce
+| Field       | Value                     |
+|-------------|---------------------------|
+| Status      | open                      |
+| Decision    |                           |
+| Decision at |                           |
+| Priority    | 1                         |
+| Owner       |                           |
+| Updated     | YYYY-MM-DDTHH:mm:ss+HH:mm |
 
-Add `D001`, `D002`, and later findings here, or write `_No tracked findings._`.
+##### Context
 
-## Simplification Opportunities
+- Evidence: Cite exact files, line references, commands, or observable behavior.
+- Impact: Explain the maintainer-visible problem if this stays unchanged.
+- Non-goals:
+    - List anything this item deliberately does not change.
+- Acceptance criteria:
+    - State what must be true when this item is done.
+    - State what must remain unchanged.
 
-Add `S001`, `S002`, and later findings here, or write `_No tracked findings._`.
+##### Recommended Change
 
-## Smaller / Stylistic Items
+State the smallest concrete change to make if this finding is accepted.
 
-- Add untracked minor notes here.
+##### Review Notes
+
+- none
+
+<!--
+For answered reviewer questions, use:
+
+- question: <reviewer question>
+    - answer: <short answer>
+    - rationale: <why this answer is correct or preferred>
+    - effect: <status / decision / wording impact, or `no status or decision change`>
+-->
+
+##### Follow-Up
+
+- Artifact: ADR, approved plan, task, direct docs edit, changed file, open question, or none.
+- Validation: Command, review check, manual check, or none.
+
+### Duplications To Remove Or Reduce
+
+Use this section for `D` findings, or write `_No tracked findings._`.
+
+### Simplification Opportunities
+
+Use this section for `S` findings, or write `_No tracked findings._`.
+
+### Smaller / Stylistic Items
+
+- Add untracked minor notes here, or write `_None._`.
 
 ## Suggested Priority Order
 

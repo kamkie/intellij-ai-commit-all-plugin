@@ -615,7 +615,7 @@ else
     $proposalImplementationSummaryText = $proposalImplementationSummaryMatch.Groups[1].Value
     $proposalImplementationSummaryRows = [regex]::Matches(
             $proposalImplementationSummaryText,
-            '(?m)^\|\s+\[(PROP-[A-Za-z0-9][A-Za-z0-9-]*)\]\(([^)]+)\)\s+\|\s+([EDS]\d{3})\s+\|\s+(.+?)\s+\|\s+([1-6])\s+\|\s+([a-z-]+)\s+\|\s+(.+?)\s+\|$'
+        '(?m)^\|\s+\[(PROP-[A-Za-z0-9][A-Za-z0-9-]*)\]\(([^)]+)\)\s+\|\s+([FEDS]\d{3})\s+\|\s+(.+?)\s+\|\s+([1-6])\s+\|\s+([a-z-]+)\s+\|\s+(.+?)\s+\|$'
     )
 
     foreach ($row in $proposalImplementationSummaryRows)
@@ -657,6 +657,7 @@ else
     }
 }
 
+$proposalIdPrefixPattern = '[FEDS]\d+'
 $proposalFiles = Get-ChildItem -LiteralPath $proposalRoot -Recurse -File -Filter '*.md' |
     Where-Object { $_.Name -notin @('README.md', 'PROPOSAL_TEMPLATE.md') }
 
@@ -671,7 +672,17 @@ foreach ($proposal in $proposalFiles) {
     }
 
     $frontMatter = [regex]::Match($text, '(?s)^---\s(.*?)\s---').Groups[1].Value
-    foreach ($key in @('proposal_id', 'generated_at', 'purpose', 'scope')) {
+    $requiredProposalFrontMatter = if ($isArchivedProposal)
+    {
+        @('proposal_id', 'generated_at', 'purpose', 'scope')
+    }
+    else
+    {
+        @('proposal_id', 'generated_at', 'created_from', 'purpose', 'scope')
+    }
+
+    foreach ($key in $requiredProposalFrontMatter)
+    {
         if ($frontMatter -notmatch "(?m)^${key}:\s+\S") {
             Add-ValidationError "$relative front matter is missing $key"
         }
@@ -692,10 +703,38 @@ foreach ($proposal in $proposalFiles) {
         }
     }
 
-    $sectionIds = [regex]::Matches($text, '(?m)^### ([EDS]\d+)\.') | ForEach-Object { $_.Groups[1].Value }
-    $tableIds = [regex]::Matches($text, '(?m)^\|\s+([EDS]\d+)\s+\|') | ForEach-Object { $_.Groups[1].Value }
+    if (-not $isArchivedProposal)
+    {
+        foreach ($requiredHeading in @('## Creation Context', '## Proposal Items', '### New Features'))
+        {
+            if ($text -notmatch "(?m)^$([regex]::Escape($requiredHeading) )\s*$")
+            {
+                Add-ValidationError "$relative is missing required proposal heading $requiredHeading"
+            }
+        }
+
+        if ($text -match '(?m)^## How To Edit The Trackers\s*$')
+        {
+            Add-ValidationError "$relative must use docs/proposals/README.md for tracker editing guidance instead of ## How To Edit The Trackers"
+        }
+
+        foreach ($legacyHeading in [regex]::Matches($text, "(?m)^### ($proposalIdPrefixPattern)\."))
+        {
+            Add-ValidationError "$relative finding $( $legacyHeading.Groups[1].Value ) must use #### tracked finding headings"
+        }
+    }
+
+    $sectionIds = if ($isArchivedProposal)
+    {
+        [regex]::Matches($text, "(?m)^### ($proposalIdPrefixPattern)\.") | ForEach-Object { $_.Groups[1].Value }
+    }
+    else
+    {
+        [regex]::Matches($text, "(?m)^#### ($proposalIdPrefixPattern)\.") | ForEach-Object { $_.Groups[1].Value }
+    }
+    $tableIds = [regex]::Matches($text, "(?m)^\|\s+($proposalIdPrefixPattern)\s+\|") | ForEach-Object { $_.Groups[1].Value }
     $tableRowsById = @{ }
-    foreach ($tableRow in [regex]::Matches($text, '(?m)^\|\s+([EDS]\d+)\s+\|\s+(.+?)\s+\|\s+([1-6])\s+\|\s+([a-z-]+)\s+\|\s*(.*?)\s*\|$'))
+    foreach ($tableRow in [regex]::Matches($text, "(?m)^\|\s+($proposalIdPrefixPattern)\s+\|\s+(.+?)\s+\|\s+([1-6])\s+\|\s+([a-z-]+)\s+\|\s*(.*?)\s*\|$"))
     {
         $tableId = $tableRow.Groups[1].Value
         if ( $tableRowsById.ContainsKey($tableId))
@@ -714,11 +753,11 @@ foreach ($proposal in $proposalFiles) {
 
     $findingIdPattern = if ($isArchivedProposal)
     {
-        '^[EDS]\d+$'
+        '^[FEDS]\d+$'
     }
     else
     {
-        '^[EDS]\d{3}$'
+        '^[FEDS]\d{3}$'
     }
 
     foreach ($sectionId in $sectionIds)
@@ -737,8 +776,8 @@ foreach ($proposal in $proposalFiles) {
         }
     }
 
-    $sectionOnly = Compare-Object $sectionIds $tableIds | Where-Object { $_.SideIndicator -eq '<=' }
-    $tableOnly = Compare-Object $sectionIds $tableIds | Where-Object { $_.SideIndicator -eq '=>' }
+    $sectionOnly = Compare-Object -ReferenceObject @($sectionIds) -DifferenceObject @($tableIds) | Where-Object { $_.SideIndicator -eq '<=' }
+    $tableOnly = Compare-Object -ReferenceObject @($sectionIds) -DifferenceObject @($tableIds) | Where-Object { $_.SideIndicator -eq '=>' }
 
     foreach ($diff in $sectionOnly) {
         Add-ValidationError "$relative finding $($diff.InputObject) is missing from Progress Tracker"
@@ -747,173 +786,272 @@ foreach ($proposal in $proposalFiles) {
         Add-ValidationError "$relative Progress Tracker references missing finding $($diff.InputObject)"
     }
 
-    foreach ($findingMatch in [regex]::Matches($text, '(?ms)^###\s+([EDS]\d+)\..*?```yaml\s*(.*?)\s*```'))
+    $findingTrackers = @()
+    if ($isArchivedProposal)
     {
-        $findingId = $findingMatch.Groups[1].Value
-        $yaml = $findingMatch.Groups[2].Value
-        $statusMatch = [regex]::Match($yaml, '(?m)^status:[ \t]*(.*?)[ \t]*$')
-        $status = if ($statusMatch.Success)
+        $archivedFindingBlockPattern = '(?ms)^###\s+(' + $proposalIdPrefixPattern + ')\..*?```yaml\s*(.*?)\s*```'
+        foreach ($findingMatch in [regex]::Matches($text, $archivedFindingBlockPattern))
         {
-            $statusMatch.Groups[1].Value.Trim()
-        }
-        else
-        {
-            ''
-        }
-        $decisionMatch = [regex]::Match($yaml, '(?m)^decision:[ \t]*(.*?)[ \t]*$')
-        $decision = if ($decisionMatch.Success)
-        {
-            $decisionMatch.Groups[1].Value.Trim()
-        }
-        else
-        {
-            ''
-        }
-        $priorityMatch = [regex]::Match($yaml, '(?m)^priority:[ \t]*(.*?)[ \t]*$')
-        $priority = if ($priorityMatch.Success)
-        {
-            $priorityMatch.Groups[1].Value.Trim()
-        }
-        else
-        {
-            ''
-        }
-        $updatedMatch = [regex]::Match($yaml, '(?m)^updated:[ \t]*(.*?)[ \t]*$')
-        $updated = if ($updatedMatch.Success)
-        {
-            $updatedMatch.Groups[1].Value.Trim()
-        }
-        else
-        {
-            ''
-        }
-        $acceptedAtMatch = [regex]::Match($yaml, '(?m)^accepted_at:[ \t]*(.*?)[ \t]*$')
-        $acceptedAt = if ($acceptedAtMatch.Success)
-        {
-            $acceptedAtMatch.Groups[1].Value.Trim()
-        }
-        else
-        {
-            ''
-        }
-        $decidedAtMatch = [regex]::Match($yaml, '(?m)^decided_at:[ \t]*(.*?)[ \t]*$')
-        $decidedAt = if ($decidedAtMatch.Success)
-        {
-            $decidedAtMatch.Groups[1].Value.Trim()
-        }
-        else
-        {
-            ''
-        }
-
-        if (-not [string]::IsNullOrWhiteSpace($acceptedAt) -and -not (Test-IsoTimestamp $acceptedAt))
-        {
-            Add-ValidationError "$relative finding $findingId accepted_at must use ISO 8601 timestamp with timezone offset"
-        }
-
-        if (-not [string]::IsNullOrWhiteSpace($decidedAt) -and -not (Test-IsoTimestamp $decidedAt))
-        {
-            Add-ValidationError "$relative finding $findingId decided_at must use ISO 8601 timestamp with timezone offset"
-        }
-
-        if (-not $isArchivedProposal)
-        {
-            if ($allowedProposalStatuses -notcontains $status)
+            $findingId = $findingMatch.Groups[1].Value
+            $yaml = $findingMatch.Groups[2].Value
+            $statusMatch = [regex]::Match($yaml, '(?m)^status:[ \t]*(.*?)[ \t]*$')
+            $decisionMatch = [regex]::Match($yaml, '(?m)^decision:[ \t]*(.*?)[ \t]*$')
+            $priorityMatch = [regex]::Match($yaml, '(?m)^priority:[ \t]*(.*?)[ \t]*$')
+            $updatedMatch = [regex]::Match($yaml, '(?m)^updated:[ \t]*(.*?)[ \t]*$')
+            $acceptedAtMatch = [regex]::Match($yaml, '(?m)^accepted_at:[ \t]*(.*?)[ \t]*$')
+            $decidedAtMatch = [regex]::Match($yaml, '(?m)^decided_at:[ \t]*(.*?)[ \t]*$')
+            $status = if ($statusMatch.Success)
             {
-                Add-ValidationError "$relative finding $findingId has invalid status '$status'; expected one of: $( $allowedProposalStatuses -join ', ' )"
+                $statusMatch.Groups[1].Value.Trim()
+            }
+            else
+            {
+                ''
+            }
+            $decision = if ($decisionMatch.Success)
+            {
+                $decisionMatch.Groups[1].Value.Trim()
+            }
+            else
+            {
+                ''
+            }
+            $priority = if ($priorityMatch.Success)
+            {
+                $priorityMatch.Groups[1].Value.Trim()
+            }
+            else
+            {
+                ''
+            }
+            $updated = if ($updatedMatch.Success)
+            {
+                $updatedMatch.Groups[1].Value.Trim()
+            }
+            else
+            {
+                ''
+            }
+            $acceptedAt = if ($acceptedAtMatch.Success)
+            {
+                $acceptedAtMatch.Groups[1].Value.Trim()
+            }
+            else
+            {
+                ''
+            }
+            $decidedAt = if ($decidedAtMatch.Success)
+            {
+                $decidedAtMatch.Groups[1].Value.Trim()
+            }
+            else
+            {
+                ''
             }
 
-            if ($allowedProposalDecisions -notcontains $decision)
+            $findingTrackers += [pscustomobject]@{
+                Id = $findingId
+                Status = $status
+                Decision = $decision
+                DecisionAt = ''
+                Priority = $priority
+                Updated = $updated
+                AcceptedAt = $acceptedAt
+                DecidedAt = $decidedAt
+            }
+        }
+    }
+    else
+    {
+        $activeFindingBlockPattern = '(?ms)^####\s+(' + $proposalIdPrefixPattern + ')\..*?(?=^####\s+' + $proposalIdPrefixPattern + '\.|^###\s+|^##\s+|\z)'
+        foreach ($findingMatch in [regex]::Matches($text, $activeFindingBlockPattern))
+        {
+            $findingId = $findingMatch.Groups[1].Value
+            $findingBlock = $findingMatch.Value
+            $metadata = @{ }
+            foreach ($metadataRow in [regex]::Matches($findingBlock, '(?m)^\|\s*(Status|Decision|Decision at|Priority|Owner|Updated)\s*\|\s*(.*?)\s*\|$'))
             {
-                Add-ValidationError "$relative finding $findingId has invalid decision '$decision'; expected empty or one of: accepted, rejected, deferred"
+                $metadata[$metadataRow.Groups[1].Value] = $metadataRow.Groups[2].Value.Trim()
             }
 
-            if ($priority -notmatch '^[1-6]$')
+            foreach ($requiredMetadataField in @('Status', 'Decision', 'Decision at', 'Priority', 'Owner', 'Updated'))
             {
-                Add-ValidationError "$relative finding $findingId priority must be 1-6"
-            }
-
-            if ( $tableRowsById.ContainsKey($findingId))
-            {
-                $tableRow = $tableRowsById[$findingId]
-                if ($tableRow['Status'] -ne $status)
+                $hasRequiredMetadataField = $metadata.ContainsKey($requiredMetadataField)
+                if (-not $hasRequiredMetadataField)
                 {
-                    Add-ValidationError "$relative Progress Tracker row $findingId status '$( $tableRow['Status'] )' must match YAML status '$status'"
-                }
-
-                if ($tableRow['Decision'] -ne $decision)
-                {
-                    Add-ValidationError "$relative Progress Tracker row $findingId decision '$( $tableRow['Decision'] )' must match YAML decision '$decision'"
-                }
-
-                if ($tableRow['Priority'] -ne $priority)
-                {
-                    Add-ValidationError "$relative Progress Tracker row $findingId priority '$( $tableRow['Priority'] )' must match YAML priority '$priority'"
+                    Add-ValidationError ('{0} finding {1} metadata table is missing {2}' -f $relative, $findingId, $requiredMetadataField)
                 }
             }
-
-            if ([string]::IsNullOrWhiteSpace($decision) -and $status -ne 'open')
+            $status = if ( $metadata.ContainsKey('Status'))
             {
-                Add-ValidationError "$relative finding $findingId has empty decision but status '$status'; use status 'open' until maintainer triage"
+                $metadata['Status']
+            }
+            else
+            {
+                ''
+            }
+            $decision = if ( $metadata.ContainsKey('Decision'))
+            {
+                $metadata['Decision']
+            }
+            else
+            {
+                ''
+            }
+            $decisionAt = if ( $metadata.ContainsKey('Decision at'))
+            {
+                $metadata['Decision at']
+            }
+            else
+            {
+                ''
+            }
+            $priority = if ( $metadata.ContainsKey('Priority'))
+            {
+                $metadata['Priority']
+            }
+            else
+            {
+                ''
+            }
+            $updated = if ( $metadata.ContainsKey('Updated'))
+            {
+                $metadata['Updated']
+            }
+            else
+            {
+                ''
             }
 
-            if ($decision -eq 'rejected' -and $status -ne 'not-required')
+            $findingTrackers += [pscustomobject]@{
+                Id = $findingId
+                Status = $status
+                Decision = $decision
+                DecisionAt = $decisionAt
+                Priority = $priority
+                Updated = $updated
+                AcceptedAt = ''
+                DecidedAt = ''
+            }
+        }
+    }
+
+    foreach ($findingTracker in $findingTrackers)
+    {
+        $findingId = $findingTracker.Id
+        $status = $findingTracker.Status
+        $decision = $findingTracker.Decision
+        $decisionAt = $findingTracker.DecisionAt
+        $priority = $findingTracker.Priority
+        $updated = $findingTracker.Updated
+        $acceptedAt = $findingTracker.AcceptedAt
+        $decidedAt = $findingTracker.DecidedAt
+
+        if ($isArchivedProposal)
+        {
+            if (-not [string]::IsNullOrWhiteSpace($acceptedAt) -and -not (Test-IsoTimestamp $acceptedAt))
             {
-                Add-ValidationError "$relative finding $findingId has decision rejected but status '$status'; use status 'not-required'"
+                Add-ValidationError "$relative finding $findingId accepted_at must use ISO 8601 timestamp with timezone offset"
             }
 
-            if ($decision -eq 'deferred' -and $status -notin @('blocked', 'not-required'))
+            if (-not [string]::IsNullOrWhiteSpace($decidedAt) -and -not (Test-IsoTimestamp $decidedAt))
             {
-                Add-ValidationError "$relative finding $findingId has decision deferred but status '$status'; use status 'blocked' or 'not-required'"
+                Add-ValidationError "$relative finding $findingId decided_at must use ISO 8601 timestamp with timezone offset"
             }
 
-            if ($decision -eq 'accepted')
+            continue
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($decisionAt) -and -not (Test-IsoTimestamp $decisionAt))
+        {
+            Add-ValidationError "$relative finding $findingId Decision at must use ISO 8601 timestamp with timezone offset"
+        }
+
+        if ($allowedProposalStatuses -notcontains $status)
+        {
+            Add-ValidationError "$relative finding $findingId has invalid status '$status'; expected one of: $( $allowedProposalStatuses -join ', ' )"
+        }
+
+        if ($allowedProposalDecisions -notcontains $decision)
+        {
+            Add-ValidationError "$relative finding $findingId has invalid decision '$decision'; expected empty or one of: accepted, rejected, deferred"
+        }
+
+        if ($priority -notmatch '^[1-6]$')
+        {
+            Add-ValidationError "$relative finding $findingId priority must be 1-6"
+        }
+
+        if ( $tableRowsById.ContainsKey($findingId))
+        {
+            $tableRow = $tableRowsById[$findingId]
+            if ($tableRow['Status'] -ne $status)
             {
-                if ( [string]::IsNullOrWhiteSpace($acceptedAt))
+                Add-ValidationError "$relative Progress Tracker row $findingId status '$( $tableRow['Status'] )' must match metadata status '$status'"
+            }
+
+            if ($tableRow['Decision'] -ne $decision)
+            {
+                Add-ValidationError "$relative Progress Tracker row $findingId decision '$( $tableRow['Decision'] )' must match metadata decision '$decision'"
+            }
+
+            if ($tableRow['Priority'] -ne $priority)
+            {
+                Add-ValidationError "$relative Progress Tracker row $findingId priority '$( $tableRow['Priority'] )' must match metadata priority '$priority'"
+            }
+        }
+
+        if ([string]::IsNullOrWhiteSpace($decision) -and $status -ne 'open')
+        {
+            Add-ValidationError "$relative finding $findingId has empty decision but status '$status'; use status 'open' until maintainer triage"
+        }
+
+        if ($decision -eq 'rejected' -and $status -ne 'not-required')
+        {
+            Add-ValidationError "$relative finding $findingId has decision rejected but status '$status'; use status 'not-required'"
+        }
+
+        if ($decision -eq 'deferred' -and $status -notin @('blocked', 'not-required'))
+        {
+            Add-ValidationError "$relative finding $findingId has decision deferred but status '$status'; use status 'blocked' or 'not-required'"
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($decision) -and [string]::IsNullOrWhiteSpace($decisionAt))
+        {
+            Add-ValidationError "$relative finding $findingId has decision '$decision' but is missing Decision at"
+        }
+        elseif ([string]::IsNullOrWhiteSpace($decision) -and -not [string]::IsNullOrWhiteSpace($decisionAt))
+        {
+            Add-ValidationError "$relative finding $findingId has Decision at but no decision"
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($decision) -and -not (Test-IsoTimestamp $updated))
+        {
+            Add-ValidationError "$relative finding $findingId with a decision must use a timestamp in Updated"
+        }
+
+        if ($proposalIdMatch.Success -and
+            $decision -eq 'accepted' -and
+            $terminalProposalStatuses -notcontains $status)
+        {
+            $summaryKey = "$( $proposalIdMatch.Groups[1].Value ) $findingId"
+            $expectedProposalSummaryKeys.Add($summaryKey) | Out-Null
+
+            if (-not $proposalSummaryRowsByFinding.ContainsKey($summaryKey))
+            {
+                Add-ValidationError "docs/proposals/README.md is missing proposal implementation summary row for $summaryKey"
+            }
+            else
+            {
+                $summaryRow = $proposalSummaryRowsByFinding[$summaryKey]
+                if ($summaryRow['Status'] -ne $status)
                 {
-                    Add-ValidationError "$relative finding $findingId has decision accepted but is missing accepted_at"
+                    Add-ValidationError "docs/proposals/README.md proposal implementation summary row $summaryKey status '$( $summaryRow['Status'] )' must match metadata status '$status'"
                 }
-            }
-            elseif (-not [string]::IsNullOrWhiteSpace($decision))
-            {
-                if ( [string]::IsNullOrWhiteSpace($decidedAt))
+
+                if ($summaryRow['Priority'] -ne $priority)
                 {
-                    Add-ValidationError "$relative finding $findingId has decision '$decision' but is missing decided_at"
-                }
-            }
-            elseif (-not [string]::IsNullOrWhiteSpace($acceptedAt) -or -not [string]::IsNullOrWhiteSpace($decidedAt))
-            {
-                Add-ValidationError "$relative finding $findingId has decision timestamps but no decision"
-            }
-
-            if (-not [string]::IsNullOrWhiteSpace($decision) -and -not (Test-IsoTimestamp $updated))
-            {
-                Add-ValidationError "$relative finding $findingId with a decision must use a timestamp in updated"
-            }
-
-            if ($proposalIdMatch.Success -and
-                    $decision -eq 'accepted' -and
-                    $terminalProposalStatuses -notcontains $status)
-            {
-                $summaryKey = "$( $proposalIdMatch.Groups[1].Value ) $findingId"
-                $expectedProposalSummaryKeys.Add($summaryKey) | Out-Null
-
-                if (-not $proposalSummaryRowsByFinding.ContainsKey($summaryKey))
-                {
-                    Add-ValidationError "docs/proposals/README.md is missing proposal implementation summary row for $summaryKey"
-                }
-                else
-                {
-                    $summaryRow = $proposalSummaryRowsByFinding[$summaryKey]
-                    if ($summaryRow['Status'] -ne $status)
-                    {
-                        Add-ValidationError "docs/proposals/README.md proposal implementation summary row $summaryKey status '$( $summaryRow['Status'] )' must match YAML status '$status'"
-                    }
-
-                    if ($summaryRow['Priority'] -ne $priority)
-                    {
-                        Add-ValidationError "docs/proposals/README.md proposal implementation summary row $summaryKey priority '$( $summaryRow['Priority'] )' must match YAML priority '$priority'"
-                    }
+                    Add-ValidationError "docs/proposals/README.md proposal implementation summary row $summaryKey priority '$( $summaryRow['Priority'] )' must match metadata priority '$priority'"
                 }
             }
         }
@@ -933,33 +1071,39 @@ if (Test-Path -LiteralPath $proposalTemplatePath)
 {
     $templateText = Get-Content -Raw -LiteralPath $proposalTemplatePath
     $templateRelative = Get-RelativePath $proposalTemplatePath
-    $templateIds = [regex]::Matches($templateText, '(?m)(?:^###\s+|\|\s+)([EDS]\d+)(?:\.|\s+\|)') |
+    $templateIds = [regex]::Matches($templateText, '(?m)(?:^####\s+|\|\s+)([FEDS]\d+)(?:\.|\s+\|)') |
             ForEach-Object { $_.Groups[1].Value }
 
     foreach ($templateId in $templateIds)
     {
-        if ($templateId -notmatch '^[EDS]\d{3}$')
+        if ($templateId -notmatch '^[FEDS]\d{3}$')
         {
             Add-ValidationError "$templateRelative example finding $templateId must use three-digit IDs"
         }
     }
 
-    if ($templateText -notmatch '(?m)^decision:[ \t]*$')
+    foreach ($requiredTemplateText in @('created_from:', '## Creation Context', '## Proposal Items', '### New Features', 'Decision at', 'Proposal Implementation Summary'))
     {
-        Add-ValidationError "$templateRelative must start example findings with an empty decision"
-    }
-
-    if ($templateText -notmatch 'Proposal Implementation Summary')
-    {
-        Add-ValidationError "$templateRelative must mention Proposal Implementation Summary updates"
-    }
-
-    foreach ($key in @('accepted_at', 'decided_at'))
-    {
-        if ($templateText -notmatch "(?m)^${key}:[ \t]*$")
+        $requiredTemplatePattern = [regex]::Escape($requiredTemplateText)
+        if ($templateText -notmatch $requiredTemplatePattern)
         {
-            Add-ValidationError "$templateRelative must include empty $key in example tracker blocks"
+            Add-ValidationError "$templateRelative must include $requiredTemplateText"
         }
+    }
+
+    if ($templateText -notmatch '(?m)^\|\s*Decision\s*\|\s*\|$')
+    {
+        Add-ValidationError "$templateRelative must start example findings with an empty Decision"
+    }
+
+    if ($templateText -match '(?m)^## How To Edit The Trackers\s*$')
+    {
+        Add-ValidationError "$templateRelative must not include ## How To Edit The Trackers"
+    }
+
+    if ($templateText -match '(?ms)^```\s*yaml')
+    {
+        Add-ValidationError "$templateRelative must use metadata tables instead of fenced yaml tracker blocks"
     }
 }
 

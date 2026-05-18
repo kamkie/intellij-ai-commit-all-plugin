@@ -23,7 +23,7 @@ description: Repository documentation workflow for this IntelliJ plugin. Use whe
 - Map the requested change to the owning artifact before editing.
 - If a requested documentation or workflow change requires an ADR, create the ADR first and stop until explicit acceptance.
 - If a requested change needs an implementation plan, create or update the plan first and stop until explicit approval.
-- Keep proposal decisions empty unless the user explicitly triages them; when accepted, set `decision: accepted`, `accepted_at`, and the implementation status required by `docs/proposals/README.md`.
+- Keep proposal decisions empty unless the user explicitly triages them; when accepted, set `Decision` to `accepted`, set `Decision at`, and update the implementation status required by `docs/proposals/README.md`.
 - Preserve stable IDs for tasks, open questions, ADRs, proposals, findings, and plans.
 - Update `CHANGELOG.md` only for notable public plugin-facing changes: plugin source or runtime behavior, public plugin docs, compatibility, support, security or privacy behavior, or CI and release pipelines affecting the plugin artifact or publication.
 - Do not update `CHANGELOG.md` for AI-agent docs, skills, plans, proposals, ADR maintenance, scenario or test coverage inventory, manual validation logs, or internal repository workflow changes unless they also affect public plugin behavior, public docs, support promises, or release artifacts.
