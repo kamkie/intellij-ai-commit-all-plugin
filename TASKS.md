@@ -17,8 +17,8 @@ Notation:
 - [x] T-BUG-002: `ai` `Staging + AI message generation` stage sometimes do not work the first time. it needs to recheck if in fact all files are included. and only then generate a commit message. (Plan `PLAN-confirm-staged-before-ai-generation`)
 - [x] T-BUG-003: Correct ADR filename prefix from the former `ard-0000-<slug>.md` typo to `adr-0000-<slug>.md` across decision files and references.
 - [ ] T-BUG-004: animations are not working. we need an alternative indicator for the commit push control.
-- [ ] T-BUG-005: same as T-BUG-002 but for commit. commit should not implement there own logic for first stage but reuse `Staging + AI message generation. same for push stage button.
-- [ ] T-BUG-006: reopens T-BUG-002. when there are multiple gradle modules, or multiple intellij products in repo
+- [x] T-BUG-005: same as T-BUG-002 but for commit. commit should not implement there own logic for first stage but reuse `Staging + AI message generation`. same for push stage button.
+- [x] T-BUG-006: reopens T-BUG-002. when there are multiple gradle modules, or multiple intellij products in repo
 
 ### Testing
 

@@ -14,7 +14,7 @@ internal object GitStageSelectionItems {
         .flatMap { rootState -> rootState.statuses.values.asSequence() }
         .mapNotNull { status -> status.committablePath() }
         .filter(isGitPath)
-        .distinctBy { path -> path.path }
+        .distinctBy { path -> path.normalizedPath() }
         .toList()
 
     fun committablePathsByRoot(state: GitStageTracker.State): Map<VirtualFile, List<FilePath>> =
@@ -22,7 +22,7 @@ internal object GitStageSelectionItems {
             .mapValues { (_, rootState) ->
                 rootState.statuses.values
                     .mapNotNull { status -> status.committablePath() }
-                    .distinctBy { path -> path.path }
+                    .distinctBy { path -> path.normalizedPath() }
             }
             .filterValues { paths -> paths.isNotEmpty() }
 

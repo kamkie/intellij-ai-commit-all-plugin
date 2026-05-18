@@ -8,12 +8,12 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
 import git4idea.index.GitFileStatus
 import git4idea.index.GitStageTracker
+import java.io.File
+import java.nio.charset.Charset
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import java.io.File
-import java.nio.charset.Charset
 
 internal class GitStageSelectionItemsTest {
     @Test
@@ -84,6 +84,59 @@ internal class GitStageSelectionItemsTest {
     }
 
     @Test
+    fun `groups nested Gradle module and IntelliJ product paths by git root`() {
+        val firstRoot = LightVirtualFile("repo-a")
+        val secondRoot = LightVirtualFile("repo-b")
+        val coreModuleBuild = TestFilePath("/repo-a/modules/core/build.gradle.kts")
+        val ideaProductSource = TestFilePath("/repo-a/products/idea/plugin/src/Main.kt")
+        val webstormProductSource = TestFilePath("/repo-b/products/webstorm/plugin/src/Main.kt")
+        val state = GitStageTracker.State(
+            mapOf(
+                firstRoot to GitStageTracker.RootState(
+                    firstRoot,
+                    true,
+                    mapOf(
+                        coreModuleBuild to gitStatus(' ', 'M', coreModuleBuild),
+                        ideaProductSource to gitStatus('?', '?', ideaProductSource),
+                    ),
+                ),
+                secondRoot to GitStageTracker.RootState(
+                    secondRoot,
+                    true,
+                    mapOf(webstormProductSource to gitStatus('A', ' ', webstormProductSource)),
+                ),
+            ),
+        )
+
+        val result = GitStageSelectionItems.committablePathsByRoot(state)
+
+        assertEquals(
+            mapOf<VirtualFile, List<FilePath>>(
+                firstRoot to listOf(coreModuleBuild, ideaProductSource),
+                secondRoot to listOf(webstormProductSource),
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `deduplicates committable staging paths by normalized path text`() {
+        val slashPath = TestFilePath("/repo/products/idea/plugin/src/Main.kt")
+        val backslashPath = TestFilePath("\\repo\\products\\idea\\plugin\\src\\Main.kt")
+        val state = stageState(
+            gitStatus(' ', 'M', slashPath),
+            gitStatus(' ', 'M', backslashPath),
+        )
+
+        val result = GitStageSelectionItems.committablePaths(
+            state = state,
+            isGitPath = { true },
+        )
+
+        assertEquals(listOf(slashPath), result)
+    }
+
+    @Test
     fun `confirms expected paths only when they are staged`() {
         val staged = TestFilePath("/repo/staged.txt")
         val unstaged = TestFilePath("/repo/unstaged.txt")
@@ -109,6 +162,38 @@ internal class GitStageSelectionItemsTest {
         val state = stageState(gitStatus('M', ' ', refreshed))
 
         assertTrue(GitStageSelectionItems.containsAllStagedPaths(state, listOf(expected)))
+    }
+
+    @Test
+    fun `confirms staged paths across nested module and product directories in multiple roots`() {
+        val firstRoot = LightVirtualFile("repo-a")
+        val secondRoot = LightVirtualFile("repo-b")
+        val ideaProductSource = TestFilePath("/repo-a/products/idea/plugin/src/Main.kt")
+        val coreModuleSource = TestFilePath("/repo-b/modules/core/src/Main.kt")
+        val state = GitStageTracker.State(
+            mapOf(
+                firstRoot to GitStageTracker.RootState(
+                    firstRoot,
+                    true,
+                    mapOf(ideaProductSource to gitStatus('M', ' ', ideaProductSource)),
+                ),
+                secondRoot to GitStageTracker.RootState(
+                    secondRoot,
+                    true,
+                    mapOf(coreModuleSource to gitStatus('A', ' ', coreModuleSource)),
+                ),
+            ),
+        )
+
+        assertTrue(
+            GitStageSelectionItems.containsAllStagedPaths(
+                state,
+                listOf(
+                    TestFilePath("\\repo-a\\products\\idea\\plugin\\src\\Main.kt"),
+                    TestFilePath("/repo-b/modules/core/src/Main.kt"),
+                ),
+            ),
+        )
     }
 
     private fun stageState(vararg statuses: GitFileStatus): GitStageTracker.State {

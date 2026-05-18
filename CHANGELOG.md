@@ -22,7 +22,9 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.2
 
 - Corrected ADR decision filenames and references from the mistaken `ard-` prefix to the standard `adr-` prefix.
 - Confirm Git staging-area inclusion before AI commit-message generation starts, avoiding intermittent first-run generation with incomplete staged input.
+- Ensured Commit and Push workflows reuse the shared all-files preparation and AI generation gate before executing.
 - Fixed Git staging-area commit workflow support when IntelliJ changelists are disabled.
+- Normalized Git staging-area path de-duplication for nested module and product paths with mixed path separators.
 
 ## [v0.1.0-alpha.2] - 2026-05-15
 

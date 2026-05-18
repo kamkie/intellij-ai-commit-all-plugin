@@ -5,13 +5,9 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsDataKeys
-import pl.devopssolutions.aicommitall.ai.AiCommitMessageActionInvocationResult
-import pl.devopssolutions.aicommitall.ai.AiCommitMessageActionInvocationService
-import pl.devopssolutions.aicommitall.ai.AiCommitMessagePreparation
-import pl.devopssolutions.aicommitall.ai.AiGenerationActivityPhase
-import pl.devopssolutions.aicommitall.ai.AiGenerationActivityStateService
-import pl.devopssolutions.aicommitall.ai.AiGenerationCompletionResult
-import pl.devopssolutions.aicommitall.ai.AiGenerationCompletionService
+import com.intellij.vcs.commit.CommitWorkflowHandler
+import com.intellij.vcs.commit.CommitWorkflowUi
+import pl.devopssolutions.aicommitall.ai.*
 import pl.devopssolutions.aicommitall.settings.AiCommitAllSettings
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushService
@@ -20,6 +16,27 @@ import java.util.concurrent.CompletableFuture
 
 @Service(Service.Level.PROJECT)
 internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
+    private val runner = AiCommitAllWorkflowRunner(ProjectAiCommitAllWorkflowDependencies(project))
+
+    fun start(
+        mode: AiCommitAllWorkflowMode,
+        dataContext: DataContext,
+        inputEvent: InputEvent? = null,
+    ): CompletableFuture<AiCommitAllWorkflowResult> =
+        runner.start(
+            mode = mode,
+            dataContext = dataContext,
+            inputEvent = inputEvent,
+        )
+
+    companion object {
+        fun getInstance(project: Project): AiCommitAllWorkflowCoordinator = project.service()
+    }
+}
+
+internal class AiCommitAllWorkflowRunner(
+    private val dependencies: AiCommitAllWorkflowDependencies,
+) {
     fun start(
         mode: AiCommitAllWorkflowMode,
         dataContext: DataContext,
@@ -31,7 +48,7 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
             return stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
         }
 
-        when (VcsOperationReadinessService.getInstance(project).checkAndReport()) {
+        when (dependencies.checkReadiness()) {
             VcsOperationReadinessResult.Ready -> Unit
             VcsOperationReadinessResult.Frozen ->
                 return stopped(AiCommitAllWorkflowStopReason.VcsFrozen)
@@ -39,30 +56,19 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
                 return stopped(AiCommitAllWorkflowStopReason.VcsBackgroundOperationRunning)
         }
 
-        return when (val selectionResult = CommitWorkflowSelectionService.getInstance(project)
-            .prepareAllFilesSelection(workflowHandler, workflowUi)) {
+        return when (val selectionResult = dependencies.prepareAllFilesSelection(workflowHandler, workflowUi)) {
             is CommitWorkflowSelectionResult.Prepared -> {
-                val activityToken = AiGenerationActivityStateService.getInstance(project).start(mode.activityPhase)
-                val completionService = AiGenerationCompletionService.getInstance(project)
-                val snapshot = AiCommitMessagePreparation.prepareInitialSnapshot(
-                    commitMessageUi = workflowUi.commitMessageUi,
-                    clearBeforeGeneration = AiCommitAllSettings.getInstance()
-                        .clearCommitMessageBeforeGeneration(),
-                )
-                when (val invocation = AiCommitMessageActionInvocationService.getInstance(project)
-                    .invokeCommitMessageGeneration(
+                when (
+                    val generationResult = dependencies.runAiGeneration(
+                        phase = mode.activityPhase,
                         workflowHandler = workflowHandler,
                         workflowUi = workflowUi,
                         parentDataContext = dataContext,
                         inputEvent = inputEvent,
-                    )) {
-                    is AiCommitMessageActionInvocationResult.Invoked ->
-                        completionService.awaitCompletionAsync(
-                            snapshot = snapshot,
-                            invocation = invocation,
-                            commitMessageUi = workflowUi.commitMessageUi,
-                        ).handle { completionResult, throwable ->
-                            activityToken.close()
+                    )
+                ) {
+                    is AiCommitAllAiGenerationResult.AwaitingCompletion ->
+                        generationResult.completion.handle { completionResult, throwable ->
                             if (throwable != null) {
                                 stoppedResult(AiCommitAllWorkflowStopReason.AiCompletionFailed)
                             } else {
@@ -74,14 +80,9 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
                                 )
                             }
                         }
-                    AiCommitMessageActionInvocationResult.MissingAction -> {
-                        activityToken.close()
-                        stopped(AiCommitAllWorkflowStopReason.MissingAiAction)
-                    }
-                    AiCommitMessageActionInvocationResult.MissingWorkflow -> {
-                        activityToken.close()
-                        stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
-                    }
+
+                    is AiCommitAllAiGenerationResult.Stopped ->
+                        stopped(generationResult.reason)
                 }
             }
             CommitWorkflowSelectionResult.EmptySelection ->
@@ -97,7 +98,7 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
 
     private fun completeAfterAiGeneration(
         mode: AiCommitAllWorkflowMode,
-        workflowHandler: com.intellij.vcs.commit.CommitWorkflowHandler,
+        workflowHandler: CommitWorkflowHandler,
         selection: GitChangeSelection,
         completionResult: AiGenerationCompletionResult,
     ): AiCommitAllWorkflowResult =
@@ -118,23 +119,17 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
 
     private fun executeCompletedWorkflow(
         mode: AiCommitAllWorkflowMode,
-        workflowHandler: com.intellij.vcs.commit.CommitWorkflowHandler,
+        workflowHandler: CommitWorkflowHandler,
         selection: GitChangeSelection,
     ): AiCommitAllWorkflowResult =
         when (mode) {
             AiCommitAllWorkflowMode.Ai ->
                 AiCommitAllWorkflowResult.Started
             AiCommitAllWorkflowMode.Commit ->
-                CommitWorkflowExecutionService.getInstance(project)
-                    .executeCommit(workflowHandler)
+                dependencies.executeCommit(workflowHandler)
                     .toWorkflowResult(AiCommitAllWorkflowStopReason.CommitExecutionUnavailable)
             AiCommitAllWorkflowMode.Push ->
-                CommitWorkflowExecutionService.getInstance(project)
-                    .executeCommitAndPush(
-                        workflowHandler = workflowHandler,
-                        selection = selection,
-                        safeImmediatePushSupport = SafeImmediatePushService.getInstance(project),
-                    )
+                dependencies.executeCommitAndPush(workflowHandler, selection)
                     .toWorkflowResult(AiCommitAllWorkflowStopReason.PushExecutionUnavailable)
         }
 
@@ -158,12 +153,117 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
         )
 
     private fun stoppedResult(reason: AiCommitAllWorkflowStopReason): AiCommitAllWorkflowResult {
-        AiCommitAllWorkflowStopReporter.getInstance(project).report(reason)
+        dependencies.reportStop(reason)
         return AiCommitAllWorkflowResult.Stopped(reason)
     }
+}
 
-    companion object {
-        fun getInstance(project: Project): AiCommitAllWorkflowCoordinator = project.service()
+internal interface AiCommitAllWorkflowDependencies {
+    fun checkReadiness(): VcsOperationReadinessResult
+
+    fun prepareAllFilesSelection(
+        workflowHandler: CommitWorkflowHandler,
+        workflowUi: CommitWorkflowUi,
+    ): CommitWorkflowSelectionResult
+
+    fun runAiGeneration(
+        phase: AiGenerationActivityPhase,
+        workflowHandler: CommitWorkflowHandler,
+        workflowUi: CommitWorkflowUi,
+        parentDataContext: DataContext,
+        inputEvent: InputEvent?,
+    ): AiCommitAllAiGenerationResult
+
+    fun executeCommit(workflowHandler: CommitWorkflowHandler): CommitWorkflowExecutionResult
+
+    fun executeCommitAndPush(
+        workflowHandler: CommitWorkflowHandler,
+        selection: GitChangeSelection,
+    ): CommitWorkflowExecutionResult
+
+    fun reportStop(reason: AiCommitAllWorkflowStopReason)
+}
+
+internal sealed interface AiCommitAllAiGenerationResult {
+    data class AwaitingCompletion(
+        val completion: CompletableFuture<AiGenerationCompletionResult>,
+    ) : AiCommitAllAiGenerationResult
+
+    data class Stopped(
+        val reason: AiCommitAllWorkflowStopReason,
+    ) : AiCommitAllAiGenerationResult
+}
+
+private class ProjectAiCommitAllWorkflowDependencies(private val project: Project) : AiCommitAllWorkflowDependencies {
+    override fun checkReadiness(): VcsOperationReadinessResult =
+        VcsOperationReadinessService.getInstance(project).checkAndReport()
+
+    override fun prepareAllFilesSelection(
+        workflowHandler: CommitWorkflowHandler,
+        workflowUi: CommitWorkflowUi,
+    ): CommitWorkflowSelectionResult =
+        CommitWorkflowSelectionService.getInstance(project)
+            .prepareAllFilesSelection(workflowHandler, workflowUi)
+
+    override fun runAiGeneration(
+        phase: AiGenerationActivityPhase,
+        workflowHandler: CommitWorkflowHandler,
+        workflowUi: CommitWorkflowUi,
+        parentDataContext: DataContext,
+        inputEvent: InputEvent?,
+    ): AiCommitAllAiGenerationResult {
+        val activityToken = AiGenerationActivityStateService.getInstance(project).start(phase)
+        val completionService = AiGenerationCompletionService.getInstance(project)
+        val snapshot = AiCommitMessagePreparation.prepareInitialSnapshot(
+            commitMessageUi = workflowUi.commitMessageUi,
+            clearBeforeGeneration = AiCommitAllSettings.getInstance()
+                .clearCommitMessageBeforeGeneration(),
+        )
+        return when (val invocation = AiCommitMessageActionInvocationService.getInstance(project)
+            .invokeCommitMessageGeneration(
+                workflowHandler = workflowHandler,
+                workflowUi = workflowUi,
+                parentDataContext = parentDataContext,
+                inputEvent = inputEvent,
+            )) {
+            is AiCommitMessageActionInvocationResult.Invoked ->
+                AiCommitAllAiGenerationResult.AwaitingCompletion(
+                    completionService.awaitCompletionAsync(
+                        snapshot = snapshot,
+                        invocation = invocation,
+                        commitMessageUi = workflowUi.commitMessageUi,
+                    ).whenComplete { _, _ -> activityToken.close() },
+                )
+
+            AiCommitMessageActionInvocationResult.MissingAction -> {
+                activityToken.close()
+                AiCommitAllAiGenerationResult.Stopped(AiCommitAllWorkflowStopReason.MissingAiAction)
+            }
+
+            AiCommitMessageActionInvocationResult.MissingWorkflow -> {
+                activityToken.close()
+                AiCommitAllAiGenerationResult.Stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
+            }
+        }
+    }
+
+    override fun executeCommit(workflowHandler: CommitWorkflowHandler): CommitWorkflowExecutionResult =
+        CommitWorkflowExecutionService.getInstance(project)
+            .executeCommit(workflowHandler)
+
+    override fun executeCommitAndPush(
+        workflowHandler: CommitWorkflowHandler,
+        selection: GitChangeSelection,
+    ): CommitWorkflowExecutionResult =
+        CommitWorkflowExecutionService.getInstance(project)
+            .executeCommitAndPush(
+                workflowHandler = workflowHandler,
+                selection = selection,
+                safeImmediatePushSupport = SafeImmediatePushService.getInstance(project),
+            )
+
+    override fun reportStop(reason: AiCommitAllWorkflowStopReason) {
+        AiCommitAllWorkflowStopReporter.getInstance(project).report(reason)
     }
 }
 
