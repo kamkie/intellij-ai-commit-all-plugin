@@ -79,7 +79,7 @@ Run the sandbox IDE:
 .\gradlew.bat runIde
 ```
 
-Pull-request CI validates the Gradle wrapper, source formatting, documentation, tests, plugin structure, and plugin packaging without Marketplace or signing secrets. The separate Plugin Verifier workflow checks the configured IDE matrix.
+Pull-request CI validates the Gradle wrapper, source formatting, documentation, tests, plugin structure, and plugin packaging without Marketplace or signing secrets. The separate Plugin Verifier workflow checks the configured IDE matrix, and the CodeQL workflow scans Java/Kotlin code on pull requests, pushes to `main`, and a weekly schedule.
 
 ## Usage
 
@@ -129,7 +129,8 @@ Release publication is intentionally manual and gated:
 3. Confirm manual sandbox validation evidence is current where release scope depends on it.
 4. Configure the GitHub Environment named `jetbrains-marketplace` with required reviewer protection.
 5. Add GitHub Actions secrets `CERTIFICATE_CHAIN`, `PRIVATE_KEY`, `PRIVATE_KEY_PASSWORD`, and `PUBLISH_TOKEN`.
-6. Start the `Release` workflow manually with the intended Marketplace channel, usually `default`.
+6. Verify GitHub secret scanning and push protection are enabled for the repository where available.
+7. Start the `Release` workflow manually with the intended Marketplace channel, usually `default`.
 
 The release workflow signs the plugin and calls `publishPlugin` only after manual dispatch and environment approval. Do not create tags or publish Marketplace updates unless release execution is explicitly requested.
 
@@ -143,9 +144,13 @@ Implementation guidance for future agents is in [AGENTS.md](AGENTS.md).
 
 Guidance for working with AI agents on this repository is in [docs/WORKING_WITH_AI.md](docs/WORKING_WITH_AI.md).
 
+Human contribution guidance is in [CONTRIBUTING.md](CONTRIBUTING.md).
+
 Notable changes are tracked in [CHANGELOG.md](CHANGELOG.md).
 
 Support status and issue-reporting expectations are in [SUPPORT.md](SUPPORT.md).
+
+Security reporting and release-secret handling are in [SECURITY.md](SECURITY.md).
 
 ## License
 

@@ -10,7 +10,7 @@ Proposals are advisory until accepted through the normal repository flow. A prop
 
 Active proposals still have at least one non-terminal implementation status row or at least one untriaged finding in their `Progress Tracker`.
 
-- `PROP-03-repository-quality-lifecycle` - Repository Quality And Lifecycle Work Stream ([PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md)), created 2026-05-15.
+- None.
 
 ### Completed Proposals
 
@@ -28,11 +28,7 @@ Implementation evidence can be a task, approved plan, ADR, changed file, commit,
 
 | Proposal                                                                                         | Finding | Title                                                    | Priority | Status  | Evidence                                                                                          |
 |--------------------------------------------------------------------------------------------------|---------|----------------------------------------------------------|----------|---------|---------------------------------------------------------------------------------------------------|
-| [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E001    | Add Dependabot configuration                             | 1        | open    | Open intake; no task or plan selected.                                                            |
-| [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E002    | Add CodeQL analysis                                      | 1        | open    | Open intake; no task or plan selected.                                                            |
-| [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E005    | Add security policy and secret-scanning guidance         | 2        | open    | Open intake; no task or plan selected.                                                            |
-| [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E006    | Add contributor intake files                             | 3        | open    | Open intake; no task or plan selected.                                                            |
-| [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E007    | Add CODEOWNERS after reviewer identity is known          | 3        | open    | Open intake; reviewer GitHub handle still needs to be supplied.                                    |
+| _None_                                                                                           | _None_  | _None_                                                   | _None_   | _None_  | _No accepted findings with non-terminal implementation status._                                    |
 
 ## When To Use A Proposal
 

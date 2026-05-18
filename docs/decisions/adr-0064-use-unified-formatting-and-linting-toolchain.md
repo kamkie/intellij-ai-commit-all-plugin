@@ -93,4 +93,4 @@ Confirm implementation by checking that:
 
 ## More Information
 
-This ADR is the prerequisite decision for `PROP-03-repository-quality-lifecycle` finding `E003` and should be used by `E008` when source header enforcement is implemented. The broader repository-quality work still needs an approved implementation plan before changing CI workflows, Gradle build logic, contributor intake, security policy, or task-history location.
+This ADR is the prerequisite decision for `PROP-03-repository-quality-lifecycle` finding `E003` and was used by `E008` when source header enforcement was implemented. The broader repository-quality work stream was completed separately through the accepted proposal findings.

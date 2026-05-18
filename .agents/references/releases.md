@@ -56,6 +56,8 @@ Do not start release work until all applicable items are true:
 - Required docs are aligned through `.agents/references/documentation.md`.
 - Required validation from `.agents/references/testing.md` passed for the exact release candidate.
 - Marketplace signing, publishing, CI, and secret-handling requirements from ADR 0019 are satisfied for publishable releases.
+- GitHub secret scanning and push protection are enabled for the repository where available, or the release handoff records why the repository cannot enable them.
+- The `jetbrains-marketplace` environment still protects `CERTIFICATE_CHAIN`, `PRIVATE_KEY`, `PRIVATE_KEY_PASSWORD`, and `PUBLISH_TOKEN`.
 
 ## Release Handoff
 

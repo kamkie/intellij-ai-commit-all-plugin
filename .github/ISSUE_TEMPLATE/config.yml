@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/kamkie/intellij-ai-commit-all-plugin/security/policy
+    about: Do not open public issues for vulnerabilities or secret exposure.
+  - name: Support policy
+    url: https://github.com/kamkie/intellij-ai-commit-all-plugin/blob/main/SUPPORT.md
+    about: Check supported scope and issue-reporting expectations.

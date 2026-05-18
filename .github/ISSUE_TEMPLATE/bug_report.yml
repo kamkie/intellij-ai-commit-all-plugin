@@ -1,0 +1,94 @@
+name: Bug report
+description: Report a reproducible AI Commit All problem.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include secrets, tokens, private repository contents, proprietary commit messages, or unsanitized IDE logs.
+  - type: input
+    id: ide
+    attributes:
+      label: IDE product and build
+      description: Example: IntelliJ IDEA Ultimate 2026.1.1, build IU-261.x.
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      description: Include version and architecture when relevant.
+    validations:
+      required: true
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version or commit
+      description: Use the Marketplace version, release tag, or commit SHA.
+    validations:
+      required: true
+  - type: dropdown
+    id: ai-assistant-state
+    attributes:
+      label: JetBrains AI Assistant state
+      options:
+        - Installed, enabled, and signed in
+        - Installed and enabled, but not signed in
+        - Installed but disabled
+        - Missing
+        - Unknown
+    validations:
+      required: true
+  - type: dropdown
+    id: git-mode
+    attributes:
+      label: Git commit workflow mode
+      options:
+        - Changelists, Git staging area disabled
+        - Git staging area enabled
+        - Multiple Git roots
+        - Unknown
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Include the AI, Commit, or Push section used and the relevant Git state.
+      placeholder: |
+        1. Open the Commit tool window.
+        2. Create these Git changes...
+        3. Click...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized logs or screenshots
+      description: For real IDE manual-test failures, say whether you can provide sanitized IDE logs. Use Help | Show Log in Explorer, or `%LOCALAPPDATA%\JetBrains\<Product><Version>\log` on Windows.
+      render: text
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Reporter checklist
+      options:
+        - label: I removed secrets, tokens, private repository content, proprietary commit messages, and sensitive logs.
+          required: true
+        - label: I checked existing open issues for the same problem.
+          required: true

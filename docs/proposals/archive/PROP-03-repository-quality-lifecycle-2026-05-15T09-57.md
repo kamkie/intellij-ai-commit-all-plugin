@@ -49,13 +49,13 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 | Id   | Title                                                      | Priority | Status       | Decision |
 |------|------------------------------------------------------------|----------|--------------|----------|
-| E001 | Add Dependabot configuration                               | 1        | open         | accepted |
-| E002 | Add CodeQL analysis                                        | 1        | open         | accepted |
+| E001 | Add Dependabot configuration                               | 1        | done         | accepted |
+| E002 | Add CodeQL analysis                                        | 1        | done         | accepted |
 | E003 | Add unified formatting and linting enforcement             | 2        | done         | accepted |
 | E004 | Validate Gradle wrapper integrity in CI                    | 2        | done         | accepted |
-| E005 | Add security policy and secret-scanning guidance           | 2        | open         | accepted |
-| E006 | Add contributor intake files                               | 3        | open         | accepted |
-| E007 | Add CODEOWNERS after reviewer identity is known            | 3        | open         | accepted |
+| E005 | Add security policy and secret-scanning guidance           | 2        | done         | accepted |
+| E006 | Add contributor intake files                               | 3        | done         | accepted |
+| E007 | Add CODEOWNERS after reviewer identity is known            | 3        | done         | accepted |
 | E008 | Enforce Apache-2.0 source headers                          | 4        | done         | accepted |
 | E009 | Define the `TASKS.md` retirement trigger                   | 4        | not-required | rejected |
 | E010 | Preserve completed task history outside the active backlog | 4        | done         | accepted |
@@ -88,13 +88,13 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
     - Document any non-obvious grouping policy in the same PR or plan that adds the file.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 1
 owner:
-updated: 2026-05-18T01:47:37+02:00
+updated: 2026-05-18T21:00:34+02:00
 accepted_at: 2026-05-15T11:43:16+02:00
-comment: "Supersedes PROP-repo-hygiene-automation E3; active decision details are maintained here."
+comment: "Implemented by .github/dependabot.yml with weekly github-actions and gradle update checks, grouped minor/patch updates, a separate IntelliJ Platform major group, and reviewer routing to kamkie."
 ```
 
 ### E002. Add CodeQL analysis
@@ -112,13 +112,13 @@ comment: "Supersedes PROP-repo-hygiene-automation E3; active decision details ar
     - Document any known CodeQL limitations for IntelliJ Platform plugin code if the first run produces false positives or unsupported build issues.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 1
 owner:
-updated: 2026-05-18T01:47:37+02:00
+updated: 2026-05-18T21:00:34+02:00
 accepted_at: 2026-05-15T11:43:16+02:00
-comment: "Supersedes PROP-repo-hygiene-automation E1; active decision details are maintained here."
+comment: "Implemented by .github/workflows/codeql.yml with Java/Kotlin CodeQL analysis on pull requests, pushes to main, weekly schedule, and manual Gradle build mode."
 ```
 
 ### E003. Add unified formatting and linting enforcement
@@ -184,13 +184,13 @@ comment: "Implemented in ci.yml with gradle/actions/wrapper-validation@v3 before
     - Keep actual secret values and sensitive operational details out of the repository.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 2
 owner:
-updated: 2026-05-18T01:47:37+02:00
+updated: 2026-05-18T21:00:34+02:00
 accepted_at: 2026-05-18T01:38:44+02:00
-comment: "Supersedes PROP-repo-hygiene-automation E5 and E6; active decision details are maintained here."
+comment: "Implemented by SECURITY.md, SUPPORT.md, README.md, and release guidance updates covering vulnerability reporting, protected release secrets, rotation expectations, and secret scanning or push protection checks."
 ```
 
 ### E006. Add contributor intake files
@@ -208,13 +208,13 @@ comment: "Supersedes PROP-repo-hygiene-automation E5 and E6; active decision det
     - Keep templates short enough that users can complete them without reading AI workflow internals.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 3
 owner:
-updated: 2026-05-18T01:47:37+02:00
+updated: 2026-05-18T21:00:34+02:00
 accepted_at: 2026-05-18T01:38:44+02:00
-comment: "Supersedes PROP-repo-hygiene-automation E7 and E9; active decision details are maintained here."
+comment: "Implemented by CONTRIBUTING.md, .github/pull_request_template.md, and bug, feature, and issue-template config files under .github/ISSUE_TEMPLATE/."
 ```
 
 ### E007. Add CODEOWNERS after reviewer identity is known
@@ -230,13 +230,13 @@ comment: "Supersedes PROP-repo-hygiene-automation E7 and E9; active decision det
     - Do not invent reviewer identity; treat missing handle/team as a blocker for implementation.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 3
 owner:
-updated: 2026-05-18T01:47:37+02:00
+updated: 2026-05-18T21:00:34+02:00
 accepted_at: 2026-05-18T01:38:44+02:00
-comment: "Supersedes PROP-repo-hygiene-automation E8; active decision details are maintained here."
+comment: "Implemented by .github/CODEOWNERS using the repository owner handle @kamkie from the Git remote and matching Dependabot reviewer routing."
 ```
 
 ### E008. Enforce Apache-2.0 source headers

@@ -1,0 +1,21 @@
+# Default ownership for repository changes.
+* @kamkie
+
+# Runtime plugin, tests, and build configuration.
+/src/ @kamkie
+/build.gradle.kts @kamkie
+/settings.gradle.kts @kamkie
+/gradle.properties @kamkie
+/gradle/wrapper/ @kamkie
+
+# GitHub automation and contributor intake.
+/.github/CODEOWNERS @kamkie
+/.github/dependabot.yml @kamkie
+/.github/workflows/ @kamkie
+/.github/ISSUE_TEMPLATE/ @kamkie
+/.github/pull_request_template.md @kamkie
+
+# Repository governance and AI-agent workflow.
+/docs/decisions/ @kamkie
+/docs/proposals/ @kamkie
+/.agents/ @kamkie

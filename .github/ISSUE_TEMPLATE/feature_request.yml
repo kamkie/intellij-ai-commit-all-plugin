@@ -1,0 +1,42 @@
+name: Feature request
+description: Suggest a focused improvement for AI Commit All.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What workflow gap or user problem should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the intended AI, Commit, Push, settings, validation, or documentation behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and constraints
+      description: Include IDE versions, Git layouts, changelist/staging mode, AI Assistant assumptions, or compatibility constraints.
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Request checklist
+      options:
+        - label: I checked existing open issues and proposals for similar work.
+          required: true
+        - label: I did not include secrets, private repository content, or proprietary commit messages.
+          required: true

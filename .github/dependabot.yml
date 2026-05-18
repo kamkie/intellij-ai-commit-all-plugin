@@ -1,0 +1,56 @@
+version: 2
+
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "main"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "kamkie"
+    groups:
+      github-actions-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "gradle"
+    directory: "/"
+    target-branch: "main"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:20"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "kamkie"
+    groups:
+      intellij-platform-minor-patch:
+        patterns:
+          - "org.jetbrains.intellij.platform*"
+          - "org.jetbrains.intellij.platform:*"
+        update-types:
+          - "minor"
+          - "patch"
+      intellij-platform-major:
+        patterns:
+          - "org.jetbrains.intellij.platform*"
+          - "org.jetbrains.intellij.platform:*"
+        update-types:
+          - "major"
+      gradle-tooling-minor-patch:
+        patterns:
+          - "org.jetbrains.kotlin*"
+          - "org.jetbrains.kotlin:*"
+          - "com.diffplug.spotless*"
+          - "com.diffplug.spotless:*"
+        update-types:
+          - "minor"
+          - "patch"

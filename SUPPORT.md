@@ -52,3 +52,5 @@ This project does not provide support for:
 Do not post secrets, tokens, private repository contents, proprietary commit messages, or sensitive logs in public issues.
 
 If a report involves sensitive information, open a minimal public issue that says a private report path is needed, or use the private security-reporting channel when one is available.
+
+Report vulnerabilities, suspected secret exposure, or sensitive security details through [SECURITY.md](SECURITY.md), not through public issues.

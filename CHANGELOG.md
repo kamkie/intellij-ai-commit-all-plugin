@@ -13,6 +13,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 ### Added
 
 - Added CI checks for Gradle wrapper validation, source formatting, Markdown linting, documentation validation, and Kotlin source license headers.
+- Added Dependabot, CodeQL scanning, CODEOWNERS, security reporting guidance, and contributor issue and pull request templates.
 
 ### Fixed
 
