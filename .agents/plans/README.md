@@ -19,7 +19,7 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-_No active plans._
+- `PLAN-automate-manual-scenarios` - Automate Manual Scenarios ([PLAN-automate-manual-scenarios.md](PLAN-automate-manual-scenarios.md)).
 
 ## Archived Plans
 
