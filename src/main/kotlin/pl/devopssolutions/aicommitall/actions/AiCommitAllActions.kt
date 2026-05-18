@@ -241,7 +241,7 @@ internal object ProjectAiCommitAllWorkflowAvailabilityProvider : AiCommitAllWork
             canExecuteCommit = { executionService.canExecuteCommit(workflowHandler) },
             canExecuteCommitAndPush = { executionService.canExecuteCommitAndPush(workflowHandler) },
             hasOutgoingCommitsToPush = {
-                GitOutgoingCommitsService.getInstance(project).hasOutgoingCommitsToPush()
+                GitOutgoingCommitsService.getInstance(project).cachedHasOutgoingCommitsToPush()
             },
         )
     }
