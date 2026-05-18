@@ -164,4 +164,4 @@ comment: "Consolidated into `PROP-03-repository-quality-lifecycle E003`."
 
 - Changes to non-markdown code style (Kotlin, Gradle Kotlin DSL) - covered separately by `PROP-repo-hygiene-automation`.
 - Retroactive reformatting of `docs/decisions/` ADRs and `.agents/references/` files; those follow the same rules once accepted but their renumbering/reformatting is out of this proposal's triage.
-- Changes to the `proposal_id` naming format (`PROP-<kebab-slug>`) defined in `docs/proposals/README.md` and ARD-0034.
+- Changes to the `proposal_id` naming format (`PROP-<kebab-slug>`) defined in `docs/proposals/README.md` and ADR-0034.

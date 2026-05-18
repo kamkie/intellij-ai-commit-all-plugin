@@ -58,7 +58,7 @@ Run only one task worker at a time unless the approved plan explicitly marks tas
 
 - Read only the context needed for the current task.
 - Do not bulk-load every AI instruction file automatically; use `AGENTS.md` and the guidance map to choose the smallest governing read set.
-- Classify artifact references by filename prefix before searching: `ard-NNNN` in `docs/decisions/`, `PLAN-<slug>` in `.agents/plans/` then `.agents/plans/archive/`, and `PROP-<slug>` in `docs/proposals/` then `docs/proposals/archive/`. Prefer exact filename lookup before scoped ID search, and fall back to repository-wide search only when scoped lookup fails or the reference is ambiguous.
+- Classify artifact references by filename prefix before searching: `adr-NNNN` in `docs/decisions/`, `PLAN-<slug>` in `.agents/plans/` then `.agents/plans/archive/`, and `PROP-<slug>` in `docs/proposals/` then `docs/proposals/archive/`. Prefer exact filename lookup before scoped ID search, and fall back to repository-wide search only when scoped lookup fails or the reference is ambiguous.
 - Broaden the read set only when targeted discovery shows another owner document is needed, the user asks for a broad audit, or validation requires cross-document consistency checks.
 - Prefer existing IntelliJ Platform and Gradle plugin conventions over custom infrastructure.
 - Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; do not add unrelated release or operations files outside that scope.

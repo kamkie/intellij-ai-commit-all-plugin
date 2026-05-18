@@ -1,5 +1,5 @@
 ---
-status: superseded by ard-0052
+status: superseded by adr-0052
 date: 2026-05-14
 decision-makers: Kamil Kiewisz <kamkie@outlook.com>
 consulted: Codex

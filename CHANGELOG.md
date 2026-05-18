@@ -19,6 +19,7 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.2
 
 ### Fixed
 
+- Corrected ADR decision filenames and references from the mistaken `ard-` prefix to the standard `adr-` prefix.
 - Confirm Git staging-area inclusion before AI commit-message generation starts, avoiding intermittent first-run generation with incomplete staged input.
 - Fixed Git staging-area commit workflow support when IntelliJ changelists are disabled.
 
@@ -44,7 +45,7 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.2
 
 - Changed plan IDs to use the `PLAN-<short-kebab-slug>` format.
 - Changed active and archived proposal filename rules so filenames start with their stable `proposal_id`.
-- Changed ADR files to use MADR 4.0.0 structure and `ard-0000-<slug>.md` filenames.
+- Changed ADR files to use MADR 4.0.0 structure and `adr-0000-<slug>.md` filenames.
 - Changed ADR `decision-makers` metadata to use the configured Git username and email.
 - Added explicit ADR acceptance and plan approval gates before governed implementation can start.
 - Updated README and support documentation to describe the implemented but unreleased workflow, source repository, release process, and current validation limits.

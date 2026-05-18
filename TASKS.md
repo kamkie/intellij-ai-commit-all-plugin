@@ -15,7 +15,7 @@ Notation:
 ### Bugs
 
 - [x] T-BUG-002: `ai` `Staging + AI message generation` stage sometimes do not work the first time. it needs to recheck if in fact all files are included. and only then generate a commit message. (Plan `PLAN-confirm-staged-before-ai-generation`)
-- [ ] T-BUG-003: a typo in adr file naming. docs/decisions/README.md `## Naming` should be `adr-0000-initial-repository-creation-and-scaffolding.md` not `ard-0000-initial-repository-creation-and-scaffolding.md`. all files needs to be renamed
+- [x] T-BUG-003: Correct ADR filename prefix from the former `ard-0000-<slug>.md` typo to `adr-0000-<slug>.md` across decision files and references.
 - [ ] T-BUG-004: animations are not working. we need an alternative indicator for the commit push control.
 
 ### Ideas

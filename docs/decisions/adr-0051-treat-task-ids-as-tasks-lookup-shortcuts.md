@@ -18,7 +18,7 @@ Without an explicit lookup rule, agents may start with broad repository search f
 ## Decision Drivers
 
 * Keep task context small by searching the task owner file first.
-* Make `T-<AREA>-NNN` references as actionable as `ard-NNNN`, `PLAN-*`, and `PROP-*` references.
+* Make `T-<AREA>-NNN` references as actionable as `adr-NNNN`, `PLAN-*`, and `PROP-*` references.
 * Preserve `TASKS.md` as the implementation backlog owner.
 * Avoid implying that task IDs correspond to separate task files.
 * Keep broad repository search available when the task entry is missing or its context points elsewhere.

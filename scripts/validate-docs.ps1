@@ -153,7 +153,7 @@ if (Test-Path -LiteralPath $openQuestionsPath)
             {
                 Add-ValidationError "$openQuestionsRelative active question $questionId has ambiguous Blocks '$blocks'"
             }
-            elseif ($blocks -notmatch '(\[[^\]]+\]\([^)]+\)|\bT-[A-Z]+-\d{3}\b|\bPLAN-[A-Za-z0-9][A-Za-z0-9-]*\b|\bPROP-[A-Za-z0-9][A-Za-z0-9-]*\b|\bard-\d{4}\b|[A-Za-z0-9_./-]+\.[A-Za-z0-9]+)')
+            elseif ($blocks -notmatch '(\[[^\]]+\]\([^)]+\)|\bT-[A-Z]+-\d{3}\b|\bPLAN-[A-Za-z0-9][A-Za-z0-9-]*\b|\bPROP-[A-Za-z0-9][A-Za-z0-9-]*\b|\badr-\d{4}\b|[A-Za-z0-9_./-]+\.[A-Za-z0-9]+)')
             {
                 Add-ValidationError "$openQuestionsRelative active question $questionId Blocks must include an artifact evidence path"
             }
@@ -342,10 +342,10 @@ $legacyAdrFiles = Get-ChildItem -LiteralPath $adrDirectory -File -Filter '*.md' 
     Where-Object { $_.Name -match '^\d{4}-' }
 foreach ($legacyAdr in $legacyAdrFiles) {
     $relative = Get-RelativePath $legacyAdr.FullName
-    Add-ValidationError "$relative must use ard-0000-<slug>.md filename format"
+    Add-ValidationError "$relative must use adr-0000-<slug>.md filename format"
 }
 
-$adrFiles = Get-ChildItem -LiteralPath $adrDirectory -File -Filter 'ard-*.md' |
+$adrFiles = Get-ChildItem -LiteralPath $adrDirectory -File -Filter 'adr-*.md' |
     Sort-Object Name
 $adrReadmePath = Join-Path $repoRoot 'docs/decisions/README.md'
 $adrReadmeText = ''
@@ -367,19 +367,19 @@ $requiredMadrHeadings = @(
 
 for ($i = 0; $i -lt $adrFiles.Count; $i++) {
     $relative = Get-RelativePath $adrFiles[$i].FullName
-    $nameMatch = [regex]::Match($adrFiles[$i].Name, '^ard-(\d{4})-[a-z0-9]+(?:-[a-z0-9]+)*\.md$')
+    $nameMatch = [regex]::Match($adrFiles[$i].Name, '^adr-(\d{4})-[a-z0-9]+(?:-[a-z0-9]+)*\.md$')
     if (-not $nameMatch.Success) {
-        Add-ValidationError "$relative must use ard-0000-<slug>.md filename format"
+        Add-ValidationError "$relative must use adr-0000-<slug>.md filename format"
         continue
     }
 
     $expected = '{0:D4}' -f $i
     $actual = $nameMatch.Groups[1].Value
     if ($actual -ne $expected) {
-        Add-ValidationError "ADR sequence expected ard-$expected but found $($adrFiles[$i].Name)"
+        Add-ValidationError "ADR sequence expected adr-$expected but found $($adrFiles[$i].Name)"
     }
 
-    $expectedIndexEntry = "[ard-$actual]($($adrFiles[$i].Name))"
+    $expectedIndexEntry = "[adr-$actual]($($adrFiles[$i].Name))"
     if (-not $adrReadmeText.Contains($expectedIndexEntry)) {
         Add-ValidationError "docs/decisions/README.md is missing ADR index entry $expectedIndexEntry"
     }
@@ -423,7 +423,7 @@ for ($i = 0; $i -lt $adrFiles.Count; $i++) {
             [int]$actual -ge 44
     if ($requiresAcceptedAt -and -not $acceptedAtMatch.Success)
     {
-        Add-ValidationError "$relative accepted ADRs from ard-0044 onward must include accepted_at"
+        Add-ValidationError "$relative accepted ADRs from adr-0044 onward must include accepted_at"
     }
 
     if ([regex]::Matches($adrText, '(?m)^#\s+').Count -ne 1) {
@@ -461,7 +461,7 @@ else
     $adrImplementationTrackerText = $adrImplementationTrackerMatch.Groups[1].Value
     $adrImplementationRows = [regex]::Matches(
             $adrImplementationTrackerText,
-            '(?m)^\|\s+\[ard-(\d{4})\]\((ard-\d{4}-[a-z0-9]+(?:-[a-z0-9]+)*\.md)\)\s+\|\s+([a-z-]+)\s+\|\s+(.+?)\s+\|\s+(\d{4}-\d{2}-\d{2})\s+\|$'
+            '(?m)^\|\s+\[adr-(\d{4})\]\((adr-\d{4}-[a-z0-9]+(?:-[a-z0-9]+)*\.md)\)\s+\|\s+([a-z-]+)\s+\|\s+(.+?)\s+\|\s+(\d{4}-\d{2}-\d{2})\s+\|$'
     )
 
     $implementationRowsByAdr = @{ }
@@ -475,7 +475,7 @@ else
 
         if ( $implementationRowsByAdr.ContainsKey($adrNumber))
         {
-            Add-ValidationError "docs/decisions/README.md has duplicate ADR implementation tracker row for ard-$adrNumber"
+            Add-ValidationError "docs/decisions/README.md has duplicate ADR implementation tracker row for adr-$adrNumber"
             continue
         }
 
@@ -488,29 +488,29 @@ else
 
         if ($allowedAdrImplementationStatuses -notcontains $implementationStatus)
         {
-            Add-ValidationError "docs/decisions/README.md ADR implementation tracker row ard-$adrNumber has invalid status '$implementationStatus'; expected one of: $( $allowedAdrImplementationStatuses -join ', ' )"
+            Add-ValidationError "docs/decisions/README.md ADR implementation tracker row adr-$adrNumber has invalid status '$implementationStatus'; expected one of: $( $allowedAdrImplementationStatuses -join ', ' )"
         }
 
         if ([string]::IsNullOrWhiteSpace($evidence) -or $evidence -eq '-')
         {
-            Add-ValidationError "docs/decisions/README.md ADR implementation tracker row ard-$adrNumber is missing evidence"
+            Add-ValidationError "docs/decisions/README.md ADR implementation tracker row adr-$adrNumber is missing evidence"
         }
 
         if ($evidence -match '^(?i)(tbd|unknown|none|n/a)$')
         {
-            Add-ValidationError "docs/decisions/README.md ADR implementation tracker row ard-$adrNumber has ambiguous evidence '$evidence'"
+            Add-ValidationError "docs/decisions/README.md ADR implementation tracker row adr-$adrNumber has ambiguous evidence '$evidence'"
         }
 
         if ($updated -notmatch '^\d{4}-\d{2}-\d{2}$')
         {
-            Add-ValidationError "docs/decisions/README.md ADR implementation tracker row ard-$adrNumber has invalid updated date"
+            Add-ValidationError "docs/decisions/README.md ADR implementation tracker row adr-$adrNumber has invalid updated date"
         }
     }
 
     $knownAdrNumbers = New-Object System.Collections.Generic.HashSet[string]
     foreach ($adrFile in $adrFiles)
     {
-        $adrNameMatch = [regex]::Match($adrFile.Name, '^ard-(\d{4})-[a-z0-9]+(?:-[a-z0-9]+)*\.md$')
+        $adrNameMatch = [regex]::Match($adrFile.Name, '^adr-(\d{4})-[a-z0-9]+(?:-[a-z0-9]+)*\.md$')
         if (-not $adrNameMatch.Success)
         {
             continue
@@ -521,14 +521,14 @@ else
 
         if (-not $implementationRowsByAdr.ContainsKey($adrNumber))
         {
-            Add-ValidationError "docs/decisions/README.md is missing ADR implementation tracker row for ard-$adrNumber"
+            Add-ValidationError "docs/decisions/README.md is missing ADR implementation tracker row for adr-$adrNumber"
             continue
         }
 
         $row = $implementationRowsByAdr[$adrNumber]
         if ($row.Target -ne $adrFile.Name)
         {
-            Add-ValidationError "docs/decisions/README.md ADR implementation tracker row ard-$adrNumber must link to $( $adrFile.Name )"
+            Add-ValidationError "docs/decisions/README.md ADR implementation tracker row adr-$adrNumber must link to $( $adrFile.Name )"
         }
 
     }
@@ -537,7 +537,7 @@ else
     {
         if (-not $knownAdrNumbers.Contains($adrNumber))
         {
-            Add-ValidationError "docs/decisions/README.md ADR implementation tracker references missing ard-$adrNumber"
+            Add-ValidationError "docs/decisions/README.md ADR implementation tracker references missing adr-$adrNumber"
         }
     }
 }

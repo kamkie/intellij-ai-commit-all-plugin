@@ -102,7 +102,7 @@ Compliance should be checked by:
 ## More Information
 
 - Selected draft: `docs/concepts/graphics/split-button-drafts/01-blue-steel-compact-snake-violet-ai.svg`.
-- Related structure decision: `docs/decisions/ard-0052-use-three-section-ai-commit-push-control.md`.
-- Superseded styling decision: `docs/decisions/ard-0027-use-generated-placeholder-graphic-for-split-button-styling.md`.
+- Related structure decision: `docs/decisions/adr-0052-use-three-section-ai-commit-push-control.md`.
+- Superseded styling decision: `docs/decisions/adr-0027-use-generated-placeholder-graphic-for-split-button-styling.md`.
 - Runtime implementation was completed by `.agents/plans/archive/PLAN-three-section-ai-commit-push-control.md`.
 - Local AI Assistant icon evidence: the commit-message action declares `com.intellij.ml.llm.core.AIAssistantBrandingIcons.LogoColored`, whose local SVG resources use `#834DF0` for light theme and `#A571E6` for dark theme.

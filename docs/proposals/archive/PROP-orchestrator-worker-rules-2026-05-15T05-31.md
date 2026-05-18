@@ -232,7 +232,7 @@ comment: "Consolidated into `PROP-01-proposal-governance S002`."
 ## Smaller / Stylistic Items
 
 - The After view of the `Orchestrator And Workers Graph` in `PLAN-fastest-plan-execution.md` already illustrates 14 workers; once S4 is accepted, the plan should declare `Workers: 14 (parallel by wave, tasks: as labeled W1–W14)` to make the graph and the front matter consistent.
-- Each ADR must follow `docs/decisions/ADR_TEMPLATE.md`, use the `ard-NNNN-...md` filename pattern (ADR 0039), and record decision-maker identity (ADR 0040). Plan approvals stay subject to ADR 0041 and ADR 0042.
+- Each ADR must follow `docs/decisions/ADR_TEMPLATE.md`, use the `adr-NNNN-...md` filename pattern (ADR 0039), and record decision-maker identity (ADR 0040). Plan approvals stay subject to ADR 0041 and ADR 0042.
 - `CHANGELOG.md` should record any accepted workflow change under the next unreleased section, per the release-preparation guidance.
 
 ## Suggested Priority Order

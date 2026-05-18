@@ -66,7 +66,7 @@ Compact overview only. Edit the YAML tracker inside each section below; this tab
 ### E1. No automated code scanning configured
 
 - Evidence: `.github/workflows/` contains only `ci.yml`, `plugin-verifier.yml`, and `release.yml`. No `codeql.yml` or third-party SAST workflow is present; no `Security` tab integration is configured in repository files.
-- Impact: Vulnerabilities and common Kotlin/Java weaknesses (e.g., reflective misuse around the IntelliJ Action System used in `ReflectiveCommitWorkflowSynchronizer`, `AiCommitMessageActionDiscoveryService`) are not surfaced automatically. The plugin is published under Apache-2.0 to the JetBrains Marketplace (ARD-0018, ARD-0019), where supply-chain due diligence is expected.
+- Impact: Vulnerabilities and common Kotlin/Java weaknesses (e.g., reflective misuse around the IntelliJ Action System used in `ReflectiveCommitWorkflowSynchronizer`, `AiCommitMessageActionDiscoveryService`) are not surfaced automatically. The plugin is published under Apache-2.0 to the JetBrains Marketplace (ADR-0018, ADR-0019), where supply-chain due diligence is expected.
 - Proposal: Add GitHub CodeQL analysis for the `java-kotlin` language with the default query suite, scheduled weekly and on PRs to `main`. Upload SARIF results to GitHub code scanning. Optionally enable `security-extended` queries if signal-to-noise stays acceptable.
 
 ```yaml
@@ -104,7 +104,7 @@ comment: "Consolidated into `PROP-03-repository-quality-lifecycle E003`."
     - `github-actions` (weekly, grouped minor+patch).
     - `gradle` (weekly, grouped minor+patch; major updates as separate PRs).
     - Target branch `main`; default reviewer set from `CODEOWNERS` once E8 is accepted.
-      Constrain the IntelliJ Platform major version bumps to a separate group so they can be reviewed against ARD-0008 (target platform).
+      Constrain the IntelliJ Platform major version bumps to a separate group so they can be reviewed against ADR-0008 (target platform).
 
 ```yaml
 status: deferred
@@ -118,7 +118,7 @@ comment: "Consolidated into `PROP-03-repository-quality-lifecycle E001`."
 ### E4. Gradle wrapper integrity is not validated in CI
 
 - Evidence: `gradle/wrapper/gradle-wrapper.jar` is checked into the repository. No workflow runs `gradle/wrapper-validation-action`.
-- Impact: A malicious or accidentally corrupted wrapper jar could ship to the build environment used to produce signed Marketplace artifacts (ARD-0019).
+- Impact: A malicious or accidentally corrupted wrapper jar could ship to the build environment used to produce signed Marketplace artifacts (ADR-0019).
 - Proposal: Add a `wrapper-validation` job using `gradle/wrapper-validation-action@v3` to `ci.yml` (or a dedicated workflow) that runs on every PR and push to `main`.
 
 ```yaml
@@ -179,7 +179,7 @@ comment: "Consolidated into `PROP-03-repository-quality-lifecycle E006`."
 
 - Evidence: No `.github/CODEOWNERS` or `CODEOWNERS` at repo root.
 - Impact: Dependabot PRs (E3) and contributor PRs lack automatic reviewer assignment; review SLAs are informal.
-- Proposal: Add `.github/CODEOWNERS` mapping `*` and key paths (`src/`, `.github/workflows/`, `docs/decisions/`, `build.gradle.kts`) to the maintainer's GitHub handle. Coordinate identity with ARD-0040 (git identity for ADR decision makers).
+- Proposal: Add `.github/CODEOWNERS` mapping `*` and key paths (`src/`, `.github/workflows/`, `docs/decisions/`, `build.gradle.kts`) to the maintainer's GitHub handle. Coordinate identity with ADR-0040 (git identity for ADR decision makers).
 
 ```yaml
 status: deferred
@@ -208,7 +208,7 @@ comment: "Consolidated into `PROP-03-repository-quality-lifecycle E006`."
 ### E10. No license header enforcement on Kotlin sources
 
 - Evidence: Sources under `src/main/kotlin/pl/devopssolutions/aicommitall/` do not consistently carry an Apache-2.0 header; no Gradle plugin enforces one.
-- Impact: ARD-0018 selects Apache-2.0 for the repository and the plugin. Marketplace and downstream redistribution benefit from per-file headers; absence is a minor compliance gap.
+- Impact: ADR-0018 selects Apache-2.0 for the repository and the plugin. Marketplace and downstream redistribution benefit from per-file headers; absence is a minor compliance gap.
 - Proposal: If E2 selects Spotless, reuse it with the `licenseHeader` step. Otherwise add `com.github.hierynomus.license` or `org.cadixdev.licenser`. Decide as part of the same ADR that resolves E2 to avoid plugin sprawl.
 
 ```yaml
@@ -249,5 +249,5 @@ _No tracked findings._
 - Choice of specific formatter (`ktlint` vs Spotless+ktlint) - deferred to an ADR triggered by `E2`.
 - Changes to the existing `plugin-verifier.yml` and `release.yml` workflows beyond adding the wrapper-validation job in `E4`.
 - Marketplace listing metadata, signing key rotation procedures beyond documenting them.
-- IntelliJ Platform version targeting (governed by ARD-0008) and Git-only behavior (governed by ARD-0009).
+- IntelliJ Platform version targeting (governed by ADR-0008) and Git-only behavior (governed by ADR-0009).
 - Any implementation work; this proposal stops at maintainer triage per `docs/proposals/README.md`.

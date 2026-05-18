@@ -100,8 +100,8 @@ comment: "Consolidated into `PROP-03-repository-quality-lifecycle E012`."
 
 ### E4. Preserve completed task history before removal
 
-- Evidence: `TASKS.md` lines 17-186 are the only consolidated index of completed `T-AREA-NNN` IDs and the plans/ADRs that produced them. The IDs are explicitly declared stable in ARD-0028.
-- Impact: Plain deletion would erase the cross-reference between task IDs and the plans/ADRs they belong to, weakening traceability required by `.agents/references/execution.md` and ARD-0023.
+- Evidence: `TASKS.md` lines 17-186 are the only consolidated index of completed `T-AREA-NNN` IDs and the plans/ADRs that produced them. The IDs are explicitly declared stable in ADR-0028.
+- Impact: Plain deletion would erase the cross-reference between task IDs and the plans/ADRs they belong to, weakening traceability required by `.agents/references/execution.md` and ADR-0023.
 - Proposal: Before removal, either (a) move the `## Completed Task Archive` section into `CHANGELOG.md` under an "Archived Backlog" appendix, or (b) relocate it to `docs/history/completed-tasks.md`. Keep all `T-AREA-NNN` IDs verbatim so historical references in commits and ADRs remain resolvable. Decide the destination in the ADR opened by E1.
 
 ```yaml
@@ -155,6 +155,6 @@ _No tracked findings._
 ## Out Of Scope
 
 - Renaming or restructuring `.agents/plans/`, `docs/decisions/`, or `docs/proposals/`.
-- Changing the stable `T-AREA-NNN` ID format defined by ARD-0028.
+- Changing the stable `T-AREA-NNN` ID format defined by ADR-0028.
 - Editing historical commit messages that reference `TASKS.md`.
 - Any implementation work; this proposal stops at maintainer triage per `docs/proposals/README.md`.

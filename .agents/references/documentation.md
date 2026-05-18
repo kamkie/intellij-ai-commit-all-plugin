@@ -27,7 +27,7 @@ Use this guide when adding or updating repository documentation.
 - Do not imply plugin implementation has started until Gradle, Kotlin, or IntelliJ plugin scaffold files exist.
 - Prefer concrete commands and artifact names over generic process language.
 - Do not load every AI instruction file automatically. Start from `AGENTS.md`, use the guidance map, and load only the owner documents needed for the current documentation change unless the task is a broad guidance audit or cross-document consistency review.
-- Route artifact references by stable filename prefix before broad search: `ard-NNNN` to `docs/decisions/`, `PLAN-<slug>` to `.agents/plans/` then `.agents/plans/archive/`, and `PROP-<slug>` to `docs/proposals/` then `docs/proposals/archive/`.
+- Route artifact references by stable filename prefix before broad search: `adr-NNNN` to `docs/decisions/`, `PLAN-<slug>` to `.agents/plans/` then `.agents/plans/archive/`, and `PROP-<slug>` to `docs/proposals/` then `docs/proposals/archive/`.
 - Give open questions stable IDs in `docs/decisions/OPEN_QUESTIONS.md` using `Q-<AREA>-NNN`, for example `Q-UX-001`.
 - Give every `TASKS.md` item a stable task ID in the form `T-AREA-NNN`, keep the ID stable when wording or ordering changes, and do not renumber existing task IDs.
 - Give every plan a stable `Plan-ID` in the form `PLAN-<short-kebab-slug>`, include it in active and archived filenames, keep it stable when title, filename, status, or wording changes, and avoid strictly number-based plan IDs.

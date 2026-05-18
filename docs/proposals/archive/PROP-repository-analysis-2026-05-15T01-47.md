@@ -62,7 +62,7 @@ Compact overview only. Edit the YAML tracker inside each section below; this tab
 
 ### E1. Stale split-button styling guidance remains in accepted ADRs
 
-- Evidence: `docs/decisions/ard-0006-use-split-button-for-commit-and-push.md:11` says detailed visual styling remains deferred, and `docs/decisions/ard-0006-use-split-button-for-commit-and-push.md:24` says detailed icon and styling choices remain open. `docs/decisions/ard-0016-reuse-standard-intellij-error-messages.md:46` and `docs/decisions/ard-0017-use-standard-ide-confirmation-barriers.md:46` still say to keep `Q-UX-5` open. Later, `docs/decisions/ard-0027-use-generated-placeholder-graphic-for-split-button-styling.md:38` closes `Q-UX-6`, and `docs/decisions/OPEN_QUESTIONS.md:5` says there are no open questions.
+- Evidence: `docs/decisions/adr-0006-use-split-button-for-commit-and-push.md:11` says detailed visual styling remains deferred, and `docs/decisions/adr-0006-use-split-button-for-commit-and-push.md:24` says detailed icon and styling choices remain open. `docs/decisions/adr-0016-reuse-standard-intellij-error-messages.md:46` and `docs/decisions/adr-0017-use-standard-ide-confirmation-barriers.md:46` still say to keep `Q-UX-5` open. Later, `docs/decisions/adr-0027-use-generated-placeholder-graphic-for-split-button-styling.md:38` closes `Q-UX-6`, and `docs/decisions/OPEN_QUESTIONS.md:5` says there are no open questions.
 - Impact: A future agent reading only the most specific older ADR can reasonably think split-button styling is still unresolved, even though the current guidance points to the generated placeholder.
 - Proposal: Add short "Current state" or "Resolved later by ADR 0027" notes to the stale follow-up areas. Preserve the historical decisions, but make the currently applicable styling owner explicit.
 
@@ -109,7 +109,7 @@ comment: Maintainer rejected this cleanup in the proposal tracker.
 
 ### D3. Marketplace documentation and release tasks overlap
 
-- Evidence: `TASKS.md:138` asks to document the Marketplace source code link, while `TASKS.md:150` asks to add the official source code link to Marketplace metadata. `TASKS.md:139` asks to document Marketplace publication process and secrets, while `TASKS.md:152` and `TASKS.md:153` cover publishing configuration and first-upload documentation. ADR 0018 also calls for source code and metadata updates at `docs/decisions/ard-0018-use-apache-2-license.md:66` and `docs/decisions/ard-0018-use-apache-2-license.md:67`.
+- Evidence: `TASKS.md:138` asks to document the Marketplace source code link, while `TASKS.md:150` asks to add the official source code link to Marketplace metadata. `TASKS.md:139` asks to document Marketplace publication process and secrets, while `TASKS.md:152` and `TASKS.md:153` cover publishing configuration and first-upload documentation. ADR 0018 also calls for source code and metadata updates at `docs/decisions/adr-0018-use-apache-2-license.md:66` and `docs/decisions/adr-0018-use-apache-2-license.md:67`.
 - Impact: Release and documentation work can double-count the same Marketplace source-link and publication-process items, or leave unclear whether the owner is metadata, README/support docs, or release automation.
 - Proposal: Split ownership by artifact: `T-REL-*` should own Gradle/plugin/Marketplace metadata and publishing mechanics, while `T-DOC-*` should own user- or contributor-facing documentation. Adjust wording to remove duplicate source-link and first-upload responsibilities.
 

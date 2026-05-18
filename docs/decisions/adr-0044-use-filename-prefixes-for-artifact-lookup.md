@@ -11,7 +11,7 @@ informed: Repository contributors
 
 ## Context and Problem Statement
 
-The repository stores durable decisions, implementation plans, and advisory proposals in separate directories. ADR 0038 and ADR 0039 already make their filename prefixes stable: ADRs use `ard-`, plans use `PLAN-`, and proposals use `PROP-`.
+The repository stores durable decisions, implementation plans, and advisory proposals in separate directories. ADR 0038 and ADR 0039 already make their filename prefixes stable: ADRs use `adr-`, plans use `PLAN-`, and proposals use `PROP-`.
 
 The maintainer requested an explicit instruction to recognize ADR, plan, and proposal artifacts by filename prefix and format so agents search the correct directory by default instead of starting with broad repository searches.
 
@@ -34,7 +34,7 @@ Chosen option: "Use filename prefixes for artifact lookup", because artifact fil
 
 If accepted, AI-facing guidance should instruct agents to classify artifact references by filename prefix and format before searching:
 
-* `ard-NNNN-<slug>.md` or `ard-NNNN` means search `docs/decisions/` first.
+* `adr-NNNN-<slug>.md` or `adr-NNNN` means search `docs/decisions/` first.
 * `PLAN-<short-kebab-slug>.md` or `PLAN-<short-kebab-slug>` means search `.agents/plans/` first, including `.agents/plans/archive/` when the active file is not found.
 * `PROP-<short-kebab-slug>-<YYYY-MM-DD>T<HH-MM>.md` or `PROP-<short-kebab-slug>` means search `docs/proposals/` first, including `docs/proposals/archive/` when the active file is not found.
 
@@ -44,7 +44,7 @@ When a reference does not match one of these prefixes, or when scoped lookup fin
 
 ### Consequences
 
-* Good, because common references such as `ard-0043`, `PLAN-user-documentation`, and `PROP-02-pre-release-ux` go directly to the correct directory.
+* Good, because common references such as `adr-0043`, `PLAN-user-documentation`, and `PROP-02-pre-release-ux` go directly to the correct directory.
 * Good, because agents can avoid loading unrelated ADRs, plans, proposals, or broad search results.
 * Good, because the instruction reinforces existing validated filename conventions.
 * Bad, because guidance files need another lookup rule and agents must remember the fallback path for ambiguous references.
