@@ -22,7 +22,7 @@ internal class AiCommitAllWorkflowRunnerTest {
     fun `ai mode prepares the shared selection before AI generation and does not commit`() {
         val dependencies = CapturingWorkflowDependencies()
 
-        val result = AiCommitAllWorkflowRunner(dependencies)
+        val result = runner(dependencies)
             .start(AiCommitAllWorkflowMode.Ai, testDataContext())
             .join()
 
@@ -37,7 +37,7 @@ internal class AiCommitAllWorkflowRunnerTest {
         val completion = CompletableFuture<AiGenerationCompletionResult>()
         val dependencies = CapturingWorkflowDependencies(aiCompletion = completion)
 
-        val result = AiCommitAllWorkflowRunner(dependencies)
+        val result = runner(dependencies)
             .start(AiCommitAllWorkflowMode.Commit, testDataContext())
 
         assertFalse(result.isDone)
@@ -57,7 +57,7 @@ internal class AiCommitAllWorkflowRunnerTest {
         val completion = CompletableFuture<AiGenerationCompletionResult>()
         val dependencies = CapturingWorkflowDependencies(aiCompletion = completion)
 
-        val result = AiCommitAllWorkflowRunner(dependencies)
+        val result = runner(dependencies)
             .start(AiCommitAllWorkflowMode.Push, testDataContext())
 
         assertFalse(result.isDone)
@@ -77,7 +77,7 @@ internal class AiCommitAllWorkflowRunnerTest {
     fun `repeated starts return active workflow until it finishes`() {
         val completion = CompletableFuture<AiGenerationCompletionResult>()
         val dependencies = CapturingWorkflowDependencies(aiCompletion = completion)
-        val runner = AiCommitAllWorkflowRunner(dependencies)
+        val runner = runner(dependencies)
 
         val first = runner.start(AiCommitAllWorkflowMode.Commit, testDataContext())
         val second = runner.start(AiCommitAllWorkflowMode.Push, testDataContext())
@@ -120,7 +120,7 @@ internal class AiCommitAllWorkflowRunnerTest {
                 aiCompletion = CompletableFuture.completedFuture(completionResult),
             )
 
-            val result = AiCommitAllWorkflowRunner(dependencies)
+            val result = runner(dependencies)
                 .start(AiCommitAllWorkflowMode.Commit, testDataContext())
                 .join()
 
@@ -140,7 +140,7 @@ internal class AiCommitAllWorkflowRunnerTest {
         completion.completeExceptionally(IllegalStateException("AI completion failed"))
         val dependencies = CapturingWorkflowDependencies(aiCompletion = completion)
 
-        val result = AiCommitAllWorkflowRunner(dependencies)
+        val result = runner(dependencies)
             .start(AiCommitAllWorkflowMode.Push, testDataContext())
             .join()
 
@@ -159,7 +159,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             aiGenerationResult = AiCommitAllAiGenerationResult.Stopped(AiCommitAllWorkflowStopReason.MissingAiAction),
         )
 
-        val result = AiCommitAllWorkflowRunner(dependencies)
+        val result = runner(dependencies)
             .start(AiCommitAllWorkflowMode.Push, testDataContext())
             .join()
 
@@ -178,7 +178,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             selectionResult = CommitWorkflowSelectionResult.EmptySelection,
         )
 
-        val result = AiCommitAllWorkflowRunner(dependencies)
+        val result = runner(dependencies)
             .start(AiCommitAllWorkflowMode.Push, testDataContext())
             .join()
 
@@ -195,7 +195,7 @@ internal class AiCommitAllWorkflowRunnerTest {
     fun `missing workflow stops before readiness check`() {
         val dependencies = CapturingWorkflowDependencies()
 
-        val result = AiCommitAllWorkflowRunner(dependencies)
+        val result = runner(dependencies)
             .start(AiCommitAllWorkflowMode.Commit, DataContext.EMPTY_CONTEXT)
             .join()
 
@@ -214,7 +214,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             readinessResult = VcsOperationReadinessResult.Frozen,
         )
 
-        val result = AiCommitAllWorkflowRunner(dependencies)
+        val result = runner(dependencies)
             .start(AiCommitAllWorkflowMode.Commit, testDataContext())
             .join()
 
@@ -233,7 +233,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             readinessResult = VcsOperationReadinessResult.BackgroundOperationRunning,
         )
 
-        val result = AiCommitAllWorkflowRunner(dependencies)
+        val result = runner(dependencies)
             .start(AiCommitAllWorkflowMode.Push, testDataContext())
             .join()
 
@@ -252,7 +252,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             commitResult = CommitWorkflowExecutionResult.UnsupportedExecutor,
         )
 
-        val result = AiCommitAllWorkflowRunner(dependencies)
+        val result = runner(dependencies)
             .start(AiCommitAllWorkflowMode.Commit, testDataContext())
             .join()
 
@@ -274,7 +274,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             pushResult = CommitWorkflowExecutionResult.DisabledExecutor,
         )
 
-        val result = AiCommitAllWorkflowRunner(dependencies)
+        val result = runner(dependencies)
             .start(AiCommitAllWorkflowMode.Push, testDataContext())
             .join()
 
@@ -288,6 +288,32 @@ internal class AiCommitAllWorkflowRunnerTest {
         )
         assertEquals(0, dependencies.commitCallCount)
         assertEquals(1, dependencies.pushCallCount)
+    }
+
+    @Test
+    fun `workflow preparation is scheduled off the caller thread before AI generation returns to EDT`() {
+        val dependencies = CapturingWorkflowDependencies()
+        val scheduler = CapturingWorkflowScheduler()
+
+        val result = AiCommitAllWorkflowRunner(dependencies, scheduler)
+            .start(AiCommitAllWorkflowMode.Ai, testDataContext())
+
+        assertFalse(result.isDone)
+        assertEquals(emptyList(), dependencies.events)
+        assertEquals(1, scheduler.backgroundActionCount)
+        assertEquals(0, scheduler.edtActionCount)
+
+        scheduler.runNextBackground()
+
+        assertFalse(result.isDone)
+        assertEquals(listOf("readiness", "prepare"), dependencies.events)
+        assertEquals(0, scheduler.backgroundActionCount)
+        assertEquals(1, scheduler.edtActionCount)
+
+        scheduler.runNextEdt()
+
+        assertEquals(AiCommitAllWorkflowResult.Started, result.join())
+        assertEquals(listOf("readiness", "prepare", "ai:Ai"), dependencies.events)
     }
 
     private class CapturingWorkflowDependencies(
@@ -352,6 +378,9 @@ internal class AiCommitAllWorkflowRunnerTest {
     }
 
     private companion object {
+        private fun runner(dependencies: CapturingWorkflowDependencies): AiCommitAllWorkflowRunner =
+            AiCommitAllWorkflowRunner(dependencies, ImmediateWorkflowScheduler)
+
         private fun completedAiGeneration(): AiGenerationCompletionResult =
             AiGenerationCompletionResult.Completed(
                 originalMessage = "",
@@ -393,5 +422,63 @@ internal class AiCommitAllWorkflowRunnerTest {
                 java.lang.Void.TYPE -> null
                 else -> null
             }
+
+        private fun <T> completedFrom(action: () -> T): CompletableFuture<T> {
+            val future = CompletableFuture<T>()
+            future.completeFrom(action)
+            return future
+        }
+
+        private fun <T> CompletableFuture<T>.completeFrom(action: () -> T) {
+            try {
+                complete(action())
+            } catch (throwable: Throwable) {
+                completeExceptionally(throwable)
+            }
+        }
+    }
+
+    private object ImmediateWorkflowScheduler : AiCommitAllWorkflowScheduler {
+        override fun <T> supplyBackground(action: () -> T): CompletableFuture<T> =
+            completedFrom(action)
+
+        override fun <T> supplyEdt(action: () -> T): CompletableFuture<T> =
+            completedFrom(action)
+    }
+
+    private class CapturingWorkflowScheduler : AiCommitAllWorkflowScheduler {
+        private val backgroundActions = ArrayDeque<() -> Unit>()
+        private val edtActions = ArrayDeque<() -> Unit>()
+
+        val backgroundActionCount: Int
+            get() = backgroundActions.size
+
+        val edtActionCount: Int
+            get() = edtActions.size
+
+        override fun <T> supplyBackground(action: () -> T): CompletableFuture<T> =
+            queued(backgroundActions, action)
+
+        override fun <T> supplyEdt(action: () -> T): CompletableFuture<T> =
+            queued(edtActions, action)
+
+        fun runNextBackground() {
+            backgroundActions.removeFirst()()
+        }
+
+        fun runNextEdt() {
+            edtActions.removeFirst()()
+        }
+
+        private fun <T> queued(
+            actions: ArrayDeque<() -> Unit>,
+            action: () -> T,
+        ): CompletableFuture<T> {
+            val future = CompletableFuture<T>()
+            actions += {
+                future.completeFrom(action)
+            }
+            return future
+        }
     }
 }

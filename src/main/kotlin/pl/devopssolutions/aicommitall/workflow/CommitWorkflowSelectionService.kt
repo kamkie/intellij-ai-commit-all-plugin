@@ -1,5 +1,6 @@
 package pl.devopssolutions.aicommitall.workflow
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -7,9 +8,9 @@ import com.intellij.openapi.vcs.changes.ChangeListManager
 import com.intellij.openapi.vcs.changes.LocalChangeList
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowUi
-import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelectionService
 import pl.devopssolutions.aicommitall.vcs.GitVcsSupportStatus
+import java.util.concurrent.atomic.AtomicReference
 
 @Service(Service.Level.PROJECT)
 internal class CommitWorkflowSelectionService(private val project: Project) {
@@ -43,7 +44,7 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
         val activeChangeList = chooseActiveChangeList(changeLists)
         val inclusionItems = CommitWorkflowSelectionItems.inclusionItems(selection)
 
-        if (!workflowUi.activate()) {
+        if (!CommitWorkflowUiThreadAccess.run { workflowUi.activate() }) {
             return CommitWorkflowSelectionResult.UnsupportedWorkflow("The Commit tool window workflow could not be activated.")
         }
 
@@ -69,5 +70,26 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
 
     companion object {
         fun getInstance(project: Project): CommitWorkflowSelectionService = project.service()
+    }
+}
+
+internal object CommitWorkflowUiThreadAccess {
+    fun <T> run(action: () -> T): T {
+        val application = ApplicationManager.getApplication() ?: return action()
+        if (application.isDispatchThread) {
+            return action()
+        }
+
+        val result = AtomicReference<T>()
+        val failure = AtomicReference<Throwable>()
+        application.invokeAndWait {
+            try {
+                result.set(action())
+            } catch (throwable: Throwable) {
+                failure.set(throwable)
+            }
+        }
+        failure.get()?.let { throwable -> throw throwable }
+        return result.get()
     }
 }

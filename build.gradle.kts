@@ -64,8 +64,14 @@ intellijPlatform {
             <p>Source code: <a href="https://github.com/kamkie/intellij-ai-commit-all-plugin">https://github.com/kamkie/intellij-ai-commit-all-plugin</a></p>
         """.trimIndent()
         changeNotes = """
-            <p>v0.1.0-alpha.5 prerelease.</p>
+            <p>v0.1.0-alpha.6 prerelease.</p>
             <ul>
+                <li>Waits through initial AI Assistant startup polling so Commit and Push workflows do not stop before generation begins.</li>
+                <li>Prevents duplicate workflow starts from rapid repeated action or shortcut invocations.</li>
+                <li>Allows safe immediate push on protected branches when no force push is required.</li>
+                <li>Binds plugin shortcut actions directly to the IDE commit shortcuts so takeover is registered even when shortcut mirroring is insufficient.</li>
+                <li>Clears commit-message control and document data before AI generation, not only the public CommitMessageUi text accessor.</li>
+                <li>Moves all-files selection and Git staging confirmation off the UI event thread while returning Commit UI updates and AI invocation to the UI thread, so staging-area mode can reach AI commit-message generation.</li>
                 <li>Preserves Git staging-area paths when synchronizing fallback Commit tool window inclusion, so already staged files are not dropped from the plugin workflow.</li>
                 <li>Ensures the three-section control exposes its fallback accessibility description when Swing provides a blank description.</li>
                 <li>Refreshes the three-section control running indicator immediately when AI activity starts or finishes.</li>

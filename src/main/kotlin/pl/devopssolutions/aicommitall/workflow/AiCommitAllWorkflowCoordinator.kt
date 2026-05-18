@@ -1,6 +1,8 @@
 package pl.devopssolutions.aicommitall.workflow
 
+import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -36,6 +38,7 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
 
 internal class AiCommitAllWorkflowRunner(
     private val dependencies: AiCommitAllWorkflowDependencies,
+    private val scheduler: AiCommitAllWorkflowScheduler = IntellijAiCommitAllWorkflowScheduler,
 ) {
     private val activeWorkflowLock = Any()
     private var activeWorkflow: CompletableFuture<AiCommitAllWorkflowResult>? = null
@@ -64,53 +67,94 @@ internal class AiCommitAllWorkflowRunner(
             return stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
         }
 
+        return scheduler.supplyBackground {
+            prepareWorkflow(workflowHandler, workflowUi)
+        }.thenCompose { preparation ->
+            when (preparation) {
+                is AiCommitAllWorkflowPreparationResult.Prepared ->
+                    startAiGeneration(
+                        mode = mode,
+                        workflowHandler = workflowHandler,
+                        workflowUi = workflowUi,
+                        selection = preparation.selection,
+                        dataContext = dataContext,
+                        inputEvent = inputEvent,
+                    )
+
+                is AiCommitAllWorkflowPreparationResult.Stopped ->
+                    stopped(preparation.reason)
+            }
+        }
+    }
+
+    private fun prepareWorkflow(
+        workflowHandler: CommitWorkflowHandler,
+        workflowUi: CommitWorkflowUi,
+    ): AiCommitAllWorkflowPreparationResult {
         when (dependencies.checkReadiness()) {
             VcsOperationReadinessResult.Ready -> Unit
             VcsOperationReadinessResult.Frozen ->
-                return stopped(AiCommitAllWorkflowStopReason.VcsFrozen)
+                return AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.VcsFrozen)
             VcsOperationReadinessResult.BackgroundOperationRunning ->
-                return stopped(AiCommitAllWorkflowStopReason.VcsBackgroundOperationRunning)
+                return AiCommitAllWorkflowPreparationResult.Stopped(
+                    AiCommitAllWorkflowStopReason.VcsBackgroundOperationRunning,
+                )
         }
 
         return when (val selectionResult = dependencies.prepareAllFilesSelection(workflowHandler, workflowUi)) {
-            is CommitWorkflowSelectionResult.Prepared -> {
-                when (
-                    val generationResult = dependencies.runAiGeneration(
-                        phase = mode.activityPhase,
-                        workflowHandler = workflowHandler,
-                        workflowUi = workflowUi,
-                        parentDataContext = dataContext,
-                        inputEvent = inputEvent,
-                    )
-                ) {
-                    is AiCommitAllAiGenerationResult.AwaitingCompletion ->
-                        generationResult.completion.handle { completionResult, throwable ->
-                            if (throwable != null) {
-                                stoppedResult(AiCommitAllWorkflowStopReason.AiCompletionFailed)
-                            } else {
-                                completeAfterAiGeneration(
-                                    mode = mode,
-                                    workflowHandler = workflowHandler,
-                                    selection = selectionResult.selection,
-                                    completionResult = completionResult,
-                                )
-                            }
-                        }
+            is CommitWorkflowSelectionResult.Prepared ->
+                AiCommitAllWorkflowPreparationResult.Prepared(selectionResult.selection)
 
-                    is AiCommitAllAiGenerationResult.Stopped ->
-                        stopped(generationResult.reason)
-                }
-            }
             CommitWorkflowSelectionResult.EmptySelection ->
-                stopped(AiCommitAllWorkflowStopReason.EmptySelection)
+                AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.EmptySelection)
+
             CommitWorkflowSelectionResult.MissingWorkflow ->
-                stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
+                AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
+
             is CommitWorkflowSelectionResult.UnsupportedVcs ->
-                stopped(AiCommitAllWorkflowStopReason.UnsupportedVcs)
+                AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.UnsupportedVcs)
+
             is CommitWorkflowSelectionResult.UnsupportedWorkflow ->
-                stopped(AiCommitAllWorkflowStopReason.UnsupportedWorkflow)
+                AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.UnsupportedWorkflow)
         }
     }
+
+    private fun startAiGeneration(
+        mode: AiCommitAllWorkflowMode,
+        workflowHandler: CommitWorkflowHandler,
+        workflowUi: CommitWorkflowUi,
+        selection: GitChangeSelection,
+        dataContext: DataContext,
+        inputEvent: InputEvent?,
+    ): CompletableFuture<AiCommitAllWorkflowResult> =
+        scheduler.supplyEdt {
+            dependencies.runAiGeneration(
+                phase = mode.activityPhase,
+                workflowHandler = workflowHandler,
+                workflowUi = workflowUi,
+                parentDataContext = dataContext,
+                inputEvent = inputEvent,
+            )
+        }.thenCompose { generationResult ->
+            when (generationResult) {
+                is AiCommitAllAiGenerationResult.AwaitingCompletion ->
+                    generationResult.completion.handle { completionResult, throwable ->
+                        if (throwable != null) {
+                            stoppedResult(AiCommitAllWorkflowStopReason.AiCompletionFailed)
+                        } else {
+                            completeAfterAiGeneration(
+                                mode = mode,
+                                workflowHandler = workflowHandler,
+                                selection = selection,
+                                completionResult = completionResult,
+                            )
+                        }
+                    }
+
+                is AiCommitAllAiGenerationResult.Stopped ->
+                    stopped(generationResult.reason)
+            }
+        }
 
     private fun clearActiveWorkflow(future: CompletableFuture<AiCommitAllWorkflowResult>) {
         synchronized(activeWorkflowLock) {
@@ -179,6 +223,54 @@ internal class AiCommitAllWorkflowRunner(
     private fun stoppedResult(reason: AiCommitAllWorkflowStopReason): AiCommitAllWorkflowResult {
         dependencies.reportStop(reason)
         return AiCommitAllWorkflowResult.Stopped(reason)
+    }
+}
+
+private sealed interface AiCommitAllWorkflowPreparationResult {
+    data class Prepared(
+        val selection: GitChangeSelection,
+    ) : AiCommitAllWorkflowPreparationResult
+
+    data class Stopped(
+        val reason: AiCommitAllWorkflowStopReason,
+    ) : AiCommitAllWorkflowPreparationResult
+}
+
+internal interface AiCommitAllWorkflowScheduler {
+    fun <T> supplyBackground(action: () -> T): CompletableFuture<T>
+
+    fun <T> supplyEdt(action: () -> T): CompletableFuture<T>
+}
+
+private object IntellijAiCommitAllWorkflowScheduler : AiCommitAllWorkflowScheduler {
+    override fun <T> supplyBackground(action: () -> T): CompletableFuture<T> =
+        CompletableFuture.supplyAsync(action, JobScheduler.getScheduler())
+
+    override fun <T> supplyEdt(action: () -> T): CompletableFuture<T> {
+        val application = ApplicationManager.getApplication()
+        if (application == null || application.isDispatchThread) {
+            return completedFrom(action)
+        }
+
+        val future = CompletableFuture<T>()
+        application.invokeLater {
+            future.completeFrom(action)
+        }
+        return future
+    }
+}
+
+private fun <T> completedFrom(action: () -> T): CompletableFuture<T> {
+    val future = CompletableFuture<T>()
+    future.completeFrom(action)
+    return future
+}
+
+private fun <T> CompletableFuture<T>.completeFrom(action: () -> T) {
+    try {
+        complete(action())
+    } catch (throwable: Throwable) {
+        completeExceptionally(throwable)
     }
 }
 

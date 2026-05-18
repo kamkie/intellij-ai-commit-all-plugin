@@ -39,8 +39,10 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         ) ?: return false
 
         return runCatching {
-            synchronizeInclusion.invoke(workflowHandler, changeLists, unversionedFiles)
-            setCommitState.invoke(workflowHandler, activeChangeList, inclusionItems, true)
+            CommitWorkflowUiThreadAccess.run {
+                synchronizeInclusion.invoke(workflowHandler, changeLists, unversionedFiles)
+                setCommitState.invoke(workflowHandler, activeChangeList, inclusionItems, true)
+            }
         }.isSuccess
     }
 
@@ -63,9 +65,11 @@ internal object ReflectiveCommitWorkflowSynchronizer {
                 pathsByRoot = pathsByRoot,
             ) ?: return@runCatching false
             val includedRoots = pathsByRoot.keys
-            gitStageHandler.state = refreshedState
-            gitStageHandler.ui.setTrackerState(refreshedState)
-            gitStageHandler.ui.setIncludedRoots(includedRoots)
+            CommitWorkflowUiThreadAccess.run {
+                gitStageHandler.state = refreshedState
+                gitStageHandler.ui.setTrackerState(refreshedState)
+                gitStageHandler.ui.setIncludedRoots(includedRoots)
+            }
             true
         }.getOrDefault(false)
     }
