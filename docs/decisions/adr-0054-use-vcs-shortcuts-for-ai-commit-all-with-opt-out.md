@@ -93,6 +93,6 @@ Compliance should be checked by implementation review and validation that covers
 
 ## More Information
 
-- Source proposal: `docs/proposals/PROP-02-pre-release-ux-2026-05-15T09-57.md` `E006`.
+- Source proposal: `docs/proposals/archive/PROP-02-pre-release-ux-2026-05-15T09-57.md` `E006`.
 - Related behavior ADRs: ADR 0052 for the three-section control and ADR 0047 for safe push fallback.
 - Implementation must wait for maintainer acceptance of this ADR under the ADR gating rule in `docs/decisions/README.md`.

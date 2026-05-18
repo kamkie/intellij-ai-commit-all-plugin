@@ -89,5 +89,5 @@ Compliance should be checked by implementation review and targeted validation th
 ## More Information
 
 - Narrows ADR 0017 only for safe, verifiable `& Push` states.
-- Source proposal: `docs/proposals/PROP-02-pre-release-ux-2026-05-15T09-57.md` `E002`.
+- Source proposal: `docs/proposals/archive/PROP-02-pre-release-ux-2026-05-15T09-57.md` `E002`.
 - Implementation should happen from an approved plan because this changes plugin behavior and push execution.
