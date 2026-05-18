@@ -1,5 +1,6 @@
 package pl.devopssolutions.aicommitall.ai
 
+import com.intellij.ide.ActivityTracker
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -11,23 +12,30 @@ import javax.swing.Icon
 
 @Service(Service.Level.PROJECT)
 internal class AiGenerationActivityStateService {
+    private var actionRefresh: AiGenerationActivityActionRefresh = IntellijAiGenerationActivityActionRefresh
     private val running = AtomicBoolean(false)
     private val runningPhase = AtomicReference<AiGenerationActivityPhase?>()
 
     fun start(phase: AiGenerationActivityPhase = AiGenerationActivityPhase.Ai): AiGenerationActivityToken {
         running.set(true)
         runningPhase.set(phase)
+        actionRefresh.refreshActions()
         return AiGenerationActivityToken(this)
     }
 
     fun finish() {
         running.set(false)
         runningPhase.set(null)
+        actionRefresh.refreshActions()
     }
 
     fun isRunning(): Boolean = running.get()
 
     fun runningPhase(): AiGenerationActivityPhase? = runningPhase.get()
+
+    internal fun replaceActionRefreshForTest(actionRefresh: AiGenerationActivityActionRefresh) {
+        this.actionRefresh = actionRefresh
+    }
 
     fun applyToPresentation(
         presentation: Presentation,
@@ -45,6 +53,16 @@ internal class AiGenerationActivityStateService {
 
     companion object {
         fun getInstance(project: Project): AiGenerationActivityStateService = project.service()
+    }
+}
+
+internal fun interface AiGenerationActivityActionRefresh {
+    fun refreshActions()
+}
+
+private object IntellijAiGenerationActivityActionRefresh : AiGenerationActivityActionRefresh {
+    override fun refreshActions() {
+        ActivityTracker.getInstance().inc()
     }
 }
 

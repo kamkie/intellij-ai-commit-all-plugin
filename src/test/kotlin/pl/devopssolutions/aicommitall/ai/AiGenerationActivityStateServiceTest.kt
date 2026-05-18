@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
 internal class AiGenerationActivityStateServiceTest {
     @Test
     fun `tracks running activity until token closes`() {
-        val service = AiGenerationActivityStateService()
+        val service = testService()
 
         val token = service.start()
 
@@ -26,7 +26,7 @@ internal class AiGenerationActivityStateServiceTest {
 
     @Test
     fun `tracks requested activity phase`() {
-        val service = AiGenerationActivityStateService()
+        val service = testService()
 
         val token = service.start(AiGenerationActivityPhase.Push)
 
@@ -37,7 +37,7 @@ internal class AiGenerationActivityStateServiceTest {
 
     @Test
     fun `closing activity token is idempotent`() {
-        val service = AiGenerationActivityStateService()
+        val service = testService()
         val token = service.start()
 
         token.close()
@@ -47,8 +47,19 @@ internal class AiGenerationActivityStateServiceTest {
     }
 
     @Test
+    fun `refreshes actions when activity starts and finishes`() {
+        val actionRefresh = CapturingActionRefresh()
+        val service = testService(actionRefresh)
+
+        val token = service.start(AiGenerationActivityPhase.Commit)
+        token.close()
+
+        assertEquals(2, actionRefresh.refreshCount)
+    }
+
+    @Test
     fun `applies animated disabled presentation while running`() {
-        val service = AiGenerationActivityStateService()
+        val service = testService()
         val presentation = Presentation()
 
         service.start()
@@ -64,7 +75,7 @@ internal class AiGenerationActivityStateServiceTest {
 
     @Test
     fun `restores idle presentation when not running`() {
-        val service = AiGenerationActivityStateService()
+        val service = testService()
         val presentation = Presentation()
 
         service.applyToPresentation(
@@ -75,6 +86,21 @@ internal class AiGenerationActivityStateServiceTest {
 
         assertTrue(presentation.isEnabled)
         assertSame(TestIcon, presentation.icon)
+    }
+
+    private fun testService(
+        actionRefresh: CapturingActionRefresh = CapturingActionRefresh(),
+    ): AiGenerationActivityStateService =
+        AiGenerationActivityStateService().apply {
+            replaceActionRefreshForTest(actionRefresh)
+        }
+
+    private class CapturingActionRefresh : AiGenerationActivityActionRefresh {
+        var refreshCount: Int = 0
+
+        override fun refreshActions() {
+            refreshCount += 1
+        }
     }
 
     private object TestIcon : Icon {
