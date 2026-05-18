@@ -64,8 +64,10 @@ intellijPlatform {
             <p>Source code: <a href="https://github.com/kamkie/intellij-ai-commit-all-plugin">https://github.com/kamkie/intellij-ai-commit-all-plugin</a></p>
         """.trimIndent()
         changeNotes = """
-            <p>v0.1.0-alpha.3 prerelease.</p>
+            <p>v0.1.0-alpha.4 prerelease.</p>
             <ul>
+                <li>Refreshes the three-section control running indicator immediately when AI activity starts or finishes.</li>
+                <li>Reloads externally changed staged files before each Git staging tracker recheck, with bounded retries before AI commit-message generation.</li>
                 <li>Adds the working AI, Commit, and Push control to the Commit tool window.</li>
                 <li>Selects or stages non-ignored Git changes across changelists, Git staging-area workflows, and Git roots, including unversioned and resolved-conflict files.</li>
                 <li>Invokes JetBrains AI Assistant commit-message generation through the IntelliJ action system and waits for completion.</li>

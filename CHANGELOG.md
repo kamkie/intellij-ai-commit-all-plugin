@@ -4,9 +4,11 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog. Release tags should use semantic version tags in the form `vMAJOR.MINOR.PATCH` for stable releases or `vMAJOR.MINOR.PATCH-PRERELEASE` for prereleases.
 
-This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.3` is the current implementation prerelease candidate prepared from this repository.
+This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.4` is the current implementation prerelease candidate prepared from this repository.
 
 ## [Unreleased]
+
+## [v0.1.0-alpha.4] - 2026-05-18
 
 ### Changed
 
