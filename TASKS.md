@@ -15,8 +15,6 @@ Notation:
 ### Ideas
 
 - [ ] T-IDEA-006: proposals file ergonomics improvements
-- [ ] T-IDEA-010: the push button should be clickable if there are commits to push.
-- [ ] T-IDEA-011: intellij standard `commit and push...` button should be removed when this plugin is enabled
 
 ### Publishing, Signing, Marketplace, And CI
 
@@ -227,3 +225,5 @@ Archived as of `v0.1.0-alpha.1` release preparation.
 - [x] T-IDEA-005: Reengineer `docs/decisions/OPEN_QUESTIONS.md` as an active question register. (ADR 0050)
 - [x] T-IDEA-007: extend animation to go through all stages `ai -> commit -> push`
 - [x] T-IDEA-008: commit animation should wait for all commits checks to finish before starting the push.
+- [x] T-IDEA-010: keep `Push` clickable for already-created outgoing commits when there are no committable changes.
+- [x] T-IDEA-011: remove the standard IntelliJ `Commit and Push...` toolbar action while this plugin control is enabled.

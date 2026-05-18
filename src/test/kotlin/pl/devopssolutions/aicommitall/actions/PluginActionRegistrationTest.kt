@@ -26,7 +26,7 @@ import kotlin.test.assertEquals
 internal class PluginActionRegistrationTest {
     @Test
     fun `three-section control is placed after commit and push`() {
-        val action = pluginAction("pl.devopssolutions.aicommitall.actions.ThreeSectionControl")
+        val action = pluginAction(AI_COMMIT_ALL_THREE_SECTION_ACTION_ID)
         val addToGroup = action.getElementsByTagName("add-to-group").item(0) as Element
 
         assertEquals("Vcs.Commit.PrimaryCommitActions", addToGroup.getAttribute("group-id"))
@@ -68,6 +68,19 @@ internal class PluginActionRegistrationTest {
         assertEquals(
             listOf("pl.devopssolutions.aicommitall.actions.AiCommitAllShortcutActionPromoter"),
             implementations,
+        )
+    }
+
+    @Test
+    fun `commit toolbar startup activity is registered`() {
+        val activities = pluginDocument().getElementsByTagName("postStartupActivity")
+        val implementations = (0 until activities.length).map { index ->
+            (activities.item(index) as Element).getAttribute("implementation")
+        }
+
+        assertContains(
+            implementations,
+            "pl.devopssolutions.aicommitall.actions.AiCommitAllCommitToolbarStartupActivity",
         )
     }
 

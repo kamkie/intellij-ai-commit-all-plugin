@@ -33,6 +33,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <actionPromoter implementation="pl.devopssolutions.aicommitall.actions.AiCommitAllShortcutActionPromoter" />
+        <postStartupActivity implementation="pl.devopssolutions.aicommitall.actions.AiCommitAllCommitToolbarStartupActivity" />
         <applicationConfigurable
             id="pl.devopssolutions.aicommitall.settings"
             displayName="AI Commit All"

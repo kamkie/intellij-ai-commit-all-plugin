@@ -263,6 +263,28 @@ internal class AiCommitAllWorkflowRunnerTest {
     }
 
     @Test
+    fun `push mode executes push only when there are outgoing commits and no committable selection`() {
+        val dependencies = CapturingWorkflowDependencies(
+            selectionResult = CommitWorkflowSelectionResult.EmptySelection,
+            hasOutgoingCommitsToPush = true,
+        )
+
+        val result = runner(dependencies)
+            .start(AiCommitAllWorkflowMode.Push, testDataContext())
+            .join()
+
+        assertEquals(AiCommitAllWorkflowResult.Started, result)
+        assertEquals(listOf("readiness", "prepare", "pushOnly"), dependencies.events)
+        assertEquals(
+            listOf(AiGenerationActivityPhase.Ai, AiGenerationActivityPhase.Push),
+            dependencies.activityPhases,
+        )
+        assertEquals(0, dependencies.commitCallCount)
+        assertEquals(0, dependencies.pushCallCount)
+        assertEquals(1, dependencies.pushOnlyCallCount)
+    }
+
+    @Test
     fun `missing workflow stops before readiness check`() {
         val dependencies = CapturingWorkflowDependencies()
 
@@ -410,6 +432,41 @@ internal class AiCommitAllWorkflowRunnerTest {
         assertEquals(1, dependencies.activityFinishCount)
     }
 
+    @Test
+    fun `push only execution is scheduled on edt after background preparation`() {
+        val dependencies = CapturingWorkflowDependencies(
+            selectionResult = CommitWorkflowSelectionResult.EmptySelection,
+            hasOutgoingCommitsToPush = true,
+        )
+        val scheduler = CapturingWorkflowScheduler()
+
+        val result = AiCommitAllWorkflowRunner(dependencies, scheduler)
+            .start(AiCommitAllWorkflowMode.Push, testDataContext())
+
+        assertFalse(result.isDone)
+        assertEquals(emptyList(), dependencies.events)
+        assertEquals(1, scheduler.backgroundActionCount)
+        assertEquals(0, scheduler.edtActionCount)
+
+        scheduler.runNextBackground()
+
+        assertFalse(result.isDone)
+        assertEquals(listOf("readiness", "prepare"), dependencies.events)
+        assertEquals(0, dependencies.pushOnlyCallCount)
+        assertEquals(0, scheduler.backgroundActionCount)
+        assertEquals(1, scheduler.edtActionCount)
+
+        scheduler.runNextEdt()
+
+        assertEquals(AiCommitAllWorkflowResult.Started, result.join())
+        assertEquals(listOf("readiness", "prepare", "pushOnly"), dependencies.events)
+        assertEquals(
+            listOf(AiGenerationActivityPhase.Ai, AiGenerationActivityPhase.Push),
+            dependencies.activityPhases,
+        )
+        assertEquals(1, dependencies.pushOnlyCallCount)
+    }
+
     private class CapturingWorkflowDependencies(
         val selection: GitChangeSelection = GitChangeSelection(emptyList()),
         private val aiCompletion: CompletableFuture<AiGenerationCompletionResult> =
@@ -420,10 +477,13 @@ internal class AiCommitAllWorkflowRunnerTest {
         private val readinessResult: VcsOperationReadinessResult = VcsOperationReadinessResult.Ready,
         private val commitResult: CommitWorkflowExecutionResult = CommitWorkflowExecutionResult.Started(),
         private val pushResult: CommitWorkflowExecutionResult = CommitWorkflowExecutionResult.Started(),
+        private val pushOnlyResult: CommitWorkflowExecutionResult = CommitWorkflowExecutionResult.Started(),
+        private val hasOutgoingCommitsToPush: Boolean = false,
     ) : AiCommitAllWorkflowDependencies {
         val events = mutableListOf<String>()
         var commitCallCount = 0
         var pushCallCount = 0
+        var pushOnlyCallCount = 0
         var pushedSelection: GitChangeSelection? = null
         val activityStarts = mutableListOf<AiGenerationActivityPhase>()
         val activityPhases = mutableListOf<AiGenerationActivityPhase>()
@@ -484,6 +544,17 @@ internal class AiCommitAllWorkflowRunnerTest {
             pushedSelection = selection
             this.onPushStarted = onPushStarted
             return pushResult
+        }
+
+        override fun hasOutgoingCommitsToPush(): Boolean = hasOutgoingCommitsToPush
+
+        override fun executePushOnly(
+            dataContext: DataContext,
+            inputEvent: InputEvent?,
+        ): CommitWorkflowExecutionResult {
+            events += "pushOnly"
+            pushOnlyCallCount++
+            return pushOnlyResult
         }
 
         override fun reportStop(reason: AiCommitAllWorkflowStopReason) {

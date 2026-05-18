@@ -29,6 +29,7 @@ import com.intellij.openapi.vcs.VcsDataKeys
 import pl.devopssolutions.aicommitall.ai.AiGenerationActivityPhase
 import pl.devopssolutions.aicommitall.ai.AiGenerationActivityStateService
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelectionService
+import pl.devopssolutions.aicommitall.vcs.GitOutgoingCommitsService
 import pl.devopssolutions.aicommitall.vcs.GitVcsSupportStatus
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowCoordinator
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowMode
@@ -140,6 +141,9 @@ internal enum class AiCommitAllControlSection(
     Push("Push", AiCommitAllWorkflowMode.Push),
 }
 
+internal const val AI_COMMIT_ALL_THREE_SECTION_ACTION_ID: String =
+    "pl.devopssolutions.aicommitall.actions.ThreeSectionControl"
+
 internal data class AiCommitAllControlState(
     val sections: Map<AiCommitAllControlSection, AiCommitAllWorkflowActionAvailability>,
     val runningSection: AiCommitAllControlSection?,
@@ -228,19 +232,44 @@ internal object ProjectAiCommitAllWorkflowAvailabilityProvider : AiCommitAllWork
         if (selectionService.supportStatus() != GitVcsSupportStatus.Supported) {
             return AiCommitAllWorkflowActionAvailability.Hidden
         }
-        if (!selectionService.collectSelection().hasCommittableContent) {
-            return AiCommitAllWorkflowActionAvailability.Disabled
-        }
+        val selection = selectionService.collectSelection()
 
         val executionService = CommitWorkflowExecutionService.getInstance(project)
+        return AiCommitAllWorkflowAvailabilityPolicy.availability(
+            mode = mode,
+            hasCommittableContent = selection.hasCommittableContent,
+            canExecuteCommit = { executionService.canExecuteCommit(workflowHandler) },
+            canExecuteCommitAndPush = { executionService.canExecuteCommitAndPush(workflowHandler) },
+            hasOutgoingCommitsToPush = {
+                GitOutgoingCommitsService.getInstance(project).hasOutgoingCommitsToPush()
+            },
+        )
+    }
+}
+
+internal object AiCommitAllWorkflowAvailabilityPolicy {
+    fun availability(
+        mode: AiCommitAllWorkflowMode,
+        hasCommittableContent: Boolean,
+        canExecuteCommit: () -> Boolean,
+        canExecuteCommitAndPush: () -> Boolean,
+        hasOutgoingCommitsToPush: () -> Boolean,
+    ): AiCommitAllWorkflowActionAvailability {
+        if (!hasCommittableContent) {
+            return if (mode == AiCommitAllWorkflowMode.Push && hasOutgoingCommitsToPush()) {
+                AiCommitAllWorkflowActionAvailability.Enabled
+            } else {
+                AiCommitAllWorkflowActionAvailability.Disabled
+            }
+        }
+
         val canExecute = when (mode) {
             AiCommitAllWorkflowMode.Ai -> true
 
-            AiCommitAllWorkflowMode.Commit ->
-                executionService.canExecuteCommit(workflowHandler)
+            AiCommitAllWorkflowMode.Commit -> canExecuteCommit()
 
             AiCommitAllWorkflowMode.Push ->
-                executionService.canExecuteCommitAndPush(workflowHandler)
+                canExecuteCommitAndPush()
         }
 
         return if (canExecute) {

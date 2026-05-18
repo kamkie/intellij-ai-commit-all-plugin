@@ -15,6 +15,11 @@ This changelog records plugin source and runtime behavior changes, public plugin
 - Added CI checks for Gradle wrapper validation, source formatting, Markdown linting, documentation validation, and Kotlin source license headers.
 - Added Dependabot, CodeQL scanning, CODEOWNERS, security reporting guidance, and contributor issue and pull request templates.
 
+### Changed
+
+- Replaced the standard Commit tool window `Commit and Push...` toolbar action with the plugin's three-section control, while preserving standard IDE commit-and-push executor and shortcut delegation paths.
+- Kept the `Push` section available for already-created outgoing Git commits when there are no committable changes, delegating that case to the IDE push workflow.
+
 ### Fixed
 
 - Matched the three-section control corner radius to the IDE button arc so it aligns with neighboring Commit toolbar buttons.

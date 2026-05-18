@@ -341,6 +341,42 @@ internal class AiCommitAllActionsTest {
         assertFalse(event.presentation.isEnabled)
     }
 
+    @Test
+    fun `availability policy enables push only when no committable content has outgoing commits`() {
+        val availability = AiCommitAllWorkflowAvailabilityPolicy.availability(
+            mode = AiCommitAllWorkflowMode.Push,
+            hasCommittableContent = false,
+            canExecuteCommit = { false },
+            canExecuteCommitAndPush = { false },
+            hasOutgoingCommitsToPush = { true },
+        )
+
+        assertEquals(AiCommitAllWorkflowActionAvailability.Enabled, availability)
+    }
+
+    @Test
+    fun `availability policy keeps ai and commit disabled when only outgoing commits exist`() {
+        val modes = listOf(AiCommitAllWorkflowMode.Ai, AiCommitAllWorkflowMode.Commit)
+
+        val availabilities = modes.map { mode ->
+            AiCommitAllWorkflowAvailabilityPolicy.availability(
+                mode = mode,
+                hasCommittableContent = false,
+                canExecuteCommit = { true },
+                canExecuteCommitAndPush = { true },
+                hasOutgoingCommitsToPush = { true },
+            )
+        }
+
+        assertEquals(
+            listOf(
+                AiCommitAllWorkflowActionAvailability.Disabled,
+                AiCommitAllWorkflowActionAvailability.Disabled,
+            ),
+            availabilities,
+        )
+    }
+
     private class CapturingWorkflowStarter : AiCommitAllWorkflowStarter {
         var project: Project? = null
         var mode: AiCommitAllWorkflowMode? = null

@@ -34,6 +34,7 @@ import pl.devopssolutions.aicommitall.ai.AiGenerationCompletionResult
 import pl.devopssolutions.aicommitall.ai.AiGenerationCompletionService
 import pl.devopssolutions.aicommitall.settings.AiCommitAllSettings
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
+import pl.devopssolutions.aicommitall.vcs.GitOutgoingCommitsService
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushService
 import java.awt.event.InputEvent
 import java.util.concurrent.CompletableFuture
@@ -89,7 +90,7 @@ internal class AiCommitAllWorkflowRunner(
 
         val activity = dependencies.startActivity(AiGenerationActivityPhase.Ai)
         return scheduler.supplyBackground {
-            prepareWorkflow(workflowHandler, workflowUi)
+            prepareWorkflow(mode, workflowHandler, workflowUi)
         }.thenCompose { preparation ->
             when (preparation) {
                 is AiCommitAllWorkflowPreparationResult.Prepared ->
@@ -98,6 +99,13 @@ internal class AiCommitAllWorkflowRunner(
                         workflowHandler = workflowHandler,
                         workflowUi = workflowUi,
                         selection = preparation.selection,
+                        dataContext = dataContext,
+                        inputEvent = inputEvent,
+                        activity = activity,
+                    )
+
+                AiCommitAllWorkflowPreparationResult.PushOnly ->
+                    executePushOnly(
                         dataContext = dataContext,
                         inputEvent = inputEvent,
                         activity = activity,
@@ -112,6 +120,7 @@ internal class AiCommitAllWorkflowRunner(
     }
 
     private fun prepareWorkflow(
+        mode: AiCommitAllWorkflowMode,
         workflowHandler: CommitWorkflowHandler,
         workflowUi: CommitWorkflowUi,
     ): AiCommitAllWorkflowPreparationResult {
@@ -132,7 +141,11 @@ internal class AiCommitAllWorkflowRunner(
                 AiCommitAllWorkflowPreparationResult.Prepared(selectionResult.selection)
 
             CommitWorkflowSelectionResult.EmptySelection ->
-                AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.EmptySelection)
+                if (mode == AiCommitAllWorkflowMode.Push && dependencies.hasOutgoingCommitsToPush()) {
+                    AiCommitAllWorkflowPreparationResult.PushOnly
+                } else {
+                    AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.EmptySelection)
+                }
 
             CommitWorkflowSelectionResult.MissingWorkflow ->
                 AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
@@ -142,6 +155,19 @@ internal class AiCommitAllWorkflowRunner(
 
             is CommitWorkflowSelectionResult.UnsupportedWorkflow ->
                 AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.UnsupportedWorkflow)
+        }
+    }
+
+    private fun executePushOnly(
+        dataContext: DataContext,
+        inputEvent: InputEvent?,
+        activity: AiCommitAllWorkflowActivity,
+    ): CompletableFuture<AiCommitAllWorkflowResult> {
+        activity.moveTo(AiGenerationActivityPhase.Push)
+        return scheduler.supplyEdt {
+            dependencies.executePushOnly(dataContext, inputEvent)
+        }.thenCompose { executionResult ->
+            executionResult.toWorkflowResult(AiCommitAllWorkflowStopReason.PushExecutionUnavailable)
         }
     }
 
@@ -274,6 +300,8 @@ private sealed interface AiCommitAllWorkflowPreparationResult {
         val selection: GitChangeSelection,
     ) : AiCommitAllWorkflowPreparationResult
 
+    data object PushOnly : AiCommitAllWorkflowPreparationResult
+
     data class Stopped(
         val reason: AiCommitAllWorkflowStopReason,
     ) : AiCommitAllWorkflowPreparationResult
@@ -345,6 +373,13 @@ internal interface AiCommitAllWorkflowDependencies {
         selection: GitChangeSelection,
         onPushStarted: () -> Unit,
     ): CommitWorkflowExecutionResult
+
+    fun hasOutgoingCommitsToPush(): Boolean = false
+
+    fun executePushOnly(
+        dataContext: DataContext,
+        inputEvent: InputEvent?,
+    ): CommitWorkflowExecutionResult = CommitWorkflowExecutionResult.UnsupportedExecutor
 
     fun reportStop(reason: AiCommitAllWorkflowStopReason)
 }
@@ -426,6 +461,14 @@ private class ProjectAiCommitAllWorkflowDependencies(private val project: Projec
             safeImmediatePushSupport = SafeImmediatePushService.getInstance(project),
             onPushStarted = onPushStarted,
         )
+
+    override fun hasOutgoingCommitsToPush(): Boolean = GitOutgoingCommitsService.getInstance(project).hasOutgoingCommitsToPush()
+
+    override fun executePushOnly(
+        dataContext: DataContext,
+        inputEvent: InputEvent?,
+    ): CommitWorkflowExecutionResult = PushOnlyWorkflowExecutionService.getInstance(project)
+        .executePush(dataContext, inputEvent)
 
     override fun reportStop(reason: AiCommitAllWorkflowStopReason) {
         AiCommitAllWorkflowStopReporter.getInstance(project).report(reason)
