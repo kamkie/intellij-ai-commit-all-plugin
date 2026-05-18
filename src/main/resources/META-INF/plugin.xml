@@ -13,9 +13,22 @@
             icon="/icons/aiCommitAll.svg">
             <add-to-group group-id="Vcs.Commit.PrimaryCommitActions" anchor="after" relative-to-action="Git.Commit.And.Push.Executor" />
         </action>
+        <action
+            id="pl.devopssolutions.aicommitall.actions.CommitShortcut"
+            class="pl.devopssolutions.aicommitall.actions.AiCommitAllCommitShortcutAction"
+            text="AI Commit All: Commit"
+            description="Generate an AI commit message and commit all Git changes."
+            use-shortcut-of="CheckinProject" />
+        <action
+            id="pl.devopssolutions.aicommitall.actions.PushShortcut"
+            class="pl.devopssolutions.aicommitall.actions.AiCommitAllPushShortcutAction"
+            text="AI Commit All: Push"
+            description="Generate an AI commit message, commit all Git changes, and push."
+            use-shortcut-of="Git.Commit.And.Push.Executor" />
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
+        <actionPromoter implementation="pl.devopssolutions.aicommitall.actions.AiCommitAllShortcutActionPromoter" />
         <applicationConfigurable
             id="pl.devopssolutions.aicommitall.settings"
             displayName="AI Commit All"

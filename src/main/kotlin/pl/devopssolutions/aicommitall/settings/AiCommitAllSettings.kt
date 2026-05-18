@@ -28,6 +28,9 @@ internal class AiCommitAllSettings : PersistentStateComponent<AiCommitAllSetting
     fun clearCommitMessageBeforeGeneration(): Boolean =
         settingsState.normalized().clearCommitMessageBeforeGeneration
 
+    fun useVcsShortcutsForAiCommitAll(): Boolean =
+        settingsState.normalized().useVcsShortcutsForAiCommitAll
+
     fun updateCompletionOptions(timeoutMillis: Long, checkIntervalMillis: Long) {
         require(timeoutMillis > 0) { "AI generation timeout must be positive." }
         require(checkIntervalMillis > 0) { "AI generation completion-check interval must be positive." }
@@ -43,10 +46,17 @@ internal class AiCommitAllSettings : PersistentStateComponent<AiCommitAllSetting
         )
     }
 
+    fun updateUseVcsShortcutsForAiCommitAll(enabled: Boolean) {
+        settingsState = settingsState.normalized().copy(
+            useVcsShortcutsForAiCommitAll = enabled,
+        )
+    }
+
     data class State(
         var aiGenerationTimeoutMillis: Long = DEFAULT_TIMEOUT_MILLIS,
         var completionCheckIntervalMillis: Long = DEFAULT_CHECK_INTERVAL_MILLIS,
         var clearCommitMessageBeforeGeneration: Boolean = DEFAULT_CLEAR_COMMIT_MESSAGE_BEFORE_GENERATION,
+        var useVcsShortcutsForAiCommitAll: Boolean = DEFAULT_USE_VCS_SHORTCUTS_FOR_AI_COMMIT_ALL,
     ) {
         fun normalized(): State =
             State(
@@ -54,6 +64,7 @@ internal class AiCommitAllSettings : PersistentStateComponent<AiCommitAllSetting
                 completionCheckIntervalMillis = completionCheckIntervalMillis.takeIf { it > 0 }
                     ?: DEFAULT_CHECK_INTERVAL_MILLIS,
                 clearCommitMessageBeforeGeneration = clearCommitMessageBeforeGeneration,
+                useVcsShortcutsForAiCommitAll = useVcsShortcutsForAiCommitAll,
             )
 
         fun toCompletionOptions(): AiGenerationCompletionOptions =
@@ -70,6 +81,7 @@ internal class AiCommitAllSettings : PersistentStateComponent<AiCommitAllSetting
         val DEFAULT_TIMEOUT_MILLIS: Long = defaults.timeout.toMillis()
         val DEFAULT_CHECK_INTERVAL_MILLIS: Long = defaults.checkInterval.toMillis()
         const val DEFAULT_CLEAR_COMMIT_MESSAGE_BEFORE_GENERATION: Boolean = true
+        const val DEFAULT_USE_VCS_SHORTCUTS_FOR_AI_COMMIT_ALL: Boolean = true
 
         fun getInstance(): AiCommitAllSettings = service()
     }

@@ -27,6 +27,7 @@ The current implementation:
 - Executes commit and commit-and-push through the active IntelliJ commit workflow so IDE before-commit checks, confirmations, warnings, commit errors, and push errors stay in charge.
 - Skips the Push Commits dialog only when every affected Git root is on a normal tracked branch, the local branch exactly matches its tracked upstream before the commit, and the target is the standard tracked branch.
 - Uses the ADR 0053 violet AI, blue Commit, green Push segmented styling with cumulative hover and a snake-loop running indication on the active section.
+- Uses the IDE commit shortcut for the `Commit` section and the IDE commit-and-push shortcut for the `Push` section by default, with a settings opt-out.
 
 Manual sandbox validation is tracked in [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
 
@@ -75,6 +76,8 @@ Pull-request CI runs `test`, `verifyPluginStructure`, and `buildPlugin` without 
 4. Create committable Git changes.
 5. Use `AI` to generate a message without committing, `Commit` to generate and commit, or `Push` to generate, commit, and push.
 
+With the default shortcut setting enabled, the IDE's commit shortcut runs the plugin `Commit` workflow and the IDE's commit-and-push shortcut runs the plugin `Push` workflow when the Commit tool window workflow is available. Disable the shortcut setting to return those shortcuts to the standard IDE actions.
+
 The control is hidden outside an active supported Git commit workflow. Sections are disabled when no non-ignored committable Git files are available or when the required workflow executor is unavailable.
 
 When the Git staging area commit workflow is active, the plugin stages eligible non-ignored paths before invoking AI Assistant so the IDE workflow can commit the intended content.
@@ -88,6 +91,7 @@ Open `Settings | Tools | AI Commit All` to configure:
 - AI generation timeout, default `5000` ms.
 - Completion check interval, default `500` ms.
 - Clear commit message before AI generation, default enabled.
+- Use AI Commit All for IDE commit shortcuts, default enabled.
 
 Both timing values must be positive. Timeout and user-edit paths stop without committing or pushing.
 
@@ -96,7 +100,7 @@ Both timing values must be positive. Timeout and user-edit paths stop without co
 - Git is the only supported VCS for the first implementation.
 - The plugin relies on compatible IntelliJ Commit tool window APIs and fail-closed reflection boundaries for inclusion state.
 - AI Assistant action discovery uses known action IDs and action presentation fallback; AI Assistant UI, sign-in, and runtime availability messages remain owned by JetBrains AI Assistant where available.
-- Manual sandbox validation for final three-section control rendering, staging-area modes, AI Assistant unavailable states, and full commit/push UI behavior is not yet complete. See [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
+- Manual sandbox validation for final three-section control rendering, staging-area modes, shortcut takeover, AI Assistant unavailable states, and full commit/push UI behavior is not yet complete. See [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
 - Marketplace signing and publishing automation is configured but has not been executed for a public release. The first Marketplace upload may still require manual JetBrains setup.
 
 ## Source Repository

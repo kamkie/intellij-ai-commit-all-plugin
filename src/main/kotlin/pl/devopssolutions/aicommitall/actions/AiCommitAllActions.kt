@@ -180,12 +180,12 @@ internal interface AiCommitAllWorkflowStarter {
     ): CompletableFuture<AiCommitAllWorkflowResult>
 }
 
-private object ProjectAiCommitAllWorkflowActivityProvider : AiCommitAllWorkflowActivityProvider {
+internal object ProjectAiCommitAllWorkflowActivityProvider : AiCommitAllWorkflowActivityProvider {
     override fun runningSection(project: Project): AiCommitAllControlSection? =
         AiGenerationActivityStateService.getInstance(project).runningPhase()?.controlSection
 }
 
-private object ProjectAiCommitAllWorkflowStarter : AiCommitAllWorkflowStarter {
+internal object ProjectAiCommitAllWorkflowStarter : AiCommitAllWorkflowStarter {
     override fun start(
         project: Project,
         mode: AiCommitAllWorkflowMode,
@@ -200,7 +200,7 @@ private object ProjectAiCommitAllWorkflowStarter : AiCommitAllWorkflowStarter {
             )
 }
 
-private object ProjectAiCommitAllWorkflowAvailabilityProvider : AiCommitAllWorkflowAvailabilityProvider {
+internal object ProjectAiCommitAllWorkflowAvailabilityProvider : AiCommitAllWorkflowAvailabilityProvider {
     override fun availability(
         project: Project,
         mode: AiCommitAllWorkflowMode,

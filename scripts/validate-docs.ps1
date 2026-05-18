@@ -58,7 +58,8 @@ foreach ($file in $markdownFiles) {
 $tasksPath = Join-Path $repoRoot 'TASKS.md'
 if (Test-Path -LiteralPath $tasksPath) {
     $taskText = Get-Content -Raw -LiteralPath $tasksPath
-    $taskIds = [regex]::Matches($taskText, 'T-[A-Z]+-\d{3}') | ForEach-Object { $_.Value }
+    $taskIds = [regex]::Matches($taskText, '(?m)^-\s+\[[ xX]\]\s+(T-[A-Z]+-\d{3}):') |
+        ForEach-Object { $_.Groups[1].Value }
     $duplicates = $taskIds | Group-Object | Where-Object { $_.Count -gt 1 }
     foreach ($duplicate in $duplicates) {
         Add-ValidationError "TASKS.md contains duplicate task ID $($duplicate.Name)"

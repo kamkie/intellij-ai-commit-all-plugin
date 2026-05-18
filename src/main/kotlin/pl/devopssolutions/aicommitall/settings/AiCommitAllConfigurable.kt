@@ -4,8 +4,8 @@ import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SearchableConfigurable
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import javax.swing.JComponent
 import javax.swing.JCheckBox
+import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JSpinner
@@ -16,6 +16,7 @@ internal class AiCommitAllConfigurable : SearchableConfigurable {
     private var timeoutSpinner: JSpinner? = null
     private var checkIntervalSpinner: JSpinner? = null
     private var clearCommitMessageCheckBox: JCheckBox? = null
+    private var useVcsShortcutsCheckBox: JCheckBox? = null
 
     override fun getId(): String = AiCommitAllSettings.SETTINGS_ID
 
@@ -30,27 +31,35 @@ internal class AiCommitAllConfigurable : SearchableConfigurable {
             "Clear commit message before AI generation",
             settings.clearCommitMessageBeforeGeneration(),
         )
+        useVcsShortcutsCheckBox = JCheckBox(
+            "Use AI Commit All for IDE commit shortcuts",
+            settings.useVcsShortcutsForAiCommitAll(),
+        )
 
         panel = JPanel(GridBagLayout()).apply {
             add(
-                requireNotNull(clearCommitMessageCheckBox),
+                requireNotNull(useVcsShortcutsCheckBox),
                 constraints(row = 0, column = 0, width = 2),
             )
             add(
+                requireNotNull(clearCommitMessageCheckBox),
+                constraints(row = 1, column = 0, width = 2),
+            )
+            add(
                 JLabel("AI generation timeout (ms)"),
-                constraints(row = 1, column = 0),
-            )
-            add(
-                requireNotNull(timeoutSpinner),
-                constraints(row = 1, column = 1),
-            )
-            add(
-                JLabel("Completion check interval (ms)"),
                 constraints(row = 2, column = 0),
             )
             add(
-                requireNotNull(checkIntervalSpinner),
+                requireNotNull(timeoutSpinner),
                 constraints(row = 2, column = 1),
+            )
+            add(
+                JLabel("Completion check interval (ms)"),
+                constraints(row = 3, column = 0),
+            )
+            add(
+                requireNotNull(checkIntervalSpinner),
+                constraints(row = 3, column = 1),
             )
         }
 
@@ -62,7 +71,8 @@ internal class AiCommitAllConfigurable : SearchableConfigurable {
         val completionOptions = settings.completionOptions()
         return timeoutSpinner?.longValue() != completionOptions.timeout.toMillis() ||
             checkIntervalSpinner?.longValue() != completionOptions.checkInterval.toMillis() ||
-            clearCommitMessageCheckBox?.isSelected != settings.clearCommitMessageBeforeGeneration()
+            clearCommitMessageCheckBox?.isSelected != settings.clearCommitMessageBeforeGeneration() ||
+            useVcsShortcutsCheckBox?.isSelected != settings.useVcsShortcutsForAiCommitAll()
     }
 
     override fun apply() {
@@ -83,6 +93,9 @@ internal class AiCommitAllConfigurable : SearchableConfigurable {
         AiCommitAllSettings.getInstance().updateClearCommitMessageBeforeGeneration(
             enabled = clearCommitMessageCheckBox?.isSelected ?: return,
         )
+        AiCommitAllSettings.getInstance().updateUseVcsShortcutsForAiCommitAll(
+            enabled = useVcsShortcutsCheckBox?.isSelected ?: return,
+        )
     }
 
     override fun reset() {
@@ -91,6 +104,7 @@ internal class AiCommitAllConfigurable : SearchableConfigurable {
         timeoutSpinner?.value = completionOptions.timeout.toMillis()
         checkIntervalSpinner?.value = completionOptions.checkInterval.toMillis()
         clearCommitMessageCheckBox?.isSelected = settings.clearCommitMessageBeforeGeneration()
+        useVcsShortcutsCheckBox?.isSelected = settings.useVcsShortcutsForAiCommitAll()
     }
 
     override fun disposeUIResources() {
@@ -98,6 +112,7 @@ internal class AiCommitAllConfigurable : SearchableConfigurable {
         timeoutSpinner = null
         checkIntervalSpinner = null
         clearCommitMessageCheckBox = null
+        useVcsShortcutsCheckBox = null
     }
 
     private fun millisSpinner(value: Long): JSpinner =

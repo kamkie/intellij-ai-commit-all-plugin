@@ -18,10 +18,43 @@ internal class PluginActionRegistrationTest {
         assertEquals("Git.Commit.And.Push.Executor", addToGroup.getAttribute("relative-to-action"))
     }
 
+    @Test
+    fun `commit shortcut action mirrors ide commit shortcut`() {
+        val action = pluginAction(AI_COMMIT_ALL_COMMIT_SHORTCUT_ACTION_ID)
+
+        assertEquals(
+            "pl.devopssolutions.aicommitall.actions.AiCommitAllCommitShortcutAction",
+            action.getAttribute("class"),
+        )
+        assertEquals(IDE_COMMIT_ACTION_ID, action.getAttribute("use-shortcut-of"))
+    }
+
+    @Test
+    fun `push shortcut action mirrors ide commit and push shortcut`() {
+        val action = pluginAction(AI_COMMIT_ALL_PUSH_SHORTCUT_ACTION_ID)
+
+        assertEquals(
+            "pl.devopssolutions.aicommitall.actions.AiCommitAllPushShortcutAction",
+            action.getAttribute("class"),
+        )
+        assertEquals(IDE_COMMIT_AND_PUSH_ACTION_ID, action.getAttribute("use-shortcut-of"))
+    }
+
+    @Test
+    fun `shortcut action promoter is registered`() {
+        val actionPromoters = pluginDocument().getElementsByTagName("actionPromoter")
+        val implementations = (0 until actionPromoters.length).map { index ->
+            (actionPromoters.item(index) as Element).getAttribute("implementation")
+        }
+
+        assertEquals(
+            listOf("pl.devopssolutions.aicommitall.actions.AiCommitAllShortcutActionPromoter"),
+            implementations,
+        )
+    }
+
     private fun pluginAction(actionId: String): Element {
-        val document = DocumentBuilderFactory.newInstance()
-            .newDocumentBuilder()
-            .parse(pluginXml.inputStream())
+        val document = pluginDocument()
         val actions = document.getElementsByTagName("action")
 
         for (index in 0 until actions.length) {
@@ -33,6 +66,10 @@ internal class PluginActionRegistrationTest {
 
         error("Action `$actionId` was not found in plugin.xml.")
     }
+
+    private fun pluginDocument() = DocumentBuilderFactory.newInstance()
+        .newDocumentBuilder()
+        .parse(pluginXml.inputStream())
 
     private val pluginXml: Path =
         Path.of("src", "main", "resources", "META-INF", "plugin.xml")

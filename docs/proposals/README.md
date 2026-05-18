@@ -10,7 +10,6 @@ Proposals are advisory until accepted through the normal repository flow. A prop
 
 Active proposals still have at least one non-terminal implementation status row or at least one untriaged finding in their `Progress Tracker`.
 
-- `PROP-02-pre-release-ux` - Pre-Release UX Work Stream ([PROP-02-pre-release-ux-2026-05-15T09-57.md](PROP-02-pre-release-ux-2026-05-15T09-57.md)), created 2026-05-15.
 - `PROP-03-repository-quality-lifecycle` - Repository Quality And Lifecycle Work Stream ([PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md)), created 2026-05-15.
 - `PROP-04-multi-agent-execution` - Multi-Agent Execution Work Stream ([PROP-04-multi-agent-execution-2026-05-15T09-57.md](PROP-04-multi-agent-execution-2026-05-15T09-57.md)), created 2026-05-15.
 
@@ -18,7 +17,7 @@ Active proposals still have at least one non-terminal implementation status row 
 
 Completed proposals have no non-terminal implementation status rows and no untriaged findings in their `Progress Tracker`. Keep them listed here until they are moved to `archive/`.
 
-_No completed proposals pending archive._
+- `PROP-02-pre-release-ux` - Pre-Release UX Work Stream ([PROP-02-pre-release-ux-2026-05-15T09-57.md](PROP-02-pre-release-ux-2026-05-15T09-57.md)), completed 2026-05-18.
 
 Index entries should include the proposal ID, title, file link, and current status date when applicable.
 
@@ -30,7 +29,6 @@ Implementation evidence can be a task, approved plan, ADR, changed file, commit,
 
 | Proposal                                                                                         | Finding | Title                                                    | Priority | Status  | Evidence                                                                                          |
 |--------------------------------------------------------------------------------------------------|---------|----------------------------------------------------------|----------|---------|---------------------------------------------------------------------------------------------------|
-| [PROP-02-pre-release-ux](PROP-02-pre-release-ux-2026-05-15T09-57.md)                             | E006    | Evaluate shortcut takeover with opt-out                  | 3        | open    | Accepted [ADR 0054](../decisions/adr-0054-use-vcs-shortcuts-for-ai-commit-all-with-opt-out.md); implementation has not started. |
 | [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E001    | Add Dependabot configuration                             | 1        | open    | Open intake; no task or plan selected.                                                            |
 | [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E002    | Add CodeQL analysis                                      | 1        | open    | Open intake; no task or plan selected.                                                            |
 | [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E003    | Add unified formatting and linting enforcement           | 2        | open    | Open intake; no task, plan, or ADR selected.                                                       |

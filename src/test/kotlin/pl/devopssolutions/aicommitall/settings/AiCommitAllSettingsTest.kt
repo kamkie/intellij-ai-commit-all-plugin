@@ -12,6 +12,7 @@ internal class AiCommitAllSettingsTest {
         assertEquals(5_000, options.timeout.toMillis())
         assertEquals(500, options.checkInterval.toMillis())
         assertEquals(true, AiCommitAllSettings().clearCommitMessageBeforeGeneration())
+        assertEquals(true, AiCommitAllSettings().useVcsShortcutsForAiCommitAll())
     }
 
     @Test
@@ -29,6 +30,7 @@ internal class AiCommitAllSettingsTest {
         assertEquals(5_000, options.timeout.toMillis())
         assertEquals(500, options.checkInterval.toMillis())
         assertEquals(true, settings.clearCommitMessageBeforeGeneration())
+        assertEquals(true, settings.useVcsShortcutsForAiCommitAll())
     }
 
     @Test
@@ -55,6 +57,15 @@ internal class AiCommitAllSettingsTest {
     }
 
     @Test
+    fun `updates use vcs shortcuts setting`() {
+        val settings = AiCommitAllSettings()
+
+        settings.updateUseVcsShortcutsForAiCommitAll(false)
+
+        assertEquals(false, settings.useVcsShortcutsForAiCommitAll())
+    }
+
+    @Test
     fun `preserves clear commit message setting when updating AI completion values`() {
         val settings = AiCommitAllSettings()
         settings.updateClearCommitMessageBeforeGeneration(false)
@@ -65,6 +76,19 @@ internal class AiCommitAllSettingsTest {
         )
 
         assertEquals(false, settings.clearCommitMessageBeforeGeneration())
+    }
+
+    @Test
+    fun `preserves vcs shortcut setting when updating AI completion values`() {
+        val settings = AiCommitAllSettings()
+        settings.updateUseVcsShortcutsForAiCommitAll(false)
+
+        settings.updateCompletionOptions(
+            timeoutMillis = 12_000,
+            checkIntervalMillis = 250,
+        )
+
+        assertEquals(false, settings.useVcsShortcutsForAiCommitAll())
     }
 
     @Test

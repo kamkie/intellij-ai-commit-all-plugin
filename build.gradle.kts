@@ -72,6 +72,7 @@ intellijPlatform {
                 <li>Lets the AI section generate a message and stop before commit; Commit and Push continue only after successful AI generation.</li>
                 <li>Stops without committing when AI generation times out, remains running, produces no usable message, or the user edits the message.</li>
                 <li>Commits through the standard IntelliJ workflow and pushes immediately only when the tracked-upstream Git state is safe; otherwise falls back to the IDE commit-and-push executor.</li>
+                <li>Routes IDE commit shortcuts to AI Commit All Commit and Push workflows by default, with a settings opt-out.</li>
                 <li>Adds settings, validation tests, pull-request CI, Plugin Verifier CI, signing configuration, and gated Marketplace publishing automation.</li>
             </ul>
         """.trimIndent()
