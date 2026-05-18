@@ -2,6 +2,7 @@ package pl.devopssolutions.aicommitall.ai
 
 import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.progress.ProgressIndicator
@@ -11,6 +12,7 @@ import pl.devopssolutions.aicommitall.settings.AiCommitAllSettings
 import java.lang.reflect.Field
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicReference
 
 @Service(Service.Level.PROJECT)
 internal class AiGenerationCompletionService {
@@ -60,6 +62,7 @@ internal class AiGenerationCompletionObserver(
         options: AiGenerationCompletionOptions = AiGenerationCompletionOptions.DEFAULT,
     ): AiGenerationCompletionResult {
         val startedAtMillis = timeSource.nowMillis()
+        var observedRunning = false
 
         while (timeSource.nowMillis() - startedAtMillis <= options.timeout.toMillis()) {
             val signalState = runningSignal.state()
@@ -71,12 +74,16 @@ internal class AiGenerationCompletionObserver(
             }
 
             when (signalState) {
-                AiGenerationRunningState.Running -> Unit
+                AiGenerationRunningState.Running -> {
+                    observedRunning = true
+                }
                 AiGenerationRunningState.NotRunning -> {
-                    return completionResult(
-                        snapshot = snapshot,
-                        currentMessage = currentMessage,
-                    )
+                    if (observedRunning || currentMessage.isUsableChangedMessage(snapshot)) {
+                        return completionResult(
+                            snapshot = snapshot,
+                            currentMessage = currentMessage,
+                        )
+                    }
                 }
 
                 AiGenerationRunningState.Unavailable -> {
@@ -94,6 +101,9 @@ internal class AiGenerationCompletionObserver(
             latestMessage = messageReader.readMessage(),
         )
     }
+
+    private fun String.isUsableChangedMessage(snapshot: AiCommitMessageSnapshot): Boolean =
+        isNotBlank() && this != snapshot.originalMessage
 
     private fun completionResult(
         snapshot: AiCommitMessageSnapshot,
@@ -167,8 +177,31 @@ internal fun interface AiCommitMessageReader {
     fun readMessage(): String
 }
 
-private class CommitMessageUiReader(private val commitMessageUi: CommitMessageUi) : AiCommitMessageReader {
-    override fun readMessage(): String = commitMessageUi.text
+internal class CommitMessageUiReader(
+    private val commitMessageUi: CommitMessageUi,
+    private val textAccess: CommitMessageUiTextAccess = EdtCommitMessageUiTextAccess,
+) : AiCommitMessageReader {
+    override fun readMessage(): String =
+        textAccess.readText { commitMessageUi.text }
+}
+
+internal fun interface CommitMessageUiTextAccess {
+    fun readText(readNow: () -> String): String
+}
+
+private object EdtCommitMessageUiTextAccess : CommitMessageUiTextAccess {
+    override fun readText(readNow: () -> String): String {
+        val application = ApplicationManager.getApplication() ?: return readNow()
+        if (application.isDispatchThread) {
+            return readNow()
+        }
+
+        val result = AtomicReference<String>()
+        application.invokeAndWait {
+            result.set(readNow())
+        }
+        return result.get()
+    }
 }
 
 internal interface AiGenerationRunningSignal {

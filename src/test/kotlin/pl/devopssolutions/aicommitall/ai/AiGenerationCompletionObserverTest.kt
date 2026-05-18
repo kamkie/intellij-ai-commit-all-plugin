@@ -38,6 +38,52 @@ internal class AiGenerationCompletionObserverTest {
     }
 
     @Test
+    fun `ignores initial not running signal until action starts`() {
+        val timeSource = MutableTimeSource()
+        val signal = SequenceRunningSignal(
+            AiGenerationRunningState.NotRunning,
+            AiGenerationRunningState.Running,
+            AiGenerationRunningState.NotRunning,
+        )
+        val observer = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+        )
+
+        val result = observer.awaitCompletion(
+            snapshot = AiCommitMessageSnapshot("old message"),
+            messageReader = AiCommitMessageReader {
+                if (signal.callCount >= 3) "generated message" else "old message"
+            },
+            runningSignal = signal,
+            options = testOptions(),
+        )
+
+        val completed = assertIs<AiGenerationCompletionResult.Completed>(result)
+        assertEquals("generated message", completed.generatedMessage)
+    }
+
+    @Test
+    fun `times out when action never starts and message does not change`() {
+        val timeSource = MutableTimeSource()
+        val observer = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+        )
+
+        val result = observer.awaitCompletion(
+            snapshot = AiCommitMessageSnapshot("old message"),
+            messageReader = AiCommitMessageReader { "old message" },
+            runningSignal = ConstantRunningSignal(AiGenerationRunningState.NotRunning),
+            options = testOptions(timeout = Duration.ofMillis(1_000)),
+        )
+
+        val timeout = assertIs<AiGenerationCompletionResult.Timeout>(result)
+        assertEquals(Duration.ofMillis(1_000), timeout.timeout)
+        assertEquals("old message", timeout.latestMessage)
+    }
+
+    @Test
     fun `times out while action is still running`() {
         val timeSource = MutableTimeSource()
         val observer = AiGenerationCompletionObserver(
@@ -62,7 +108,10 @@ internal class AiGenerationCompletionObserverTest {
         val result = AiGenerationCompletionObserver().awaitCompletion(
             snapshot = AiCommitMessageSnapshot("old message"),
             messageReader = AiCommitMessageReader { "old message" },
-            runningSignal = ConstantRunningSignal(AiGenerationRunningState.NotRunning),
+            runningSignal = SequenceRunningSignal(
+                AiGenerationRunningState.Running,
+                AiGenerationRunningState.NotRunning,
+            ),
             options = testOptions(),
         )
 
@@ -74,7 +123,10 @@ internal class AiGenerationCompletionObserverTest {
         val result = AiGenerationCompletionObserver().awaitCompletion(
             snapshot = AiCommitMessageSnapshot("old message"),
             messageReader = AiCommitMessageReader { "" },
-            runningSignal = ConstantRunningSignal(AiGenerationRunningState.NotRunning),
+            runningSignal = SequenceRunningSignal(
+                AiGenerationRunningState.Running,
+                AiGenerationRunningState.NotRunning,
+            ),
             options = testOptions(),
         )
 

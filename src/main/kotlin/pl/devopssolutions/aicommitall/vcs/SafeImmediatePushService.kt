@@ -48,7 +48,6 @@ internal data class SafeImmediatePushRepositoryState(
     val targetIsTrackingBranch: Boolean,
     val targetMatchesTrackedUpstream: Boolean,
     val targetCanBePushed: Boolean,
-    val targetAllowedByStandardPushRules: Boolean,
     val targetIsNewBranch: Boolean,
     val targetIsSpecialRef: Boolean,
     val repositoryStateIsNormal: Boolean,
@@ -77,7 +76,7 @@ internal object SafeImmediatePushDecisionPolicy {
         if (repositories.any { repository -> repository.hasAmbiguousTarget }) {
             return SafeImmediatePushFallbackReason.AmbiguousTarget
         }
-        if (repositories.any { repository -> !repository.targetCanBePushed || !repository.targetAllowedByStandardPushRules }) {
+        if (repositories.any { repository -> !repository.targetCanBePushed }) {
             return SafeImmediatePushFallbackReason.UnsupportedPushApi
         }
         return null
@@ -161,7 +160,6 @@ internal class SafeImmediatePushService(private val project: Project) : SafeImme
             targetIsTrackingBranch = target?.targetType == GitPushTargetType.TRACKING_BRANCH,
             targetMatchesTrackedUpstream = trackInfo != null && target?.branch == trackInfo.remoteBranch,
             targetCanBePushed = source != null && target != null && pushSupport.canBePushed(this, source, target),
-            targetAllowedByStandardPushRules = target != null && pushSupport.isForcePushAllowed(this, target),
             targetIsNewBranch = target?.isNewBranchCreated != false,
             targetIsSpecialRef = target?.isSpecialRef != false,
             repositoryStateIsNormal = state == Repository.State.NORMAL,

@@ -139,6 +139,27 @@ internal class AiCommitAllShortcutActionsTest {
     }
 
     @Test
+    fun `shortcut is disabled and consumed while workflow activity is running`() {
+        val starter = CapturingWorkflowStarter()
+        val delegate = CapturingStandardActionDelegate()
+        val action = testShortcutAction(
+            section = AiCommitAllControlSection.Commit,
+            sourceActionId = IDE_COMMIT_ACTION_ID,
+            starter = starter,
+            delegate = delegate,
+            runningSection = AiCommitAllControlSection.Commit,
+        )
+        val event = testEvent(testDataContext(testProject()))
+
+        action.update(event)
+        action.actionPerformed(event)
+
+        assertFalse(event.presentation.isEnabled)
+        assertEquals(null, starter.mode)
+        assertEquals(null, delegate.sourceActionId)
+    }
+
+    @Test
     fun `promoter promotes available plugin shortcut and suppresses matching source action`() {
         val sourceAction = testSourceAction()
         val shortcutAction = testShortcutAction(
@@ -221,6 +242,7 @@ internal class AiCommitAllShortcutActionsTest {
         settingsEnabled: Boolean = true,
         availability: AiCommitAllWorkflowActionAvailability = AiCommitAllWorkflowActionAvailability.Enabled,
         delegate: StandardVcsShortcutActionDelegate = CapturingStandardActionDelegate(),
+        runningSection: AiCommitAllControlSection? = null,
     ): AiCommitAllShortcutAction =
         object : AiCommitAllShortcutAction(
             section = section,
@@ -229,6 +251,7 @@ internal class AiCommitAllShortcutActionsTest {
             availabilityProvider = StaticAvailabilityProvider(availability),
             settingsProvider = StaticShortcutSettingsProvider(settingsEnabled),
             standardActionDelegate = delegate,
+            activityProvider = StaticActivityProvider(runningSection),
         ) {}
 
     private class CapturingWorkflowStarter : AiCommitAllWorkflowStarter {
@@ -273,6 +296,12 @@ internal class AiCommitAllShortcutActionsTest {
             this.sourceActionId = sourceActionId
             this.event = event
         }
+    }
+
+    private class StaticActivityProvider(
+        private val runningSection: AiCommitAllControlSection?,
+    ) : AiCommitAllWorkflowActivityProvider {
+        override fun runningSection(project: Project): AiCommitAllControlSection? = runningSection
     }
 
     private class MapActionIdProvider(vararg entries: Pair<AnAction, String>) : AiCommitAllActionIdProvider {

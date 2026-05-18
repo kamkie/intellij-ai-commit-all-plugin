@@ -118,23 +118,12 @@ internal class SafeImmediatePushDecisionPolicyTest {
         assertEquals(SafeImmediatePushFallbackReason.UnsupportedPushApi, result)
     }
 
-    @Test
-    fun `falls back when standard push rules do not allow target`() {
-        val result = SafeImmediatePushDecisionPolicy.fallbackReason(
-            repositories = listOf(safeRepositoryState(targetAllowedByStandardPushRules = false)),
-            hasUnresolvedConflicts = false,
-        )
-
-        assertEquals(SafeImmediatePushFallbackReason.UnsupportedPushApi, result)
-    }
-
     private fun safeRepositoryState(
         hasTrackedUpstream: Boolean = true,
         localMatchesTrackedUpstream: Boolean = true,
         targetIsTrackingBranch: Boolean = true,
         targetMatchesTrackedUpstream: Boolean = true,
         targetCanBePushed: Boolean = true,
-        targetAllowedByStandardPushRules: Boolean = true,
         targetIsNewBranch: Boolean = false,
         targetIsSpecialRef: Boolean = false,
         repositoryStateIsNormal: Boolean = true,
@@ -145,7 +134,6 @@ internal class SafeImmediatePushDecisionPolicyTest {
             targetIsTrackingBranch = targetIsTrackingBranch,
             targetMatchesTrackedUpstream = targetMatchesTrackedUpstream,
             targetCanBePushed = targetCanBePushed,
-            targetAllowedByStandardPushRules = targetAllowedByStandardPushRules,
             targetIsNewBranch = targetIsNewBranch,
             targetIsSpecialRef = targetIsSpecialRef,
             repositoryStateIsNormal = repositoryStateIsNormal,

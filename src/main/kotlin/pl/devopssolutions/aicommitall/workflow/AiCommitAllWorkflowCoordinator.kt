@@ -37,7 +37,23 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
 internal class AiCommitAllWorkflowRunner(
     private val dependencies: AiCommitAllWorkflowDependencies,
 ) {
+    private val activeWorkflowLock = Any()
+    private var activeWorkflow: CompletableFuture<AiCommitAllWorkflowResult>? = null
+
     fun start(
+        mode: AiCommitAllWorkflowMode,
+        dataContext: DataContext,
+        inputEvent: InputEvent? = null,
+    ): CompletableFuture<AiCommitAllWorkflowResult> =
+        synchronized(activeWorkflowLock) {
+            activeWorkflow?.takeIf { future -> !future.isDone }
+                ?: startNewWorkflow(mode, dataContext, inputEvent).also { future ->
+                    activeWorkflow = future
+                    future.whenComplete { _, _ -> clearActiveWorkflow(future) }
+                }
+        }
+
+    private fun startNewWorkflow(
         mode: AiCommitAllWorkflowMode,
         dataContext: DataContext,
         inputEvent: InputEvent? = null,
@@ -93,6 +109,14 @@ internal class AiCommitAllWorkflowRunner(
                 stopped(AiCommitAllWorkflowStopReason.UnsupportedVcs)
             is CommitWorkflowSelectionResult.UnsupportedWorkflow ->
                 stopped(AiCommitAllWorkflowStopReason.UnsupportedWorkflow)
+        }
+    }
+
+    private fun clearActiveWorkflow(future: CompletableFuture<AiCommitAllWorkflowResult>) {
+        synchronized(activeWorkflowLock) {
+            if (activeWorkflow === future) {
+                activeWorkflow = null
+            }
         }
     }
 
@@ -218,6 +242,7 @@ private class ProjectAiCommitAllWorkflowDependencies(private val project: Projec
             commitMessageUi = workflowUi.commitMessageUi,
             clearBeforeGeneration = AiCommitAllSettings.getInstance()
                 .clearCommitMessageBeforeGeneration(),
+            parentDataContext = parentDataContext,
         )
         return when (val invocation = AiCommitMessageActionInvocationService.getInstance(project)
             .invokeCommitMessageGeneration(

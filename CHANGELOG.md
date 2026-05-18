@@ -10,6 +10,14 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ## [Unreleased]
 
+### Fixed
+
+- Waited through initial AI Assistant startup polling so `Commit` and `Push` workflows do not stop before generation begins.
+- Prevented duplicate workflow starts from rapid repeated action or shortcut invocations.
+- Allowed safe immediate push on protected branches when no force push is required.
+- Bound plugin shortcut actions directly to the IDE commit shortcuts so takeover is registered even when shortcut mirroring is insufficient.
+- Cleared commit-message control and document data before AI generation, not only the public `CommitMessageUi` text accessor.
+
 ## [v0.1.0-alpha.5] - 2026-05-18
 
 ### Fixed

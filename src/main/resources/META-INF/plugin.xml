@@ -18,13 +18,17 @@
             class="pl.devopssolutions.aicommitall.actions.AiCommitAllCommitShortcutAction"
             text="AI Commit All: Commit"
             description="Generate an AI commit message and commit all Git changes."
-            use-shortcut-of="CheckinProject" />
+            use-shortcut-of="CheckinProject">
+            <keyboard-shortcut first-keystroke="control K" keymap="$default" />
+        </action>
         <action
             id="pl.devopssolutions.aicommitall.actions.PushShortcut"
             class="pl.devopssolutions.aicommitall.actions.AiCommitAllPushShortcutAction"
             text="AI Commit All: Push"
             description="Generate an AI commit message, commit all Git changes, and push."
-            use-shortcut-of="Git.Commit.And.Push.Executor" />
+            use-shortcut-of="Git.Commit.And.Push.Executor">
+            <keyboard-shortcut first-keystroke="control alt K" keymap="$default" />
+        </action>
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">

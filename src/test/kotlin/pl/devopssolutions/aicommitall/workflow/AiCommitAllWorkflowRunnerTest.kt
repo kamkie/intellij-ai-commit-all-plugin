@@ -74,6 +74,33 @@ internal class AiCommitAllWorkflowRunnerTest {
     }
 
     @Test
+    fun `repeated starts return active workflow until it finishes`() {
+        val completion = CompletableFuture<AiGenerationCompletionResult>()
+        val dependencies = CapturingWorkflowDependencies(aiCompletion = completion)
+        val runner = AiCommitAllWorkflowRunner(dependencies)
+
+        val first = runner.start(AiCommitAllWorkflowMode.Commit, testDataContext())
+        val second = runner.start(AiCommitAllWorkflowMode.Push, testDataContext())
+
+        assertSame(first, second)
+        assertEquals(listOf("readiness", "prepare", "ai:Commit"), dependencies.events)
+
+        completion.complete(completedAiGeneration())
+
+        assertEquals(AiCommitAllWorkflowResult.Started, first.join())
+        assertEquals(listOf("readiness", "prepare", "ai:Commit", "commit"), dependencies.events)
+
+        val third = runner.start(AiCommitAllWorkflowMode.Push, testDataContext())
+
+        assertFalse(first === third)
+        assertEquals(AiCommitAllWorkflowResult.Started, third.join())
+        assertEquals(
+            listOf("readiness", "prepare", "ai:Commit", "commit", "readiness", "prepare", "ai:Push", "push"),
+            dependencies.events,
+        )
+    }
+
+    @Test
     fun `workflow maps unusable AI completion results to stop reasons without execution`() {
         val cases = listOf(
             AiGenerationCompletionResult.Timeout(Duration.ofSeconds(5), "draft") to

@@ -28,6 +28,7 @@ internal class PluginActionRegistrationTest {
             action.getAttribute("class"),
         )
         assertEquals(IDE_COMMIT_ACTION_ID, action.getAttribute("use-shortcut-of"))
+        assertHasKeyboardShortcut(action, "control K")
     }
 
     @Test
@@ -39,6 +40,7 @@ internal class PluginActionRegistrationTest {
             action.getAttribute("class"),
         )
         assertEquals(IDE_COMMIT_AND_PUSH_ACTION_ID, action.getAttribute("use-shortcut-of"))
+        assertHasKeyboardShortcut(action, "control alt K")
     }
 
     @Test
@@ -92,6 +94,21 @@ internal class PluginActionRegistrationTest {
         }
 
         error("Action `$actionId` was not found in plugin.xml.")
+    }
+
+    private fun assertHasKeyboardShortcut(
+        action: Element,
+        firstKeystroke: String,
+    ) {
+        val shortcuts = action.getElementsByTagName("keyboard-shortcut")
+        val matchingShortcut = (0 until shortcuts.length)
+            .map { index -> shortcuts.item(index) as Element }
+            .singleOrNull { shortcut ->
+                shortcut.getAttribute("first-keystroke") == firstKeystroke &&
+                    shortcut.getAttribute("keymap") == "\$default"
+            }
+
+        assertEquals(firstKeystroke, matchingShortcut?.getAttribute("first-keystroke"))
     }
 
     private fun pluginDocument() = DocumentBuilderFactory.newInstance()

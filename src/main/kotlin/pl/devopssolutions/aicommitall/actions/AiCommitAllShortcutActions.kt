@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.project.Project
 import pl.devopssolutions.aicommitall.settings.AiCommitAllSettings
 
 internal class AiCommitAllCommitShortcutAction : AiCommitAllShortcutAction(
@@ -31,17 +32,27 @@ internal abstract class AiCommitAllShortcutAction(
         ProjectAiCommitAllShortcutSettingsProvider,
     private val standardActionDelegate: StandardVcsShortcutActionDelegate =
         IntellijStandardVcsShortcutActionDelegate,
+    private val activityProvider: AiCommitAllWorkflowActivityProvider =
+        ProjectAiCommitAllWorkflowActivityProvider,
 ) : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(event: AnActionEvent) {
         event.presentation.isVisible = true
-        event.presentation.isEnabled = isTakeoverAvailable(event.dataContext)
+        event.presentation.isEnabled = isTakeoverAvailable(event.dataContext) &&
+            !isWorkflowRunning(event.dataContext)
     }
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
-        if (project == null || !isTakeoverAvailable(event.dataContext)) {
+        if (project == null || !settingsProvider.useVcsShortcutsForAiCommitAll()) {
+            standardActionDelegate.perform(sourceActionId, event)
+            return
+        }
+        if (isWorkflowRunning(project)) {
+            return
+        }
+        if (!isWorkflowAvailable(project, event.dataContext)) {
             standardActionDelegate.perform(sourceActionId, event)
             return
         }
@@ -60,12 +71,26 @@ internal abstract class AiCommitAllShortcutAction(
         }
 
         val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return false
-        return availabilityProvider.availability(
+        return isWorkflowAvailable(project, dataContext)
+    }
+
+    private fun isWorkflowAvailable(
+        project: Project,
+        dataContext: DataContext,
+    ): Boolean =
+        availabilityProvider.availability(
             project = project,
             mode = section.mode,
             dataContext = dataContext,
         ).enabled
+
+    private fun isWorkflowRunning(dataContext: DataContext): Boolean {
+        val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return false
+        return isWorkflowRunning(project)
     }
+
+    private fun isWorkflowRunning(project: Project): Boolean =
+        activityProvider.runningSection(project) != null
 }
 
 internal class AiCommitAllShortcutActionPromoter(
