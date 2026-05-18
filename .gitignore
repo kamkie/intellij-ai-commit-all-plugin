@@ -20,6 +20,7 @@ run/
 !gradle/wrapper/gradle-wrapper.jar
 
 # Kotlin/JVM
+.kotlin/
 *.class
 
 # OS/editor noise
