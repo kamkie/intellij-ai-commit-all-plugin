@@ -24,8 +24,8 @@ Notation:
 
 ### Testing
 
-- [ ] T-TEST-001: we need many more test cases for the three-section AI commit push control.
-- [ ] T-TEST-002: we need to automate the test cases for the three-section AI commit push control as much as possible.
+- [x] T-TEST-001: we need many more test cases for the three-section AI commit push control.
+- [x] T-TEST-002: we need to automate the test cases for the three-section AI commit push control as much as possible.
 
 ### Ideas
 

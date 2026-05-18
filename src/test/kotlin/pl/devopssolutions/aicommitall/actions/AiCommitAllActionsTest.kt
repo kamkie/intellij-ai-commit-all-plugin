@@ -1,18 +1,6 @@
 package pl.devopssolutions.aicommitall.actions
 
-import com.intellij.openapi.actionSystem.ActionGroup
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.ActionPopupMenu
-import com.intellij.openapi.actionSystem.ActionToolbar
-import com.intellij.openapi.actionSystem.ActionUiKind
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.actionSystem.KeyboardShortcut
-import com.intellij.openapi.actionSystem.Presentation
-import com.intellij.openapi.actionSystem.TimerListener
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ActionCallback
@@ -24,12 +12,7 @@ import java.awt.image.BufferedImage
 import java.lang.reflect.Proxy
 import java.util.concurrent.CompletableFuture
 import javax.swing.JComponent
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import kotlin.test.assertSame
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 internal class AiCommitAllActionsTest {
     @Test
@@ -263,6 +246,36 @@ internal class AiCommitAllActionsTest {
     }
 
     @Test
+    fun `custom component update refreshes running section state`() {
+        val activityProvider = MutableActivityProvider()
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = CapturingWorkflowStarter(),
+            availabilityProvider = StaticAvailabilityProvider(),
+            activityProvider = activityProvider,
+        )
+        val event = testEvent(testDataContext(testProject()))
+
+        action.update(event)
+        val control = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).asControl()
+
+        assertTrue(AiCommitAllControlSection.entries.all { section -> control.isSectionEnabledForTest(section) })
+
+        activityProvider.runningSection = AiCommitAllControlSection.Push
+        action.update(event)
+        action.updateCustomComponent(control, event.presentation)
+
+        assertTrue(AiCommitAllControlSection.entries.all { section -> !control.isSectionEnabledForTest(section) })
+        assertEquals(
+            setOf(
+                AiCommitAllControlSection.Ai,
+                AiCommitAllControlSection.Commit,
+                AiCommitAllControlSection.Push,
+            ),
+            control.highlightedSectionsForTest(),
+        )
+    }
+
+    @Test
     fun `action update hides without project`() {
         val provider = CapturingAvailabilityProvider()
         val action = AiCommitAllThreeSectionAction(
@@ -324,6 +337,12 @@ internal class AiCommitAllActionsTest {
     private class StaticActivityProvider(
         private val runningSection: AiCommitAllControlSection? = null,
     ) : AiCommitAllWorkflowActivityProvider {
+        override fun runningSection(project: Project): AiCommitAllControlSection? = runningSection
+    }
+
+    private class MutableActivityProvider : AiCommitAllWorkflowActivityProvider {
+        var runningSection: AiCommitAllControlSection? = null
+
         override fun runningSection(project: Project): AiCommitAllControlSection? = runningSection
     }
 

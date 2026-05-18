@@ -10,6 +10,7 @@ import pl.devopssolutions.aicommitall.ai.AiGenerationCompletionResult
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
 import java.awt.event.InputEvent
 import java.lang.reflect.Proxy
+import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -73,6 +74,78 @@ internal class AiCommitAllWorkflowRunnerTest {
     }
 
     @Test
+    fun `workflow maps unusable AI completion results to stop reasons without execution`() {
+        val cases = listOf(
+            AiGenerationCompletionResult.Timeout(Duration.ofSeconds(5), "draft") to
+                    AiCommitAllWorkflowStopReason.AiTimeout,
+            AiGenerationCompletionResult.EmptyMessage to
+                    AiCommitAllWorkflowStopReason.EmptyMessage,
+            AiGenerationCompletionResult.UnchangedMessage("same message") to
+                    AiCommitAllWorkflowStopReason.UnchangedMessage,
+            AiGenerationCompletionResult.NoCompletionSignal("generated message") to
+                    AiCommitAllWorkflowStopReason.NoCompletionSignal,
+            AiGenerationCompletionResult.UserEditedMessage("user message") to
+                    AiCommitAllWorkflowStopReason.UserEditedMessage,
+        )
+
+        cases.forEach { (completionResult, expectedReason) ->
+            val dependencies = CapturingWorkflowDependencies(
+                aiCompletion = CompletableFuture.completedFuture(completionResult),
+            )
+
+            val result = AiCommitAllWorkflowRunner(dependencies)
+                .start(AiCommitAllWorkflowMode.Commit, testDataContext())
+                .join()
+
+            assertEquals(AiCommitAllWorkflowResult.Stopped(expectedReason), result)
+            assertEquals(
+                listOf("readiness", "prepare", "ai:Commit", "stop:${expectedReason.name}"),
+                dependencies.events,
+            )
+            assertEquals(0, dependencies.commitCallCount)
+            assertEquals(0, dependencies.pushCallCount)
+        }
+    }
+
+    @Test
+    fun `push mode stops without pushing when AI completion future fails`() {
+        val completion = CompletableFuture<AiGenerationCompletionResult>()
+        completion.completeExceptionally(IllegalStateException("AI completion failed"))
+        val dependencies = CapturingWorkflowDependencies(aiCompletion = completion)
+
+        val result = AiCommitAllWorkflowRunner(dependencies)
+            .start(AiCommitAllWorkflowMode.Push, testDataContext())
+            .join()
+
+        assertEquals(
+            AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.AiCompletionFailed),
+            result,
+        )
+        assertEquals(listOf("readiness", "prepare", "ai:Push", "stop:AiCompletionFailed"), dependencies.events)
+        assertEquals(0, dependencies.commitCallCount)
+        assertEquals(0, dependencies.pushCallCount)
+    }
+
+    @Test
+    fun `workflow stops before execution when AI generation cannot start`() {
+        val dependencies = CapturingWorkflowDependencies(
+            aiGenerationResult = AiCommitAllAiGenerationResult.Stopped(AiCommitAllWorkflowStopReason.MissingAiAction),
+        )
+
+        val result = AiCommitAllWorkflowRunner(dependencies)
+            .start(AiCommitAllWorkflowMode.Push, testDataContext())
+            .join()
+
+        assertEquals(
+            AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.MissingAiAction),
+            result,
+        )
+        assertEquals(listOf("readiness", "prepare", "ai:Push", "stop:MissingAiAction"), dependencies.events)
+        assertEquals(0, dependencies.commitCallCount)
+        assertEquals(0, dependencies.pushCallCount)
+    }
+
+    @Test
     fun `selection failure stops before AI generation or commit execution`() {
         val dependencies = CapturingWorkflowDependencies(
             selectionResult = CommitWorkflowSelectionResult.EmptySelection,
@@ -97,6 +170,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             CompletableFuture.completedFuture(completedAiGeneration()),
         private val selectionResult: CommitWorkflowSelectionResult =
             CommitWorkflowSelectionResult.Prepared(selection),
+        private val aiGenerationResult: AiCommitAllAiGenerationResult? = null,
     ) : AiCommitAllWorkflowDependencies {
         val events = mutableListOf<String>()
         var commitCallCount = 0
@@ -124,7 +198,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             inputEvent: InputEvent?,
         ): AiCommitAllAiGenerationResult {
             events += "ai:${phase.name}"
-            return AiCommitAllAiGenerationResult.AwaitingCompletion(aiCompletion)
+            return aiGenerationResult ?: AiCommitAllAiGenerationResult.AwaitingCompletion(aiCompletion)
         }
 
         override fun executeCommit(workflowHandler: CommitWorkflowHandler): CommitWorkflowExecutionResult {

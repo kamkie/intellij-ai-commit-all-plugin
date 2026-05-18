@@ -10,6 +10,10 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ## [Unreleased]
 
+### Fixed
+
+- Ensured the three-section control exposes its fallback accessibility description when Swing provides a blank description.
+
 ## [v0.1.0-alpha.4] - 2026-05-18
 
 ### Fixed

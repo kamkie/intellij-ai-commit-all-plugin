@@ -2,30 +2,15 @@ package pl.devopssolutions.aicommitall.actions
 
 import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
-import java.awt.BasicStroke
-import java.awt.Color
-import java.awt.Cursor
-import java.awt.Dimension
-import java.awt.Font
-import java.awt.Graphics
-import java.awt.Graphics2D
-import java.awt.Point
-import java.awt.Rectangle
-import java.awt.RenderingHints
-import java.awt.Shape
+import java.awt.*
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
 import java.awt.geom.Path2D
 import java.awt.geom.RoundRectangle2D
-import javax.swing.AbstractAction
-import javax.swing.JComponent
-import javax.swing.KeyStroke
-import javax.swing.Timer
-import javax.swing.ToolTipManager
-import javax.swing.UIManager
-import javax.swing.event.MouseInputAdapter
 import javax.accessibility.AccessibleContext
+import javax.swing.*
+import javax.swing.event.MouseInputAdapter
 import kotlin.math.max
 
 internal class AiCommitAllThreeSectionControl(
@@ -55,10 +40,10 @@ internal class AiCommitAllThreeSectionControl(
         if (accessibleContext == null) {
             accessibleContext = object : AccessibleJComponent() {
                 override fun getAccessibleName(): String =
-                    super.getAccessibleName() ?: "AI Commit All"
+                    super.getAccessibleName()?.takeIf { it.isNotBlank() } ?: "AI Commit All"
 
                 override fun getAccessibleDescription(): String =
-                    super.getAccessibleDescription() ?: "AI, Commit, and Push sections"
+                    super.getAccessibleDescription()?.takeIf { it.isNotBlank() } ?: "AI, Commit, and Push sections"
             }
         }
         return accessibleContext
