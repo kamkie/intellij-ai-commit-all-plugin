@@ -247,7 +247,13 @@ private class PostCommitPushResultHandler(
         onPushStarted()
         try {
             pushPlan.push()
-            completion.complete(Unit)
+                .whenComplete { _, throwable ->
+                    if (throwable != null) {
+                        completion.completeExceptionally(throwable)
+                    } else {
+                        completion.complete(Unit)
+                    }
+                }
         } catch (throwable: Throwable) {
             completion.completeExceptionally(throwable)
             throw throwable

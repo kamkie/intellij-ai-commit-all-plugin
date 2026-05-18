@@ -25,6 +25,7 @@ import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushDecision
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushFallbackReason
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushPlan
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushSupport
+import java.util.concurrent.CompletableFuture
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -152,6 +153,10 @@ internal class CommitWorkflowExecutionServiceTest {
 
         assertEquals(1, pushStartedCount)
         assertEquals(1, pushPlan.pushCallCount)
+        assertFalse(started.completion.isDone)
+
+        pushPlan.completePush()
+
         assertTrue(started.completion.isDone)
     }
 
@@ -346,10 +351,16 @@ internal class CommitWorkflowExecutionServiceTest {
     }
 
     private class CapturingSafeImmediatePushPlan : SafeImmediatePushPlan {
+        private val completion = CompletableFuture<Unit>()
         var pushCallCount = 0
 
-        override fun push() {
+        override fun push(): CompletableFuture<Unit> {
             pushCallCount++
+            return completion
+        }
+
+        fun completePush() {
+            completion.complete(Unit)
         }
     }
 

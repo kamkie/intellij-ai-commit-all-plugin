@@ -14,6 +14,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 - Avoided duplicated standalone Gradle wrapper validation in GitHub Actions while keeping wrapper validation enabled through `setup-gradle`.
 - Refreshed outgoing-commit availability after Git repository and push completion events so the `Push` section does not stay enabled after outgoing commits are pushed.
+- Kept the `Push` section animation active until safe immediate Git pushes report completion instead of stopping immediately after push start.
 
 ## [v0.1.0-alpha.7] - 2026-05-18
 

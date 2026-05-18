@@ -31,13 +31,14 @@ import git4idea.push.GitPushTarget
 import git4idea.push.GitPushTargetType
 import git4idea.repo.GitRepository
 import git4idea.repo.GitRepositoryManager
+import java.util.concurrent.CompletableFuture
 
 internal interface SafeImmediatePushSupport {
     fun prepare(selection: GitChangeSelection): SafeImmediatePushDecision
 }
 
 internal fun interface SafeImmediatePushPlan {
-    fun push()
+    fun push(): CompletableFuture<Unit>
 }
 
 internal sealed interface SafeImmediatePushDecision {
@@ -138,7 +139,15 @@ internal class SafeImmediatePushService(private val project: Project) : SafeImme
         return if (fallbackReason == null) {
             SafeImmediatePushDecision.Immediate(
                 SafeImmediatePushPlan {
-                    pushSupport.pusher.push(pushSpecs, null, false)
+                    val pushCompletion = GitPushCompletionService.getInstance(project)
+                        .awaitCompletion(pushSpecs.keys)
+                    try {
+                        pushSupport.pusher.push(pushSpecs, null, false)
+                    } catch (throwable: Throwable) {
+                        pushCompletion.completeExceptionally(throwable)
+                        throw throwable
+                    }
+                    pushCompletion
                 },
             )
         } else {

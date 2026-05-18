@@ -25,8 +25,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import git4idea.GitVcs
-import git4idea.push.GitPushListener
-import git4idea.push.GitPushRepoResult
 import git4idea.push.GitPushSource
 import git4idea.push.GitPushSupport
 import git4idea.push.GitPushTarget
@@ -48,18 +46,9 @@ internal class GitOutgoingCommitsService(private val project: Project) : Disposa
                 GitRepository.GIT_REPO_CHANGE,
                 GitRepositoryChangeListener { refreshHasOutgoingCommitsToPush() },
             )
-            subscribe(
-                GitPushListener.TOPIC,
-                object : GitPushListener {
-                    override fun onCompleted(
-                        repository: GitRepository,
-                        pushResult: GitPushRepoResult,
-                    ) {
-                        refreshHasOutgoingCommitsToPush()
-                    }
-                },
-            )
         }
+        GitPushCompletionService.getInstance(project)
+            .addCompletionListener(this) { refreshHasOutgoingCommitsToPush() }
     }
 
     fun hasOutgoingCommitsToPush(): Boolean = outgoingCommitsStatus.hasOutgoingCommitsToPush()
