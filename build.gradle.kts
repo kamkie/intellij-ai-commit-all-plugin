@@ -78,8 +78,13 @@ intellijPlatform {
             <p>Source code: <a href="https://github.com/kamkie/intellij-ai-commit-all-plugin">https://github.com/kamkie/intellij-ai-commit-all-plugin</a></p>
         """.trimIndent()
         changeNotes = """
-            <p>v0.1.0-alpha.6 prerelease.</p>
+            <p>v0.1.0-alpha.7 prerelease.</p>
             <ul>
+                <li>Keeps the Push section available for already-created outgoing Git commits when there are no committable changes, delegating that case to the IDE push workflow.</li>
+                <li>Replaces the standard Commit tool window Commit and Push toolbar action with the plugin's three-section control while preserving standard IDE executor and shortcut delegation paths.</li>
+                <li>Matches the three-section control corner radius to neighboring IDE toolbar buttons.</li>
+                <li>Advances the progress animation from AI to Commit to Push, and keeps it active through the post-commit push handoff.</li>
+                <li>Adds repository quality and security automation for wrapper validation, source formatting, documentation validation, CodeQL scanning, Dependabot, CODEOWNERS, security reporting, and contribution templates.</li>
                 <li>Waits through initial AI Assistant startup polling so Commit and Push workflows do not stop before generation begins.</li>
                 <li>Prevents duplicate workflow starts from rapid repeated action or shortcut invocations.</li>
                 <li>Allows safe immediate push on protected branches when no force push is required.</li>

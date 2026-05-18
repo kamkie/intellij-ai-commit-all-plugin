@@ -12,9 +12,14 @@ Notation:
 
 ## Open Backlog
 
+### Bugs
+
+- [ ] T-BUG-010: tasks should be marked completed after all the work is finished and verified
+
 ### Ideas
 
 - [ ] T-IDEA-006: proposals file ergonomics improvements
+- [ ] T-IDEA-007: externalize changelog org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformExtension.PluginConfiguration.getChangeNotes
 
 ### Publishing, Signing, Marketplace, And CI
 
