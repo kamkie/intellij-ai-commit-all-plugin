@@ -1,3 +1,18 @@
+/*
+ * Copyright 2026 DevOps Solutions Kamil Kiewisz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.devopssolutions.aicommitall.settings
 
 import com.intellij.openapi.options.ConfigurationException
@@ -115,29 +130,26 @@ internal class AiCommitAllConfigurable : SearchableConfigurable {
         useVcsShortcutsCheckBox = null
     }
 
-    private fun millisSpinner(value: Long): JSpinner =
-        JSpinner(
-            SpinnerNumberModel(
-                value,
-                MIN_MILLIS,
-                MAX_MILLIS,
-                STEP_MILLIS,
-            ),
-        )
+    private fun millisSpinner(value: Long): JSpinner = JSpinner(
+        SpinnerNumberModel(
+            value,
+            MIN_MILLIS,
+            MAX_MILLIS,
+            STEP_MILLIS,
+        ),
+    )
 
-    private fun JSpinner.longValue(): Long =
-        (value as Number).toLong()
+    private fun JSpinner.longValue(): Long = (value as Number).toLong()
 
-    private fun constraints(row: Int, column: Int, width: Int = 1): GridBagConstraints =
-        GridBagConstraints().apply {
-            gridx = column
-            gridy = row
-            gridwidth = width
-            anchor = GridBagConstraints.WEST
-            fill = if (column == 1 || width > 1) GridBagConstraints.HORIZONTAL else GridBagConstraints.NONE
-            weightx = if (column == 1 || width > 1) 1.0 else 0.0
-            insets = java.awt.Insets(4, 4, 4, 4)
-        }
+    private fun constraints(row: Int, column: Int, width: Int = 1): GridBagConstraints = GridBagConstraints().apply {
+        gridx = column
+        gridy = row
+        gridwidth = width
+        anchor = GridBagConstraints.WEST
+        fill = if (column == 1 || width > 1) GridBagConstraints.HORIZONTAL else GridBagConstraints.NONE
+        weightx = if (column == 1 || width > 1) 1.0 else 0.0
+        insets = java.awt.Insets(4, 4, 4, 4)
+    }
 
     companion object {
         private const val MIN_MILLIS = 1L

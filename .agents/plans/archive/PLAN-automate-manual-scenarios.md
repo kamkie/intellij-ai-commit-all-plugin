@@ -2,19 +2,21 @@
 
 Plan-ID: PLAN-automate-manual-scenarios
 
-Status: Implemented
+Status: Closed
+
+Close-Reason: Archived
 
 Workers: 1
 
-Filename: `.agents/plans/PLAN-automate-manual-scenarios.md`
+Filename: `.agents/plans/archive/PLAN-automate-manual-scenarios.md`
 
 ## Readiness
 
-- Plan readiness: Implemented.
+- Plan readiness: Closed.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-18T15:06:11+02:00
 - Open questions: None. The plan assumes manual scenarios may gain automated counterpart rows while retaining residual manual checks when live IDE or AI Assistant behavior remains the primary evidence.
-- Implementation progress: Complete; automated counterparts, scenario registry updates, and validation completed.
+- Implementation progress: Complete; automated counterparts, scenario registry updates, validation, and archival completed.
 
 ## Status History
 
@@ -22,6 +24,7 @@ Filename: `.agents/plans/PLAN-automate-manual-scenarios.md`
 - 2026-05-18T15:06:11+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
 - 2026-05-18T15:06:11+02:00: Approved -> In Progress by Codex <codex@openai.com>; implementation started after approval.
 - 2026-05-18T15:13:00+02:00: In Progress -> Implemented by Codex <codex@openai.com>; automated counterpart tests, scenario registry updates, and validation completed.
+- 2026-05-18T20:52:35+02:00: Implemented -> Closed by Kamil Kiewisz <kamkie@outlook.com>; completed plan archived.
 
 ## Goal
 

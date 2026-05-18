@@ -14,29 +14,17 @@ Notation:
 
 ### Bugs
 
-- [x] T-BUG-002: `ai` `Staging + AI message generation` stage sometimes do not work the first time. it needs to recheck if in fact all files are included. and only then generate a commit message. (Plan `PLAN-confirm-staged-before-ai-generation`)
-- [x] T-BUG-003: Correct ADR filename prefix from the former `ard-0000-<slug>.md` typo to `adr-0000-<slug>.md` across decision files and references.
-- [x] T-BUG-004: Refresh IntelliJ toolbar action state when AI activity starts and finishes so the commit push control can show and clear its accepted snake running indicator.
-- [x] T-BUG-005: same as T-BUG-002 but for commit. commit should not implement there own logic for first stage but reuse `Staging + AI message generation`. same for push stage button.
-- [x] T-BUG-006: reopens T-BUG-002. when there are multiple gradle modules, or multiple intellij products in repo
-- [x] T-BUG-007: Trigger synchronous external file reloads after staging paths, retry the add/reload/recheck loop, and stop before AI generation until every expected path is confirmed staged.
-- [x] T-BUG-008: changelist workflow works ok. staging still have problems. all files in the staging area disappear momentarily, and the workflow stops
-
-### Testing
-
-- [x] T-TEST-001: we need many more test cases for the three-section AI commit push control.
-- [x] T-TEST-002: we need to automate the test cases for the three-section AI commit push control as much as possible.
+- [ ] T-BUG-009: the commit push button animation should be running until pushing if finished
 
 ### Ideas
 
 - [ ] T-IDEA-006: proposals file ergonomics improvements
-- [x] T-IDEA-007: extend animation to go through all stages `ai -> commit -> push`
-- [x] T-IDEA-008: commit animation should wait for all commits checks to finish before starting the push.
+- [ ] T-IDEA-010: the push button should be clickable if there are commits to push.
+- [ ] T-IDEA-011: intellij standard `commit and push...` button should be removed when this plugin is enabled
 
-### Gui changes
+## Completed Task Archive
 
-- [x] T-UI-002: move button to the right of the `Commit and Push...` button.
-- [x] T-UI-003: button corners do not match the rest of the buttons.
+Archived as of 2026-05-18 backlog cleanup.
 
 ### Three-Section AI Commit Push Control
 
@@ -47,7 +35,15 @@ Notation:
 - [x] T-UI-001: Apply the ADR 0053 selected violet AI snake styling reference, including passive, cumulative hover, clicked/running, disabled, light, and dark states. (Plan `PLAN-three-section-ai-commit-push-control`, ADR 0053)
 - [x] T-VAL-023: Add or refresh automated, documentation, and manual sandbox validation for `AI`, `Commit`, and `Push` section behavior and rendering. (Plan `PLAN-three-section-ai-commit-push-control`, ADR 0052, ADR 0053)
 
-## Completed Task Archive
+### GUI Changes
+
+- [x] T-UI-002: move button to the right of the `Commit and Push...` button.
+- [x] T-UI-003: button corners do not match the rest of the buttons.
+
+### Testing
+
+- [x] T-TEST-001: we need many more test cases for the three-section AI commit push control.
+- [x] T-TEST-002: we need to automate the test cases for the three-section AI commit push control as much as possible.
 
 Archived as of orchestrated `AI Commit All` workflow implementation.
 
@@ -137,11 +133,20 @@ Archived as of orchestrated `AI Commit All` workflow implementation.
 ### Documentation
 
 - [x] T-DOC-001: Update `README.md` with setup and usage instructions. (Plan `PLAN-user-documentation`, Task 1)
+- [x] T-DOC-002: Document supported IDE versions. (ADR 0008)
 - [x] T-DOC-003: Document AI Assistant dependency and limitations. (Plan `PLAN-user-documentation`, Task 1)
 - [x] T-DOC-004: Document how to run the sandbox IDE. (Plan `PLAN-user-documentation`, Task 1)
 - [x] T-DOC-005: Document known unsupported cases. (Plan `PLAN-user-documentation`, Task 1)
+- [x] T-DOC-006: Document license in `README.md`. (ADR 0018)
 - [x] T-DOC-007: Document source code location for users and contributors once Marketplace metadata exists. (Plan `PLAN-user-documentation`, Task 2)
 - [x] T-DOC-008: Document the contributor-facing release and publication process after release automation is configured. (Plan `PLAN-user-documentation`, Task 2)
+- [x] T-DOC-009: Add root `CHANGELOG.md` for notable unreleased and released changes. (ADR 0029)
+- [x] T-DOC-010: Add root `SUPPORT.md` for support status and issue-reporting expectations. (ADR 0029)
+- [x] T-DOC-011: Add rule to avoid automatically loading every AI instruction file. (ADR 0031)
+- [x] T-DOC-012: Add stable non-number-only plan IDs. (ADR 0032)
+- [x] T-DOC-013: Add `docs/proposals/` with proposal rules, template, and archive marker. (ADR 0033)
+- [x] T-DOC-014: Add stable proposal IDs. (ADR 0034)
+- [x] T-DOC-015: Archive completed plans, proposals, and tasks.
 
 ### Publishing, Signing, Marketplace, And CI
 
@@ -154,6 +159,8 @@ Archived as of orchestrated `AI Commit All` workflow implementation.
 - [x] T-REL-007: Add Plugin Verifier CI for target IDE versions. (Plan `PLAN-marketplace-ci-release`, Task 4)
 - [x] T-REL-008: Add a gated/manual release workflow for signing and Marketplace publishing. (Plan `PLAN-marketplace-ci-release`, Task 4)
 - [x] T-REL-009: Ensure pull-request CI does not require or expose Marketplace tokens, signing keys, or certificate passwords. (Plan `PLAN-marketplace-ci-release`, Task 3)
+- [x] T-REL-010: Add release guidance for changelog, support-policy, version tag, and release-precondition rules. (ADR 0029)
+- [x] T-REL-011: Assign changelog maintenance to the orchestrator during orchestrated plan execution and release preparation. (ADR 0030)
 
 Archived as of `v0.1.0-alpha.1` release preparation.
 
@@ -198,25 +205,16 @@ Archived as of `v0.1.0-alpha.1` release preparation.
 
 - [x] T-ACTIONS-003: Generate a placeholder split-button styling graphic covering normal, running, disabled, commit-only, and commit-and-push states: `docs/concepts/graphics/split-button-placeholder.png`. (ADR 0027)
 
-### Documentation
-
-- [x] T-DOC-002: Document supported IDE versions. (ADR 0008)
-- [x] T-DOC-006: Document license in `README.md`. (ADR 0018)
-- [x] T-DOC-009: Add root `CHANGELOG.md` for notable unreleased and released changes. (ADR 0029)
-- [x] T-DOC-010: Add root `SUPPORT.md` for support status and issue-reporting expectations. (ADR 0029)
-- [x] T-DOC-011: Add rule to avoid automatically loading every AI instruction file. (ADR 0031)
-- [x] T-DOC-012: Add stable non-number-only plan IDs. (ADR 0032)
-- [x] T-DOC-013: Add `docs/proposals/` with proposal rules, template, and archive marker. (ADR 0033)
-- [x] T-DOC-014: Add stable proposal IDs. (ADR 0034)
-
-### Publishing, Signing, Marketplace, And CI
-
-- [x] T-REL-010: Add release guidance for changelog, support-policy, version tag, and release-precondition rules. (ADR 0029)
-- [x] T-REL-011: Assign changelog maintenance to the orchestrator during orchestrated plan execution and release preparation. (ADR 0030)
-
 ### Bugs
 
 - [x] T-BUG-001: plugin does not work when vsc changelists are disabled and git is in git stage mode
+- [x] T-BUG-002: `ai` `Staging + AI message generation` stage sometimes do not work the first time. it needs to recheck if in fact all files are included. and only then generate a commit message. (Plan `PLAN-confirm-staged-before-ai-generation`)
+- [x] T-BUG-003: Correct ADR filename prefix from the former `ard-0000-<slug>.md` typo to `adr-0000-<slug>.md` across decision files and references.
+- [x] T-BUG-004: Refresh IntelliJ toolbar action state when AI activity starts and finishes so the commit push control can show and clear its accepted snake running indicator.
+- [x] T-BUG-005: same as T-BUG-002 but for commit. commit should not implement there own logic for first stage but reuse `Staging + AI message generation`. same for push stage button.
+- [x] T-BUG-006: reopens T-BUG-002. when there are multiple gradle modules, or multiple intellij products in repo
+- [x] T-BUG-007: Trigger synchronous external file reloads after staging paths, retry the add/reload/recheck loop, and stop before AI generation until every expected path is confirmed staged.
+- [x] T-BUG-008: changelist workflow works ok. staging still have problems. all files in the staging area disappear momentarily, and the workflow stops
 
 ### Ideas
 
@@ -224,3 +222,5 @@ Archived as of `v0.1.0-alpha.1` release preparation.
 - [x] T-IDEA-003: Add an ADR implementation tracker to `docs/decisions/README.md`. (ADR 0048)
 - [x] T-IDEA-004: Add proposal implementation status tracking through per-finding status values and a README summary. (ADR 0049)
 - [x] T-IDEA-005: Reengineer `docs/decisions/OPEN_QUESTIONS.md` as an active question register. (ADR 0050)
+- [x] T-IDEA-007: extend animation to go through all stages `ai -> commit -> push`
+- [x] T-IDEA-008: commit animation should wait for all commits checks to finish before starting the push.

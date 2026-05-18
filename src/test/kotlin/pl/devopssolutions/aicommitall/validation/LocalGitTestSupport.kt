@@ -1,3 +1,18 @@
+/*
+ * Copyright 2026 DevOps Solutions Kamil Kiewisz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.devopssolutions.aicommitall.validation
 
 import java.nio.file.Files
@@ -10,8 +25,7 @@ import kotlin.io.path.writeText
 internal class LocalGitRepository private constructor(val root: Path) {
     fun git(vararg arguments: String): GitResult = GitCli.run(root, *arguments)
 
-    fun gitAllowingFailure(vararg arguments: String): GitResult =
-        GitCli.run(root, *arguments, checkExit = false)
+    fun gitAllowingFailure(vararg arguments: String): GitResult = GitCli.run(root, *arguments, checkExit = false)
 
     fun write(relativePath: String, content: String) {
         val file = root.resolve(relativePath)
@@ -23,9 +37,8 @@ internal class LocalGitRepository private constructor(val root: Path) {
         root.resolve(relativePath).deleteIfExists()
     }
 
-    fun statusLines(vararg arguments: String): List<String> =
-        git("status", "--porcelain", *arguments).stdout.lines()
-            .filter { line -> line.isNotBlank() }
+    fun statusLines(vararg arguments: String): List<String> = git("status", "--porcelain", *arguments).stdout.lines()
+        .filter { line -> line.isNotBlank() }
 
     companion object {
         fun init(root: Path): LocalGitRepository {
@@ -55,14 +68,13 @@ internal class LocalGitRepository private constructor(val root: Path) {
 }
 
 internal object GitCli {
-    fun isAvailable(): Boolean =
-        runCatching {
-            val process = ProcessBuilder("git", "--version")
-                .redirectErrorStream(true)
-                .start()
-            process.waitFor()
-            process.exitValue() == 0
-        }.getOrDefault(false)
+    fun isAvailable(): Boolean = runCatching {
+        val process = ProcessBuilder("git", "--version")
+            .redirectErrorStream(true)
+            .start()
+        process.waitFor()
+        process.exitValue() == 0
+    }.getOrDefault(false)
 
     fun run(
         workingDirectory: Path,

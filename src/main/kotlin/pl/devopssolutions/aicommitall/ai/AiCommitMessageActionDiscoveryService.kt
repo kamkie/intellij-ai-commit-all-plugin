@@ -1,3 +1,18 @@
+/*
+ * Copyright 2026 DevOps Solutions Kamil Kiewisz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.devopssolutions.aicommitall.ai
 
 import com.intellij.openapi.actionSystem.ActionManager
@@ -11,8 +26,7 @@ import java.util.Locale
 internal class AiCommitMessageActionDiscoveryService : AiCommitMessageActionFinder {
     private val discovery = AiCommitMessageActionDiscovery(IntellijAiActionLookup)
 
-    override fun findCommitMessageAction(event: AnActionEvent?): AiCommitMessageActionReference? =
-        discovery.findCommitMessageAction(event)
+    override fun findCommitMessageAction(event: AnActionEvent?): AiCommitMessageActionReference? = discovery.findCommitMessageAction(event)
 
     companion object {
         fun getInstance(): AiCommitMessageActionDiscoveryService = service()
@@ -26,46 +40,42 @@ internal interface AiCommitMessageActionFinder {
 internal class AiCommitMessageActionDiscovery(
     private val actionLookup: AiActionLookup,
 ) : AiCommitMessageActionFinder {
-    override fun findCommitMessageAction(event: AnActionEvent?): AiCommitMessageActionReference? =
-        findKnownAction()
-            ?: findPrefixedAction()
-            ?: findPresentationAction()
+    override fun findCommitMessageAction(event: AnActionEvent?): AiCommitMessageActionReference? = findKnownAction()
+        ?: findPrefixedAction()
+        ?: findPresentationAction()
 
-    private fun findKnownAction(): AiCommitMessageActionReference? =
-        knownActionIds.firstNotNullOfOrNull { actionId ->
+    private fun findKnownAction(): AiCommitMessageActionReference? = knownActionIds.firstNotNullOfOrNull { actionId ->
+        actionLookup.getAction(actionId)?.let { action ->
+            AiCommitMessageActionReference(
+                action = action,
+                actionId = actionId,
+                source = AiCommitMessageActionSource.KnownActionId,
+            )
+        }
+    }
+
+    private fun findPrefixedAction(): AiCommitMessageActionReference? = actionIdPrefixes.asSequence()
+        .flatMap { prefix -> actionLookup.getActionIdList(prefix).asSequence() }
+        .filter(::looksLikeCommitMessageActionId)
+        .distinct()
+        .mapNotNull { actionId ->
             actionLookup.getAction(actionId)?.let { action ->
                 AiCommitMessageActionReference(
                     action = action,
                     actionId = actionId,
-                    source = AiCommitMessageActionSource.KnownActionId,
+                    source = AiCommitMessageActionSource.ActionIdPrefix,
                 )
             }
         }
+        .firstOrNull()
 
-    private fun findPrefixedAction(): AiCommitMessageActionReference? =
-        actionIdPrefixes.asSequence()
-            .flatMap { prefix -> actionLookup.getActionIdList(prefix).asSequence() }
-            .filter(::looksLikeCommitMessageActionId)
-            .distinct()
-            .mapNotNull { actionId ->
-                actionLookup.getAction(actionId)?.let { action ->
-                    AiCommitMessageActionReference(
-                        action = action,
-                        actionId = actionId,
-                        source = AiCommitMessageActionSource.ActionIdPrefix,
-                    )
-                }
-            }
-            .firstOrNull()
-
-    private fun findPresentationAction(): AiCommitMessageActionReference? =
-        presentationFallbackActionIdPrefixes.asSequence()
-            .flatMap { prefix -> actionLookup.getActionIdList(prefix).asSequence() }
-            .distinct()
-            .mapNotNull { actionId ->
-                actionLookup.getAction(actionId)?.toPresentationFallbackReference(actionId)
-            }
-            .firstOrNull()
+    private fun findPresentationAction(): AiCommitMessageActionReference? = presentationFallbackActionIdPrefixes.asSequence()
+        .flatMap { prefix -> actionLookup.getActionIdList(prefix).asSequence() }
+        .distinct()
+        .mapNotNull { actionId ->
+            actionLookup.getAction(actionId)?.toPresentationFallbackReference(actionId)
+        }
+        .firstOrNull()
 
     private fun AnAction.toPresentationFallbackReference(actionId: String): AiCommitMessageActionReference? {
         if (looksLikeCommitMessageActionId(actionId)) {
@@ -133,10 +143,7 @@ internal interface AiActionLookup {
 }
 
 private object IntellijAiActionLookup : AiActionLookup {
-    override fun getAction(actionId: String): AnAction? =
-        ActionManager.getInstance().getAction(actionId)
+    override fun getAction(actionId: String): AnAction? = ActionManager.getInstance().getAction(actionId)
 
-    override fun getActionIdList(prefix: String): List<String> =
-        ActionManager.getInstance().getActionIdList(prefix).toList()
-
+    override fun getActionIdList(prefix: String): List<String> = ActionManager.getInstance().getActionIdList(prefix).toList()
 }

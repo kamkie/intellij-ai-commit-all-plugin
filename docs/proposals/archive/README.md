@@ -19,3 +19,4 @@ Preserve proposal IDs, proposal filenames, and finding IDs when archiving. Archi
 - `PROP-01-proposal-governance` - Proposal Governance Work Stream ([PROP-01-proposal-governance-2026-05-15T09-57.md](PROP-01-proposal-governance-2026-05-15T09-57.md)), archived as implemented as of 2026-05-17.
 - `PROP-02-pre-release-ux` - Pre-Release UX Work Stream ([PROP-02-pre-release-ux-2026-05-15T09-57.md](PROP-02-pre-release-ux-2026-05-15T09-57.md)), archived as implemented as of 2026-05-18.
 - `PROP-04-multi-agent-execution` - Multi-Agent Execution Work Stream ([PROP-04-multi-agent-execution-2026-05-15T09-57.md](PROP-04-multi-agent-execution-2026-05-15T09-57.md)), archived as implemented as of 2026-05-18.
+- `PROP-import-codex-subagents-as-skills` - Import Codex Subagents As Skills ([PROP-import-codex-subagents-as-skills-2026-05-18T13-03.md](PROP-import-codex-subagents-as-skills-2026-05-18T13-03.md)), archived as implemented as of 2026-05-18.

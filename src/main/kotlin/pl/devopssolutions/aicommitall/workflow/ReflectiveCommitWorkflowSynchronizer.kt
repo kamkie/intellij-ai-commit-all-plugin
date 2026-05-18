@@ -1,3 +1,18 @@
+/*
+ * Copyright 2026 DevOps Solutions Kamil Kiewisz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.devopssolutions.aicommitall.workflow
 
 import com.intellij.openapi.project.Project
@@ -78,15 +93,13 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         project: Project,
         tracker: GitStageTracker,
         pathsByRoot: Map<VirtualFile, List<FilePath>>,
-    ): GitStageTracker.State? =
-        GitStageConfirmation(
-            attempts = GIT_STAGE_CONFIRMATION_ATTEMPTS,
-            operations = IntellijGitStageConfirmationOperations(project, tracker),
-        ).confirm(pathsByRoot)
+    ): GitStageTracker.State? = GitStageConfirmation(
+        attempts = GIT_STAGE_CONFIRMATION_ATTEMPTS,
+        operations = IntellijGitStageConfirmationOperations(project, tracker),
+    ).confirm(pathsByRoot)
 
-    private fun Class<*>.findMethod(name: String, vararg parameterTypes: Class<*>): Method? =
-        methods.firstOrNull { method ->
-            method.name == name &&
-                method.parameterTypes.contentEquals(parameterTypes)
-        }
+    private fun Class<*>.findMethod(name: String, vararg parameterTypes: Class<*>): Method? = methods.firstOrNull { method ->
+        method.name == name &&
+            method.parameterTypes.contentEquals(parameterTypes)
+    }
 }

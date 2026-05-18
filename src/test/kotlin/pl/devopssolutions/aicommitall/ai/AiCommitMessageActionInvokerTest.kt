@@ -1,3 +1,18 @@
+/*
+ * Copyright 2026 DevOps Solutions Kamil Kiewisz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.devopssolutions.aicommitall.ai
 
 import com.intellij.openapi.actionSystem.AnAction
@@ -156,34 +171,31 @@ internal class AiCommitMessageActionInvokerTest {
         override fun stopLoading() = Unit
     }
 
-    private fun testWorkflowUi(): CommitWorkflowUi =
-        testProxy(
-            answers = mapOf(
-                "getCommitMessageUi" to TestCommitMessageUi(),
-            ),
-        )
+    private fun testWorkflowUi(): CommitWorkflowUi = testProxy(
+        answers = mapOf(
+            "getCommitMessageUi" to TestCommitMessageUi(),
+        ),
+    )
 
-    private inline fun <reified T : Any> testProxy(answers: Map<String, Any?> = emptyMap()): T =
-        Proxy.newProxyInstance(
-            T::class.java.classLoader,
-            arrayOf(T::class.java),
-        ) { _, method, _ ->
-            when (method.name) {
-                "toString" -> "Test ${T::class.java.simpleName}"
-                "hashCode" -> System.identityHashCode(this)
-                "equals" -> false
-                else -> answers[method.name] ?: method.defaultReturnValue()
-            }
-        } as T
-
-    private fun java.lang.reflect.Method.defaultReturnValue(): Any? =
-        when (returnType) {
-            java.lang.Boolean.TYPE -> false
-            java.lang.Integer.TYPE -> 0
-            java.lang.Long.TYPE -> 0L
-            java.lang.Float.TYPE -> 0f
-            java.lang.Double.TYPE -> 0.0
-            java.lang.Void.TYPE -> null
-            else -> null
+    private inline fun <reified T : Any> testProxy(answers: Map<String, Any?> = emptyMap()): T = Proxy.newProxyInstance(
+        T::class.java.classLoader,
+        arrayOf(T::class.java),
+    ) { _, method, _ ->
+        when (method.name) {
+            "toString" -> "Test ${T::class.java.simpleName}"
+            "hashCode" -> System.identityHashCode(this)
+            "equals" -> false
+            else -> answers[method.name] ?: method.defaultReturnValue()
         }
+    } as T
+
+    private fun java.lang.reflect.Method.defaultReturnValue(): Any? = when (returnType) {
+        java.lang.Boolean.TYPE -> false
+        java.lang.Integer.TYPE -> 0
+        java.lang.Long.TYPE -> 0L
+        java.lang.Float.TYPE -> 0f
+        java.lang.Double.TYPE -> 0.0
+        java.lang.Void.TYPE -> null
+        else -> null
+    }
 }

@@ -1,0 +1,33 @@
+{
+  "globs": [
+    "**/*.md"
+  ],
+  "ignores": [
+    ".git/**",
+    ".gradle/**",
+    ".idea/**",
+    ".intellijPlatform/**",
+    "build/**",
+    "run/**",
+    "sandbox/**"
+  ],
+  "noBanner": true,
+  "noProgress": true,
+  "config": {
+    "default": false,
+    "MD007": {
+      "indent": 4
+    },
+    "MD009": true,
+    "MD010": true,
+    "MD012": {
+      "maximum": 2
+    },
+    "MD047": true,
+    "MD055": {
+      "style": "leading_and_trailing"
+    },
+    "MD056": true,
+    "MD058": true
+  }
+}

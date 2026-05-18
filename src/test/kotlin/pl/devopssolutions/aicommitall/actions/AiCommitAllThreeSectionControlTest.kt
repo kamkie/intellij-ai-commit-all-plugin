@@ -1,3 +1,18 @@
+/*
+ * Copyright 2026 DevOps Solutions Kamil Kiewisz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.devopssolutions.aicommitall.actions
 
 import com.intellij.ide.ui.laf.darcula.DarculaUIUtil
@@ -226,11 +241,10 @@ internal class AiCommitAllThreeSectionControlTest {
     private fun testControl(
         state: AiCommitAllControlState = testState(),
         activateSection: (AiCommitAllControlSection, java.awt.event.InputEvent?) -> Unit = { _, _ -> },
-    ): AiCommitAllThreeSectionControl =
-        AiCommitAllThreeSectionControl(activateSection).apply {
-            setSize(preferredSize)
-            updateState(state)
-        }
+    ): AiCommitAllThreeSectionControl = AiCommitAllThreeSectionControl(activateSection).apply {
+        setSize(preferredSize)
+        updateState(state)
+    }
 
     private fun testState(
         vararg overrides: Pair<AiCommitAllControlSection, AiCommitAllWorkflowActionAvailability>,
@@ -269,8 +283,7 @@ internal class AiCommitAllThreeSectionControlTest {
         )
     }
 
-    private fun AiCommitAllThreeSectionControl.toolTipFor(section: AiCommitAllControlSection): String? =
-        getToolTipText(mouseEvent(MouseEvent.MOUSE_MOVED, section, MouseEvent.NOBUTTON))
+    private fun AiCommitAllThreeSectionControl.toolTipFor(section: AiCommitAllControlSection): String? = getToolTipText(mouseEvent(MouseEvent.MOUSE_MOVED, section, MouseEvent.NOBUTTON))
 
     private fun AiCommitAllThreeSectionControl.mouseEvent(
         id: Int,

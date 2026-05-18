@@ -10,6 +10,10 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ## [Unreleased]
 
+### Added
+
+- Added CI checks for Gradle wrapper validation, source formatting, Markdown linting, documentation validation, and Kotlin source license headers.
+
 ### Fixed
 
 - Matched the three-section control corner radius to the IDE button arc so it aligns with neighboring Commit toolbar buttons.

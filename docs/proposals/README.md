@@ -16,7 +16,7 @@ Active proposals still have at least one non-terminal implementation status row 
 
 Completed proposals have no non-terminal implementation status rows and no untriaged findings in their `Progress Tracker`. Keep them listed here until they are moved to `archive/`.
 
-- `PROP-import-codex-subagents-as-skills` - Import Codex Subagents As Skills ([PROP-import-codex-subagents-as-skills-2026-05-18T13-03.md](PROP-import-codex-subagents-as-skills-2026-05-18T13-03.md)), completed 2026-05-18.
+- None.
 
 Index entries should include the proposal ID, title, file link, and current status date when applicable.
 
@@ -30,13 +30,9 @@ Implementation evidence can be a task, approved plan, ADR, changed file, commit,
 |--------------------------------------------------------------------------------------------------|---------|----------------------------------------------------------|----------|---------|---------------------------------------------------------------------------------------------------|
 | [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E001    | Add Dependabot configuration                             | 1        | open    | Open intake; no task or plan selected.                                                            |
 | [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E002    | Add CodeQL analysis                                      | 1        | open    | Open intake; no task or plan selected.                                                            |
-| [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E003    | Add unified formatting and linting enforcement           | 2        | open    | Open intake; no task, plan, or ADR selected.                                                       |
-| [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E004    | Validate Gradle wrapper integrity in CI                  | 2        | open    | Open intake; no task or plan selected.                                                            |
 | [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E005    | Add security policy and secret-scanning guidance         | 2        | open    | Open intake; no task or plan selected.                                                            |
 | [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E006    | Add contributor intake files                             | 3        | open    | Open intake; no task or plan selected.                                                            |
 | [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E007    | Add CODEOWNERS after reviewer identity is known          | 3        | open    | Open intake; reviewer GitHub handle still needs to be supplied.                                    |
-| [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E008    | Enforce Apache-2.0 source headers                        | 4        | open    | Open intake; no task or plan selected.                                                            |
-| [PROP-03-repository-quality-lifecycle](PROP-03-repository-quality-lifecycle-2026-05-15T09-57.md) | E010    | Preserve completed task history outside the active backlog | 4        | open    | Open intake; archive path not selected.                                                           |
 
 ## When To Use A Proposal
 

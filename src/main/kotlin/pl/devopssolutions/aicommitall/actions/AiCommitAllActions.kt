@@ -1,3 +1,18 @@
+/*
+ * Copyright 2026 DevOps Solutions Kamil Kiewisz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.devopssolutions.aicommitall.actions
 
 import com.intellij.ide.DataManager
@@ -29,7 +44,8 @@ internal class AiCommitAllThreeSectionAction(
         ProjectAiCommitAllWorkflowAvailabilityProvider,
     private val activityProvider: AiCommitAllWorkflowActivityProvider =
         ProjectAiCommitAllWorkflowActivityProvider,
-) : DumbAwareAction(), CustomComponentAction {
+) : DumbAwareAction(),
+    CustomComponentAction {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(event: AnActionEvent) {
@@ -78,15 +94,14 @@ internal class AiCommitAllThreeSectionAction(
         section: AiCommitAllControlSection,
         dataContext: DataContext,
         inputEvent: InputEvent?,
-    ): CompletableFuture<AiCommitAllWorkflowResult>? =
-        project?.let {
-            workflowStarter.start(
-                project = it,
-                mode = section.mode,
-                dataContext = dataContext,
-                inputEvent = inputEvent,
-            )
-        }
+    ): CompletableFuture<AiCommitAllWorkflowResult>? = project?.let {
+        workflowStarter.start(
+            project = it,
+            mode = section.mode,
+            dataContext = dataContext,
+            inputEvent = inputEvent,
+        )
+    }
 
     private fun controlState(
         project: Project?,
@@ -132,8 +147,7 @@ internal data class AiCommitAllControlState(
     val visible: Boolean = sections.values.any { availability -> availability.visible }
     val enabled: Boolean = runningSection == null && sections.values.any { availability -> availability.enabled }
 
-    fun isSectionEnabled(section: AiCommitAllControlSection): Boolean =
-        runningSection == null && sections[section]?.enabled == true
+    fun isSectionEnabled(section: AiCommitAllControlSection): Boolean = runningSection == null && sections[section]?.enabled == true
 
     companion object {
         val Hidden = AiCommitAllControlState(
@@ -181,8 +195,7 @@ internal interface AiCommitAllWorkflowStarter {
 }
 
 internal object ProjectAiCommitAllWorkflowActivityProvider : AiCommitAllWorkflowActivityProvider {
-    override fun runningSection(project: Project): AiCommitAllControlSection? =
-        AiGenerationActivityStateService.getInstance(project).runningPhase()?.controlSection
+    override fun runningSection(project: Project): AiCommitAllControlSection? = AiGenerationActivityStateService.getInstance(project).runningPhase()?.controlSection
 }
 
 internal object ProjectAiCommitAllWorkflowStarter : AiCommitAllWorkflowStarter {
@@ -191,13 +204,12 @@ internal object ProjectAiCommitAllWorkflowStarter : AiCommitAllWorkflowStarter {
         mode: AiCommitAllWorkflowMode,
         dataContext: DataContext,
         inputEvent: InputEvent?,
-    ): CompletableFuture<AiCommitAllWorkflowResult> =
-        AiCommitAllWorkflowCoordinator.getInstance(project)
-            .start(
-                mode = mode,
-                dataContext = dataContext,
-                inputEvent = inputEvent,
-            )
+    ): CompletableFuture<AiCommitAllWorkflowResult> = AiCommitAllWorkflowCoordinator.getInstance(project)
+        .start(
+            mode = mode,
+            dataContext = dataContext,
+            inputEvent = inputEvent,
+        )
 }
 
 internal object ProjectAiCommitAllWorkflowAvailabilityProvider : AiCommitAllWorkflowAvailabilityProvider {
@@ -223,8 +235,10 @@ internal object ProjectAiCommitAllWorkflowAvailabilityProvider : AiCommitAllWork
         val executionService = CommitWorkflowExecutionService.getInstance(project)
         val canExecute = when (mode) {
             AiCommitAllWorkflowMode.Ai -> true
+
             AiCommitAllWorkflowMode.Commit ->
                 executionService.canExecuteCommit(workflowHandler)
+
             AiCommitAllWorkflowMode.Push ->
                 executionService.canExecuteCommitAndPush(workflowHandler)
         }

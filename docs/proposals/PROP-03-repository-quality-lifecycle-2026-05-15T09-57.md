@@ -51,14 +51,14 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 |------|------------------------------------------------------------|----------|--------------|----------|
 | E001 | Add Dependabot configuration                               | 1        | open         | accepted |
 | E002 | Add CodeQL analysis                                        | 1        | open         | accepted |
-| E003 | Add unified formatting and linting enforcement             | 2        | open         | accepted |
-| E004 | Validate Gradle wrapper integrity in CI                    | 2        | open         | accepted |
+| E003 | Add unified formatting and linting enforcement             | 2        | done         | accepted |
+| E004 | Validate Gradle wrapper integrity in CI                    | 2        | done         | accepted |
 | E005 | Add security policy and secret-scanning guidance           | 2        | open         | accepted |
 | E006 | Add contributor intake files                               | 3        | open         | accepted |
 | E007 | Add CODEOWNERS after reviewer identity is known            | 3        | open         | accepted |
-| E008 | Enforce Apache-2.0 source headers                          | 4        | open         | accepted |
+| E008 | Enforce Apache-2.0 source headers                          | 4        | done         | accepted |
 | E009 | Define the `TASKS.md` retirement trigger                   | 4        | not-required | rejected |
-| E010 | Preserve completed task history outside the active backlog | 4        | open         | accepted |
+| E010 | Preserve completed task history outside the active backlog | 4        | done         | accepted |
 | E011 | Decide the future backlog home                             | 4        | not-required | accepted |
 | E012 | Update references and retire `TASKS.md` only after release | 6        | not-required | rejected |
 
@@ -138,13 +138,13 @@ comment: "Supersedes PROP-repo-hygiene-automation E1; active decision details ar
     - Defer broad reformatting until the tooling decision is accepted, then keep reformatting commits isolated from behavior changes where practical.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 2
 owner:
-updated: 2026-05-18T01:47:37+02:00
+updated: 2026-05-18T20:43:07+02:00
 accepted_at: 2026-05-18T01:38:44+02:00
-comment: "Supersedes PROP-repo-hygiene-automation E2 and PROP-proposal-id-and-markdown-formatting E002-E004/S001; active decision details are maintained here."
+comment: "Implemented by ADR 0064 and PLAN-unified-formatting-linting-toolchain with Spotless, ktlint, markdownlint-cli2, .editorconfig, docs validation, and CI wiring."
 ```
 
 ### E004. Validate Gradle wrapper integrity in CI
@@ -160,13 +160,13 @@ comment: "Supersedes PROP-repo-hygiene-automation E2 and PROP-proposal-id-and-ma
     - Keep the change separate from broader Gradle tooling unless an approved plan combines them.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 2
 owner:
-updated: 2026-05-18T01:52:15+02:00
+updated: 2026-05-18T20:43:07+02:00
 accepted_at: 2026-05-18T01:52:15+02:00
-comment: "Supersedes PROP-repo-hygiene-automation E4; active decision details are maintained here."
+comment: "Implemented in ci.yml with gradle/actions/wrapper-validation@v3 before Gradle-dependent jobs."
 ```
 
 ### E005. Add security policy and secret-scanning guidance
@@ -252,13 +252,13 @@ comment: "Supersedes PROP-repo-hygiene-automation E8; active decision details ar
     - Keep `NOTICE` decisions separate; add `NOTICE` only if bundled dependencies or attribution requirements make it necessary.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 4
 owner:
-updated: 2026-05-18T01:47:37+02:00
+updated: 2026-05-18T20:43:07+02:00
 accepted_at: 2026-05-18T01:38:44+02:00
-comment: "Supersedes PROP-repo-hygiene-automation E10; active decision details are maintained here."
+comment: "Implemented through Spotless licenseHeaderFile enforcement for Kotlin source files."
 ```
 
 ### E009. Define the `TASKS.md` retirement trigger
@@ -295,13 +295,13 @@ comment: "Rejected because TASKS.md stays as the backlog. Supersedes PROP-remove
     - Do not mix this history archive with user-facing release notes in `CHANGELOG.md` unless an ADR explicitly chooses that option.
 
 ```yaml
-status: open
+status: done
 decision: accepted
 priority: 4
 owner:
-updated: 2026-05-18T01:47:37+02:00
+updated: 2026-05-18T20:52:35+02:00
 accepted_at: 2026-05-18T01:38:44+02:00
-comment: "Supersedes PROP-remove-tasks-md-when-empty E4; active decision details are maintained here."
+comment: "Completed task history remains in TASKS.md under Completed Task Archive, with completed active-backlog rows moved out of Open Backlog. Supersedes PROP-remove-tasks-md-when-empty E4."
 ```
 
 ### E011. Decide the future backlog home

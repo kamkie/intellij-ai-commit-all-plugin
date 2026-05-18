@@ -1,3 +1,18 @@
+/*
+ * Copyright 2026 DevOps Solutions Kamil Kiewisz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.devopssolutions.aicommitall.settings
 
 import com.intellij.openapi.components.PersistentStateComponent
@@ -22,14 +37,11 @@ internal class AiCommitAllSettings : PersistentStateComponent<AiCommitAllSetting
         settingsState = state.normalized()
     }
 
-    fun completionOptions(): AiGenerationCompletionOptions =
-        settingsState.normalized().toCompletionOptions()
+    fun completionOptions(): AiGenerationCompletionOptions = settingsState.normalized().toCompletionOptions()
 
-    fun clearCommitMessageBeforeGeneration(): Boolean =
-        settingsState.normalized().clearCommitMessageBeforeGeneration
+    fun clearCommitMessageBeforeGeneration(): Boolean = settingsState.normalized().clearCommitMessageBeforeGeneration
 
-    fun useVcsShortcutsForAiCommitAll(): Boolean =
-        settingsState.normalized().useVcsShortcutsForAiCommitAll
+    fun useVcsShortcutsForAiCommitAll(): Boolean = settingsState.normalized().useVcsShortcutsForAiCommitAll
 
     fun updateCompletionOptions(timeoutMillis: Long, checkIntervalMillis: Long) {
         require(timeoutMillis > 0) { "AI generation timeout must be positive." }
@@ -58,20 +70,18 @@ internal class AiCommitAllSettings : PersistentStateComponent<AiCommitAllSetting
         var clearCommitMessageBeforeGeneration: Boolean = DEFAULT_CLEAR_COMMIT_MESSAGE_BEFORE_GENERATION,
         var useVcsShortcutsForAiCommitAll: Boolean = DEFAULT_USE_VCS_SHORTCUTS_FOR_AI_COMMIT_ALL,
     ) {
-        fun normalized(): State =
-            State(
-                aiGenerationTimeoutMillis = aiGenerationTimeoutMillis.takeIf { it > 0 } ?: DEFAULT_TIMEOUT_MILLIS,
-                completionCheckIntervalMillis = completionCheckIntervalMillis.takeIf { it > 0 }
-                    ?: DEFAULT_CHECK_INTERVAL_MILLIS,
-                clearCommitMessageBeforeGeneration = clearCommitMessageBeforeGeneration,
-                useVcsShortcutsForAiCommitAll = useVcsShortcutsForAiCommitAll,
-            )
+        fun normalized(): State = State(
+            aiGenerationTimeoutMillis = aiGenerationTimeoutMillis.takeIf { it > 0 } ?: DEFAULT_TIMEOUT_MILLIS,
+            completionCheckIntervalMillis = completionCheckIntervalMillis.takeIf { it > 0 }
+                ?: DEFAULT_CHECK_INTERVAL_MILLIS,
+            clearCommitMessageBeforeGeneration = clearCommitMessageBeforeGeneration,
+            useVcsShortcutsForAiCommitAll = useVcsShortcutsForAiCommitAll,
+        )
 
-        fun toCompletionOptions(): AiGenerationCompletionOptions =
-            AiGenerationCompletionOptions(
-                timeout = Duration.ofMillis(aiGenerationTimeoutMillis),
-                checkInterval = Duration.ofMillis(completionCheckIntervalMillis),
-            )
+        fun toCompletionOptions(): AiGenerationCompletionOptions = AiGenerationCompletionOptions(
+            timeout = Duration.ofMillis(aiGenerationTimeoutMillis),
+            checkInterval = Duration.ofMillis(completionCheckIntervalMillis),
+        )
     }
 
     companion object {

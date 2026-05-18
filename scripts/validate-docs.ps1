@@ -23,6 +23,28 @@ function Test-IsoTimestamp
     return $Value -match "^$isoTimestampPattern$"
 }
 
+function Invoke-MarkdownLint
+{
+    $npx = Get-Command npx -ErrorAction SilentlyContinue
+    if ($null -eq $npx)
+    {
+        Add-ValidationError 'markdownlint-cli2 requires Node.js/npm npx on PATH'
+        return
+    }
+
+    $output = & $npx.Source --yes markdownlint-cli2@0.22.1 2>&1
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -ne 0)
+    {
+        foreach ($line in $output)
+        {
+            Add-ValidationError "markdownlint-cli2: $line"
+        }
+    }
+}
+
+Invoke-MarkdownLint
+
 $markdownFiles = Get-ChildItem -LiteralPath $repoRoot -Recurse -File -Filter '*.md' |
     Where-Object { $_.FullName -notmatch '\\.git\\' }
 

@@ -2,6 +2,15 @@
 
 Use this guide for Kotlin, Gradle, IntelliJ Platform plugin descriptors, and plugin implementation code.
 
+## Mechanical Formatting
+
+- Follow `.editorconfig` for editor defaults across Kotlin, Gradle Kotlin DSL, Markdown, YAML, and PowerShell.
+- Run `.\gradlew.bat spotlessCheck` before handoff when Kotlin or Gradle Kotlin DSL files change.
+- Run `.\gradlew.bat spotlessApply` only for mechanical formatting and license-header fixes; keep those changes separate from behavior edits when practical.
+- Spotless with ktlint is the only Kotlin and Gradle Kotlin DSL formatter. Do not add a second Kotlin formatter or license-header tool without a superseding ADR.
+- Kotlin source files under `src/` must carry the Apache-2.0 header enforced by Spotless.
+- Markdown is checked with `markdownlint-cli2@0.22.1` through `scripts/validate-docs.ps1`; use 4-space nested-list indentation and keep Markdown tables with leading/trailing pipes, consistent columns, and blank lines around tables.
+
 ## Kotlin And IntelliJ Platform
 
 - Prefer Kotlin for plugin source code.

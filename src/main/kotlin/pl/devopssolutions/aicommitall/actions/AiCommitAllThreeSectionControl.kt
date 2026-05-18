@@ -1,16 +1,46 @@
+/*
+ * Copyright 2026 DevOps Solutions Kamil Kiewisz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.devopssolutions.aicommitall.actions
 
 import com.intellij.ide.ui.laf.darcula.DarculaUIUtil
 import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
-import java.awt.*
+import java.awt.BasicStroke
+import java.awt.Color
+import java.awt.Cursor
+import java.awt.Dimension
+import java.awt.Font
+import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.Point
+import java.awt.Rectangle
+import java.awt.RenderingHints
+import java.awt.Shape
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
 import java.awt.geom.Path2D
 import java.awt.geom.RoundRectangle2D
 import javax.accessibility.AccessibleContext
-import javax.swing.*
+import javax.swing.AbstractAction
+import javax.swing.JComponent
+import javax.swing.KeyStroke
+import javax.swing.Timer
+import javax.swing.ToolTipManager
+import javax.swing.UIManager
 import javax.swing.event.MouseInputAdapter
 import kotlin.math.max
 
@@ -40,23 +70,19 @@ internal class AiCommitAllThreeSectionControl(
     override fun getAccessibleContext(): AccessibleContext {
         if (accessibleContext == null) {
             accessibleContext = object : AccessibleJComponent() {
-                override fun getAccessibleName(): String =
-                    super.getAccessibleName()?.takeIf { it.isNotBlank() } ?: "AI Commit All"
+                override fun getAccessibleName(): String = super.getAccessibleName()?.takeIf { it.isNotBlank() } ?: "AI Commit All"
 
-                override fun getAccessibleDescription(): String =
-                    super.getAccessibleDescription()?.takeIf { it.isNotBlank() } ?: "AI, Commit, and Push sections"
+                override fun getAccessibleDescription(): String = super.getAccessibleDescription()?.takeIf { it.isNotBlank() } ?: "AI, Commit, and Push sections"
             }
         }
         return accessibleContext
     }
 
-    override fun getPreferredSize(): Dimension =
-        Dimension(JBUI.scale(CONTROL_WIDTH), JBUI.scale(CONTROL_HEIGHT))
+    override fun getPreferredSize(): Dimension = Dimension(JBUI.scale(CONTROL_WIDTH), JBUI.scale(CONTROL_HEIGHT))
 
     override fun getMinimumSize(): Dimension = preferredSize
 
-    override fun getToolTipText(event: MouseEvent): String? =
-        sectionAt(event.point)?.toolTipText
+    override fun getToolTipText(event: MouseEvent): String? = sectionAt(event.point)?.toolTipText
 
     fun updateState(nextState: AiCommitAllControlState) {
         state = nextState
@@ -93,18 +119,15 @@ internal class AiCommitAllThreeSectionControl(
         super.removeNotify()
     }
 
-    internal fun sectionLabels(): List<String> =
-        AiCommitAllControlSection.entries.map { section -> section.label }
+    internal fun sectionLabels(): List<String> = AiCommitAllControlSection.entries.map { section -> section.label }
 
-    internal fun isSectionEnabledForTest(section: AiCommitAllControlSection): Boolean =
-        state.isSectionEnabled(section)
+    internal fun isSectionEnabledForTest(section: AiCommitAllControlSection): Boolean = state.isSectionEnabled(section)
 
     internal fun setHoverSectionForTest(section: AiCommitAllControlSection?) {
         hoverSection = section
     }
 
-    internal fun highlightedSectionsForTest(): Set<AiCommitAllControlSection> =
-        highlightedSections()
+    internal fun highlightedSectionsForTest(): Set<AiCommitAllControlSection> = highlightedSections()
 
     internal fun dividerColorsForTest(): Pair<Color, Color> {
         val highlighted = highlightedSections()
@@ -120,8 +143,7 @@ internal class AiCommitAllThreeSectionControl(
         return runningIndicatorDash(snakeBounds)
     }
 
-    internal fun cornerArcForTest(): Float =
-        buttonArc()
+    internal fun cornerArcForTest(): Float = buttonArc()
 
     private fun paintControl(graphics: Graphics2D) {
         val bounds = controlBounds()
@@ -143,19 +165,20 @@ internal class AiCommitAllThreeSectionControl(
         }
         graphics.color = ControlColors.border
         graphics.stroke = BasicStroke(JBUI.scale(1).toFloat())
-        graphics.draw(RoundRectangle2D.Float(
-            bounds.x + 0.5f,
-            bounds.y + 0.5f,
-            bounds.width - 1f,
-            bounds.height - 1f,
-            buttonArc(),
-            buttonArc(),
-        ))
+        graphics.draw(
+            RoundRectangle2D.Float(
+                bounds.x + 0.5f,
+                bounds.y + 0.5f,
+                bounds.width - 1f,
+                bounds.height - 1f,
+                buttonArc(),
+                buttonArc(),
+            ),
+        )
     }
 
-    private fun controlFont(): Font =
-        (font ?: UIManager.getFont("Button.font") ?: Font(Font.SANS_SERIF, Font.BOLD, JBUI.scale(12)))
-            .deriveFont(Font.BOLD, JBUI.scale(12).toFloat())
+    private fun controlFont(): Font = (font ?: UIManager.getFont("Button.font") ?: Font(Font.SANS_SERIF, Font.BOLD, JBUI.scale(12)))
+        .deriveFont(Font.BOLD, JBUI.scale(12).toFloat())
 
     private fun paintDividers(
         graphics: Graphics2D,
@@ -231,14 +254,16 @@ internal class AiCommitAllThreeSectionControl(
             floatArrayOf(dash.dashLength, dash.gapLength),
             dash.phase,
         )
-        graphics.draw(RoundRectangle2D.Float(
-            snakeBounds.x.toFloat(),
-            snakeBounds.y.toFloat(),
-            snakeBounds.width.toFloat(),
-            snakeBounds.height.toFloat(),
-            JBUI.scale(3).toFloat(),
-            JBUI.scale(3).toFloat(),
-        ))
+        graphics.draw(
+            RoundRectangle2D.Float(
+                snakeBounds.x.toFloat(),
+                snakeBounds.y.toFloat(),
+                snakeBounds.width.toFloat(),
+                snakeBounds.height.toFloat(),
+                JBUI.scale(3).toFloat(),
+                JBUI.scale(3).toFloat(),
+            ),
+        )
     }
 
     private fun runningIndicatorBounds(rectangle: Rectangle): Rectangle {
@@ -267,8 +292,7 @@ internal class AiCommitAllThreeSectionControl(
         )
     }
 
-    private fun runningIndicatorPathLength(snakeBounds: Rectangle): Float =
-        2f * (snakeBounds.width + snakeBounds.height)
+    private fun runningIndicatorPathLength(snakeBounds: Rectangle): Float = 2f * (snakeBounds.width + snakeBounds.height)
 
     private fun paintAiMark(
         graphics: Graphics2D,
@@ -325,26 +349,24 @@ internal class AiCommitAllThreeSectionControl(
     private fun sectionFill(
         section: AiCommitAllControlSection,
         highlighted: Boolean,
-    ): Color =
-        if (!state.isSectionEnabled(section) && state.runningSection == null) {
-            ControlColors.disabledFill(section)
-        } else if (highlighted) {
-            ControlColors.activeFill(section)
-        } else {
-            ControlColors.passiveFill(section)
-        }
+    ): Color = if (!state.isSectionEnabled(section) && state.runningSection == null) {
+        ControlColors.disabledFill(section)
+    } else if (highlighted) {
+        ControlColors.activeFill(section)
+    } else {
+        ControlColors.passiveFill(section)
+    }
 
     private fun sectionForeground(
         section: AiCommitAllControlSection,
         highlighted: Boolean,
-    ): Color =
-        if (!state.isSectionEnabled(section) && state.runningSection == null) {
-            ControlColors.disabledForeground
-        } else if (highlighted) {
-            ControlColors.activeForeground
-        } else {
-            ControlColors.passiveForeground(section)
-        }
+    ): Color = if (!state.isSectionEnabled(section) && state.runningSection == null) {
+        ControlColors.disabledForeground
+    } else if (highlighted) {
+        ControlColors.activeForeground
+    } else {
+        ControlColors.passiveForeground(section)
+    }
 
     private fun dividerColor(
         leftSection: AiCommitAllControlSection,
@@ -403,23 +425,32 @@ internal class AiCommitAllThreeSectionControl(
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "nextSection")
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "activateSection")
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "activateSection")
-        actionMap.put("previousSection", object : AbstractAction() {
-            override fun actionPerformed(event: java.awt.event.ActionEvent) {
-                moveKeyboardSection(-1)
-            }
-        })
-        actionMap.put("nextSection", object : AbstractAction() {
-            override fun actionPerformed(event: java.awt.event.ActionEvent) {
-                moveKeyboardSection(1)
-            }
-        })
-        actionMap.put("activateSection", object : AbstractAction() {
-            override fun actionPerformed(event: java.awt.event.ActionEvent) {
-                if (state.isSectionEnabled(keyboardSection)) {
-                    activateSection(keyboardSection, null)
+        actionMap.put(
+            "previousSection",
+            object : AbstractAction() {
+                override fun actionPerformed(event: java.awt.event.ActionEvent) {
+                    moveKeyboardSection(-1)
                 }
-            }
-        })
+            },
+        )
+        actionMap.put(
+            "nextSection",
+            object : AbstractAction() {
+                override fun actionPerformed(event: java.awt.event.ActionEvent) {
+                    moveKeyboardSection(1)
+                }
+            },
+        )
+        actionMap.put(
+            "activateSection",
+            object : AbstractAction() {
+                override fun actionPerformed(event: java.awt.event.ActionEvent) {
+                    if (state.isSectionEnabled(keyboardSection)) {
+                        activateSection(keyboardSection, null)
+                    }
+                }
+            },
+        )
     }
 
     private fun moveKeyboardSection(direction: Int) {
@@ -444,14 +475,12 @@ internal class AiCommitAllThreeSectionControl(
         }
     }
 
-    private fun sectionAt(point: Point): AiCommitAllControlSection? =
-        sectionBounds(controlBounds())
-            .entries
-            .firstOrNull { (_, bounds) -> bounds.contains(point) }
-            ?.key
+    private fun sectionAt(point: Point): AiCommitAllControlSection? = sectionBounds(controlBounds())
+        .entries
+        .firstOrNull { (_, bounds) -> bounds.contains(point) }
+        ?.key
 
-    private fun firstEnabledSection(): AiCommitAllControlSection? =
-        AiCommitAllControlSection.entries.firstOrNull { section -> state.isSectionEnabled(section) }
+    private fun firstEnabledSection(): AiCommitAllControlSection? = AiCommitAllControlSection.entries.firstOrNull { section -> state.isSectionEnabled(section) }
 
     private fun updateAnimationState() {
         if (state.runningSection != null && isDisplayable) {
@@ -464,8 +493,7 @@ internal class AiCommitAllThreeSectionControl(
         }
     }
 
-    private fun controlBounds(): Rectangle =
-        Rectangle(0, 0, width.takeIf { it > 0 } ?: preferredSize.width, height.takeIf { it > 0 } ?: preferredSize.height)
+    private fun controlBounds(): Rectangle = Rectangle(0, 0, width.takeIf { it > 0 } ?: preferredSize.width, height.takeIf { it > 0 } ?: preferredSize.height)
 
     private fun sectionBounds(bounds: Rectangle): Map<AiCommitAllControlSection, Rectangle> {
         val aiWidth = JBUI.scale(AI_SECTION_WIDTH)
@@ -493,7 +521,9 @@ internal class AiCommitAllThreeSectionControl(
                 quadTo(bounds.x.toDouble(), bounds.y.toDouble(), bounds.x + radius, bounds.y.toDouble())
                 closePath()
             }
+
             AiCommitAllControlSection.Commit -> bounds
+
             AiCommitAllControlSection.Push -> Path2D.Double().apply {
                 moveTo(bounds.x.toDouble(), bounds.y.toDouble())
                 lineTo(bounds.maxX - radius, bounds.y.toDouble())
@@ -506,14 +536,11 @@ internal class AiCommitAllThreeSectionControl(
         }
     }
 
-    private fun centerIconY(iconSize: Int): Int =
-        ((height.takeIf { it > 0 } ?: preferredSize.height) - JBUI.scale(iconSize)) / 2
+    private fun centerIconY(iconSize: Int): Int = ((height.takeIf { it > 0 } ?: preferredSize.height) - JBUI.scale(iconSize)) / 2
 
-    private fun buttonArc(): Float =
-        DarculaUIUtil.BUTTON_ARC.getFloat()
+    private fun buttonArc(): Float = DarculaUIUtil.BUTTON_ARC.getFloat()
 
-    private fun Int.floorMod(other: Int): Int =
-        ((this % other) + other) % other
+    private fun Int.floorMod(other: Int): Int = ((this % other) + other) % other
 
     private fun positivePhase(
         offset: Float,
@@ -544,32 +571,28 @@ internal class AiCommitAllThreeSectionControl(
         val pushSnake = JBColor(Color(0xD9FFE3), Color(0xD9FFE3))
         val pushIconHighlighted = JBColor(Color(0xD9FFE3), Color(0xD9FFE3))
 
-        fun passiveFill(section: AiCommitAllControlSection): Color =
-            when (section) {
-                AiCommitAllControlSection.Ai -> JBColor(Color(0xF0E9FF), Color(0x342A47))
-                AiCommitAllControlSection.Commit -> JBColor(Color(0xEAF1FF), Color(0x28394E))
-                AiCommitAllControlSection.Push -> JBColor(Color(0xE8F5EC), Color(0x263C32))
-            }
+        fun passiveFill(section: AiCommitAllControlSection): Color = when (section) {
+            AiCommitAllControlSection.Ai -> JBColor(Color(0xF0E9FF), Color(0x342A47))
+            AiCommitAllControlSection.Commit -> JBColor(Color(0xEAF1FF), Color(0x28394E))
+            AiCommitAllControlSection.Push -> JBColor(Color(0xE8F5EC), Color(0x263C32))
+        }
 
-        fun activeFill(section: AiCommitAllControlSection): Color =
-            when (section) {
-                AiCommitAllControlSection.Ai -> JBColor(Color(0x834DF0), Color(0xA571E6))
-                AiCommitAllControlSection.Commit -> JBColor(Color(0x315FAE), Color(0x2F5AA0))
-                AiCommitAllControlSection.Push -> JBColor(Color(0x238449), Color(0x2E9D50))
-            }
+        fun activeFill(section: AiCommitAllControlSection): Color = when (section) {
+            AiCommitAllControlSection.Ai -> JBColor(Color(0x834DF0), Color(0xA571E6))
+            AiCommitAllControlSection.Commit -> JBColor(Color(0x315FAE), Color(0x2F5AA0))
+            AiCommitAllControlSection.Push -> JBColor(Color(0x238449), Color(0x2E9D50))
+        }
 
-        fun disabledFill(section: AiCommitAllControlSection): Color =
-            when (section) {
-                AiCommitAllControlSection.Push -> JBColor(Color(0xDCEAE2), Color(0x2F3A35))
-                else -> JBColor(Color(0xE4E8F0), Color(0x303641))
-            }
+        fun disabledFill(section: AiCommitAllControlSection): Color = when (section) {
+            AiCommitAllControlSection.Push -> JBColor(Color(0xDCEAE2), Color(0x2F3A35))
+            else -> JBColor(Color(0xE4E8F0), Color(0x303641))
+        }
 
-        fun passiveForeground(section: AiCommitAllControlSection): Color =
-            when (section) {
-                AiCommitAllControlSection.Ai -> JBColor(Color(0x6F4BB8), Color(0xB99BE8))
-                AiCommitAllControlSection.Commit -> JBColor(Color(0x315FAE), Color(0x9DB6E3))
-                AiCommitAllControlSection.Push -> JBColor(Color(0x238449), Color(0x8AF0A1))
-            }
+        fun passiveForeground(section: AiCommitAllControlSection): Color = when (section) {
+            AiCommitAllControlSection.Ai -> JBColor(Color(0x6F4BB8), Color(0xB99BE8))
+            AiCommitAllControlSection.Commit -> JBColor(Color(0x315FAE), Color(0x9DB6E3))
+            AiCommitAllControlSection.Push -> JBColor(Color(0x238449), Color(0x8AF0A1))
+        }
     }
 
     companion object {

@@ -1,6 +1,33 @@
+/*
+ * Copyright 2026 DevOps Solutions Kamil Kiewisz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.devopssolutions.aicommitall.actions
 
-import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.actionSystem.ActionGroup
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.ActionPopupMenu
+import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.ActionUiKind
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.actionSystem.KeyboardShortcut
+import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.actionSystem.TimerListener
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ActionCallback
@@ -12,7 +39,12 @@ import java.awt.image.BufferedImage
 import java.lang.reflect.Proxy
 import java.util.concurrent.CompletableFuture
 import javax.swing.JComponent
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 internal class AiCommitAllActionsTest {
     @Test
@@ -363,53 +395,48 @@ internal class AiCommitAllActionsTest {
         override fun runningSection(project: Project): AiCommitAllControlSection? = runningSection
     }
 
-    private fun JComponent.asControl(): AiCommitAllThreeSectionControl =
-        this as AiCommitAllThreeSectionControl
+    private fun JComponent.asControl(): AiCommitAllThreeSectionControl = this as AiCommitAllThreeSectionControl
 
     private fun testEvent(
         dataContext: DataContext,
-    ): AnActionEvent =
-        AnActionEvent(
-            dataContext,
-            Presentation(),
-            ActionPlaces.CHANGES_VIEW_TOOLBAR,
-            ActionUiKind.NONE,
-            null,
-            0,
-            TestActionManager,
-        )
+    ): AnActionEvent = AnActionEvent(
+        dataContext,
+        Presentation(),
+        ActionPlaces.CHANGES_VIEW_TOOLBAR,
+        ActionUiKind.NONE,
+        null,
+        0,
+        TestActionManager,
+    )
 
-    private fun testDataContext(project: Project): DataContext =
-        DataContext { dataId ->
-            when (dataId) {
-                CommonDataKeys.PROJECT.name -> project
-                else -> null
-            }
-        }
-
-    private fun testProject(): Project =
-        Proxy.newProxyInstance(
-            Project::class.java.classLoader,
-            arrayOf(Project::class.java),
-        ) { proxy, method, args ->
-            when (method.name) {
-                "toString" -> "Test Project"
-                "hashCode" -> System.identityHashCode(proxy)
-                "equals" -> proxy === args?.firstOrNull()
-                else -> method.defaultReturnValue()
-            }
-        } as Project
-
-    private fun java.lang.reflect.Method.defaultReturnValue(): Any? =
-        when (returnType) {
-            java.lang.Boolean.TYPE -> false
-            java.lang.Integer.TYPE -> 0
-            java.lang.Long.TYPE -> 0L
-            java.lang.Float.TYPE -> 0f
-            java.lang.Double.TYPE -> 0.0
-            java.lang.Void.TYPE -> null
+    private fun testDataContext(project: Project): DataContext = DataContext { dataId ->
+        when (dataId) {
+            CommonDataKeys.PROJECT.name -> project
             else -> null
         }
+    }
+
+    private fun testProject(): Project = Proxy.newProxyInstance(
+        Project::class.java.classLoader,
+        arrayOf(Project::class.java),
+    ) { proxy, method, args ->
+        when (method.name) {
+            "toString" -> "Test Project"
+            "hashCode" -> System.identityHashCode(proxy)
+            "equals" -> proxy === args?.firstOrNull()
+            else -> method.defaultReturnValue()
+        }
+    } as Project
+
+    private fun java.lang.reflect.Method.defaultReturnValue(): Any? = when (returnType) {
+        java.lang.Boolean.TYPE -> false
+        java.lang.Integer.TYPE -> 0
+        java.lang.Long.TYPE -> 0L
+        java.lang.Float.TYPE -> 0f
+        java.lang.Double.TYPE -> 0.0
+        java.lang.Void.TYPE -> null
+        else -> null
+    }
 
     @Suppress("OVERRIDE_DEPRECATION")
     private object TestActionManager : ActionManager() {

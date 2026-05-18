@@ -1,3 +1,18 @@
+/*
+ * Copyright 2026 DevOps Solutions Kamil Kiewisz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.devopssolutions.aicommitall.actions
 
 import com.intellij.openapi.actionSystem.ActionGroup
@@ -243,16 +258,15 @@ internal class AiCommitAllShortcutActionsTest {
         availability: AiCommitAllWorkflowActionAvailability = AiCommitAllWorkflowActionAvailability.Enabled,
         delegate: StandardVcsShortcutActionDelegate = CapturingStandardActionDelegate(),
         runningSection: AiCommitAllControlSection? = null,
-    ): AiCommitAllShortcutAction =
-        object : AiCommitAllShortcutAction(
-            section = section,
-            sourceActionId = sourceActionId,
-            workflowStarter = starter,
-            availabilityProvider = StaticAvailabilityProvider(availability),
-            settingsProvider = StaticShortcutSettingsProvider(settingsEnabled),
-            standardActionDelegate = delegate,
-            activityProvider = StaticActivityProvider(runningSection),
-        ) {}
+    ): AiCommitAllShortcutAction = object : AiCommitAllShortcutAction(
+        section = section,
+        sourceActionId = sourceActionId,
+        workflowStarter = starter,
+        availabilityProvider = StaticAvailabilityProvider(availability),
+        settingsProvider = StaticShortcutSettingsProvider(settingsEnabled),
+        standardActionDelegate = delegate,
+        activityProvider = StaticActivityProvider(runningSection),
+    ) {}
 
     private class CapturingWorkflowStarter : AiCommitAllWorkflowStarter {
         var project: Project? = null
@@ -310,53 +324,48 @@ internal class AiCommitAllShortcutActionsTest {
         override fun id(action: AnAction): String? = ids[action]
     }
 
-    private fun testSourceAction(): AnAction =
-        object : DumbAwareAction() {
-            override fun actionPerformed(event: AnActionEvent) = Unit
-        }
+    private fun testSourceAction(): AnAction = object : DumbAwareAction() {
+        override fun actionPerformed(event: AnActionEvent) = Unit
+    }
 
-    private fun testEvent(dataContext: DataContext): AnActionEvent =
-        AnActionEvent(
-            dataContext,
-            Presentation(),
-            ActionPlaces.CHANGES_VIEW_TOOLBAR,
-            ActionUiKind.NONE,
-            null,
-            0,
-            TestActionManager,
-        )
+    private fun testEvent(dataContext: DataContext): AnActionEvent = AnActionEvent(
+        dataContext,
+        Presentation(),
+        ActionPlaces.CHANGES_VIEW_TOOLBAR,
+        ActionUiKind.NONE,
+        null,
+        0,
+        TestActionManager,
+    )
 
-    private fun testDataContext(project: Project): DataContext =
-        DataContext { dataId ->
-            when (dataId) {
-                CommonDataKeys.PROJECT.name -> project
-                else -> null
-            }
-        }
-
-    private fun testProject(): Project =
-        Proxy.newProxyInstance(
-            Project::class.java.classLoader,
-            arrayOf(Project::class.java),
-        ) { proxy, method, args ->
-            when (method.name) {
-                "toString" -> "Test Project"
-                "hashCode" -> System.identityHashCode(proxy)
-                "equals" -> proxy === args?.firstOrNull()
-                else -> method.defaultReturnValue()
-            }
-        } as Project
-
-    private fun java.lang.reflect.Method.defaultReturnValue(): Any? =
-        when (returnType) {
-            java.lang.Boolean.TYPE -> false
-            java.lang.Integer.TYPE -> 0
-            java.lang.Long.TYPE -> 0L
-            java.lang.Float.TYPE -> 0f
-            java.lang.Double.TYPE -> 0.0
-            java.lang.Void.TYPE -> null
+    private fun testDataContext(project: Project): DataContext = DataContext { dataId ->
+        when (dataId) {
+            CommonDataKeys.PROJECT.name -> project
             else -> null
         }
+    }
+
+    private fun testProject(): Project = Proxy.newProxyInstance(
+        Project::class.java.classLoader,
+        arrayOf(Project::class.java),
+    ) { proxy, method, args ->
+        when (method.name) {
+            "toString" -> "Test Project"
+            "hashCode" -> System.identityHashCode(proxy)
+            "equals" -> proxy === args?.firstOrNull()
+            else -> method.defaultReturnValue()
+        }
+    } as Project
+
+    private fun java.lang.reflect.Method.defaultReturnValue(): Any? = when (returnType) {
+        java.lang.Boolean.TYPE -> false
+        java.lang.Integer.TYPE -> 0
+        java.lang.Long.TYPE -> 0L
+        java.lang.Float.TYPE -> 0f
+        java.lang.Double.TYPE -> 0.0
+        java.lang.Void.TYPE -> null
+        else -> null
+    }
 
     @Suppress("OVERRIDE_DEPRECATION")
     private object TestActionManager : ActionManager() {

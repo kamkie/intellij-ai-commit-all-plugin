@@ -1,3 +1,18 @@
+/*
+ * Copyright 2026 DevOps Solutions Kamil Kiewisz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.devopssolutions.aicommitall.workflow
 
 import com.intellij.openapi.vcs.changes.CommitExecutor
@@ -5,8 +20,18 @@ import com.intellij.vcs.commit.AmendCommitHandler
 import com.intellij.vcs.commit.CommitExecutorListener
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowHandlerState
-import pl.devopssolutions.aicommitall.vcs.*
-import kotlin.test.*
+import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushDecision
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushFallbackReason
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushPlan
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushSupport
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 internal class CommitWorkflowExecutionServiceTest {
     private val gitCommitAndPushExecutorId = "Git.Commit.And.Push.Executor"
@@ -317,7 +342,8 @@ internal class CommitWorkflowExecutionServiceTest {
         var commitAndPushEnabled: Boolean = false,
         private val defaultCommitFailure: RuntimeException? = null,
         private val executeFailure: RuntimeException? = null,
-    ) : CommitWorkflowHandler, CommitExecutorListener {
+    ) : CommitWorkflowHandler,
+        CommitExecutorListener {
         var executorCallCount = 0
         var executor: CommitExecutor? = null
         var executeCallCount = 0
@@ -342,8 +368,7 @@ internal class CommitWorkflowExecutionServiceTest {
             }
         }
 
-        override fun isExecutorEnabled(executor: CommitExecutor): Boolean =
-            executor === commitAndPushExecutor && commitAndPushEnabled
+        override fun isExecutorEnabled(executor: CommitExecutor): Boolean = executor === commitAndPushExecutor && commitAndPushEnabled
 
         override fun execute(executor: CommitExecutor) {
             executeCallCount++
@@ -351,8 +376,7 @@ internal class CommitWorkflowExecutionServiceTest {
             executeFailure?.let { failure -> throw failure }
         }
 
-        override fun getState(): CommitWorkflowHandlerState =
-            CommitWorkflowHandlerState(isAmend = false, isSkipCommitChecks = false)
+        override fun getState(): CommitWorkflowHandlerState = CommitWorkflowHandlerState(isAmend = false, isSkipCommitChecks = false)
     }
 
     private object UnsupportedCommitWorkflowHandler : CommitWorkflowHandler {
@@ -365,14 +389,12 @@ internal class CommitWorkflowExecutionServiceTest {
 
         override fun execute(executor: CommitExecutor) = error("Not needed for execution tests.")
 
-        override fun getState(): CommitWorkflowHandlerState =
-            CommitWorkflowHandlerState(isAmend = false, isSkipCommitChecks = false)
+        override fun getState(): CommitWorkflowHandlerState = CommitWorkflowHandlerState(isAmend = false, isSkipCommitChecks = false)
     }
 
     private object TestCommitAndPushExecutor : CommitExecutor {
         override fun getActionText(): String = "Commit and Push"
     }
 
-    private fun CommitWorkflowExecutionResult.asStarted(): CommitWorkflowExecutionResult.Started =
-        this as CommitWorkflowExecutionResult.Started
+    private fun CommitWorkflowExecutionResult.asStarted(): CommitWorkflowExecutionResult.Started = this as CommitWorkflowExecutionResult.Started
 }

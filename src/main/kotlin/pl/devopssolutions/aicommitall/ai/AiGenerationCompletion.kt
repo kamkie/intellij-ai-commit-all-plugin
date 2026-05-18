@@ -1,3 +1,18 @@
+/*
+ * Copyright 2026 DevOps Solutions Kamil Kiewisz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.devopssolutions.aicommitall.ai
 
 import com.intellij.concurrency.JobScheduler
@@ -18,8 +33,7 @@ import java.util.concurrent.atomic.AtomicReference
 internal class AiGenerationCompletionService {
     private val observer = AiGenerationCompletionObserver()
 
-    fun captureInitialMessage(commitMessageUi: CommitMessageUi): AiCommitMessageSnapshot =
-        AiCommitMessageSnapshot.capture(commitMessageUi)
+    fun captureInitialMessage(commitMessageUi: CommitMessageUi): AiCommitMessageSnapshot = AiCommitMessageSnapshot.capture(commitMessageUi)
 
     fun awaitCompletionAsync(
         snapshot: AiCommitMessageSnapshot,
@@ -77,6 +91,7 @@ internal class AiGenerationCompletionObserver(
                 AiGenerationRunningState.Running -> {
                     observedRunning = true
                 }
+
                 AiGenerationRunningState.NotRunning -> {
                     if (observedRunning || currentMessage.isUsableChangedMessage(snapshot)) {
                         return completionResult(
@@ -102,30 +117,29 @@ internal class AiGenerationCompletionObserver(
         )
     }
 
-    private fun String.isUsableChangedMessage(snapshot: AiCommitMessageSnapshot): Boolean =
-        isNotBlank() && this != snapshot.originalMessage
+    private fun String.isUsableChangedMessage(snapshot: AiCommitMessageSnapshot): Boolean = isNotBlank() && this != snapshot.originalMessage
 
     private fun completionResult(
         snapshot: AiCommitMessageSnapshot,
         currentMessage: String,
-    ): AiGenerationCompletionResult =
-        when {
-            currentMessage.isBlank() -> AiGenerationCompletionResult.EmptyMessage
-            currentMessage == snapshot.originalMessage -> AiGenerationCompletionResult.UnchangedMessage(currentMessage)
-            else -> AiGenerationCompletionResult.Completed(
-                originalMessage = snapshot.originalMessage,
-                generatedMessage = currentMessage,
-                evidence = AiGenerationCompletionEvidence.ActionNoLongerRunningAndMessageChanged,
-            )
-        }
+    ): AiGenerationCompletionResult = when {
+        currentMessage.isBlank() -> AiGenerationCompletionResult.EmptyMessage
+
+        currentMessage == snapshot.originalMessage -> AiGenerationCompletionResult.UnchangedMessage(currentMessage)
+
+        else -> AiGenerationCompletionResult.Completed(
+            originalMessage = snapshot.originalMessage,
+            generatedMessage = currentMessage,
+            evidence = AiGenerationCompletionEvidence.ActionNoLongerRunningAndMessageChanged,
+        )
+    }
 }
 
 internal data class AiCommitMessageSnapshot(
     val originalMessage: String,
 ) {
     companion object {
-        fun capture(commitMessageUi: CommitMessageUi): AiCommitMessageSnapshot =
-            AiCommitMessageSnapshot(commitMessageUi.text)
+        fun capture(commitMessageUi: CommitMessageUi): AiCommitMessageSnapshot = AiCommitMessageSnapshot(commitMessageUi.text)
     }
 }
 
@@ -181,8 +195,7 @@ internal class CommitMessageUiReader(
     private val commitMessageUi: CommitMessageUi,
     private val textAccess: CommitMessageUiTextAccess = EdtCommitMessageUiTextAccess,
 ) : AiCommitMessageReader {
-    override fun readMessage(): String =
-        textAccess.readText { commitMessageUi.text }
+    override fun readMessage(): String = textAccess.readText { commitMessageUi.text }
 }
 
 internal fun interface CommitMessageUiTextAccess {
@@ -223,19 +236,18 @@ internal fun interface AiGenerationUserEditSignal {
 }
 
 internal class ReflectiveActionProgressRunningSignal(private val action: AnAction) : AiGenerationRunningSignal {
-    override fun state(): AiGenerationRunningState =
-        runCatching {
-            val progressIndicatorField = action.javaClass.findField("progressIndicator")
-                ?: return AiGenerationRunningState.Unavailable
-            val progressIndicator = progressIndicatorField.get(action) as? ProgressIndicator
-                ?: return AiGenerationRunningState.NotRunning
+    override fun state(): AiGenerationRunningState = runCatching {
+        val progressIndicatorField = action.javaClass.findField("progressIndicator")
+            ?: return AiGenerationRunningState.Unavailable
+        val progressIndicator = progressIndicatorField.get(action) as? ProgressIndicator
+            ?: return AiGenerationRunningState.NotRunning
 
-            if (progressIndicator.isRunning) {
-                AiGenerationRunningState.Running
-            } else {
-                AiGenerationRunningState.NotRunning
-            }
-        }.getOrDefault(AiGenerationRunningState.Unavailable)
+        if (progressIndicator.isRunning) {
+            AiGenerationRunningState.Running
+        } else {
+            AiGenerationRunningState.NotRunning
+        }
+    }.getOrDefault(AiGenerationRunningState.Unavailable)
 
     private fun Class<*>.findField(name: String): Field? {
         var currentClass: Class<*>? = this

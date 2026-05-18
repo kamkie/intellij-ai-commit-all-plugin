@@ -19,10 +19,12 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- `PLAN-automate-manual-scenarios` - Automate Manual Scenarios ([PLAN-automate-manual-scenarios.md](PLAN-automate-manual-scenarios.md)).
+- None.
 
 ## Archived Plans
 
+- `PLAN-automate-manual-scenarios` - Automate Manual Scenarios ([archive/PLAN-automate-manual-scenarios.md](archive/PLAN-automate-manual-scenarios.md)), archived as of 2026-05-18.
+- `PLAN-unified-formatting-linting-toolchain` - Unified Formatting And Linting Toolchain ([archive/PLAN-unified-formatting-linting-toolchain.md](archive/PLAN-unified-formatting-linting-toolchain.md)), archived as of 2026-05-18.
 - `PLAN-confirm-staged-before-ai-generation` - Confirm Staged Before AI Generation ([archive/PLAN-confirm-staged-before-ai-generation.md](archive/PLAN-confirm-staged-before-ai-generation.md)), archived as of 2026-05-18.
 - `PLAN-three-section-ai-commit-push-control` - Three-Section AI Commit Push Control ([archive/PLAN-three-section-ai-commit-push-control.md](archive/PLAN-three-section-ai-commit-push-control.md)), archived as of 2026-05-18.
 - `PLAN-scaffold-plugin-project` - Scaffold Plugin Project ([archive/PLAN-scaffold-plugin-project.md](archive/PLAN-scaffold-plugin-project.md)), archived as of 2026-05-15.

@@ -431,7 +431,7 @@ Use IntelliJ IDEA `IIU` first. Repeat representative happy-path and failure-path
 | `SCN-PUSH-MAN-004` | Push target is protected, new, special, or otherwise ambiguous. | Click `Push`. | Immediate push is not used and platform behavior remains in charge. |
 | `SCN-PUSH-MAN-005` | Repository state is not normal. | Click `Push`. | Immediate push is not used. |
 | `SCN-PUSH-MAN-006` | Real push failure can be produced safely against a local remote. | Click `Push`. | Push failure is surfaced and branch hashes show no unintended remote update. |
-| `SCN-SETTINGS-MAN-001` | Settings dialog is available. | Open `Settings | Tools | AI Commit All`. | Defaults match documented and automated settings defaults. |
+| `SCN-SETTINGS-MAN-001` | Settings dialog is available. | Open `Settings > Tools > AI Commit All`. | Defaults match documented and automated settings defaults. |
 | `SCN-SETTINGS-MAN-002` | Settings can be changed and IDE restarted or project reopened. | Change settings, restart or reopen, and inspect values. | Settings persist. |
 | `SCN-SETTINGS-MAN-003` | Timeout, clear-before-generation, and shortcut settings can be toggled. | Run workflows with each setting changed. | Runtime behavior follows the configured values. |
 

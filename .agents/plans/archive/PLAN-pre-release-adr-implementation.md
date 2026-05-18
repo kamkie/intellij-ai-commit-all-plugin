@@ -61,12 +61,12 @@ Reference: ADR 0025 and `PROP-02-pre-release-ux` `E003` through `E005`.
 
 - Add `docs/concepts/graphics/split-button-drafts/`.
 - Create four to six draft style directories or files covering:
-  - normal enabled state;
-  - running or AI-generation-in-progress state;
-  - disabled state;
-  - commit-only flow;
-  - commit-and-push flow;
-  - light and dark theme rendering.
+    - normal enabled state;
+    - running or AI-generation-in-progress state;
+    - disabled state;
+    - commit-only flow;
+    - commit-and-push flow;
+    - light and dark theme rendering.
 - Add draft documentation with scoring criteria for legibility, theme contrast, segment distinction, IntelliJ guideline fit, brand signal, and accessibility.
 - Add a compact decision tree for later final style selection.
 - Update `docs/concepts/graphics/README.md` to link the draft series.
@@ -78,11 +78,11 @@ Reference: ADR 0047 and `PROP-02-pre-release-ux` `E002`.
 
 - Add a small push-safety decision layer before the current `Git.Commit.And.Push.Executor` path.
 - Verify the ADR 0047 conditions where supported:
-  - each affected Git repository has a tracked upstream branch;
-  - no affected repository requires force push;
-  - no unresolved conflicts are present in the affected commit scope;
-  - push target selection is unambiguous across affected Git roots;
-  - standard IntelliJ, Git, VCS, and push errors remain platform-owned.
+    - each affected Git repository has a tracked upstream branch;
+    - no affected repository requires force push;
+    - no unresolved conflicts are present in the affected commit scope;
+    - push target selection is unambiguous across affected Git roots;
+    - standard IntelliJ, Git, VCS, and push errors remain platform-owned.
 - Use the immediate push path only when every safety condition is verified.
 - Fall back to the standard push dialog or existing commit-and-push executor behavior when any condition cannot be verified.
 - Add focused automated tests for safety decision outcomes and executor-path selection.

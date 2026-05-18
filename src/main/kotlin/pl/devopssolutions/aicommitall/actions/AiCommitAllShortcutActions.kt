@@ -1,3 +1,18 @@
+/*
+ * Copyright 2026 DevOps Solutions Kamil Kiewisz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.devopssolutions.aicommitall.actions
 
 import com.intellij.openapi.actionSystem.ActionManager
@@ -12,15 +27,17 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import pl.devopssolutions.aicommitall.settings.AiCommitAllSettings
 
-internal class AiCommitAllCommitShortcutAction : AiCommitAllShortcutAction(
-    section = AiCommitAllControlSection.Commit,
-    sourceActionId = IDE_COMMIT_ACTION_ID,
-)
+internal class AiCommitAllCommitShortcutAction :
+    AiCommitAllShortcutAction(
+        section = AiCommitAllControlSection.Commit,
+        sourceActionId = IDE_COMMIT_ACTION_ID,
+    )
 
-internal class AiCommitAllPushShortcutAction : AiCommitAllShortcutAction(
-    section = AiCommitAllControlSection.Push,
-    sourceActionId = IDE_COMMIT_AND_PUSH_ACTION_ID,
-)
+internal class AiCommitAllPushShortcutAction :
+    AiCommitAllShortcutAction(
+        section = AiCommitAllControlSection.Push,
+        sourceActionId = IDE_COMMIT_AND_PUSH_ACTION_ID,
+    )
 
 internal abstract class AiCommitAllShortcutAction(
     private val section: AiCommitAllControlSection,
@@ -77,20 +94,18 @@ internal abstract class AiCommitAllShortcutAction(
     private fun isWorkflowAvailable(
         project: Project,
         dataContext: DataContext,
-    ): Boolean =
-        availabilityProvider.availability(
-            project = project,
-            mode = section.mode,
-            dataContext = dataContext,
-        ).enabled
+    ): Boolean = availabilityProvider.availability(
+        project = project,
+        mode = section.mode,
+        dataContext = dataContext,
+    ).enabled
 
     private fun isWorkflowRunning(dataContext: DataContext): Boolean {
         val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return false
         return isWorkflowRunning(project)
     }
 
-    private fun isWorkflowRunning(project: Project): Boolean =
-        activityProvider.runningSection(project) != null
+    private fun isWorkflowRunning(project: Project): Boolean = activityProvider.runningSection(project) != null
 }
 
 internal class AiCommitAllShortcutActionPromoter(
@@ -102,8 +117,7 @@ internal class AiCommitAllShortcutActionPromoter(
     override fun promote(
         actions: List<AnAction>,
         context: DataContext,
-    ): List<AnAction> =
-        takeoverActions(actions, context)
+    ): List<AnAction> = takeoverActions(actions, context)
 
     override fun suppress(
         actions: List<AnAction>,
@@ -138,8 +152,7 @@ internal fun interface AiCommitAllShortcutSettingsProvider {
 }
 
 internal object ProjectAiCommitAllShortcutSettingsProvider : AiCommitAllShortcutSettingsProvider {
-    override fun useVcsShortcutsForAiCommitAll(): Boolean =
-        AiCommitAllSettings.getInstance().useVcsShortcutsForAiCommitAll()
+    override fun useVcsShortcutsForAiCommitAll(): Boolean = AiCommitAllSettings.getInstance().useVcsShortcutsForAiCommitAll()
 }
 
 internal fun interface StandardVcsShortcutActionDelegate {
@@ -164,8 +177,7 @@ internal fun interface AiCommitAllActionIdProvider {
 }
 
 internal object IntellijAiCommitAllActionIdProvider : AiCommitAllActionIdProvider {
-    override fun id(action: AnAction): String? =
-        ActionManager.getInstance().getId(action)
+    override fun id(action: AnAction): String? = ActionManager.getInstance().getId(action)
 }
 
 internal const val IDE_COMMIT_ACTION_ID: String = "CheckinProject"

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2026 DevOps Solutions Kamil Kiewisz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.devopssolutions.aicommitall.workflow
 
 import com.intellij.openapi.actionSystem.DataContext
@@ -160,15 +175,15 @@ internal class AiCommitAllWorkflowRunnerTest {
     fun `workflow maps unusable AI completion results to stop reasons without execution`() {
         val cases = listOf(
             AiGenerationCompletionResult.Timeout(Duration.ofSeconds(5), "draft") to
-                    AiCommitAllWorkflowStopReason.AiTimeout,
+                AiCommitAllWorkflowStopReason.AiTimeout,
             AiGenerationCompletionResult.EmptyMessage to
-                    AiCommitAllWorkflowStopReason.EmptyMessage,
+                AiCommitAllWorkflowStopReason.EmptyMessage,
             AiGenerationCompletionResult.UnchangedMessage("same message") to
-                    AiCommitAllWorkflowStopReason.UnchangedMessage,
+                AiCommitAllWorkflowStopReason.UnchangedMessage,
             AiGenerationCompletionResult.NoCompletionSignal("generated message") to
-                    AiCommitAllWorkflowStopReason.NoCompletionSignal,
+                AiCommitAllWorkflowStopReason.NoCompletionSignal,
             AiGenerationCompletionResult.UserEditedMessage("user message") to
-                    AiCommitAllWorkflowStopReason.UserEditedMessage,
+                AiCommitAllWorkflowStopReason.UserEditedMessage,
         )
 
         cases.forEach { (completionResult, expectedReason) ->
@@ -477,15 +492,13 @@ internal class AiCommitAllWorkflowRunnerTest {
     }
 
     private companion object {
-        private fun runner(dependencies: CapturingWorkflowDependencies): AiCommitAllWorkflowRunner =
-            AiCommitAllWorkflowRunner(dependencies, ImmediateWorkflowScheduler)
+        private fun runner(dependencies: CapturingWorkflowDependencies): AiCommitAllWorkflowRunner = AiCommitAllWorkflowRunner(dependencies, ImmediateWorkflowScheduler)
 
-        private fun completedAiGeneration(): AiGenerationCompletionResult =
-            AiGenerationCompletionResult.Completed(
-                originalMessage = "",
-                generatedMessage = "Generated commit message",
-                evidence = AiGenerationCompletionEvidence.ActionNoLongerRunningAndMessageChanged,
-            )
+        private fun completedAiGeneration(): AiGenerationCompletionResult = AiGenerationCompletionResult.Completed(
+            originalMessage = "",
+            generatedMessage = "Generated commit message",
+            evidence = AiGenerationCompletionEvidence.ActionNoLongerRunningAndMessageChanged,
+        )
 
         private fun testDataContext(
             workflowHandler: CommitWorkflowHandler = testProxy(),
@@ -498,29 +511,27 @@ internal class AiCommitAllWorkflowRunnerTest {
             return DataContext { dataId -> data[dataId] }
         }
 
-        private inline fun <reified T : Any> testProxy(): T =
-            Proxy.newProxyInstance(
-                T::class.java.classLoader,
-                arrayOf(T::class.java),
-            ) { proxy, method, args ->
-                when (method.name) {
-                    "toString" -> "Test ${T::class.java.simpleName}"
-                    "hashCode" -> System.identityHashCode(proxy)
-                    "equals" -> proxy === args?.firstOrNull()
-                    else -> method.defaultReturnValue()
-                }
-            } as T
-
-        private fun java.lang.reflect.Method.defaultReturnValue(): Any? =
-            when (returnType) {
-                java.lang.Boolean.TYPE -> false
-                java.lang.Integer.TYPE -> 0
-                java.lang.Long.TYPE -> 0L
-                java.lang.Float.TYPE -> 0f
-                java.lang.Double.TYPE -> 0.0
-                java.lang.Void.TYPE -> null
-                else -> null
+        private inline fun <reified T : Any> testProxy(): T = Proxy.newProxyInstance(
+            T::class.java.classLoader,
+            arrayOf(T::class.java),
+        ) { proxy, method, args ->
+            when (method.name) {
+                "toString" -> "Test ${T::class.java.simpleName}"
+                "hashCode" -> System.identityHashCode(proxy)
+                "equals" -> proxy === args?.firstOrNull()
+                else -> method.defaultReturnValue()
             }
+        } as T
+
+        private fun java.lang.reflect.Method.defaultReturnValue(): Any? = when (returnType) {
+            java.lang.Boolean.TYPE -> false
+            java.lang.Integer.TYPE -> 0
+            java.lang.Long.TYPE -> 0L
+            java.lang.Float.TYPE -> 0f
+            java.lang.Double.TYPE -> 0.0
+            java.lang.Void.TYPE -> null
+            else -> null
+        }
 
         private fun <T> completedFrom(action: () -> T): CompletableFuture<T> {
             val future = CompletableFuture<T>()
@@ -538,11 +549,9 @@ internal class AiCommitAllWorkflowRunnerTest {
     }
 
     private object ImmediateWorkflowScheduler : AiCommitAllWorkflowScheduler {
-        override fun <T> supplyBackground(action: () -> T): CompletableFuture<T> =
-            completedFrom(action)
+        override fun <T> supplyBackground(action: () -> T): CompletableFuture<T> = completedFrom(action)
 
-        override fun <T> supplyEdt(action: () -> T): CompletableFuture<T> =
-            completedFrom(action)
+        override fun <T> supplyEdt(action: () -> T): CompletableFuture<T> = completedFrom(action)
     }
 
     private class CapturingWorkflowScheduler : AiCommitAllWorkflowScheduler {
@@ -555,11 +564,9 @@ internal class AiCommitAllWorkflowRunnerTest {
         val edtActionCount: Int
             get() = edtActions.size
 
-        override fun <T> supplyBackground(action: () -> T): CompletableFuture<T> =
-            queued(backgroundActions, action)
+        override fun <T> supplyBackground(action: () -> T): CompletableFuture<T> = queued(backgroundActions, action)
 
-        override fun <T> supplyEdt(action: () -> T): CompletableFuture<T> =
-            queued(edtActions, action)
+        override fun <T> supplyEdt(action: () -> T): CompletableFuture<T> = queued(edtActions, action)
 
         fun runNextBackground() {
             backgroundActions.removeFirst()()

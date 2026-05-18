@@ -34,6 +34,7 @@ Manual sandbox validation is tracked in [docs/validation/manual-sandbox.md](docs
 ## Requirements
 
 - JDK 21.
+- Node.js with `npx` for Markdown linting during documentation validation.
 - Git for local repository validation and development fixtures.
 - JetBrains IDE with the 2026.1 IntelliJ Platform line and the non-modal Commit tool window.
 - JetBrains AI Assistant, required by plugin dependency `com.intellij.ml.llm`.
@@ -54,6 +55,18 @@ Run automated tests:
 .\gradlew.bat test
 ```
 
+Run source formatting checks:
+
+```powershell
+.\gradlew.bat spotlessCheck
+```
+
+Apply mechanical source formatting and Kotlin license-header fixes:
+
+```powershell
+.\gradlew.bat spotlessApply
+```
+
 Run documentation validation:
 
 ```powershell
@@ -66,7 +79,7 @@ Run the sandbox IDE:
 .\gradlew.bat runIde
 ```
 
-Pull-request CI runs `test`, `verifyPluginStructure`, and `buildPlugin` without Marketplace or signing secrets. The separate Plugin Verifier workflow checks the configured IDE matrix.
+Pull-request CI validates the Gradle wrapper, source formatting, documentation, tests, plugin structure, and plugin packaging without Marketplace or signing secrets. The separate Plugin Verifier workflow checks the configured IDE matrix.
 
 ## Usage
 

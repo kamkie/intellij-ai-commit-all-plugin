@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("jvm") version "2.3.20"
+    id("com.diffplug.spotless") version "8.5.1"
     id("org.jetbrains.intellij.platform")
 }
 
@@ -42,6 +43,19 @@ java {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+spotless {
+    kotlin {
+        target("src/**/*.kt")
+        ktlint("1.8.0")
+        licenseHeaderFile(rootProject.file("config/spotless/apache-kotlin.license"), "package ")
+    }
+
+    kotlinGradle {
+        target("*.gradle.kts", "gradle/**/*.gradle.kts")
+        ktlint("1.8.0")
+    }
 }
 
 intellijPlatform {

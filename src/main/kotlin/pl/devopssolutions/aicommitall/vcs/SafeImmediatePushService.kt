@@ -1,3 +1,18 @@
+/*
+ * Copyright 2026 DevOps Solutions Kamil Kiewisz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.devopssolutions.aicommitall.vcs
 
 import com.intellij.dvcs.push.PushSpec
@@ -131,11 +146,10 @@ internal class SafeImmediatePushService(private val project: Project) : SafeImme
         }
     }
 
-    private fun gitPushSupport(): GitPushSupport? =
-        PushSupport.PUSH_SUPPORT_EP
-            .getExtensionList(project)
-            .filterIsInstance<GitPushSupport>()
-            .firstOrNull { pushSupport -> pushSupport.vcs === GitVcs.getInstance(project) }
+    private fun gitPushSupport(): GitPushSupport? = PushSupport.PUSH_SUPPORT_EP
+        .getExtensionList(project)
+        .filterIsInstance<GitPushSupport>()
+        .firstOrNull { pushSupport -> pushSupport.vcs === GitVcs.getInstance(project) }
 
     private fun GitRepository.pushState(
         pushSupport: GitPushSupport,
@@ -180,23 +194,21 @@ internal class SafeImmediatePushService(private val project: Project) : SafeImme
     }
 }
 
-private fun GitChangeSelection.affectedPaths(): List<FilePath> =
-    buildList {
-        trackedChanges.forEach { change ->
-            addAffectedPaths(change)
-        }
-        addAll(unversionedFiles)
-        addAll(resolvedConflictPaths)
-        addAll(stagingAreaPaths)
-    }.distinctBy { path -> path.path }
+private fun GitChangeSelection.affectedPaths(): List<FilePath> = buildList {
+    trackedChanges.forEach { change ->
+        addAffectedPaths(change)
+    }
+    addAll(unversionedFiles)
+    addAll(resolvedConflictPaths)
+    addAll(stagingAreaPaths)
+}.distinctBy { path -> path.path }
 
 private fun MutableList<FilePath>.addAffectedPaths(change: Change) {
     change.beforeRevision?.file?.let(::add)
     change.afterRevision?.file?.let(::add)
 }
 
-private fun GitChangeSelection.hasUnresolvedConflicts(): Boolean =
-    trackedChanges.any { change -> change.fileStatus in unresolvedConflictStatuses }
+private fun GitChangeSelection.hasUnresolvedConflicts(): Boolean = trackedChanges.any { change -> change.fileStatus in unresolvedConflictStatuses }
 
 private val unresolvedConflictStatuses = setOf(
     FileStatus.MERGED_WITH_CONFLICTS,
