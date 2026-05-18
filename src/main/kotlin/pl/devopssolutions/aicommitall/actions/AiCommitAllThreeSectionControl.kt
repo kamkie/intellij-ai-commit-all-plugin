@@ -1,5 +1,6 @@
 package pl.devopssolutions.aicommitall.actions
 
+import com.intellij.ide.ui.laf.darcula.DarculaUIUtil
 import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
 import java.awt.*
@@ -119,6 +120,9 @@ internal class AiCommitAllThreeSectionControl(
         return runningIndicatorDash(snakeBounds)
     }
 
+    internal fun cornerArcForTest(): Float =
+        buttonArc()
+
     private fun paintControl(graphics: Graphics2D) {
         val bounds = controlBounds()
         val sectionBounds = sectionBounds(bounds)
@@ -144,8 +148,8 @@ internal class AiCommitAllThreeSectionControl(
             bounds.y + 0.5f,
             bounds.width - 1f,
             bounds.height - 1f,
-            JBUI.scale(CORNER_RADIUS).toFloat(),
-            JBUI.scale(CORNER_RADIUS).toFloat(),
+            buttonArc(),
+            buttonArc(),
         ))
     }
 
@@ -478,7 +482,7 @@ internal class AiCommitAllThreeSectionControl(
         bounds: Rectangle,
         section: AiCommitAllControlSection,
     ): Shape {
-        val radius = JBUI.scale(CORNER_RADIUS).toDouble()
+        val radius = buttonArc().toDouble()
         return when (section) {
             AiCommitAllControlSection.Ai -> Path2D.Double().apply {
                 moveTo(bounds.maxX, bounds.y.toDouble())
@@ -504,6 +508,9 @@ internal class AiCommitAllThreeSectionControl(
 
     private fun centerIconY(iconSize: Int): Int =
         ((height.takeIf { it > 0 } ?: preferredSize.height) - JBUI.scale(iconSize)) / 2
+
+    private fun buttonArc(): Float =
+        DarculaUIUtil.BUTTON_ARC.getFloat()
 
     private fun Int.floorMod(other: Int): Int =
         ((this % other) + other) % other
@@ -568,7 +575,6 @@ internal class AiCommitAllThreeSectionControl(
     companion object {
         private const val CONTROL_WIDTH = 190
         private const val CONTROL_HEIGHT = 30
-        private const val CORNER_RADIUS = 4
         private const val AI_SECTION_WIDTH = 50
         private const val COMMIT_SECTION_WIDTH = 70
         private const val PUSH_SECTION_WIDTH = 70

@@ -1,5 +1,6 @@
 package pl.devopssolutions.aicommitall.actions
 
+import com.intellij.ide.ui.laf.darcula.DarculaUIUtil
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
@@ -213,6 +214,13 @@ internal class AiCommitAllThreeSectionControlTest {
         val dash = control.runningIndicatorDashForTest(AiCommitAllControlSection.Commit)
 
         assertTrue(dash.phase in 7.9f..8.1f, "phase was ${dash.phase}")
+    }
+
+    @Test
+    fun `control corner arc follows platform button arc`() {
+        val control = testControl()
+
+        assertEquals(DarculaUIUtil.BUTTON_ARC.getFloat(), control.cornerArcForTest())
     }
 
     private fun testControl(

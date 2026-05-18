@@ -36,7 +36,7 @@ Notation:
 ### Gui changes
 
 - [x] T-UI-002: move button to the right of the `Commit and Push...` button.
-- [ ] T-UI-003: button corners do not match the rest of the buttons.
+- [x] T-UI-003: button corners do not match the rest of the buttons.
 
 ### Three-Section AI Commit Push Control
 
