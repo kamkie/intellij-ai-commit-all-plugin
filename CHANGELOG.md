@@ -8,6 +8,10 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.4
 
 ## [Unreleased]
 
+### Added
+
+- Added repository-local agent skills for IntelliJ Platform plugin development, Kotlin plugin style, and TDD-focused plugin tests.
+
 ## [v0.1.0-alpha.4] - 2026-05-18
 
 ### Changed

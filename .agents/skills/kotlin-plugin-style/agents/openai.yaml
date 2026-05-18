@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kotlin Plugin Style"
+  short_description: "Write idiomatic Kotlin plugin code"
+  default_prompt: "Use $kotlin-plugin-style to write or review Kotlin plugin code in this repository."

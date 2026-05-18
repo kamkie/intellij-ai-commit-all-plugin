@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plugin Test TDD"
+  short_description: "Drive plugin bug fixes with failing tests"
+  default_prompt: "Use $plugin-test-tdd to add failing regression tests before fixing this plugin bug."

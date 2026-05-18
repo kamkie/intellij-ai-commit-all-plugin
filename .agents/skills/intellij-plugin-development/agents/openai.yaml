@@ -1,0 +1,4 @@
+interface:
+  display_name: "IntelliJ Plugin Development"
+  short_description: "Build and verify IntelliJ plugin changes"
+  default_prompt: "Use $intellij-plugin-development to update this IntelliJ Platform plugin safely."

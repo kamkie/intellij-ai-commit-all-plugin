@@ -8,6 +8,7 @@ This is the AI entry point for the repository. Keep task context small and read 
 - Keep user-facing behavior in `README.md`.
 - Keep implementation tasks and planning in `TASKS.md` or accepted task-specific plans.
 - Keep durable agent workflow guidance in `.agents/references/`.
+- Keep reusable task-specific agent skills in `.agents/skills/`.
 
 ## Guidance Map
 
@@ -22,6 +23,7 @@ This is the AI entry point for the repository. Keep task context small and read 
 - Review priorities: `.agents/references/reviews.md`
 - Release preparation: `.agents/references/releases.md`
 - Documentation ownership: `.agents/references/documentation.md`
+- Task-specific skills: `.agents/skills/`
 - Commit message template: `.gitmessage`
 - Changelog: `CHANGELOG.md`
 - Support policy: `SUPPORT.md`
