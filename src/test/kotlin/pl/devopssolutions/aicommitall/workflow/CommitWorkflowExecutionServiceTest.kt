@@ -5,16 +5,8 @@ import com.intellij.vcs.commit.AmendCommitHandler
 import com.intellij.vcs.commit.CommitExecutorListener
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowHandlerState
-import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
-import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushDecision
-import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushFallbackReason
-import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushPlan
-import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushSupport
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertNull
-import kotlin.test.assertSame
+import pl.devopssolutions.aicommitall.vcs.*
+import kotlin.test.*
 
 internal class CommitWorkflowExecutionServiceTest {
     private val gitCommitAndPushExecutorId = "Git.Commit.And.Push.Executor"
@@ -27,11 +19,13 @@ internal class CommitWorkflowExecutionServiceTest {
 
         val result = service.executeCommit(workflowHandler)
 
-        assertEquals(CommitWorkflowExecutionResult.Started, result)
+        val started = result.asStarted()
+        assertFalse(started.completion.isDone)
         assertEquals(1, scheduler.scheduledActionCount)
 
         scheduler.runScheduledActions()
 
+        assertTrue(started.completion.isDone)
         assertEquals(1, workflowHandler.executorCallCount)
         assertNull(workflowHandler.executor)
     }
@@ -62,7 +56,7 @@ internal class CommitWorkflowExecutionServiceTest {
         val result = CommitWorkflowExecutionService(scheduler)
             .executeCommit(workflowHandler)
 
-        assertEquals(CommitWorkflowExecutionResult.Started, result)
+        result.asStarted()
         assertFailsWith<IllegalStateException> {
             scheduler.runScheduledActions()
         }
@@ -80,12 +74,14 @@ internal class CommitWorkflowExecutionServiceTest {
 
         val result = service.executeCommitAndPush(workflowHandler)
 
-        assertEquals(CommitWorkflowExecutionResult.Started, result)
+        val started = result.asStarted()
+        assertFalse(started.completion.isDone)
         assertEquals(listOf(gitCommitAndPushExecutorId), workflowHandler.requestedExecutorIds)
         assertEquals(1, scheduler.scheduledActionCount)
 
         scheduler.runScheduledActions()
 
+        assertTrue(started.completion.isDone)
         assertEquals(1, workflowHandler.executeCallCount)
         assertSame(TestCommitAndPushExecutor, workflowHandler.executedExecutor)
         assertEquals(0, workflowHandler.executorCallCount)
@@ -95,13 +91,14 @@ internal class CommitWorkflowExecutionServiceTest {
     fun `starts safe immediate push through default commit and post-commit push listener`() {
         val scheduler = CapturingScheduler()
         val pushPlan = CapturingSafeImmediatePushPlan()
-        val registrar = CapturingPostCommitPushRegistrar()
+        val registrar = CapturingCommitResultRegistrar()
+        var pushStartedCount = 0
         val service = CommitWorkflowExecutionService(
             scheduler = scheduler,
             safeImmediatePushSupport = TestSafeImmediatePushSupport(
                 SafeImmediatePushDecision.Immediate(pushPlan),
             ),
-            postCommitPushRegistrar = registrar,
+            commitResultRegistrar = registrar,
         )
         val workflowHandler = CapturingCommitWorkflowHandler(
             commitAndPushExecutor = TestCommitAndPushExecutor,
@@ -111,22 +108,26 @@ internal class CommitWorkflowExecutionServiceTest {
         val result = service.executeCommitAndPush(
             workflowHandler = workflowHandler,
             selection = GitChangeSelection(emptyList()),
+            onPushStarted = { pushStartedCount++ },
         )
 
-        assertEquals(CommitWorkflowExecutionResult.Started, result)
+        val started = result.asStarted()
 
         scheduler.runScheduledActions()
 
         assertEquals(1, registrar.registerCallCount)
-        assertSame(pushPlan, registrar.pushPlan)
         assertEquals(1, workflowHandler.executorCallCount)
         assertNull(workflowHandler.executor)
         assertEquals(0, workflowHandler.executeCallCount)
+        assertEquals(0, pushStartedCount)
         assertEquals(0, pushPlan.pushCallCount)
+        assertFalse(started.completion.isDone)
 
-        registrar.pushPlan?.push()
+        registrar.resultHandler?.onSuccess()
 
+        assertEquals(1, pushStartedCount)
         assertEquals(1, pushPlan.pushCallCount)
+        assertTrue(started.completion.isDone)
     }
 
     @Test
@@ -137,7 +138,7 @@ internal class CommitWorkflowExecutionServiceTest {
             safeImmediatePushSupport = TestSafeImmediatePushSupport(
                 SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.MissingTrackedUpstream),
             ),
-            postCommitPushRegistrar = CapturingPostCommitPushRegistrar(),
+            commitResultRegistrar = CapturingCommitResultRegistrar(),
         )
         val workflowHandler = CapturingCommitWorkflowHandler(
             commitAndPushExecutor = TestCommitAndPushExecutor,
@@ -149,7 +150,7 @@ internal class CommitWorkflowExecutionServiceTest {
             selection = GitChangeSelection(emptyList()),
         )
 
-        assertEquals(CommitWorkflowExecutionResult.Started, result)
+        result.asStarted()
 
         scheduler.runScheduledActions()
 
@@ -161,13 +162,13 @@ internal class CommitWorkflowExecutionServiceTest {
     @Test
     fun `falls back to Git commit and push executor when post-commit listener cannot be registered`() {
         val scheduler = CapturingScheduler()
-        val registrar = CapturingPostCommitPushRegistrar(registered = false)
+        val registrar = CapturingCommitResultRegistrar(registered = false)
         val service = CommitWorkflowExecutionService(
             scheduler = scheduler,
             safeImmediatePushSupport = TestSafeImmediatePushSupport(
                 SafeImmediatePushDecision.Immediate(CapturingSafeImmediatePushPlan()),
             ),
-            postCommitPushRegistrar = registrar,
+            commitResultRegistrar = registrar,
         )
         val workflowHandler = CapturingCommitWorkflowHandler(
             commitAndPushExecutor = TestCommitAndPushExecutor,
@@ -179,11 +180,11 @@ internal class CommitWorkflowExecutionServiceTest {
             selection = GitChangeSelection(emptyList()),
         )
 
-        assertEquals(CommitWorkflowExecutionResult.Started, result)
+        result.asStarted()
 
         scheduler.runScheduledActions()
 
-        assertEquals(1, registrar.registerCallCount)
+        assertEquals(2, registrar.registerCallCount)
         assertEquals(1, workflowHandler.executeCallCount)
         assertSame(TestCommitAndPushExecutor, workflowHandler.executedExecutor)
         assertEquals(0, workflowHandler.executorCallCount)
@@ -239,7 +240,7 @@ internal class CommitWorkflowExecutionServiceTest {
 
         scheduler.runScheduledActions()
 
-        assertEquals(CommitWorkflowExecutionResult.Started, result)
+        assertTrue(result.asStarted().completion.isDone)
         assertEquals(0, workflowHandler.executeCallCount)
     }
 
@@ -255,7 +256,7 @@ internal class CommitWorkflowExecutionServiceTest {
         val result = CommitWorkflowExecutionService(scheduler)
             .executeCommitAndPush(workflowHandler)
 
-        assertEquals(CommitWorkflowExecutionResult.Started, result)
+        result.asStarted()
         assertFailsWith<IllegalStateException> {
             scheduler.runScheduledActions()
         }
@@ -291,20 +292,20 @@ internal class CommitWorkflowExecutionServiceTest {
         }
     }
 
-    private class CapturingPostCommitPushRegistrar(
+    private class CapturingCommitResultRegistrar(
         private val registered: Boolean = true,
-    ) : PostCommitPushRegistrar {
+    ) : CommitWorkflowResultRegistrar {
         var registerCallCount = 0
-        var pushPlan: SafeImmediatePushPlan? = null
+        var resultHandler: CommitWorkflowResultHandler? = null
 
         override fun register(
             workflowHandler: CommitWorkflowHandler,
-            pushPlan: SafeImmediatePushPlan,
-        ): PostCommitPushRegistration? {
+            resultHandler: CommitWorkflowResultHandler,
+        ): CommitWorkflowResultRegistration? {
             registerCallCount++
-            this.pushPlan = pushPlan
+            this.resultHandler = resultHandler
             return if (registered) {
-                PostCommitPushRegistration { }
+                CommitWorkflowResultRegistration { }
             } else {
                 null
             }
@@ -371,4 +372,7 @@ internal class CommitWorkflowExecutionServiceTest {
     private object TestCommitAndPushExecutor : CommitExecutor {
         override fun getActionText(): String = "Commit and Push"
     }
+
+    private fun CommitWorkflowExecutionResult.asStarted(): CommitWorkflowExecutionResult.Started =
+        this as CommitWorkflowExecutionResult.Started
 }

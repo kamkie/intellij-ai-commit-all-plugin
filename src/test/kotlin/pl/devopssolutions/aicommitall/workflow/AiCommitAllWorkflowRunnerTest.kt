@@ -41,13 +41,17 @@ internal class AiCommitAllWorkflowRunnerTest {
             .start(AiCommitAllWorkflowMode.Commit, testDataContext())
 
         assertFalse(result.isDone)
-        assertEquals(listOf("readiness", "prepare", "ai:Commit"), dependencies.events)
+        assertEquals(listOf("readiness", "prepare", "ai:Ai"), dependencies.events)
         assertEquals(0, dependencies.commitCallCount)
 
         completion.complete(completedAiGeneration())
 
         assertEquals(AiCommitAllWorkflowResult.Started, result.join())
-        assertEquals(listOf("readiness", "prepare", "ai:Commit", "commit"), dependencies.events)
+        assertEquals(listOf("readiness", "prepare", "ai:Ai", "commit"), dependencies.events)
+        assertEquals(
+            listOf(AiGenerationActivityPhase.Ai, AiGenerationActivityPhase.Commit),
+            dependencies.activityPhases,
+        )
         assertEquals(1, dependencies.commitCallCount)
         assertEquals(0, dependencies.pushCallCount)
     }
@@ -61,16 +65,68 @@ internal class AiCommitAllWorkflowRunnerTest {
             .start(AiCommitAllWorkflowMode.Push, testDataContext())
 
         assertFalse(result.isDone)
-        assertEquals(listOf("readiness", "prepare", "ai:Push"), dependencies.events)
+        assertEquals(listOf("readiness", "prepare", "ai:Ai"), dependencies.events)
         assertEquals(0, dependencies.pushCallCount)
 
         completion.complete(completedAiGeneration())
 
         assertEquals(AiCommitAllWorkflowResult.Started, result.join())
-        assertEquals(listOf("readiness", "prepare", "ai:Push", "push"), dependencies.events)
+        assertEquals(listOf("readiness", "prepare", "ai:Ai", "push"), dependencies.events)
+        assertEquals(
+            listOf(AiGenerationActivityPhase.Ai, AiGenerationActivityPhase.Commit),
+            dependencies.activityPhases,
+        )
         assertEquals(0, dependencies.commitCallCount)
         assertEquals(1, dependencies.pushCallCount)
         assertSame(dependencies.selection, dependencies.pushedSelection)
+    }
+
+    @Test
+    fun `commit and push modes start activity on ai phase while generation is pending`() {
+        listOf(AiCommitAllWorkflowMode.Commit, AiCommitAllWorkflowMode.Push).forEach { mode ->
+            val completion = CompletableFuture<AiGenerationCompletionResult>()
+            val dependencies = CapturingWorkflowDependencies(aiCompletion = completion)
+
+            val result = runner(dependencies)
+                .start(mode, testDataContext())
+
+            assertFalse(result.isDone)
+            assertEquals(listOf(AiGenerationActivityPhase.Ai), dependencies.activityStarts)
+        }
+    }
+
+    @Test
+    fun `push mode moves activity to push only after commit reports push start`() {
+        val completion = CompletableFuture<AiGenerationCompletionResult>()
+        val pushCompletion = CompletableFuture<Unit>()
+        val dependencies = CapturingWorkflowDependencies(
+            aiCompletion = completion,
+            pushResult = CommitWorkflowExecutionResult.Started(pushCompletion),
+        )
+
+        val result = runner(dependencies)
+            .start(AiCommitAllWorkflowMode.Push, testDataContext())
+
+        completion.complete(completedAiGeneration())
+
+        assertFalse(result.isDone)
+        assertEquals(
+            listOf(AiGenerationActivityPhase.Ai, AiGenerationActivityPhase.Commit),
+            dependencies.activityPhases,
+        )
+
+        dependencies.onPushStarted?.invoke()
+
+        assertFalse(result.isDone)
+        assertEquals(
+            listOf(AiGenerationActivityPhase.Ai, AiGenerationActivityPhase.Commit, AiGenerationActivityPhase.Push),
+            dependencies.activityPhases,
+        )
+
+        pushCompletion.complete(Unit)
+
+        assertEquals(AiCommitAllWorkflowResult.Started, result.join())
+        assertEquals(1, dependencies.activityFinishCount)
     }
 
     @Test
@@ -83,19 +139,19 @@ internal class AiCommitAllWorkflowRunnerTest {
         val second = runner.start(AiCommitAllWorkflowMode.Push, testDataContext())
 
         assertSame(first, second)
-        assertEquals(listOf("readiness", "prepare", "ai:Commit"), dependencies.events)
+        assertEquals(listOf("readiness", "prepare", "ai:Ai"), dependencies.events)
 
         completion.complete(completedAiGeneration())
 
         assertEquals(AiCommitAllWorkflowResult.Started, first.join())
-        assertEquals(listOf("readiness", "prepare", "ai:Commit", "commit"), dependencies.events)
+        assertEquals(listOf("readiness", "prepare", "ai:Ai", "commit"), dependencies.events)
 
         val third = runner.start(AiCommitAllWorkflowMode.Push, testDataContext())
 
         assertFalse(first === third)
         assertEquals(AiCommitAllWorkflowResult.Started, third.join())
         assertEquals(
-            listOf("readiness", "prepare", "ai:Commit", "commit", "readiness", "prepare", "ai:Push", "push"),
+            listOf("readiness", "prepare", "ai:Ai", "commit", "readiness", "prepare", "ai:Ai", "push"),
             dependencies.events,
         )
     }
@@ -126,7 +182,7 @@ internal class AiCommitAllWorkflowRunnerTest {
 
             assertEquals(AiCommitAllWorkflowResult.Stopped(expectedReason), result)
             assertEquals(
-                listOf("readiness", "prepare", "ai:Commit", "stop:${expectedReason.name}"),
+                listOf("readiness", "prepare", "ai:Ai", "stop:${expectedReason.name}"),
                 dependencies.events,
             )
             assertEquals(0, dependencies.commitCallCount)
@@ -148,7 +204,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.AiCompletionFailed),
             result,
         )
-        assertEquals(listOf("readiness", "prepare", "ai:Push", "stop:AiCompletionFailed"), dependencies.events)
+        assertEquals(listOf("readiness", "prepare", "ai:Ai", "stop:AiCompletionFailed"), dependencies.events)
         assertEquals(0, dependencies.commitCallCount)
         assertEquals(0, dependencies.pushCallCount)
     }
@@ -167,7 +223,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.MissingAiAction),
             result,
         )
-        assertEquals(listOf("readiness", "prepare", "ai:Push", "stop:MissingAiAction"), dependencies.events)
+        assertEquals(listOf("readiness", "prepare", "ai:Ai", "stop:MissingAiAction"), dependencies.events)
         assertEquals(0, dependencies.commitCallCount)
         assertEquals(0, dependencies.pushCallCount)
     }
@@ -261,7 +317,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             result,
         )
         assertEquals(
-            listOf("readiness", "prepare", "ai:Commit", "commit", "stop:CommitExecutionUnavailable"),
+            listOf("readiness", "prepare", "ai:Ai", "commit", "stop:CommitExecutionUnavailable"),
             dependencies.events,
         )
         assertEquals(1, dependencies.commitCallCount)
@@ -283,7 +339,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             result,
         )
         assertEquals(
-            listOf("readiness", "prepare", "ai:Push", "push", "stop:PushExecutionUnavailable"),
+            listOf("readiness", "prepare", "ai:Ai", "push", "stop:PushExecutionUnavailable"),
             dependencies.events,
         )
         assertEquals(0, dependencies.commitCallCount)
@@ -325,7 +381,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             .start(AiCommitAllWorkflowMode.Commit, testDataContext())
 
         assertFalse(result.isDone)
-        assertEquals(listOf(AiGenerationActivityPhase.Commit), dependencies.activityStarts)
+        assertEquals(listOf(AiGenerationActivityPhase.Ai), dependencies.activityStarts)
         assertEquals(0, dependencies.activityFinishCount)
 
         scheduler.runNextBackground()
@@ -347,20 +403,29 @@ internal class AiCommitAllWorkflowRunnerTest {
             CommitWorkflowSelectionResult.Prepared(selection),
         private val aiGenerationResult: AiCommitAllAiGenerationResult? = null,
         private val readinessResult: VcsOperationReadinessResult = VcsOperationReadinessResult.Ready,
-        private val commitResult: CommitWorkflowExecutionResult = CommitWorkflowExecutionResult.Started,
-        private val pushResult: CommitWorkflowExecutionResult = CommitWorkflowExecutionResult.Started,
+        private val commitResult: CommitWorkflowExecutionResult = CommitWorkflowExecutionResult.Started(),
+        private val pushResult: CommitWorkflowExecutionResult = CommitWorkflowExecutionResult.Started(),
     ) : AiCommitAllWorkflowDependencies {
         val events = mutableListOf<String>()
         var commitCallCount = 0
         var pushCallCount = 0
         var pushedSelection: GitChangeSelection? = null
         val activityStarts = mutableListOf<AiGenerationActivityPhase>()
+        val activityPhases = mutableListOf<AiGenerationActivityPhase>()
         var activityFinishCount = 0
+        var onPushStarted: (() -> Unit)? = null
 
-        override fun startActivity(phase: AiGenerationActivityPhase): AutoCloseable {
+        override fun startActivity(phase: AiGenerationActivityPhase): AiCommitAllWorkflowActivity {
             activityStarts += phase
-            return AutoCloseable {
-                activityFinishCount += 1
+            activityPhases += phase
+            return object : AiCommitAllWorkflowActivity {
+                override fun moveTo(phase: AiGenerationActivityPhase) {
+                    activityPhases += phase
+                }
+
+                override fun close() {
+                    activityFinishCount += 1
+                }
             }
         }
 
@@ -397,10 +462,12 @@ internal class AiCommitAllWorkflowRunnerTest {
         override fun executeCommitAndPush(
             workflowHandler: CommitWorkflowHandler,
             selection: GitChangeSelection,
+            onPushStarted: () -> Unit,
         ): CommitWorkflowExecutionResult {
             events += "push"
             pushCallCount++
             pushedSelection = selection
+            this.onPushStarted = onPushStarted
             return pushResult
         }
 

@@ -67,7 +67,7 @@ internal class AiCommitAllWorkflowRunner(
             return stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
         }
 
-        val activityToken = dependencies.startActivity(mode.activityPhase)
+        val activity = dependencies.startActivity(AiGenerationActivityPhase.Ai)
         return scheduler.supplyBackground {
             prepareWorkflow(workflowHandler, workflowUi)
         }.thenCompose { preparation ->
@@ -80,13 +80,14 @@ internal class AiCommitAllWorkflowRunner(
                         selection = preparation.selection,
                         dataContext = dataContext,
                         inputEvent = inputEvent,
+                        activity = activity,
                     )
 
                 is AiCommitAllWorkflowPreparationResult.Stopped ->
                     stopped(preparation.reason)
             }
         }.whenComplete { _, _ ->
-            activityToken.close()
+            activity.close()
         }
     }
 
@@ -129,10 +130,11 @@ internal class AiCommitAllWorkflowRunner(
         selection: GitChangeSelection,
         dataContext: DataContext,
         inputEvent: InputEvent?,
+        activity: AiCommitAllWorkflowActivity,
     ): CompletableFuture<AiCommitAllWorkflowResult> =
         scheduler.supplyEdt {
             dependencies.runAiGeneration(
-                phase = mode.activityPhase,
+                phase = AiGenerationActivityPhase.Ai,
                 workflowHandler = workflowHandler,
                 workflowUi = workflowUi,
                 parentDataContext = dataContext,
@@ -143,16 +145,17 @@ internal class AiCommitAllWorkflowRunner(
                 is AiCommitAllAiGenerationResult.AwaitingCompletion ->
                     generationResult.completion.handle { completionResult, throwable ->
                         if (throwable != null) {
-                            stoppedResult(AiCommitAllWorkflowStopReason.AiCompletionFailed)
+                            stopped(AiCommitAllWorkflowStopReason.AiCompletionFailed)
                         } else {
                             completeAfterAiGeneration(
                                 mode = mode,
                                 workflowHandler = workflowHandler,
                                 selection = selection,
                                 completionResult = completionResult,
+                                activity = activity,
                             )
                         }
-                    }
+                    }.thenCompose { result -> result }
 
                 is AiCommitAllAiGenerationResult.Stopped ->
                     stopped(generationResult.reason)
@@ -172,50 +175,62 @@ internal class AiCommitAllWorkflowRunner(
         workflowHandler: CommitWorkflowHandler,
         selection: GitChangeSelection,
         completionResult: AiGenerationCompletionResult,
-    ): AiCommitAllWorkflowResult =
+        activity: AiCommitAllWorkflowActivity,
+    ): CompletableFuture<AiCommitAllWorkflowResult> =
         when (completionResult) {
             is AiGenerationCompletionResult.Completed ->
-                executeCompletedWorkflow(mode, workflowHandler, selection)
+                executeCompletedWorkflow(mode, workflowHandler, selection, activity)
             is AiGenerationCompletionResult.Timeout ->
-                stoppedResult(AiCommitAllWorkflowStopReason.AiTimeout)
+                stopped(AiCommitAllWorkflowStopReason.AiTimeout)
             AiGenerationCompletionResult.EmptyMessage ->
-                stoppedResult(AiCommitAllWorkflowStopReason.EmptyMessage)
+                stopped(AiCommitAllWorkflowStopReason.EmptyMessage)
             is AiGenerationCompletionResult.UnchangedMessage ->
-                stoppedResult(AiCommitAllWorkflowStopReason.UnchangedMessage)
+                stopped(AiCommitAllWorkflowStopReason.UnchangedMessage)
             is AiGenerationCompletionResult.NoCompletionSignal ->
-                stoppedResult(AiCommitAllWorkflowStopReason.NoCompletionSignal)
+                stopped(AiCommitAllWorkflowStopReason.NoCompletionSignal)
             is AiGenerationCompletionResult.UserEditedMessage ->
-                stoppedResult(AiCommitAllWorkflowStopReason.UserEditedMessage)
+                stopped(AiCommitAllWorkflowStopReason.UserEditedMessage)
         }
 
     private fun executeCompletedWorkflow(
         mode: AiCommitAllWorkflowMode,
         workflowHandler: CommitWorkflowHandler,
         selection: GitChangeSelection,
-    ): AiCommitAllWorkflowResult =
+        activity: AiCommitAllWorkflowActivity,
+    ): CompletableFuture<AiCommitAllWorkflowResult> =
         when (mode) {
             AiCommitAllWorkflowMode.Ai ->
-                AiCommitAllWorkflowResult.Started
-            AiCommitAllWorkflowMode.Commit ->
+                CompletableFuture.completedFuture(AiCommitAllWorkflowResult.Started)
+
+            AiCommitAllWorkflowMode.Commit -> {
+                activity.moveTo(AiGenerationActivityPhase.Commit)
                 dependencies.executeCommit(workflowHandler)
                     .toWorkflowResult(AiCommitAllWorkflowStopReason.CommitExecutionUnavailable)
-            AiCommitAllWorkflowMode.Push ->
-                dependencies.executeCommitAndPush(workflowHandler, selection)
+            }
+
+            AiCommitAllWorkflowMode.Push -> {
+                activity.moveTo(AiGenerationActivityPhase.Commit)
+                dependencies.executeCommitAndPush(
+                    workflowHandler = workflowHandler,
+                    selection = selection,
+                    onPushStarted = { activity.moveTo(AiGenerationActivityPhase.Push) },
+                )
                     .toWorkflowResult(AiCommitAllWorkflowStopReason.PushExecutionUnavailable)
+            }
         }
 
     private fun CommitWorkflowExecutionResult.toWorkflowResult(
         unavailableReason: AiCommitAllWorkflowStopReason,
-    ): AiCommitAllWorkflowResult =
+    ): CompletableFuture<AiCommitAllWorkflowResult> =
         when (this) {
-            CommitWorkflowExecutionResult.Started ->
-                AiCommitAllWorkflowResult.Started
+            is CommitWorkflowExecutionResult.Started ->
+                completion.thenApply { AiCommitAllWorkflowResult.Started }
             CommitWorkflowExecutionResult.MissingWorkflow ->
-                stoppedResult(AiCommitAllWorkflowStopReason.MissingWorkflow)
+                stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
             CommitWorkflowExecutionResult.UnsupportedExecutor ->
-                stoppedResult(unavailableReason)
+                stopped(unavailableReason)
             CommitWorkflowExecutionResult.DisabledExecutor ->
-                stoppedResult(unavailableReason)
+                stopped(unavailableReason)
         }
 
     private fun stopped(reason: AiCommitAllWorkflowStopReason): CompletableFuture<AiCommitAllWorkflowResult> =
@@ -277,8 +292,12 @@ private fun <T> CompletableFuture<T>.completeFrom(action: () -> T) {
     }
 }
 
+internal interface AiCommitAllWorkflowActivity : AutoCloseable {
+    fun moveTo(phase: AiGenerationActivityPhase)
+}
+
 internal interface AiCommitAllWorkflowDependencies {
-    fun startActivity(phase: AiGenerationActivityPhase): AutoCloseable
+    fun startActivity(phase: AiGenerationActivityPhase): AiCommitAllWorkflowActivity
 
     fun checkReadiness(): VcsOperationReadinessResult
 
@@ -300,6 +319,7 @@ internal interface AiCommitAllWorkflowDependencies {
     fun executeCommitAndPush(
         workflowHandler: CommitWorkflowHandler,
         selection: GitChangeSelection,
+        onPushStarted: () -> Unit,
     ): CommitWorkflowExecutionResult
 
     fun reportStop(reason: AiCommitAllWorkflowStopReason)
@@ -316,8 +336,10 @@ internal sealed interface AiCommitAllAiGenerationResult {
 }
 
 private class ProjectAiCommitAllWorkflowDependencies(private val project: Project) : AiCommitAllWorkflowDependencies {
-    override fun startActivity(phase: AiGenerationActivityPhase): AutoCloseable =
-        AiGenerationActivityStateService.getInstance(project).start(phase)
+    override fun startActivity(phase: AiGenerationActivityPhase): AiCommitAllWorkflowActivity =
+        ProjectAiCommitAllWorkflowActivity(
+            AiGenerationActivityStateService.getInstance(project).start(phase),
+        )
 
     override fun checkReadiness(): VcsOperationReadinessResult =
         VcsOperationReadinessService.getInstance(project).checkAndReport()
@@ -374,12 +396,14 @@ private class ProjectAiCommitAllWorkflowDependencies(private val project: Projec
     override fun executeCommitAndPush(
         workflowHandler: CommitWorkflowHandler,
         selection: GitChangeSelection,
+        onPushStarted: () -> Unit,
     ): CommitWorkflowExecutionResult =
         CommitWorkflowExecutionService.getInstance(project)
             .executeCommitAndPush(
                 workflowHandler = workflowHandler,
                 selection = selection,
                 safeImmediatePushSupport = SafeImmediatePushService.getInstance(project),
+                onPushStarted = onPushStarted,
             )
 
     override fun reportStop(reason: AiCommitAllWorkflowStopReason) {
@@ -393,12 +417,17 @@ internal enum class AiCommitAllWorkflowMode {
     Push,
 }
 
-private val AiCommitAllWorkflowMode.activityPhase: AiGenerationActivityPhase
-    get() = when (this) {
-        AiCommitAllWorkflowMode.Ai -> AiGenerationActivityPhase.Ai
-        AiCommitAllWorkflowMode.Commit -> AiGenerationActivityPhase.Commit
-        AiCommitAllWorkflowMode.Push -> AiGenerationActivityPhase.Push
+private class ProjectAiCommitAllWorkflowActivity(
+    private val token: AiGenerationActivityToken,
+) : AiCommitAllWorkflowActivity {
+    override fun moveTo(phase: AiGenerationActivityPhase) {
+        token.moveTo(phase)
     }
+
+    override fun close() {
+        token.close()
+    }
+}
 
 internal sealed interface AiCommitAllWorkflowResult {
     data object Started : AiCommitAllWorkflowResult

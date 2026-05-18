@@ -23,6 +23,13 @@ internal class AiGenerationActivityStateService {
         return AiGenerationActivityToken(this)
     }
 
+    fun moveTo(phase: AiGenerationActivityPhase) {
+        if (running.get()) {
+            runningPhase.set(phase)
+            actionRefresh.refreshActions()
+        }
+    }
+
     fun finish() {
         running.set(false)
         runningPhase.set(null)
@@ -76,6 +83,12 @@ internal class AiGenerationActivityToken internal constructor(
     private val service: AiGenerationActivityStateService,
 ) : AutoCloseable {
     private val closed = AtomicBoolean(false)
+
+    fun moveTo(phase: AiGenerationActivityPhase) {
+        if (!closed.get()) {
+            service.moveTo(phase)
+        }
+    }
 
     override fun close() {
         if (closed.compareAndSet(false, true)) {

@@ -3,12 +3,7 @@ package pl.devopssolutions.aicommitall.ai
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.ui.AnimatedIcon
 import javax.swing.Icon
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import kotlin.test.assertSame
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 internal class AiGenerationActivityStateServiceTest {
     @Test
@@ -32,6 +27,21 @@ internal class AiGenerationActivityStateServiceTest {
 
         assertEquals(AiGenerationActivityPhase.Push, service.runningPhase())
         token.close()
+        assertNull(service.runningPhase())
+    }
+
+    @Test
+    fun `moves running activity phase until token closes`() {
+        val service = testService()
+        val token = service.start(AiGenerationActivityPhase.Ai)
+
+        token.moveTo(AiGenerationActivityPhase.Commit)
+
+        assertEquals(AiGenerationActivityPhase.Commit, service.runningPhase())
+
+        token.close()
+        token.moveTo(AiGenerationActivityPhase.Push)
+
         assertNull(service.runningPhase())
     }
 
