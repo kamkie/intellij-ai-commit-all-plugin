@@ -6,7 +6,7 @@ The Commit tool window gets a compact `<AI icon> AI | Commit | Push` control:
 
 - `AI` includes every eligible Git change, generates a commit message, and stops before committing.
 - `Commit` runs the `AI` section behavior, then commits all eligible Git changes through the standard IDE commit workflow.
-- `Push` runs the `Commit` section behavior when committable changes exist, then pushes immediately only when the Git state is safe and unambiguous; otherwise it falls back to the IDE commit-and-push executor. When there are no committable changes but local commits are waiting to push, `Push` delegates directly to the IDE push workflow.
+- `Push` runs the `Commit` section behavior when committable changes exist, then pushes immediately when the Git state is safe and unambiguous, including protected branches when no force push is required; otherwise it falls back to the IDE commit-and-push executor. When there are no committable changes but local commits are waiting to push, `Push` first uses the same safe immediate push path, then falls back to the IDE push workflow only when that path is unavailable.
 
 ## Current Status
 
@@ -25,7 +25,7 @@ The current implementation:
 - Waits for AI generation to complete before the `Commit` or `Push` sections continue.
 - Stops without committing or pushing when AI generation times out, produces an empty or unchanged message, or the user edits the message while generation is running.
 - Executes commit and commit-and-push through the active IntelliJ commit workflow so IDE before-commit checks, confirmations, warnings, commit errors, and push errors stay in charge.
-- Skips the Push Commits dialog only when every affected Git root is on a normal tracked branch, the local branch exactly matches its tracked upstream before the commit, and the target is the standard tracked branch.
+- Skips the Push Commits dialog when every affected Git root is on a normal tracked branch, the local branch exactly matches its tracked upstream before the commit, and the target is the standard tracked branch. Protected branch settings do not force the dialog when the push is a normal non-force push.
 - Keeps `Push` available for already-created outgoing commits even when there are no committable Git changes.
 - Replaces the standard Commit tool window `Commit and Push...` toolbar button with the plugin's three-section control while keeping standard IDE commit, push, and shortcut delegation paths available.
 - Uses the ADR 0053 violet AI, blue Commit, green Push segmented styling with cumulative hover and a snake-loop running indication on the active section.
@@ -89,7 +89,7 @@ Pull-request CI validates the Gradle wrapper, source formatting, documentation, 
 2. Open the Commit tool window.
 3. Make sure JetBrains AI Assistant is installed, enabled, and available for commit-message generation.
 4. Create committable Git changes, or create local commits that are not pushed yet.
-5. Use `AI` to generate a message without committing, `Commit` to generate and commit, or `Push` to generate, commit, and push. If only outgoing commits are present, use `Push` to open the standard IDE push workflow.
+5. Use `AI` to generate a message without committing, `Commit` to generate and commit, or `Push` to generate, commit, and push. If only outgoing commits are present, use `Push` to push them immediately when the Git state is safe.
 
 With the default shortcut setting enabled, the IDE's commit shortcut runs the plugin `Commit` workflow and the IDE's push shortcut runs the plugin `Push` workflow when the Commit tool window workflow is available. On the default Windows/Linux keymap, this makes `Ctrl+Shift+K` equivalent to clicking the `Push` section. Disable the shortcut setting to return those shortcuts to the standard IDE actions.
 
@@ -97,7 +97,7 @@ The control is hidden outside an active supported Git commit workflow. `AI` and 
 
 When the Git staging area commit workflow is active, the plugin stages eligible non-ignored paths before invoking AI Assistant so the IDE workflow can commit the intended content.
 
-For `Push`, missing upstreams, unresolved conflicts, non-normal Git states, ambiguous targets, protected targets, or already-diverged local and upstream branches use the standard IDE commit-and-push executor and Push Commits dialog.
+For `Push`, missing upstreams, unresolved conflicts, non-normal Git states, ambiguous targets, or already-diverged local and upstream branches use the standard IDE commit-and-push executor and Push Commits dialog.
 
 ## Settings
 

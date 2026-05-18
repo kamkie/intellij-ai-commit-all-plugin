@@ -26,20 +26,84 @@ import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import pl.devopssolutions.aicommitall.vcs.SafeImmediateOutgoingPushSupport
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushDecision
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushPlan
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushService
 import java.awt.event.InputEvent
+import java.util.concurrent.CompletableFuture
 
 @Service(Service.Level.PROJECT)
 internal class PushOnlyWorkflowExecutionService(
-    private val actionManager: ActionManager = ActionManager.getInstance(),
+    private val outgoingPushSupport: SafeImmediateOutgoingPushSupport,
+    private val idePushAction: PushOnlyIdeAction,
 ) {
+    constructor(project: Project) : this(
+        outgoingPushSupport = SafeImmediatePushService.getInstance(project),
+        idePushAction = IntellijPushOnlyIdeAction(ActionManager.getInstance()),
+    )
+
     fun canExecutePush(dataContext: DataContext): Boolean {
+        if (outgoingPushSupport.prepareOutgoingCommits() is SafeImmediatePushDecision.Immediate) {
+            return true
+        }
+        return idePushAction.canExecute(dataContext)
+    }
+
+    fun executePush(
+        dataContext: DataContext,
+        inputEvent: InputEvent?,
+    ): CommitWorkflowExecutionResult {
+        val decision = outgoingPushSupport.prepareOutgoingCommits()
+        if (decision is SafeImmediatePushDecision.Immediate) {
+            return executeImmediatePush(decision.plan)
+        }
+        return idePushAction.execute(dataContext, inputEvent)
+    }
+
+    private fun executeImmediatePush(pushPlan: SafeImmediatePushPlan): CommitWorkflowExecutionResult {
+        val completion = CompletableFuture<Unit>()
+        try {
+            pushPlan.push()
+                .whenComplete { _, throwable ->
+                    if (throwable != null) {
+                        completion.completeExceptionally(throwable)
+                    } else {
+                        completion.complete(Unit)
+                    }
+                }
+        } catch (throwable: Throwable) {
+            completion.completeExceptionally(throwable)
+            throw throwable
+        }
+        return CommitWorkflowExecutionResult.Started(completion)
+    }
+
+    companion object {
+        fun getInstance(project: Project): PushOnlyWorkflowExecutionService = project.service()
+    }
+}
+
+internal interface PushOnlyIdeAction {
+    fun canExecute(dataContext: DataContext): Boolean
+
+    fun execute(
+        dataContext: DataContext,
+        inputEvent: InputEvent?,
+    ): CommitWorkflowExecutionResult
+}
+
+private class IntellijPushOnlyIdeAction(
+    private val actionManager: ActionManager,
+) : PushOnlyIdeAction {
+    override fun canExecute(dataContext: DataContext): Boolean {
         val action = actionManager.getAction(IDE_PUSH_ACTION_ID) ?: return false
         val event = action.event(dataContext, inputEvent = null)
         ActionUtil.updateAction(action, event)
         return event.presentation.isEnabled && event.presentation.isVisible
     }
 
-    fun executePush(
+    override fun execute(
         dataContext: DataContext,
         inputEvent: InputEvent?,
     ): CommitWorkflowExecutionResult {
@@ -68,9 +132,7 @@ internal class PushOnlyWorkflowExecutionService(
         actionManager,
     )
 
-    companion object {
-        fun getInstance(project: Project): PushOnlyWorkflowExecutionService = project.service()
-
-        internal const val IDE_PUSH_ACTION_ID: String = "Vcs.Push"
+    private companion object {
+        const val IDE_PUSH_ACTION_ID: String = "Vcs.Push"
     }
 }

@@ -43,6 +43,8 @@ If accepted, the `& Push` flow may skip the standard Push Commits dialog only wh
 * The target push operation is unambiguous across all affected Git roots.
 * The plugin can still surface standard IntelliJ, Git, VCS, and push errors without replacing them with less precise custom messages.
 
+Protected branch settings that prohibit force push do not by themselves require the standard Push Commits dialog when the plugin is performing a normal non-force push to the tracked upstream.
+
 If any condition cannot be verified, the plugin must fall back to the existing standard push dialog path.
 
 The implementation must not add a plugin-owned confirmation dialog for this path. If implementation reveals a risk not covered by these conditions or by the standard dialog fallback, record a new open question before continuing that part of the work.

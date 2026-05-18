@@ -37,6 +37,10 @@ internal interface SafeImmediatePushSupport {
     fun prepare(selection: GitChangeSelection): SafeImmediatePushDecision
 }
 
+internal interface SafeImmediateOutgoingPushSupport {
+    fun prepareOutgoingCommits(): SafeImmediatePushDecision
+}
+
 internal fun interface SafeImmediatePushPlan {
     fun push(): CompletableFuture<Unit>
 }
@@ -63,7 +67,7 @@ internal data class SafeImmediatePushRepositoryState(
     val localMatchesTrackedUpstream: Boolean,
     val targetIsTrackingBranch: Boolean,
     val targetMatchesTrackedUpstream: Boolean,
-    val targetCanBePushed: Boolean,
+    val pushSpecAvailable: Boolean,
     val targetIsNewBranch: Boolean,
     val targetIsSpecialRef: Boolean,
     val repositoryStateIsNormal: Boolean,
@@ -92,7 +96,7 @@ internal object SafeImmediatePushDecisionPolicy {
         if (repositories.any { repository -> repository.hasAmbiguousTarget }) {
             return SafeImmediatePushFallbackReason.AmbiguousTarget
         }
-        if (repositories.any { repository -> !repository.targetCanBePushed }) {
+        if (repositories.any { repository -> !repository.pushSpecAvailable }) {
             return SafeImmediatePushFallbackReason.UnsupportedPushApi
         }
         return null
@@ -106,7 +110,9 @@ internal object SafeImmediatePushDecisionPolicy {
 }
 
 @Service(Service.Level.PROJECT)
-internal class SafeImmediatePushService(private val project: Project) : SafeImmediatePushSupport {
+internal class SafeImmediatePushService(private val project: Project) :
+    SafeImmediatePushSupport,
+    SafeImmediateOutgoingPushSupport {
     override fun prepare(selection: GitChangeSelection): SafeImmediatePushDecision {
         val paths = selection.affectedPaths()
         if (paths.isEmpty()) {
@@ -128,14 +134,56 @@ internal class SafeImmediatePushService(private val project: Project) : SafeImme
 
         val pushSpecs = linkedMapOf<GitRepository, PushSpec<GitPushSource, GitPushTarget>>()
         val repositoryStates = repositories.map { repository ->
-            repository.pushState(pushSupport, pushSpecs)
+            repository.pushState(pushSupport).also { state ->
+                state.pushSpec?.let { pushSpec -> pushSpecs[repository] = pushSpec }
+            }.repositoryState
         }
 
-        val fallbackReason = SafeImmediatePushDecisionPolicy.fallbackReason(
-            repositories = repositoryStates,
+        return decision(
+            pushSupport = pushSupport,
+            pushSpecs = pushSpecs,
+            repositoryStates = repositoryStates,
             hasUnresolvedConflicts = selection.hasUnresolvedConflicts(),
         )
+    }
 
+    override fun prepareOutgoingCommits(): SafeImmediatePushDecision {
+        if (project.isDisposed) {
+            return SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.NoAffectedRepositories)
+        }
+
+        val pushSupport = gitPushSupport()
+            ?: return SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.UnsupportedPushApi)
+        val pushSpecs = linkedMapOf<GitRepository, PushSpec<GitPushSource, GitPushTarget>>()
+        val repositoryStates = mutableListOf<SafeImmediatePushRepositoryState>()
+
+        GitRepositoryManager.getInstance(project).repositories.forEach { repository ->
+            val state = repository.pushState(pushSupport)
+            val pushSpec = state.pushSpec ?: return@forEach
+            if (repository.hasOutgoingCommits(pushSupport, pushSpec)) {
+                pushSpecs[repository] = pushSpec
+                repositoryStates += state.repositoryState
+            }
+        }
+
+        return decision(
+            pushSupport = pushSupport,
+            pushSpecs = pushSpecs,
+            repositoryStates = repositoryStates,
+            hasUnresolvedConflicts = false,
+        )
+    }
+
+    private fun decision(
+        pushSupport: GitPushSupport,
+        pushSpecs: Map<GitRepository, PushSpec<GitPushSource, GitPushTarget>>,
+        repositoryStates: Collection<SafeImmediatePushRepositoryState>,
+        hasUnresolvedConflicts: Boolean,
+    ): SafeImmediatePushDecision {
+        val fallbackReason = SafeImmediatePushDecisionPolicy.fallbackReason(
+            repositories = repositoryStates,
+            hasUnresolvedConflicts = hasUnresolvedConflicts,
+        )
         return if (fallbackReason == null) {
             SafeImmediatePushDecision.Immediate(
                 SafeImmediatePushPlan {
@@ -162,8 +210,7 @@ internal class SafeImmediatePushService(private val project: Project) : SafeImme
 
     private fun GitRepository.pushState(
         pushSupport: GitPushSupport,
-        pushSpecs: MutableMap<GitRepository, PushSpec<GitPushSource, GitPushTarget>>,
-    ): SafeImmediatePushRepositoryState {
+    ): SafeImmediatePushRepositoryPushState {
         val currentBranch = this.currentBranch
         val trackInfo = currentBranch?.let { branch -> getBranchTrackInfo(branch.name) }
         val source = pushSupport.getSource(this)
@@ -173,20 +220,31 @@ internal class SafeImmediatePushService(private val project: Project) : SafeImme
             pushSupport.getDefaultTarget(this, source)
         }
 
-        if (source != null && target != null) {
-            pushSpecs[this] = PushSpec(source, target)
-        }
+        val pushSpec = if (source != null && target != null) PushSpec(source, target) else null
 
-        return SafeImmediatePushRepositoryState(
-            hasTrackedUpstream = trackInfo != null,
-            localMatchesTrackedUpstream = trackInfo != null && localMatchesTrackedUpstream(trackInfo),
-            targetIsTrackingBranch = target?.targetType == GitPushTargetType.TRACKING_BRANCH,
-            targetMatchesTrackedUpstream = trackInfo != null && target?.branch == trackInfo.remoteBranch,
-            targetCanBePushed = source != null && target != null && pushSupport.canBePushed(this, source, target),
-            targetIsNewBranch = target?.isNewBranchCreated != false,
-            targetIsSpecialRef = target?.isSpecialRef != false,
-            repositoryStateIsNormal = state == Repository.State.NORMAL,
+        return SafeImmediatePushRepositoryPushState(
+            repositoryState = SafeImmediatePushRepositoryState(
+                hasTrackedUpstream = trackInfo != null,
+                localMatchesTrackedUpstream = trackInfo != null && localMatchesTrackedUpstream(trackInfo),
+                targetIsTrackingBranch = target?.targetType == GitPushTargetType.TRACKING_BRANCH,
+                targetMatchesTrackedUpstream = trackInfo != null && target?.branch == trackInfo.remoteBranch,
+                pushSpecAvailable = pushSpec != null,
+                targetIsNewBranch = target?.isNewBranchCreated != false,
+                targetIsSpecialRef = target?.isSpecialRef != false,
+                repositoryStateIsNormal = state == Repository.State.NORMAL,
+            ),
+            pushSpec = pushSpec,
         )
+    }
+
+    private fun GitRepository.hasOutgoingCommits(
+        pushSupport: GitPushSupport,
+        pushSpec: PushSpec<GitPushSource, GitPushTarget>,
+    ): Boolean {
+        val outgoingResult = runCatching {
+            pushSupport.outgoingCommitsProvider.getOutgoingCommits(this, pushSpec, false)
+        }.getOrNull()
+        return outgoingResult?.commits?.isNotEmpty() == true
     }
 
     private fun GitRepository.localMatchesTrackedUpstream(
@@ -202,6 +260,11 @@ internal class SafeImmediatePushService(private val project: Project) : SafeImme
         fun getInstance(project: Project): SafeImmediatePushService = project.service()
     }
 }
+
+private data class SafeImmediatePushRepositoryPushState(
+    val repositoryState: SafeImmediatePushRepositoryState,
+    val pushSpec: PushSpec<GitPushSource, GitPushTarget>?,
+)
 
 private fun GitChangeSelection.affectedPaths(): List<FilePath> = buildList {
     trackedChanges.forEach { change ->

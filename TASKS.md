@@ -14,8 +14,6 @@ Notation:
 
 ### Bugs
 
-- [ ] T-BUG-015: the push button should just do the push, do not open the push window even on protected branches.
-
 ### Publishing, Signing, Marketplace, And CI
 
 - [ ] T-REL-012: add a `release` workflow to publish the plugin to the marketplace
@@ -222,6 +220,7 @@ Archived as of `v0.1.0-alpha.1` release preparation.
 - [x] T-BUG-012: the push button animation is cut short.
 - [x] T-BUG-013: in commit dialog `Ctrl + Shift + K` should be the same as clicking the push section of a button.
 - [x] T-BUG-014: github actions builds are failing.
+- [x] T-BUG-015: the push button should just do the push, do not open the push window even on protected branches.
 
 ### Ideas
 

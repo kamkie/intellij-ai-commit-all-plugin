@@ -84,9 +84,6 @@ internal class GitOutgoingCommitsService(private val project: Project) : Disposa
 
         val source = pushSupport.getSource(this) ?: return false
         val target = pushSupport.getDefaultTarget(this, source) ?: return false
-        if (!pushSupport.canBePushed(this, source, target)) {
-            return false
-        }
 
         val outgoingResult = runCatching {
             pushSupport.outgoingCommitsProvider.getOutgoingCommits(

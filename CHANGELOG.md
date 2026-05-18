@@ -16,6 +16,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 - Refreshed outgoing-commit availability after Git repository and push completion events so the `Push` section does not stay enabled after outgoing commits are pushed.
 - Kept the `Push` section animation active until safe immediate Git pushes report completion instead of stopping immediately after push start.
 - Routed the IDE push shortcut, including `Ctrl+Shift+K` on the default Windows/Linux keymap, to the plugin `Push` section while shortcut takeover is enabled.
+- Used the safe immediate push path for outgoing-only `Push` clicks before invoking the IDE push workflow, avoiding the Push window for protected tracked branches when no force push is needed.
 
 ## [v0.1.0-alpha.7] - 2026-05-18
 

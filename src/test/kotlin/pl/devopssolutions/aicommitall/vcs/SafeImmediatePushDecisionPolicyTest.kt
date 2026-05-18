@@ -124,9 +124,9 @@ internal class SafeImmediatePushDecisionPolicyTest {
     }
 
     @Test
-    fun `falls back when target cannot be pushed by platform support`() {
+    fun `falls back when push spec cannot be created`() {
         val result = SafeImmediatePushDecisionPolicy.fallbackReason(
-            repositories = listOf(safeRepositoryState(targetCanBePushed = false)),
+            repositories = listOf(safeRepositoryState(pushSpecAvailable = false)),
             hasUnresolvedConflicts = false,
         )
 
@@ -138,7 +138,7 @@ internal class SafeImmediatePushDecisionPolicyTest {
         localMatchesTrackedUpstream: Boolean = true,
         targetIsTrackingBranch: Boolean = true,
         targetMatchesTrackedUpstream: Boolean = true,
-        targetCanBePushed: Boolean = true,
+        pushSpecAvailable: Boolean = true,
         targetIsNewBranch: Boolean = false,
         targetIsSpecialRef: Boolean = false,
         repositoryStateIsNormal: Boolean = true,
@@ -147,7 +147,7 @@ internal class SafeImmediatePushDecisionPolicyTest {
         localMatchesTrackedUpstream = localMatchesTrackedUpstream,
         targetIsTrackingBranch = targetIsTrackingBranch,
         targetMatchesTrackedUpstream = targetMatchesTrackedUpstream,
-        targetCanBePushed = targetCanBePushed,
+        pushSpecAvailable = pushSpecAvailable,
         targetIsNewBranch = targetIsNewBranch,
         targetIsSpecialRef = targetIsSpecialRef,
         repositoryStateIsNormal = repositoryStateIsNormal,
