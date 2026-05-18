@@ -21,7 +21,7 @@ internal class AiCommitAllThreeSectionControl(
     private var keyboardSection: AiCommitAllControlSection = AiCommitAllControlSection.Commit
     private var snakeOffset = 0f
     private val snakeTimer = Timer(SNAKE_FRAME_DELAY_MS) {
-        snakeOffset = (snakeOffset + JBUI.scale(8)) % JBUI.scale(180)
+        snakeOffset += JBUI.scale(SNAKE_FRAME_STEP)
         repaint()
     }
 
@@ -111,6 +111,12 @@ internal class AiCommitAllThreeSectionControl(
             dividerColor(AiCommitAllControlSection.Ai, AiCommitAllControlSection.Commit, highlighted),
             dividerColor(AiCommitAllControlSection.Commit, AiCommitAllControlSection.Push, highlighted),
         )
+    }
+
+    internal fun runningIndicatorDashForTest(section: AiCommitAllControlSection): RunningIndicatorDash {
+        val sectionRectangle = sectionBounds(controlBounds()).getValue(section)
+        val snakeBounds = runningIndicatorBounds(sectionRectangle)
+        return runningIndicatorDash(snakeBounds)
     }
 
     private fun paintControl(graphics: Graphics2D) {
@@ -206,31 +212,20 @@ internal class AiCommitAllThreeSectionControl(
         rectangle: Rectangle,
         section: AiCommitAllControlSection,
     ) {
-        val inset = JBUI.scale(2)
         val strokeWidth = JBUI.scale(2).toFloat()
-        val snakeBounds = Rectangle(
-            rectangle.x + inset,
-            rectangle.y + inset,
-            rectangle.width - inset * 2,
-            rectangle.height - inset * 2,
-        )
+        val snakeBounds = runningIndicatorBounds(rectangle)
         graphics.color = when (section) {
             AiCommitAllControlSection.Push -> ControlColors.pushSnake
             else -> ControlColors.aiCommitSnake
         }
-        val dashLength = JBUI.scale(18).toFloat()
-        val gapLength = max(JBUI.scale(116).toFloat(), snakeBounds.width * 2f)
-        val dashPhase = positiveReversePhase(
-            offset = snakeOffset,
-            cycleLength = dashLength + gapLength,
-        )
+        val dash = runningIndicatorDash(snakeBounds)
         graphics.stroke = BasicStroke(
             strokeWidth,
             BasicStroke.CAP_ROUND,
             BasicStroke.JOIN_ROUND,
             JBUI.scale(10).toFloat(),
-            floatArrayOf(dashLength, gapLength),
-            dashPhase,
+            floatArrayOf(dash.dashLength, dash.gapLength),
+            dash.phase,
         )
         graphics.draw(RoundRectangle2D.Float(
             snakeBounds.x.toFloat(),
@@ -241,6 +236,35 @@ internal class AiCommitAllThreeSectionControl(
             JBUI.scale(3).toFloat(),
         ))
     }
+
+    private fun runningIndicatorBounds(rectangle: Rectangle): Rectangle {
+        val inset = JBUI.scale(2)
+        return Rectangle(
+            rectangle.x + inset,
+            rectangle.y + inset,
+            rectangle.width - inset * 2,
+            rectangle.height - inset * 2,
+        )
+    }
+
+    private fun runningIndicatorDash(snakeBounds: Rectangle): RunningIndicatorDash {
+        val dashLength = JBUI.scale(18).toFloat()
+        val pathLength = runningIndicatorPathLength(snakeBounds)
+        val gapLength = max(JBUI.scale(116).toFloat(), pathLength + dashLength)
+        val cycleLength = dashLength + gapLength
+        return RunningIndicatorDash(
+            dashLength = dashLength,
+            gapLength = gapLength,
+            phase = positivePhase(
+                offset = snakeOffset,
+                cycleLength = cycleLength,
+            ),
+            pathLength = pathLength,
+        )
+    }
+
+    private fun runningIndicatorPathLength(snakeBounds: Rectangle): Float =
+        2f * (snakeBounds.width + snakeBounds.height)
 
     private fun paintAiMark(
         graphics: Graphics2D,
@@ -484,7 +508,7 @@ internal class AiCommitAllThreeSectionControl(
     private fun Int.floorMod(other: Int): Int =
         ((this % other) + other) % other
 
-    private fun positiveReversePhase(
+    private fun positivePhase(
         offset: Float,
         cycleLength: Float,
     ): Float {
@@ -492,12 +516,7 @@ internal class AiCommitAllThreeSectionControl(
             return 0f
         }
 
-        val normalizedOffset = ((offset % cycleLength) + cycleLength) % cycleLength
-        return if (normalizedOffset == 0f) {
-            0f
-        } else {
-            cycleLength - normalizedOffset
-        }
+        return ((offset % cycleLength) + cycleLength) % cycleLength
     }
 
     private val Rectangle.right: Int
@@ -556,7 +575,18 @@ internal class AiCommitAllThreeSectionControl(
         private const val AI_ICON_SIZE = 14
         private const val PUSH_ICON_SIZE = 18
         private const val SNAKE_FRAME_DELAY_MS = 80
+        private const val SNAKE_FRAME_STEP = 8
     }
+}
+
+internal data class RunningIndicatorDash(
+    val dashLength: Float,
+    val gapLength: Float,
+    val phase: Float,
+    val pathLength: Float,
+) {
+    val cycleLength: Float
+        get() = dashLength + gapLength
 }
 
 internal val AiCommitAllControlSection.toolTipText: String

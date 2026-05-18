@@ -316,6 +316,29 @@ internal class AiCommitAllWorkflowRunnerTest {
         assertEquals(listOf("readiness", "prepare", "ai:Ai"), dependencies.events)
     }
 
+    @Test
+    fun `workflow activity starts before background preparation and finishes after completion`() {
+        val dependencies = CapturingWorkflowDependencies()
+        val scheduler = CapturingWorkflowScheduler()
+
+        val result = AiCommitAllWorkflowRunner(dependencies, scheduler)
+            .start(AiCommitAllWorkflowMode.Commit, testDataContext())
+
+        assertFalse(result.isDone)
+        assertEquals(listOf(AiGenerationActivityPhase.Commit), dependencies.activityStarts)
+        assertEquals(0, dependencies.activityFinishCount)
+
+        scheduler.runNextBackground()
+
+        assertFalse(result.isDone)
+        assertEquals(0, dependencies.activityFinishCount)
+
+        scheduler.runNextEdt()
+
+        assertEquals(AiCommitAllWorkflowResult.Started, result.join())
+        assertEquals(1, dependencies.activityFinishCount)
+    }
+
     private class CapturingWorkflowDependencies(
         val selection: GitChangeSelection = GitChangeSelection(emptyList()),
         private val aiCompletion: CompletableFuture<AiGenerationCompletionResult> =
@@ -331,6 +354,15 @@ internal class AiCommitAllWorkflowRunnerTest {
         var commitCallCount = 0
         var pushCallCount = 0
         var pushedSelection: GitChangeSelection? = null
+        val activityStarts = mutableListOf<AiGenerationActivityPhase>()
+        var activityFinishCount = 0
+
+        override fun startActivity(phase: AiGenerationActivityPhase): AutoCloseable {
+            activityStarts += phase
+            return AutoCloseable {
+                activityFinishCount += 1
+            }
+        }
 
         override fun checkReadiness(): VcsOperationReadinessResult {
             events += "readiness"

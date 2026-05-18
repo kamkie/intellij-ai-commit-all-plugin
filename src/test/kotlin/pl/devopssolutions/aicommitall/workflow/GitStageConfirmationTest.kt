@@ -10,6 +10,7 @@ import git4idea.index.GitFileStatus
 import git4idea.index.GitStageTracker
 import java.io.File
 import java.nio.charset.Charset
+import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -94,6 +95,25 @@ internal class GitStageConfirmationTest {
             ),
             operations.events,
         )
+    }
+
+    @Test
+    fun `waits between failed confirmation attempts for delayed staging tracker updates`() {
+        val root = LightVirtualFile("repo")
+        val modified = TestFilePath("/repo/modified.txt")
+        val notYetStaged = stageState(root, gitStatus(' ', 'M', modified))
+        val confirmed = stageState(root, gitStatus('M', ' ', modified))
+        val operations = CapturingOperations(notYetStaged, confirmed)
+        val sleeper = CapturingSleeper()
+
+        val result = confirmation(
+            operations = operations,
+            attempts = 3,
+            sleeper = sleeper,
+        ).confirm(mapOf(root to listOf(modified)))
+
+        assertSame(confirmed, result)
+        assertEquals(listOf(RETRY_DELAY), sleeper.delays)
     }
 
     @Test
@@ -274,11 +294,22 @@ internal class GitStageConfirmationTest {
     private fun confirmation(
         operations: CapturingOperations,
         attempts: Int,
+        sleeper: GitStageConfirmationSleeper = CapturingSleeper(),
     ): GitStageConfirmation =
         GitStageConfirmation(
             attempts = attempts,
             operations = operations,
+            retryDelay = RETRY_DELAY,
+            sleeper = sleeper,
         )
+
+    private class CapturingSleeper : GitStageConfirmationSleeper {
+        val delays = mutableListOf<Duration>()
+
+        override fun sleep(duration: Duration) {
+            delays += duration
+        }
+    }
 
     private class CapturingOperations(
         vararg states: GitStageTracker.State,
@@ -342,6 +373,8 @@ internal class GitStageConfirmationTest {
     ): GitFileStatus = GitFileStatus(index, workTree, path, null)
 
     private companion object {
+        val RETRY_DELAY: Duration = Duration.ofMillis(250)
+
         fun pathEventText(paths: Collection<FilePath>): String =
             paths.joinToString(",") { path -> path.path }
     }

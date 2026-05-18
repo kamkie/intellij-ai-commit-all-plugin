@@ -67,6 +67,7 @@ internal class AiCommitAllWorkflowRunner(
             return stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
         }
 
+        val activityToken = dependencies.startActivity(mode.activityPhase)
         return scheduler.supplyBackground {
             prepareWorkflow(workflowHandler, workflowUi)
         }.thenCompose { preparation ->
@@ -84,6 +85,8 @@ internal class AiCommitAllWorkflowRunner(
                 is AiCommitAllWorkflowPreparationResult.Stopped ->
                     stopped(preparation.reason)
             }
+        }.whenComplete { _, _ ->
+            activityToken.close()
         }
     }
 
@@ -275,6 +278,8 @@ private fun <T> CompletableFuture<T>.completeFrom(action: () -> T) {
 }
 
 internal interface AiCommitAllWorkflowDependencies {
+    fun startActivity(phase: AiGenerationActivityPhase): AutoCloseable
+
     fun checkReadiness(): VcsOperationReadinessResult
 
     fun prepareAllFilesSelection(
@@ -311,6 +316,9 @@ internal sealed interface AiCommitAllAiGenerationResult {
 }
 
 private class ProjectAiCommitAllWorkflowDependencies(private val project: Project) : AiCommitAllWorkflowDependencies {
+    override fun startActivity(phase: AiGenerationActivityPhase): AutoCloseable =
+        AiGenerationActivityStateService.getInstance(project).start(phase)
+
     override fun checkReadiness(): VcsOperationReadinessResult =
         VcsOperationReadinessService.getInstance(project).checkAndReport()
 
@@ -328,7 +336,6 @@ private class ProjectAiCommitAllWorkflowDependencies(private val project: Projec
         parentDataContext: DataContext,
         inputEvent: InputEvent?,
     ): AiCommitAllAiGenerationResult {
-        val activityToken = AiGenerationActivityStateService.getInstance(project).start(phase)
         val completionService = AiGenerationCompletionService.getInstance(project)
         val snapshot = AiCommitMessagePreparation.prepareInitialSnapshot(
             commitMessageUi = workflowUi.commitMessageUi,
@@ -349,18 +356,14 @@ private class ProjectAiCommitAllWorkflowDependencies(private val project: Projec
                         snapshot = snapshot,
                         invocation = invocation,
                         commitMessageUi = workflowUi.commitMessageUi,
-                    ).whenComplete { _, _ -> activityToken.close() },
+                    ),
                 )
 
-            AiCommitMessageActionInvocationResult.MissingAction -> {
-                activityToken.close()
+            AiCommitMessageActionInvocationResult.MissingAction ->
                 AiCommitAllAiGenerationResult.Stopped(AiCommitAllWorkflowStopReason.MissingAiAction)
-            }
 
-            AiCommitMessageActionInvocationResult.MissingWorkflow -> {
-                activityToken.close()
+            AiCommitMessageActionInvocationResult.MissingWorkflow ->
                 AiCommitAllAiGenerationResult.Stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
-            }
         }
     }
 

@@ -187,6 +187,34 @@ internal class AiCommitAllThreeSectionControlTest {
         assertTrue((image.getRGB(control.width / 2, control.height / 2) ushr 24) > 0)
     }
 
+    @Test
+    fun `running indicator dash cycle is longer than section path`() {
+        val control = testControl(
+            state = testState(runningSection = AiCommitAllControlSection.Commit),
+        )
+
+        AiCommitAllControlSection.entries.forEach { section ->
+            val dash = control.runningIndicatorDashForTest(section)
+
+            assertTrue(
+                dash.cycleLength > dash.pathLength,
+                "${section.label} dash cycle ${dash.cycleLength} must exceed path ${dash.pathLength}",
+            )
+        }
+    }
+
+    @Test
+    fun `running indicator phase advances by animation offset`() {
+        val control = testControl(
+            state = testState(runningSection = AiCommitAllControlSection.Commit),
+        )
+
+        control.setSnakeOffsetForTest(8f)
+        val dash = control.runningIndicatorDashForTest(AiCommitAllControlSection.Commit)
+
+        assertTrue(dash.phase in 7.9f..8.1f, "phase was ${dash.phase}")
+    }
+
     private fun testControl(
         state: AiCommitAllControlState = testState(),
         activateSection: (AiCommitAllControlSection, java.awt.event.InputEvent?) -> Unit = { _, _ -> },

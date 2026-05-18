@@ -10,7 +10,7 @@ import git4idea.index.GitStageTracker
 import pl.devopssolutions.aicommitall.vcs.GitStageSelectionItems
 import java.lang.reflect.Method
 
-private const val GIT_STAGE_CONFIRMATION_ATTEMPTS = 3
+private const val GIT_STAGE_CONFIRMATION_ATTEMPTS = 10
 
 internal object ReflectiveCommitWorkflowSynchronizer {
     fun synchronize(

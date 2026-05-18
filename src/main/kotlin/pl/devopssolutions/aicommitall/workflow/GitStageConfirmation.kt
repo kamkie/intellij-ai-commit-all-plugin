@@ -7,10 +7,13 @@ import com.intellij.openapi.vfs.VirtualFile
 import git4idea.index.GitStageTracker
 import git4idea.util.GitFileUtils
 import pl.devopssolutions.aicommitall.vcs.GitStageSelectionItems
+import java.time.Duration
 
 internal class GitStageConfirmation(
     private val attempts: Int,
     private val operations: GitStageConfirmationOperations,
+    private val retryDelay: Duration = Duration.ofMillis(250),
+    private val sleeper: GitStageConfirmationSleeper = ThreadGitStageConfirmationSleeper,
 ) {
     fun confirm(pathsByRoot: Map<VirtualFile, List<FilePath>>): GitStageTracker.State? {
         val expectedPaths = pathsByRoot.values
@@ -20,7 +23,7 @@ internal class GitStageConfirmation(
             return null
         }
 
-        repeat(attempts) {
+        repeat(attempts) { attempt ->
             val refreshedState = runCatching {
                 pathsByRoot.forEach { (root, paths) ->
                     operations.stagePaths(root, paths)
@@ -31,6 +34,10 @@ internal class GitStageConfirmation(
 
             if (refreshedState != null && GitStageSelectionItems.containsAllStagedPaths(refreshedState, expectedPaths)) {
                 return refreshedState
+            }
+
+            if (attempt < attempts - 1 && !retryDelay.isNegative && !retryDelay.isZero) {
+                sleeper.sleep(retryDelay)
             }
         }
 
@@ -46,6 +53,20 @@ internal interface GitStageConfirmationOperations {
     fun reloadExternalFiles(paths: Collection<FilePath>)
 
     fun refreshTrackerState(): GitStageTracker.State
+}
+
+internal fun interface GitStageConfirmationSleeper {
+    fun sleep(duration: Duration)
+}
+
+private object ThreadGitStageConfirmationSleeper : GitStageConfirmationSleeper {
+    override fun sleep(duration: Duration) {
+        try {
+            Thread.sleep(duration.toMillis())
+        } catch (interrupted: InterruptedException) {
+            Thread.currentThread().interrupt()
+        }
+    }
 }
 
 internal class IntellijGitStageConfirmationOperations(
