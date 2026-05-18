@@ -7,7 +7,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import git4idea.index.GitStageCommitWorkflowHandler
 import git4idea.index.GitStageTracker
-import git4idea.util.GitFileUtils
 import pl.devopssolutions.aicommitall.vcs.GitStageSelectionItems
 import java.lang.reflect.Method
 
@@ -75,24 +74,11 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         project: Project,
         tracker: GitStageTracker,
         pathsByRoot: Map<VirtualFile, List<FilePath>>,
-    ): GitStageTracker.State? {
-        val expectedPaths = pathsByRoot.values.flatten()
-        repeat(GIT_STAGE_CONFIRMATION_ATTEMPTS) {
-            val refreshedState = runCatching {
-                pathsByRoot.forEach { (root, paths) ->
-                    GitFileUtils.addPaths(project, root, paths, true)
-                }
-                tracker.updateTrackerState()
-                tracker.state
-            }.getOrNull()
-
-            if (refreshedState != null && GitStageSelectionItems.containsAllStagedPaths(refreshedState, expectedPaths)) {
-                return refreshedState
-            }
-        }
-
-        return null
-    }
+    ): GitStageTracker.State? =
+        GitStageConfirmation(
+            attempts = GIT_STAGE_CONFIRMATION_ATTEMPTS,
+            operations = IntellijGitStageConfirmationOperations(project, tracker),
+        ).confirm(pathsByRoot)
 
     private fun Class<*>.findMethod(name: String, vararg parameterTypes: Class<*>): Method? =
         methods.firstOrNull { method ->

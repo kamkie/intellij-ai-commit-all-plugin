@@ -19,6 +19,7 @@ Notation:
 - [x] T-BUG-004: Refresh IntelliJ toolbar action state when AI activity starts and finishes so the commit push control can show and clear its accepted snake running indicator.
 - [x] T-BUG-005: same as T-BUG-002 but for commit. commit should not implement there own logic for first stage but reuse `Staging + AI message generation`. same for push stage button.
 - [x] T-BUG-006: reopens T-BUG-002. when there are multiple gradle modules, or multiple intellij products in repo
+- [x] T-BUG-007: Trigger synchronous external file reloads after staging paths, retry the add/reload/recheck loop, and stop before AI generation until every expected path is confirmed staged.
 
 ### Testing
 

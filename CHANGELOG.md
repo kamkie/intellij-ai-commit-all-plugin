@@ -15,6 +15,7 @@ This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.3
 ### Fixed
 
 - Refreshed IntelliJ toolbar actions when AI activity starts or finishes so the three-section control can enter and leave its snake running state without waiting for user activity.
+- Reloaded externally changed staged files before each Git staging tracker recheck, with bounded retries before AI commit-message generation.
 
 ## [v0.1.0-alpha.3] - 2026-05-18
 
