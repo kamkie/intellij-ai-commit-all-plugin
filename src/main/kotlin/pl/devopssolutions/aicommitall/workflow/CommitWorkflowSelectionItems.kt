@@ -16,5 +16,8 @@ internal object CommitWorkflowSelectionItems {
     }
 
     fun inclusionItems(selection: GitChangeSelection): List<Any> =
-        selection.trackedChanges + selection.unversionedFiles + selection.resolvedConflictPaths
+        selection.trackedChanges +
+            selection.unversionedFiles +
+            selection.resolvedConflictPaths +
+            selection.stagingAreaPaths
 }
