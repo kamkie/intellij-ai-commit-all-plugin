@@ -9,7 +9,8 @@ Use this guide for Kotlin, Gradle, IntelliJ Platform plugin descriptors, and plu
 - Run `.\gradlew.bat spotlessApply` only for mechanical formatting and license-header fixes; keep those changes separate from behavior edits when practical.
 - Spotless with ktlint is the only Kotlin and Gradle Kotlin DSL formatter. Do not add a second Kotlin formatter or license-header tool without a superseding ADR.
 - Kotlin source files under `src/` must carry the Apache-2.0 header enforced by Spotless.
-- Markdown is checked with `markdownlint-cli2@0.22.1` through `scripts/validate-docs.ps1`; use 4-space nested-list indentation and keep Markdown tables with leading/trailing pipes, consistent columns, and blank lines around tables.
+- Markdown is checked with `markdownlint-cli2@0.22.1` through `scripts/validate-docs.ps1`; use 4-space nested-list and continuation indentation, one space after list markers, one blank line around headings and block elements, and no hard-wrapped prose by default.
+- Keep Markdown tables with leading/trailing pipes and consistent columns. Let IntelliJ's Markdown table formatter preserve alignment, but do not rely on table padding as semantic content.
 
 ## Kotlin And IntelliJ Platform
 

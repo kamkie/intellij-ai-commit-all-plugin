@@ -15,6 +15,7 @@
   "noProgress": true,
   "config": {
     "default": false,
+    "MD005": true,
     "MD007": {
       "indent": 4
     },
@@ -22,6 +23,12 @@
     "MD010": true,
     "MD012": {
       "maximum": 2
+    },
+    "MD030": {
+      "ul_single": 1,
+      "ol_single": 1,
+      "ul_multi": 1,
+      "ol_multi": 1
     },
     "MD047": true,
     "MD055": {
