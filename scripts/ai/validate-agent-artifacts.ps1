@@ -168,3 +168,4 @@ if ($errors.Count -gt 0) {
 }
 
 Write-Output 'Agent artifact validation passed.'
+exit 0
