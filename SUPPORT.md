@@ -5,7 +5,7 @@ This project is a pre-release IntelliJ Platform plugin repository. No Marketplac
 ## Current Support Status
 
 - Support is best-effort until the first official JetBrains Marketplace release.
-- Current release candidate target: `v0.1.0-alpha.8`, an implementation prerelease.
+- Current release candidate target: `v0.1.0-alpha.9`, an implementation prerelease.
 - Current `main` branch state: AI Commit All workflow implementation and release automation are present but not Marketplace-published.
 - Current planned IntelliJ Platform baseline: 2026.1.
 - Current planned IDE scope: JetBrains IDEs with the VCS Commit tool window and compatible commit workflow APIs.

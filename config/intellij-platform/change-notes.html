@@ -1,5 +1,8 @@
-<p>v0.1.0-alpha.8 prerelease.</p>
+<p>v0.1.0-alpha.9 prerelease.</p>
 <ul>
+    <li>Derives Gradle project and IntelliJ plugin descriptor versions from Git tags and short commit hashes using
+        Palantir gradle-git-version.
+    </li>
     <li>Moves push-only outgoing-commit preparation and post-commit safe immediate pushes off the UI thread while
         keeping
         the IDE push fallback on the event dispatch thread.

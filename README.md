@@ -134,6 +134,8 @@ Release publication is intentionally manual and gated:
 6. Verify GitHub secret scanning and push protection are enabled for the repository where available.
 7. Start the `Release` workflow manually with the intended Marketplace channel, usually `default`.
 
+Builds derive the Gradle project version and IntelliJ plugin descriptor version from Git metadata using Palantir `gradle-git-version`. Normal local and CI builds use `<latest-tag>-<commit-distance>-g<short-sha>`, tagged commits use `<latest-tag>-g<short-sha>`, and dirty working trees append `.dirty`. Set `GIT_VERSION` only when a packaging environment must override Git-derived version discovery.
+
 The release workflow signs the plugin and calls `publishPlugin` only after manual dispatch and environment approval. Do not create tags or publish Marketplace updates unless release execution is explicitly requested.
 
 ## Project

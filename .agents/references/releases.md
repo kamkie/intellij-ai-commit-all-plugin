@@ -9,6 +9,7 @@ This guide is adapted for this IntelliJ Platform plugin repository from the rele
 ## Versioning And Changelog Rules
 
 - Use semantic version tags in the form `vMAJOR.MINOR.PATCH` for stable releases or `vMAJOR.MINOR.PATCH-PRERELEASE` for prereleases.
+- Build artifact versions are derived from Git metadata with Palantir `gradle-git-version`; package releases only after the intended annotated tag exists on the release commit.
 - Keep release numbers increasing in `git log --first-parent` order.
 - Create releases only from `main` after intended implementation work is integrated.
 - Use annotated tags for intentional releases.
