@@ -24,6 +24,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.vcs.commit.CommitMessageUi
 import pl.devopssolutions.aicommitall.settings.AiCommitAllSettings
+import java.awt.KeyboardFocusManager
 import java.lang.reflect.Field
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
@@ -67,6 +68,7 @@ internal class AiGenerationCompletionService {
 internal class AiGenerationCompletionObserver(
     private val timeSource: AiCompletionTimeSource = SystemAiCompletionTimeSource,
     private val sleeper: AiCompletionSleeper = ThreadAiCompletionSleeper,
+    private val focusState: AiCompletionFocusState = AwtAiCompletionFocusState,
 ) {
     fun awaitCompletion(
         snapshot: AiCommitMessageSnapshot,
@@ -77,6 +79,7 @@ internal class AiGenerationCompletionObserver(
     ): AiGenerationCompletionResult {
         val startedAtMillis = timeSource.nowMillis()
         var observedRunning = false
+        var stoppedWithUnusableMessageAtMillis: Long? = null
 
         while (timeSource.nowMillis() - startedAtMillis <= options.timeout.toMillis()) {
             val signalState = runningSignal.state()
@@ -90,15 +93,30 @@ internal class AiGenerationCompletionObserver(
             when (signalState) {
                 AiGenerationRunningState.Running -> {
                     observedRunning = true
+                    stoppedWithUnusableMessageAtMillis = null
                 }
 
                 AiGenerationRunningState.NotRunning -> {
-                    if (observedRunning || currentMessage.isUsableChangedMessage(snapshot)) {
+                    if (shouldCompleteAfterStoppedSignal(
+                            observedRunning = observedRunning,
+                            currentMessage = currentMessage,
+                            snapshot = snapshot,
+                            stoppedWithUnusableMessageAtMillis = stoppedWithUnusableMessageAtMillis,
+                            options = options,
+                        )
+                    ) {
                         return completionResult(
                             snapshot = snapshot,
                             currentMessage = currentMessage,
                         )
                     }
+
+                    stoppedWithUnusableMessageAtMillis = stoppedWithUnusableMessageAtMillisAfter(
+                        observedRunning = observedRunning,
+                        currentMessage = currentMessage,
+                        snapshot = snapshot,
+                        stoppedWithUnusableMessageAtMillis = stoppedWithUnusableMessageAtMillis,
+                    )
                 }
 
                 AiGenerationRunningState.Unavailable -> {
@@ -117,7 +135,45 @@ internal class AiGenerationCompletionObserver(
         )
     }
 
+    private fun shouldCompleteAfterStoppedSignal(
+        observedRunning: Boolean,
+        currentMessage: String,
+        snapshot: AiCommitMessageSnapshot,
+        stoppedWithUnusableMessageAtMillis: Long?,
+        options: AiGenerationCompletionOptions,
+    ): Boolean {
+        if (currentMessage.isUsableChangedMessage(snapshot)) {
+            return true
+        }
+
+        return observedRunning &&
+            isStableStoppedSignal(
+                stoppedWithUnusableMessageAtMillis = stoppedWithUnusableMessageAtMillis,
+                options = options,
+            )
+    }
+
     private fun String.isUsableChangedMessage(snapshot: AiCommitMessageSnapshot): Boolean = isNotBlank() && this != snapshot.originalMessage
+
+    private fun isStableStoppedSignal(
+        stoppedWithUnusableMessageAtMillis: Long?,
+        options: AiGenerationCompletionOptions,
+    ): Boolean = stoppedWithUnusableMessageAtMillis != null &&
+        focusState.isApplicationFocused() &&
+        timeSource.nowMillis() - stoppedWithUnusableMessageAtMillis >= options.stoppedSignalGracePeriod.toMillis()
+
+    private fun stoppedWithUnusableMessageAtMillisAfter(
+        observedRunning: Boolean,
+        currentMessage: String,
+        snapshot: AiCommitMessageSnapshot,
+        stoppedWithUnusableMessageAtMillis: Long?,
+    ): Long? {
+        if (!observedRunning || currentMessage.isUsableChangedMessage(snapshot) || !focusState.isApplicationFocused()) {
+            return null
+        }
+
+        return stoppedWithUnusableMessageAtMillis ?: timeSource.nowMillis()
+    }
 
     private fun completionResult(
         snapshot: AiCommitMessageSnapshot,
@@ -146,15 +202,20 @@ internal data class AiCommitMessageSnapshot(
 internal data class AiGenerationCompletionOptions(
     val timeout: Duration,
     val checkInterval: Duration,
+    val stoppedSignalGracePeriod: Duration = DEFAULT_STOPPED_SIGNAL_GRACE_PERIOD,
 ) {
     init {
         require(!timeout.isNegative && !timeout.isZero) { "AI generation timeout must be positive." }
         require(!checkInterval.isNegative && !checkInterval.isZero) {
             "AI generation completion-check interval must be positive."
         }
+        require(!stoppedSignalGracePeriod.isNegative) {
+            "AI generation stopped-signal grace period must not be negative."
+        }
     }
 
     companion object {
+        private val DEFAULT_STOPPED_SIGNAL_GRACE_PERIOD: Duration = Duration.ofSeconds(2)
         val DEFAULT: AiGenerationCompletionOptions = AiGenerationCompletionOptions(
             timeout = Duration.ofSeconds(30),
             checkInterval = Duration.ofMillis(500),
@@ -260,6 +321,18 @@ internal class ReflectiveActionProgressRunningSignal(private val action: AnActio
         }
         return null
     }
+}
+
+internal fun interface AiCompletionFocusState {
+    fun isApplicationFocused(): Boolean
+
+    companion object {
+        val Focused: AiCompletionFocusState = AiCompletionFocusState { true }
+    }
+}
+
+private object AwtAiCompletionFocusState : AiCompletionFocusState {
+    override fun isApplicationFocused(): Boolean = KeyboardFocusManager.getCurrentKeyboardFocusManager().activeWindow != null
 }
 
 internal interface AiCompletionTimeSource {

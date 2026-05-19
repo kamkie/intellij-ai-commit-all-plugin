@@ -79,6 +79,62 @@ internal class AiGenerationCompletionObserverTest {
     }
 
     @Test
+    fun `waits through transient stopped signal with unchanged message`() {
+        val timeSource = MutableTimeSource()
+        val signal = SequenceRunningSignal(
+            AiGenerationRunningState.Running,
+            AiGenerationRunningState.NotRunning,
+            AiGenerationRunningState.Running,
+            AiGenerationRunningState.NotRunning,
+        )
+        val observer = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+            focusState = AiCompletionFocusState.Focused,
+        )
+
+        val result = observer.awaitCompletion(
+            snapshot = AiCommitMessageSnapshot("old message"),
+            messageReader = AiCommitMessageReader {
+                if (signal.callCount >= 4) "generated message" else "old message"
+            },
+            runningSignal = signal,
+            options = testOptions(),
+        )
+
+        val completed = assertIs<AiGenerationCompletionResult.Completed>(result)
+        assertEquals("generated message", completed.generatedMessage)
+    }
+
+    @Test
+    fun `does not fail closed on stopped unchanged signal while application is inactive`() {
+        val timeSource = MutableTimeSource()
+        val signal = SequenceRunningSignal(
+            AiGenerationRunningState.Running,
+            AiGenerationRunningState.NotRunning,
+            AiGenerationRunningState.NotRunning,
+            AiGenerationRunningState.NotRunning,
+        )
+        val observer = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+            focusState = AiCompletionFocusState { false },
+        )
+
+        val result = observer.awaitCompletion(
+            snapshot = AiCommitMessageSnapshot("old message"),
+            messageReader = AiCommitMessageReader {
+                if (signal.callCount >= 4) "generated message" else "old message"
+            },
+            runningSignal = signal,
+            options = testOptions(),
+        )
+
+        val completed = assertIs<AiGenerationCompletionResult.Completed>(result)
+        assertEquals("generated message", completed.generatedMessage)
+    }
+
+    @Test
     fun `times out when action never starts and message does not change`() {
         val timeSource = MutableTimeSource()
         val observer = AiGenerationCompletionObserver(
@@ -120,7 +176,12 @@ internal class AiGenerationCompletionObserverTest {
 
     @Test
     fun `fails closed when action stops with unchanged message`() {
-        val result = AiGenerationCompletionObserver().awaitCompletion(
+        val timeSource = MutableTimeSource()
+        val result = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+            focusState = AiCompletionFocusState.Focused,
+        ).awaitCompletion(
             snapshot = AiCommitMessageSnapshot("old message"),
             messageReader = AiCommitMessageReader { "old message" },
             runningSignal = SequenceRunningSignal(
@@ -135,7 +196,12 @@ internal class AiGenerationCompletionObserverTest {
 
     @Test
     fun `fails closed when action stops with empty message`() {
-        val result = AiGenerationCompletionObserver().awaitCompletion(
+        val timeSource = MutableTimeSource()
+        val result = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+            focusState = AiCompletionFocusState.Focused,
+        ).awaitCompletion(
             snapshot = AiCommitMessageSnapshot("old message"),
             messageReader = AiCommitMessageReader { "" },
             runningSignal = SequenceRunningSignal(
@@ -206,8 +272,10 @@ internal class AiGenerationCompletionObserverTest {
     private fun testOptions(
         timeout: Duration = Duration.ofMillis(5_000),
         checkInterval: Duration = Duration.ofMillis(500),
+        stoppedSignalGracePeriod: Duration = Duration.ofMillis(1_000),
     ): AiGenerationCompletionOptions = AiGenerationCompletionOptions(
         timeout = timeout,
         checkInterval = checkInterval,
+        stoppedSignalGracePeriod = stoppedSignalGracePeriod,
     )
 }
