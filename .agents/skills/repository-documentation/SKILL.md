@@ -1,6 +1,6 @@
 ---
 name: repository-documentation
-description: Repository documentation workflow for this IntelliJ plugin. Use when adding, updating, reviewing, or triaging README.md, SUPPORT.md, TASKS.md, CHANGELOG.md, docs/decisions/, docs/proposals/, docs/WORKING_WITH_AI.md, docs/DEVELOPMENT_LIFECYCLE.md, .agents/references/, .agents/plans/, .agents/skills/, AGENTS.md, or other governed contributor and AI-agent documentation.
+description: Repository documentation workflow for this IntelliJ plugin. Use when adding, updating, reviewing, or triaging README.md, SUPPORT.md, TASKS.md, CHANGELOG.md, docs/decisions/, docs/proposals/, docs/WORKING_WITH_AI.md, docs/DEVELOPMENT_LIFECYCLE.md, .agents/references/, .agents/plans/, .agents/prompts/, .agents/skills/, AGENTS.md, or other governed contributor and AI-agent documentation.
 ---
 
 # Repository Documentation
@@ -13,6 +13,7 @@ description: Repository documentation workflow for this IntelliJ plugin. Use whe
     - Proposals: `docs/proposals/README.md`
     - ADRs and open questions: `docs/decisions/README.md`
     - Plans: `.agents/references/planning.md`
+  - Repository prompts: `.agents/prompts/README.md`
     - Testing or validation docs: `.agents/references/testing.md`
     - Reviews: `.agents/references/reviews.md`
     - Release docs or changelog: `.agents/references/releases.md`
@@ -26,7 +27,7 @@ description: Repository documentation workflow for this IntelliJ plugin. Use whe
 - Keep proposal decisions empty unless the user explicitly triages them; when accepted, set `Decision` to `accepted`, set `Decision at`, and update the implementation status required by `docs/proposals/README.md`.
 - Preserve stable IDs for tasks, open questions, ADRs, proposals, findings, and plans.
 - Update `CHANGELOG.md` only for notable public plugin-facing changes: plugin source or runtime behavior, public plugin docs, compatibility, support, security or privacy behavior, or CI and release pipelines affecting the plugin artifact or publication.
-- Do not update `CHANGELOG.md` for AI-agent docs, skills, plans, proposals, ADR maintenance, scenario or test coverage inventory, manual validation logs, or internal repository workflow changes unless they also affect public plugin behavior, public docs, support promises, or release artifacts.
+- Do not update `CHANGELOG.md` for AI-agent docs, skills, prompts, plans, proposals, ADR maintenance, scenario or test coverage inventory, manual validation logs, or internal repository workflow changes unless they also affect public plugin behavior, public docs, support promises, or release artifacts.
 - Keep docs proportional and repository-specific. Do not copy generic Spring, REST, OpenAPI, deployment, operations, benchmark, frontend, or unrelated guidance from external repositories.
 
 ## Validation

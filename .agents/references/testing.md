@@ -7,6 +7,7 @@ Use validation that matches the change. Documentation-only changes do not requir
 - `gradle spotlessCheck` for Kotlin and Gradle Kotlin DSL formatting and Kotlin source license-header enforcement.
 - `npx --yes markdownlint-cli2@0.22.1` for Markdown linting.
 - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1` for Markdown linting, documentation structure, links, stable IDs, ADR numbering and index, and proposal tracker checks.
+- `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` for repository skill and prompt structure checks when `.agents/skills/` or `.agents/prompts/` changed.
 - `gradle buildPlugin` for packaging and basic compile validation once a Gradle scaffold exists.
 - `gradle verifyPlugin` when configured.
 - Plugin signing and signature verification once signing configuration exists.
@@ -20,6 +21,8 @@ Use `gradle runIde` for manual sandbox testing once the scaffold exists.
 Use current stable JetBrains IDE builds available through the user's All Products Pack. Record exact product names and build numbers in validation reports.
 
 When a problem is reported from manual testing in a real IDE or Gradle sandbox IDE, ask whether the user wants the agent to analyze the relevant IDE logs before inferring the cause. Request sanitized log excerpts or explicit permission to inspect the local logs folder, and remind the user not to share secrets, tokens, proprietary source content, or private commit messages.
+
+Use `.agents/references/troubleshooting.md` for validation, Gradle, plugin packaging, sandbox IDE, test, and IDE-log failure diagnosis.
 
 Create end-to-end tests against local Git repositories where the IntelliJ test framework, Gradle sandbox, and CI environment make that practical. Keep manual sandbox coverage for scenarios that cannot be automated reliably yet.
 
@@ -54,6 +57,15 @@ Manual scenarios for this plugin:
 - Confirm local-repository E2E tests do not push to real remotes.
 - Confirm publishing and signing secrets are not committed or required for pull-request checks.
 - Confirm timeout paths do not leave the user with an unintended commit.
+
+## Flaky Test Triage
+
+Use `.agents/skills/triage-flaky-test/SKILL.md` when a test alternates between pass and fail without relevant source changes.
+
+- Preserve the first failure output and exact command before rerunning.
+- Rerun the narrowest failing test first, then the smallest enclosing task.
+- Diagnose shared state, fixture lifecycle, temp directories, real remotes, sleeps, timing assumptions, platform background work, and environment differences before changing assertions.
+- Prefer deterministic setup, cleanup, and synchronization over retries.
 
 ## Reporting
 

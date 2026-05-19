@@ -45,6 +45,28 @@ function Invoke-MarkdownLint
 
 Invoke-MarkdownLint
 
+function Invoke-AgentArtifactValidation
+{
+    $scriptPath = Join-Path $repoRoot 'scripts/ai/validate-agent-artifacts.ps1'
+    if (-not (Test-Path -LiteralPath $scriptPath))
+    {
+        Add-ValidationError 'scripts/ai/validate-agent-artifacts.ps1 is missing'
+        return
+    }
+
+    $output = & $scriptPath 2>&1
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -ne 0)
+    {
+        foreach ($line in $output)
+        {
+            Add-ValidationError "validate-agent-artifacts: $line"
+        }
+    }
+}
+
+Invoke-AgentArtifactValidation
+
 $markdownFiles = Get-ChildItem -LiteralPath $repoRoot -Recurse -File -Filter '*.md' |
     Where-Object { $_.FullName -notmatch '\\.git\\' }
 

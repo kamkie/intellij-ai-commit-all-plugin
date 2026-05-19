@@ -10,6 +10,7 @@ This is the AI entry point for the repository. Keep task context small and read 
 - Keep completed task history in `TASKS_ARCHIVE.md`.
 - Keep durable agent workflow guidance in `.agents/references/`.
 - Keep reusable task-specific agent skills in `.agents/skills/`.
+- Keep reusable prompt recipes in `.agents/prompts/`.
 
 ## Guidance Map
 
@@ -25,7 +26,9 @@ This is the AI entry point for the repository. Keep task context small and read 
 - Review priorities: `.agents/references/reviews.md`
 - Release preparation: `.agents/references/releases.md`
 - Documentation ownership: `.agents/references/documentation.md`
+- Troubleshooting: `.agents/references/troubleshooting.md`
 - Task-specific skills: `.agents/skills/`
+- Repository prompts: `.agents/prompts/`
 - Commit message template: `.gitmessage`
 - Changelog: `CHANGELOG.md`
 - Support policy: `SUPPORT.md`
@@ -38,6 +41,7 @@ This is the AI entry point for the repository. Keep task context small and read 
 - Treat `PLAN-<short-kebab-slug>.md` or `PLAN-<short-kebab-slug>` references as plans and search `.agents/plans/` first, then `.agents/plans/archive/` when the active file is not found.
 - Treat `PROP-<short-kebab-slug>-<YYYY-MM-DD>T<HH-MM>.md` or `PROP-<short-kebab-slug>` references as proposals and search `docs/proposals/` first, then `docs/proposals/archive/` when the active file is not found.
 - Treat `T-<AREA>-NNN` references as task shortcuts and search `TASKS.md` first, then `TASKS_ARCHIVE.md`, for the exact task entry; use its surrounding section and linked artifacts before falling back to broader search.
+- Treat named repository prompt references as prompt recipes and search `.agents/prompts/README.md` first, then load only the matching prompt file from `.agents/prompts/`.
 - Prefer exact filename lookup when a full filename is supplied. If only an ID or prefix is supplied, use a scoped search in the owning directory before falling back to a repository-wide search.
 
 ## Priority Order
