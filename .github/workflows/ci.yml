@@ -95,13 +95,26 @@ jobs:
           if-no-files-found: error
           compression-level: 0
 
+      - name: Collect Codecov test result files
+        id: codecov-test-results
+        if: ${{ !cancelled() && steps.gradle-validation.outcome != 'skipped' && hashFiles('build/test-results/test/*.xml') != '' }}
+        shell: bash
+        run: |
+          files=$(find build/test-results/test -name '*.xml' -type f | sort | paste -sd, -)
+          if [ -z "${files}" ]; then
+            echo "No Gradle JUnit XML test result files found for Codecov." >&2
+            exit 1
+          fi
+          echo "files=${files}" >> "${GITHUB_OUTPUT}"
+
       - name: Upload test results to Codecov
-        if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
+        if: ${{ !cancelled() && steps.codecov-test-results.outputs.files != '' }}
+        uses: codecov/codecov-action@v6
         with:
-          files: build/test-results/test/*.xml
+          files: ${{ steps.codecov-test-results.outputs.files }}
           flags: unit
           name: ai-commit-all-unit-test-results
+          report_type: test_results
           disable_search: true
           fail_ci_if_error: true
           use_oidc: true
@@ -112,6 +125,7 @@ jobs:
           files: build/reports/jacoco/test/jacocoTestReport.xml
           flags: unit
           name: ai-commit-all-unit-tests
+          report_type: coverage
           disable_search: true
           fail_ci_if_error: true
           use_oidc: true
