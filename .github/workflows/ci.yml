@@ -8,6 +8,7 @@ on:
 
 permissions:
   actions: read
+  checks: write
   contents: read
   id-token: write
   security-events: write
@@ -69,9 +70,11 @@ jobs:
 
       - name: Publish unit test summary
         if: ${{ !cancelled() && steps.gradle-validation.outcome != 'skipped' && hashFiles('build/test-results/test/*.xml') != '' }}
-        uses: test-summary/action@v2
+        uses: dorny/test-reporter@v3
         with:
-          paths: build/test-results/test/*.xml
+          name: Gradle unit tests
+          path: build/test-results/test/*.xml
+          reporter: java-junit
 
       - name: Upload unit test results artifact
         if: ${{ !cancelled() && steps.gradle-validation.outcome != 'skipped' }}

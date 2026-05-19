@@ -323,6 +323,36 @@ internal class GitHubActionsWorkflowTest {
     }
 
     @Test
+    fun `ci workflow publishes gradle test report`() {
+        val content = Files.readString(Path.of(".github", "workflows", "ci.yml"))
+
+        assertFalse(
+            content.contains("test-summary/action@"),
+            "CI workflow must not use the replaced test-summary action.",
+        )
+        assertTrue(
+            content.contains("checks: write"),
+            "CI workflow must grant permission for Test Reporter to create check runs.",
+        )
+        assertTrue(
+            content.contains("uses: dorny/test-reporter@v3"),
+            "CI workflow must publish test summaries through Test Reporter.",
+        )
+        assertTrue(
+            content.contains("name: Gradle unit tests"),
+            "CI workflow must give the Test Reporter check a stable name.",
+        )
+        assertTrue(
+            content.contains("path: build/test-results/test/*.xml"),
+            "CI workflow must pass Gradle JUnit XML files to Test Reporter.",
+        )
+        assertTrue(
+            content.contains("reporter: java-junit"),
+            "CI workflow must parse Gradle test results as Java JUnit XML.",
+        )
+    }
+
+    @Test
     fun `ci workflow uploads built plugin zip artifact`() {
         val content = Files.readString(Path.of(".github", "workflows", "ci.yml"))
 
