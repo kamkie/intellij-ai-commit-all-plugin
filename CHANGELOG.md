@@ -16,6 +16,10 @@ This changelog records plugin source and runtime behavior changes, public plugin
 - Published Gradle unit test summaries and test report artifacts in GitHub Actions CI.
 - Added a Trivy filesystem security workflow with SARIF uploads to GitHub code scanning and report artifacts.
 
+### Changed
+
+- Enabled Gradle configuration cache and made coverage verification cache-compatible for faster local and CI Gradle configuration.
+
 ### Fixed
 
 - Fixed JaCoCo coverage reporting for IntelliJ plugin tests so CI uploads nonzero production coverage instead of an all-uncovered report.

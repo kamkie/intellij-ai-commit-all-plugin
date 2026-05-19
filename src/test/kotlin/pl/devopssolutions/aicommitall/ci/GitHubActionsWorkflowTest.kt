@@ -98,6 +98,25 @@ internal class GitHubActionsWorkflowTest {
     }
 
     @Test
+    fun `gradle build enables configuration cache`() {
+        val properties = Files.readString(Path.of("gradle.properties"))
+        val build = Files.readString(Path.of("build.gradle.kts"))
+
+        assertTrue(
+            properties.contains("org.gradle.configuration-cache=true"),
+            "Gradle must enable the configuration cache persistently.",
+        )
+        assertTrue(
+            build.contains("abstract class VerifyJacocoCoverageReportTask : DefaultTask()"),
+            "Custom verification tasks must avoid script-object closures that break the configuration cache.",
+        )
+        assertTrue(
+            build.contains("tasks.registering(VerifyJacocoCoverageReportTask::class)"),
+            "JaCoCo coverage verification must use the cache-compatible task type.",
+        )
+    }
+
+    @Test
     fun `gradle configures detekt static analysis reports`() {
         val content = Files.readString(Path.of("build.gradle.kts"))
 
@@ -308,7 +327,7 @@ internal class GitHubActionsWorkflowTest {
         val content = Files.readString(Path.of(".github", "workflows", "ci.yml"))
 
         assertTrue(
-            content.contains("actions/upload-artifact@v6"),
+            content.contains("actions/upload-artifact@v7"),
             "CI workflow must upload the packaged plugin ZIP as a GitHub Actions artifact.",
         )
         assertTrue(

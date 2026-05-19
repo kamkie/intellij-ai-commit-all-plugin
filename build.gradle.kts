@@ -24,6 +24,8 @@ val gitDerivedPluginVersion = providers.provider {
     "$tagOrHash$commitDistance-g${details.gitHash}$dirtySuffix"
 }
 val pluginVersion = providers.environmentVariable("GIT_VERSION").orElse(gitDerivedPluginVersion)
+val jdkVersion = JavaVersion.VERSION_21
+val jdkVersionTarget = jdkVersion.majorVersion
 
 group = "pl.devopssolutions"
 version = pluginVersion.get()
@@ -57,13 +59,13 @@ dependencies {
 
 kotlin {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_21)
+        jvmTarget.set(JvmTarget.fromTarget(jdkVersionTarget))
     }
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = jdkVersion
+    targetCompatibility = jdkVersion
 }
 
 detekt {
@@ -74,7 +76,7 @@ detekt {
 }
 
 tasks.withType<Detekt>().configureEach {
-    jvmTarget.set("21")
+    jvmTarget.set(jdkVersionTarget)
 
     reports {
         checkstyle.required.set(true)
@@ -104,17 +106,13 @@ tasks.jacocoTestReport {
     }
 }
 
-val jacocoXmlReport = layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml")
+abstract class VerifyJacocoCoverageReportTask : DefaultTask() {
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val reportFile: RegularFileProperty
 
-val verifyJacocoCoverageReport by tasks.registering {
-    group = "verification"
-    description = "Verifies the JaCoCo XML report contains executed production coverage."
-    dependsOn(tasks.jacocoTestReport)
-
-    inputs.file(jacocoXmlReport)
-
-    doLast {
-        val reportFile = jacocoXmlReport.get().asFile
+    @TaskAction
+    fun verify() {
         val documentBuilderFactory = DocumentBuilderFactory.newInstance()
         documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
         documentBuilderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false)
@@ -122,7 +120,7 @@ val verifyJacocoCoverageReport by tasks.registering {
 
         val document = documentBuilderFactory
             .newDocumentBuilder()
-            .parse(reportFile)
+            .parse(reportFile.get().asFile)
         val rootChildren = document.documentElement.childNodes
         val coveredInstructions = (0 until rootChildren.length)
             .asSequence()
@@ -142,6 +140,15 @@ val verifyJacocoCoverageReport by tasks.registering {
             )
         }
     }
+}
+
+val jacocoXmlReport = layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml")
+
+val verifyJacocoCoverageReport by tasks.registering(VerifyJacocoCoverageReportTask::class) {
+    group = "verification"
+    description = "Verifies the JaCoCo XML report contains executed production coverage."
+    dependsOn(tasks.jacocoTestReport)
+    reportFile.set(jacocoXmlReport)
 }
 
 spotless {
