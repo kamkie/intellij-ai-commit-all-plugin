@@ -31,17 +31,20 @@ internal class PushOnlyWorkflowExecutionServiceTest {
     @Test
     fun `executes immediate outgoing push without invoking IDE push action`() {
         val pushPlan = CapturingSafeImmediatePushPlan()
+        val immediatePushExecutor = CapturingImmediatePushExecutor()
         val idePushAction = CapturingPushOnlyIdeAction()
         val service = PushOnlyWorkflowExecutionService(
             outgoingPushSupport = TestOutgoingPushSupport(
                 SafeImmediatePushDecision.Immediate(pushPlan),
             ),
             idePushAction = idePushAction,
+            immediatePushExecutor = immediatePushExecutor,
         )
 
         val result = service.executePush(DataContext.EMPTY_CONTEXT, inputEvent = null)
 
         val started = result.asStarted()
+        assertEquals(1, immediatePushExecutor.pushCallCount)
         assertEquals(1, pushPlan.pushCallCount)
         assertEquals(0, idePushAction.executeCallCount)
         assertFalse(started.completion.isDone)
@@ -85,6 +88,15 @@ internal class PushOnlyWorkflowExecutionServiceTest {
 
         fun completePush() {
             completion.complete(Unit)
+        }
+    }
+
+    private class CapturingImmediatePushExecutor : ImmediatePushExecutor {
+        var pushCallCount = 0
+
+        override fun push(pushPlan: SafeImmediatePushPlan): CompletableFuture<Unit> {
+            pushCallCount++
+            return pushPlan.push()
         }
     }
 

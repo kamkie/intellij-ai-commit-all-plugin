@@ -15,7 +15,13 @@
  */
 package pl.devopssolutions.aicommitall.workflow
 
-import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.ActionUiKind
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
@@ -33,6 +39,7 @@ import java.util.concurrent.atomic.AtomicReference
 internal class PushOnlyWorkflowExecutionService(
     private val outgoingPushSupport: SafeImmediateOutgoingPushSupport,
     private val idePushAction: PushOnlyIdeAction,
+    private val immediatePushExecutor: ImmediatePushExecutor = IntellijImmediatePushExecutor,
 ) {
     constructor(project: Project) : this(
         outgoingPushSupport = SafeImmediatePushService.getInstance(project),
@@ -53,7 +60,7 @@ internal class PushOnlyWorkflowExecutionService(
     private fun executeImmediatePush(pushPlan: SafeImmediatePushPlan): CommitWorkflowExecutionResult {
         val completion = CompletableFuture<Unit>()
         try {
-            pushPlan.push()
+            immediatePushExecutor.push(pushPlan)
                 .whenComplete { _, throwable ->
                     if (throwable != null) {
                         completion.completeExceptionally(throwable)

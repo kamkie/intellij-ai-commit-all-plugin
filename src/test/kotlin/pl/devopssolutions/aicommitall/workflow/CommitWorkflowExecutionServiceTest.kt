@@ -20,9 +20,19 @@ import com.intellij.vcs.commit.AmendCommitHandler
 import com.intellij.vcs.commit.CommitExecutorListener
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowHandlerState
-import pl.devopssolutions.aicommitall.vcs.*
+import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushDecision
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushFallbackReason
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushPlan
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushSupport
 import java.util.concurrent.CompletableFuture
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 internal class CommitWorkflowExecutionServiceTest {
     private val gitCommitAndPushExecutorId = "Git.Commit.And.Push.Executor"
@@ -108,6 +118,7 @@ internal class CommitWorkflowExecutionServiceTest {
         val scheduler = CapturingScheduler()
         val postCommitPushScheduler = CapturingScheduler()
         val pushPlan = CapturingSafeImmediatePushPlan()
+        val immediatePushExecutor = CapturingImmediatePushExecutor()
         val registrar = CapturingCommitResultRegistrar()
         var pushStartedCount = 0
         val service = CommitWorkflowExecutionService(
@@ -116,6 +127,7 @@ internal class CommitWorkflowExecutionServiceTest {
             safeImmediatePushSupport = TestSafeImmediatePushSupport(
                 SafeImmediatePushDecision.Immediate(pushPlan),
             ),
+            immediatePushExecutor = immediatePushExecutor,
             commitResultRegistrar = registrar,
         )
         val workflowHandler = CapturingCommitWorkflowHandler(
@@ -150,6 +162,7 @@ internal class CommitWorkflowExecutionServiceTest {
 
         postCommitPushScheduler.runScheduledActions()
 
+        assertEquals(1, immediatePushExecutor.pushCallCount)
         assertEquals(1, pushPlan.pushCallCount)
         assertFalse(started.completion.isDone)
 
@@ -359,6 +372,15 @@ internal class CommitWorkflowExecutionServiceTest {
 
         fun completePush() {
             completion.complete(Unit)
+        }
+    }
+
+    private class CapturingImmediatePushExecutor : ImmediatePushExecutor {
+        var pushCallCount = 0
+
+        override fun push(pushPlan: SafeImmediatePushPlan): CompletableFuture<Unit> {
+            pushCallCount++
+            return pushPlan.push()
         }
     }
 

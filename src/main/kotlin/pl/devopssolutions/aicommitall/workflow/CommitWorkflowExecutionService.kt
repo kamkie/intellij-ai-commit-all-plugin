@@ -19,10 +19,16 @@ import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.progress.EmptyProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.vcs.commit.CommitExecutorListener
 import com.intellij.vcs.commit.CommitWorkflowHandler
-import pl.devopssolutions.aicommitall.vcs.*
+import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushDecision
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushFallbackReason
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushPlan
+import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushSupport
 import java.util.concurrent.CompletableFuture
 
 @Service(Service.Level.PROJECT)
@@ -30,6 +36,7 @@ internal class CommitWorkflowExecutionService(
     private val scheduler: CommitWorkflowExecutionScheduler = IntellijCommitWorkflowExecutionScheduler,
     private val postCommitPushScheduler: CommitWorkflowExecutionScheduler = IntellijPostCommitPushScheduler,
     private val safeImmediatePushSupport: SafeImmediatePushSupport = FallbackSafeImmediatePushSupport,
+    private val immediatePushExecutor: ImmediatePushExecutor = IntellijImmediatePushExecutor,
     private val commitResultRegistrar: CommitWorkflowResultRegistrar = IntellijCommitWorkflowResultRegistrar,
 ) {
     fun canExecuteCommit(workflowHandler: CommitWorkflowHandler?): Boolean = workflowHandler is CommitExecutorListener
@@ -169,6 +176,7 @@ internal class CommitWorkflowExecutionService(
         resultHandler = PostCommitPushResultHandler(
             pushPlan = pushPlan,
             pushScheduler = postCommitPushScheduler,
+            immediatePushExecutor = immediatePushExecutor,
             onPushStarted = onPushStarted,
             completion = completion,
         ),
@@ -240,6 +248,7 @@ private class CommitAndPushResultHandler(
 private class PostCommitPushResultHandler(
     private val pushPlan: SafeImmediatePushPlan,
     private val pushScheduler: CommitWorkflowExecutionScheduler,
+    private val immediatePushExecutor: ImmediatePushExecutor,
     private val onPushStarted: () -> Unit,
     private val completion: CompletableFuture<Unit>,
 ) : CommitWorkflowResultHandler {
@@ -252,7 +261,7 @@ private class PostCommitPushResultHandler(
 
     private fun executePush() {
         try {
-            pushPlan.push()
+            immediatePushExecutor.push(pushPlan)
                 .whenComplete { _, throwable ->
                     if (throwable != null) {
                         completion.completeExceptionally(throwable)
@@ -283,6 +292,10 @@ internal fun interface CommitWorkflowExecutionScheduler {
     fun schedule(action: () -> Unit)
 }
 
+internal fun interface ImmediatePushExecutor {
+    fun push(pushPlan: SafeImmediatePushPlan): CompletableFuture<Unit>
+}
+
 private object IntellijCommitWorkflowExecutionScheduler : CommitWorkflowExecutionScheduler {
     override fun schedule(action: () -> Unit) {
         val application = ApplicationManager.getApplication()
@@ -297,6 +310,19 @@ private object IntellijCommitWorkflowExecutionScheduler : CommitWorkflowExecutio
 private object IntellijPostCommitPushScheduler : CommitWorkflowExecutionScheduler {
     override fun schedule(action: () -> Unit) {
         JobScheduler.getScheduler().execute(action)
+    }
+}
+
+internal object IntellijImmediatePushExecutor : ImmediatePushExecutor {
+    override fun push(pushPlan: SafeImmediatePushPlan): CompletableFuture<Unit> {
+        var completion: CompletableFuture<Unit>? = null
+        ProgressManager.getInstance().runProcess(
+            {
+                completion = pushPlan.push()
+            },
+            EmptyProgressIndicator(),
+        )
+        return completion ?: CompletableFuture.completedFuture(Unit)
     }
 }
 
