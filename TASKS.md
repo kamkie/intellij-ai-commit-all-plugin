@@ -19,7 +19,6 @@ Notation:
 - [ ] T-REL-012: add a `release` workflow to publish the plugin to the marketplace
 - [ ] T-REL-013: add a `sign` workflow to sign the plugin jar with a private key
 - [ ] T-REL-014: add a `ci` workflow to run the plugin verifier on the latest stable IDE build
-- [ ] T-REL-015: add Gradle dependencies submission to GitHub actions.
 
 ## Completed Task Archive
 
@@ -160,6 +159,7 @@ Archived as of orchestrated `AI Commit All` workflow implementation.
 - [x] T-REL-009: Ensure pull-request CI does not require or expose Marketplace tokens, signing keys, or certificate passwords. (Plan `PLAN-marketplace-ci-release`, Task 3)
 - [x] T-REL-010: Add release guidance for changelog, support-policy, version tag, and release-precondition rules. (ADR 0029)
 - [x] T-REL-011: Assign changelog maintenance to the orchestrator during orchestrated plan execution and release preparation. (ADR 0030)
+- [x] T-REL-015: Add Gradle dependency submission to GitHub Actions.
 
 Archived as of `v0.1.0-alpha.1` release preparation.
 

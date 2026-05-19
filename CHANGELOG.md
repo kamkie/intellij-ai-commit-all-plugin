@@ -10,6 +10,10 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ## [Unreleased]
 
+### Added
+
+- Added a trusted Gradle dependency submission workflow so GitHub Dependency Graph can receive Gradle dependency snapshots from main-branch and manual runs.
+
 ### Fixed
 
 - Avoided duplicated standalone Gradle wrapper validation in GitHub Actions while keeping wrapper validation enabled through `setup-gradle`.
