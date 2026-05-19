@@ -433,7 +433,7 @@ internal class AiCommitAllWorkflowRunnerTest {
     }
 
     @Test
-    fun `push only execution is scheduled on edt after background preparation`() {
+    fun `push only execution is scheduled off edt after background preparation`() {
         val dependencies = CapturingWorkflowDependencies(
             selectionResult = CommitWorkflowSelectionResult.EmptySelection,
             hasOutgoingCommitsToPush = true,
@@ -453,10 +453,10 @@ internal class AiCommitAllWorkflowRunnerTest {
         assertFalse(result.isDone)
         assertEquals(listOf("readiness", "prepare"), dependencies.events)
         assertEquals(0, dependencies.pushOnlyCallCount)
-        assertEquals(0, scheduler.backgroundActionCount)
-        assertEquals(1, scheduler.edtActionCount)
+        assertEquals(1, scheduler.backgroundActionCount)
+        assertEquals(0, scheduler.edtActionCount)
 
-        scheduler.runNextEdt()
+        scheduler.runNextBackground()
 
         assertEquals(AiCommitAllWorkflowResult.Started, result.join())
         assertEquals(listOf("readiness", "prepare", "pushOnly"), dependencies.events)

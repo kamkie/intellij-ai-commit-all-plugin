@@ -15,14 +15,9 @@
  */
 package pl.devopssolutions.aicommitall.workflow
 
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.ActionUiKind
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.ActionUtil
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -32,6 +27,7 @@ import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushPlan
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushService
 import java.awt.event.InputEvent
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicReference
 
 @Service(Service.Level.PROJECT)
 internal class PushOnlyWorkflowExecutionService(
@@ -42,13 +38,6 @@ internal class PushOnlyWorkflowExecutionService(
         outgoingPushSupport = SafeImmediatePushService.getInstance(project),
         idePushAction = IntellijPushOnlyIdeAction(ActionManager.getInstance()),
     )
-
-    fun canExecutePush(dataContext: DataContext): Boolean {
-        if (outgoingPushSupport.prepareOutgoingCommits() is SafeImmediatePushDecision.Immediate) {
-            return true
-        }
-        return idePushAction.canExecute(dataContext)
-    }
 
     fun executePush(
         dataContext: DataContext,
@@ -96,14 +85,25 @@ internal interface PushOnlyIdeAction {
 private class IntellijPushOnlyIdeAction(
     private val actionManager: ActionManager,
 ) : PushOnlyIdeAction {
-    override fun canExecute(dataContext: DataContext): Boolean {
+    override fun canExecute(dataContext: DataContext): Boolean = onEdtAndWait {
+        canExecuteOnEdt(dataContext)
+    }
+
+    override fun execute(
+        dataContext: DataContext,
+        inputEvent: InputEvent?,
+    ): CommitWorkflowExecutionResult = onEdtAndWait {
+        executeOnEdt(dataContext, inputEvent)
+    }
+
+    private fun canExecuteOnEdt(dataContext: DataContext): Boolean {
         val action = actionManager.getAction(IDE_PUSH_ACTION_ID) ?: return false
         val event = action.event(dataContext, inputEvent = null)
         ActionUtil.updateAction(action, event)
         return event.presentation.isEnabled && event.presentation.isVisible
     }
 
-    override fun execute(
+    private fun executeOnEdt(
         dataContext: DataContext,
         inputEvent: InputEvent?,
     ): CommitWorkflowExecutionResult {
@@ -117,6 +117,20 @@ private class IntellijPushOnlyIdeAction(
 
         ActionUtil.performAction(action, event)
         return CommitWorkflowExecutionResult.Started()
+    }
+
+    private fun <T> onEdtAndWait(action: () -> T): T {
+        val application = ApplicationManager.getApplication()
+        if (application == null || application.isDispatchThread) {
+            return action()
+        }
+
+        val result = AtomicReference<Result<T>?>()
+        application.invokeAndWait {
+            result.set(runCatching(action))
+        }
+        return result.get()?.getOrThrow()
+            ?: error("EDT action did not produce a result")
     }
 
     private fun AnAction.event(
