@@ -15,15 +15,7 @@
  */
 package pl.devopssolutions.aicommitall.workflow
 
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.ActionUiKind
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.actionSystem.Presentation
-import com.intellij.openapi.actionSystem.ex.ActionUtil
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -33,17 +25,14 @@ import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushPlan
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushService
 import java.awt.event.InputEvent
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.atomic.AtomicReference
 
 @Service(Service.Level.PROJECT)
 internal class PushOnlyWorkflowExecutionService(
     private val outgoingPushSupport: SafeImmediateOutgoingPushSupport,
-    private val idePushAction: PushOnlyIdeAction,
     private val immediatePushExecutor: ImmediatePushExecutor = IntellijImmediatePushExecutor,
 ) {
     constructor(project: Project) : this(
         outgoingPushSupport = SafeImmediatePushService.getInstance(project),
-        idePushAction = IntellijPushOnlyIdeAction(ActionManager.getInstance()),
     )
 
     fun executePush(
@@ -54,7 +43,7 @@ internal class PushOnlyWorkflowExecutionService(
         if (decision is SafeImmediatePushDecision.Immediate) {
             return executeImmediatePush(decision.plan)
         }
-        return idePushAction.execute(dataContext, inputEvent)
+        return CommitWorkflowExecutionResult.UnsupportedExecutor
     }
 
     private fun executeImmediatePush(pushPlan: SafeImmediatePushPlan): CommitWorkflowExecutionResult {
@@ -77,83 +66,5 @@ internal class PushOnlyWorkflowExecutionService(
 
     companion object {
         fun getInstance(project: Project): PushOnlyWorkflowExecutionService = project.service()
-    }
-}
-
-internal interface PushOnlyIdeAction {
-    fun canExecute(dataContext: DataContext): Boolean
-
-    fun execute(
-        dataContext: DataContext,
-        inputEvent: InputEvent?,
-    ): CommitWorkflowExecutionResult
-}
-
-private class IntellijPushOnlyIdeAction(
-    private val actionManager: ActionManager,
-) : PushOnlyIdeAction {
-    override fun canExecute(dataContext: DataContext): Boolean = onEdtAndWait {
-        canExecuteOnEdt(dataContext)
-    }
-
-    override fun execute(
-        dataContext: DataContext,
-        inputEvent: InputEvent?,
-    ): CommitWorkflowExecutionResult = onEdtAndWait {
-        executeOnEdt(dataContext, inputEvent)
-    }
-
-    private fun canExecuteOnEdt(dataContext: DataContext): Boolean {
-        val action = actionManager.getAction(IDE_PUSH_ACTION_ID) ?: return false
-        val event = action.event(dataContext, inputEvent = null)
-        ActionUtil.updateAction(action, event)
-        return event.presentation.isEnabled && event.presentation.isVisible
-    }
-
-    private fun executeOnEdt(
-        dataContext: DataContext,
-        inputEvent: InputEvent?,
-    ): CommitWorkflowExecutionResult {
-        val action = actionManager.getAction(IDE_PUSH_ACTION_ID)
-            ?: return CommitWorkflowExecutionResult.UnsupportedExecutor
-        val event = action.event(dataContext, inputEvent)
-        ActionUtil.updateAction(action, event)
-        if (!event.presentation.isEnabled || !event.presentation.isVisible) {
-            return CommitWorkflowExecutionResult.DisabledExecutor
-        }
-
-        ActionUtil.performAction(action, event)
-        return CommitWorkflowExecutionResult.Started()
-    }
-
-    private fun <T> onEdtAndWait(action: () -> T): T {
-        val application = ApplicationManager.getApplication()
-        if (application == null || application.isDispatchThread) {
-            return action()
-        }
-
-        val result = AtomicReference<Result<T>?>()
-        application.invokeAndWait {
-            result.set(runCatching(action))
-        }
-        return result.get()?.getOrThrow()
-            ?: error("EDT action did not produce a result")
-    }
-
-    private fun AnAction.event(
-        dataContext: DataContext,
-        inputEvent: InputEvent?,
-    ): AnActionEvent = AnActionEvent(
-        dataContext,
-        Presentation(),
-        ActionPlaces.CHANGES_VIEW_TOOLBAR,
-        ActionUiKind.NONE,
-        inputEvent,
-        0,
-        actionManager,
-    )
-
-    private companion object {
-        const val IDE_PUSH_ACTION_ID: String = "Vcs.Push"
     }
 }

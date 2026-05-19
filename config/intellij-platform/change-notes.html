@@ -1,11 +1,12 @@
 <p>v0.1.0-alpha.9 prerelease.</p>
 <ul>
+    <li>Prevents outgoing-only Push from opening the IDE Push dialog when there are no files to commit, while allowing
+        normal tracked-branch outgoing commits to use safe immediate push.
+    </li>
     <li>Derives Gradle project and IntelliJ plugin descriptor versions from Git tags and short commit hashes using
         Palantir gradle-git-version.
     </li>
-    <li>Moves push-only outgoing-commit preparation and post-commit safe immediate pushes off the UI thread while
-        keeping
-        the IDE push fallback on the event dispatch thread.
+    <li>Moves push-only outgoing-commit preparation and post-commit safe immediate pushes off the UI thread.
     </li>
     <li>Refreshes outgoing-commit availability after Git repository and push completion events so the Push section does
         not stay enabled after outgoing commits are pushed.
@@ -14,11 +15,10 @@
         immediately after push start.
     </li>
     <li>Routes the IDE push shortcut to the plugin Push section while shortcut takeover is enabled.</li>
-    <li>Uses the safe immediate push path for outgoing-only Push clicks before invoking the IDE push workflow, avoiding
-        the Push window for protected tracked branches when no force push is needed.
+    <li>Uses the safe immediate push path for outgoing-only Push clicks without invoking the IDE Push workflow.
     </li>
     <li>Keeps the Push section available for already-created outgoing Git commits when there are no committable changes,
-        delegating that case to the IDE push workflow.
+        pushing that case through the safe immediate path.
     </li>
     <li>Replaces the standard Commit tool window Commit and Push toolbar action with the plugin's three-section control
         while preserving standard IDE executor and shortcut delegation paths.

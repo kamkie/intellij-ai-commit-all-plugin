@@ -32,12 +32,10 @@ internal class PushOnlyWorkflowExecutionServiceTest {
     fun `executes immediate outgoing push without invoking IDE push action`() {
         val pushPlan = CapturingSafeImmediatePushPlan()
         val immediatePushExecutor = CapturingImmediatePushExecutor()
-        val idePushAction = CapturingPushOnlyIdeAction()
         val service = PushOnlyWorkflowExecutionService(
             outgoingPushSupport = TestOutgoingPushSupport(
                 SafeImmediatePushDecision.Immediate(pushPlan),
             ),
-            idePushAction = idePushAction,
             immediatePushExecutor = immediatePushExecutor,
         )
 
@@ -46,7 +44,6 @@ internal class PushOnlyWorkflowExecutionServiceTest {
         val started = result.asStarted()
         assertEquals(1, immediatePushExecutor.pushCallCount)
         assertEquals(1, pushPlan.pushCallCount)
-        assertEquals(0, idePushAction.executeCallCount)
         assertFalse(started.completion.isDone)
 
         pushPlan.completePush()
@@ -55,20 +52,16 @@ internal class PushOnlyWorkflowExecutionServiceTest {
     }
 
     @Test
-    fun `falls back to IDE push action when immediate outgoing push is unavailable`() {
-        val ideResult = CommitWorkflowExecutionResult.Started()
-        val idePushAction = CapturingPushOnlyIdeAction(executeResult = ideResult)
+    fun `does not invoke IDE push action when immediate outgoing push is unavailable`() {
         val service = PushOnlyWorkflowExecutionService(
             outgoingPushSupport = TestOutgoingPushSupport(
                 SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.AmbiguousTarget),
             ),
-            idePushAction = idePushAction,
         )
 
         val result = service.executePush(DataContext.EMPTY_CONTEXT, inputEvent = null)
 
-        assertSame(ideResult, result)
-        assertEquals(1, idePushAction.executeCallCount)
+        assertSame(CommitWorkflowExecutionResult.UnsupportedExecutor, result)
     }
 
     private class TestOutgoingPushSupport(
@@ -97,22 +90,6 @@ internal class PushOnlyWorkflowExecutionServiceTest {
         override fun push(pushPlan: SafeImmediatePushPlan): CompletableFuture<Unit> {
             pushCallCount++
             return pushPlan.push()
-        }
-    }
-
-    private class CapturingPushOnlyIdeAction(
-        private val executeResult: CommitWorkflowExecutionResult = CommitWorkflowExecutionResult.Started(),
-    ) : PushOnlyIdeAction {
-        var executeCallCount = 0
-
-        override fun canExecute(dataContext: DataContext): Boolean = true
-
-        override fun execute(
-            dataContext: DataContext,
-            inputEvent: java.awt.event.InputEvent?,
-        ): CommitWorkflowExecutionResult {
-            executeCallCount++
-            return executeResult
         }
     }
 

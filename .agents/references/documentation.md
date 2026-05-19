@@ -5,7 +5,8 @@ Use this guide when adding or updating repository documentation.
 ## Owners
 
 - `README.md`: user-facing project description, setup, usage, supported IDE versions, limitations, and sandbox instructions after implementation exists.
-- `TASKS.md`: backlog, implementation decisions still pending, and validation tasks.
+- `TASKS.md`: active backlog, implementation decisions still pending, and validation tasks.
+- `TASKS_ARCHIVE.md`: completed task history after work is finished, validated, and self-reviewed.
 - `docs/decisions/OPEN_QUESTIONS.md`: missing user input and unresolved product or implementation choices.
 - `CHANGELOG.md`: public release-note history for plugin behavior, public plugin docs, compatibility, support, and release pipeline changes.
 - `SUPPORT.md`: support status, supported-scope summary, issue-reporting expectations, and privacy guidance.
@@ -27,9 +28,9 @@ Use this guide when adding or updating repository documentation.
 - Do not imply plugin implementation has started until Gradle, Kotlin, or IntelliJ plugin scaffold files exist.
 - Prefer concrete commands and artifact names over generic process language.
 - Do not load every AI instruction file automatically. Start from `AGENTS.md`, use the guidance map, and load only the owner documents needed for the current documentation change unless the task is a broad guidance audit or cross-document consistency review.
-- Route artifact references by stable filename prefix before broad search: `adr-NNNN` to `docs/decisions/`, `PLAN-<slug>` to `.agents/plans/` then `.agents/plans/archive/`, and `PROP-<slug>` to `docs/proposals/` then `docs/proposals/archive/`.
+- Route artifact references by stable filename prefix before broad search: `adr-NNNN` to `docs/decisions/`, `PLAN-<slug>` to `.agents/plans/` then `.agents/plans/archive/`, `PROP-<slug>` to `docs/proposals/` then `docs/proposals/archive/`, and `T-<AREA>-NNN` to `TASKS.md` then `TASKS_ARCHIVE.md`.
 - Give open questions stable IDs in `docs/decisions/OPEN_QUESTIONS.md` using `Q-<AREA>-NNN`, for example `Q-UX-001`.
-- Give every `TASKS.md` item a stable task ID in the form `T-AREA-NNN`, keep the ID stable when wording or ordering changes, and do not renumber existing task IDs.
+- Give every `TASKS.md` and `TASKS_ARCHIVE.md` item a stable task ID in the form `T-AREA-NNN`, keep the ID stable when wording or ordering changes, and do not renumber existing task IDs.
 - Give every plan a stable `Plan-ID` in the form `PLAN-<short-kebab-slug>`, include it in active and archived filenames, keep it stable when title, filename, status, or wording changes, and avoid strictly number-based plan IDs.
 - Give every plan `Workers:` metadata and an `## Execution Graph` section with a fenced Mermaid graph.
 - Give every proposal a stable `proposal_id` in the form `PROP-<short-kebab-slug>`, include it in active and archived filenames, keep it stable when title, filename, status, wording, or archive location changes, and do not reuse retired proposal IDs.

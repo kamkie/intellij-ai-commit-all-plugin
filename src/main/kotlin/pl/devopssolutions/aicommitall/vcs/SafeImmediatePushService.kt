@@ -77,6 +77,7 @@ internal object SafeImmediatePushDecisionPolicy {
     fun fallbackReason(
         repositories: Collection<SafeImmediatePushRepositoryState>,
         hasUnresolvedConflicts: Boolean,
+        requireTrackedUpstreamHeadMatch: Boolean = true,
     ): SafeImmediatePushFallbackReason? {
         if (repositories.isEmpty()) {
             return SafeImmediatePushFallbackReason.NoAffectedRepositories
@@ -90,7 +91,7 @@ internal object SafeImmediatePushDecisionPolicy {
         if (repositories.any { repository -> !repository.hasTrackedUpstream }) {
             return SafeImmediatePushFallbackReason.MissingTrackedUpstream
         }
-        if (repositories.any { repository -> !repository.localMatchesTrackedUpstream }) {
+        if (requireTrackedUpstreamHeadMatch && repositories.any { repository -> !repository.localMatchesTrackedUpstream }) {
             return SafeImmediatePushFallbackReason.ForcePushStateUnverified
         }
         if (repositories.any { repository -> repository.hasAmbiguousTarget }) {
@@ -171,6 +172,7 @@ internal class SafeImmediatePushService(private val project: Project) :
             pushSpecs = pushSpecs,
             repositoryStates = repositoryStates,
             hasUnresolvedConflicts = false,
+            requireTrackedUpstreamHeadMatch = false,
         )
     }
 
@@ -179,10 +181,12 @@ internal class SafeImmediatePushService(private val project: Project) :
         pushSpecs: Map<GitRepository, PushSpec<GitPushSource, GitPushTarget>>,
         repositoryStates: Collection<SafeImmediatePushRepositoryState>,
         hasUnresolvedConflicts: Boolean,
+        requireTrackedUpstreamHeadMatch: Boolean = true,
     ): SafeImmediatePushDecision {
         val fallbackReason = SafeImmediatePushDecisionPolicy.fallbackReason(
             repositories = repositoryStates,
             hasUnresolvedConflicts = hasUnresolvedConflicts,
+            requireTrackedUpstreamHeadMatch = requireTrackedUpstreamHeadMatch,
         )
         return if (fallbackReason == null) {
             SafeImmediatePushDecision.Immediate(

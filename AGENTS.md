@@ -6,7 +6,8 @@ This is the AI entry point for the repository. Keep task context small and read 
 
 - Keep project plans, backlog details, product intent, and feature descriptions out of this file.
 - Keep user-facing behavior in `README.md`.
-- Keep implementation tasks and planning in `TASKS.md` or accepted task-specific plans.
+- Keep active implementation tasks and planning in `TASKS.md` or accepted task-specific plans.
+- Keep completed task history in `TASKS_ARCHIVE.md`.
 - Keep durable agent workflow guidance in `.agents/references/`.
 - Keep reusable task-specific agent skills in `.agents/skills/`.
 
@@ -15,6 +16,7 @@ This is the AI entry point for the repository. Keep task context small and read 
 - Human guide for asking AI to work here: `docs/WORKING_WITH_AI.md`
 - Development lifecycle: `docs/DEVELOPMENT_LIFECYCLE.md`
 - Implementation backlog: `TASKS.md`
+- Completed task archive: `TASKS_ARCHIVE.md`
 - Missing user input: `docs/decisions/OPEN_QUESTIONS.md`
 - Execution loop: `.agents/references/execution.md`
 - Planning: `.agents/references/planning.md`
@@ -35,7 +37,7 @@ This is the AI entry point for the repository. Keep task context small and read 
 - Treat `adr-NNNN-<slug>.md` or `adr-NNNN` references as decision records and search `docs/decisions/` first.
 - Treat `PLAN-<short-kebab-slug>.md` or `PLAN-<short-kebab-slug>` references as plans and search `.agents/plans/` first, then `.agents/plans/archive/` when the active file is not found.
 - Treat `PROP-<short-kebab-slug>-<YYYY-MM-DD>T<HH-MM>.md` or `PROP-<short-kebab-slug>` references as proposals and search `docs/proposals/` first, then `docs/proposals/archive/` when the active file is not found.
-- Treat `T-<AREA>-NNN` references as task shortcuts and search `TASKS.md` first for the exact task entry; use its surrounding section and linked artifacts before falling back to broader search.
+- Treat `T-<AREA>-NNN` references as task shortcuts and search `TASKS.md` first, then `TASKS_ARCHIVE.md`, for the exact task entry; use its surrounding section and linked artifacts before falling back to broader search.
 - Prefer exact filename lookup when a full filename is supplied. If only an ID or prefix is supplied, use a scoped search in the owning directory before falling back to a repository-wide search.
 
 ## Priority Order

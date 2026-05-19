@@ -71,6 +71,17 @@ internal class SafeImmediatePushDecisionPolicyTest {
     }
 
     @Test
+    fun `allows outgoing-only push when local branch is ahead of tracked upstream`() {
+        val result = SafeImmediatePushDecisionPolicy.fallbackReason(
+            repositories = listOf(safeRepositoryState(localMatchesTrackedUpstream = false)),
+            hasUnresolvedConflicts = false,
+            requireTrackedUpstreamHeadMatch = false,
+        )
+
+        assertNull(result)
+    }
+
+    @Test
     fun `falls back when a multi-root target is ambiguous`() {
         val result = SafeImmediatePushDecisionPolicy.fallbackReason(
             repositories = listOf(

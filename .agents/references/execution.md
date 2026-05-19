@@ -16,7 +16,7 @@ This file also owns AI-facing commit-message rules. The repository root `.gitmes
 
 ## Task Completion Timing
 
-For `TASKS.md` items, keep the task in the open backlog while implementing. Do not move it to the completed archive as part of the initial documentation alignment.
+For `TASKS.md` items, keep the task in the open backlog while implementing. Do not move it to `TASKS_ARCHIVE.md` as part of the initial documentation alignment.
 
 Move a task to the completed archive only after:
 
@@ -24,7 +24,7 @@ Move a task to the completed archive only after:
 - Task-appropriate validation from `.agents/references/testing.md` has passed or an explicit skipped-check reason is recorded.
 - Self-review has checked for behavior, compatibility, documentation, and validation gaps.
 
-After moving a `TASKS.md` task to the completed archive, rerun documentation validation and `git diff --check` so the final task-state edit is also verified before handoff or commit.
+After moving a `TASKS.md` task to `TASKS_ARCHIVE.md`, rerun documentation validation and `git diff --check` so the final task-state edit is also verified before handoff or commit.
 
 ## Multi-Task Plans
 
@@ -85,7 +85,7 @@ Before dispatching the next dependent task, the orchestrator must ensure the pla
 
 - Read only the context needed for the current task.
 - Do not bulk-load every AI instruction file automatically; use `AGENTS.md` and the guidance map to choose the smallest governing read set.
-- Classify artifact references by filename prefix before searching: `adr-NNNN` in `docs/decisions/`, `PLAN-<slug>` in `.agents/plans/` then `.agents/plans/archive/`, and `PROP-<slug>` in `docs/proposals/` then `docs/proposals/archive/`. Prefer exact filename lookup before scoped ID search, and fall back to repository-wide search only when scoped lookup fails or the reference is ambiguous.
+- Classify artifact references by filename prefix before searching: `adr-NNNN` in `docs/decisions/`, `PLAN-<slug>` in `.agents/plans/` then `.agents/plans/archive/`, `PROP-<slug>` in `docs/proposals/` then `docs/proposals/archive/`, and `T-<AREA>-NNN` in `TASKS.md` then `TASKS_ARCHIVE.md`. Prefer exact filename lookup before scoped ID search, and fall back to repository-wide search only when scoped lookup fails or the reference is ambiguous.
 - Broaden the read set only when targeted discovery shows another owner document is needed, the user asks for a broad audit, or validation requires cross-document consistency checks.
 - Prefer existing IntelliJ Platform and Gradle plugin conventions over custom infrastructure.
 - Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; do not add unrelated release or operations files outside that scope.
