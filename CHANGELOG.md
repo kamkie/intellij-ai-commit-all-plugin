@@ -10,6 +10,10 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ## [Unreleased]
 
+### Added
+
+- Published Gradle unit test summaries and test report artifacts in GitHub Actions CI.
+
 ### Fixed
 
 - Prevented outgoing-only `Push` from opening the IDE Push dialog when there are no files to commit, while allowing normal tracked-branch outgoing commits to use safe immediate push.

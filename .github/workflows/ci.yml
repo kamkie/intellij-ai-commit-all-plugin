@@ -42,7 +42,24 @@ jobs:
         run: scripts/validate-docs.ps1
 
       - name: Test, generate coverage, verify plugin structure, and package
+        id: gradle-validation
         run: ./gradlew test jacocoTestReport verifyPluginStructure buildPlugin
+
+      - name: Publish unit test summary
+        if: ${{ !cancelled() && steps.gradle-validation.outcome != 'skipped' && hashFiles('build/test-results/test/*.xml') != '' }}
+        uses: test-summary/action@v2
+        with:
+          paths: build/test-results/test/*.xml
+
+      - name: Upload unit test results artifact
+        if: ${{ !cancelled() && steps.gradle-validation.outcome != 'skipped' }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: ai-commit-all-unit-test-results
+          path: |
+            build/test-results/test/*.xml
+            build/reports/tests/test/**
+          if-no-files-found: warn
 
       - name: Upload plugin ZIP artifact
         uses: actions/upload-artifact@v6

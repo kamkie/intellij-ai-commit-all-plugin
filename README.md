@@ -93,7 +93,7 @@ Run the sandbox IDE:
 .\gradlew.bat runIde
 ```
 
-Pull-request CI validates the Gradle wrapper, source formatting, documentation, tests, JaCoCo coverage report generation, plugin structure, and plugin packaging without Marketplace or signing secrets. It uploads the packaged plugin ZIP as a GitHub Actions artifact and sends the JaCoCo XML test coverage report and Gradle JUnit XML test results to Codecov using GitHub Actions OIDC. The separate Plugin Verifier workflow checks the configured IDE matrix, and the CodeQL workflow scans Java/Kotlin code on pull requests, pushes to `main`, and a weekly schedule.
+Pull-request CI validates the Gradle wrapper, source formatting, documentation, tests, JaCoCo coverage report generation, plugin structure, and plugin packaging without Marketplace or signing secrets. It publishes Gradle JUnit test results to the GitHub Actions run summary, uploads the Gradle XML and HTML test reports as a GitHub Actions artifact, uploads the packaged plugin ZIP as an artifact, and sends the JaCoCo XML test coverage report and Gradle JUnit XML test results to Codecov using GitHub Actions OIDC. The separate Plugin Verifier workflow checks the configured IDE matrix, and the CodeQL workflow scans Java/Kotlin code on pull requests, pushes to `main`, and a weekly schedule.
 
 ## Usage
 

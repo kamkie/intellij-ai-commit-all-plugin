@@ -145,6 +145,7 @@ Archived as of orchestrated `AI Commit All` workflow implementation.
 - [x] T-REL-013: Add a `sign` workflow to sign the plugin jar with a private key.
 - [x] T-REL-014: Add a `ci` workflow to run the plugin verifier on the latest stable IDE build.
 - [x] T-REL-015: Add Gradle dependency submission to GitHub Actions.
+- [x] T-REL-016: publish test results to GitHub Actions.
 
 Archived as of `v0.1.0-alpha.1` release preparation.
 

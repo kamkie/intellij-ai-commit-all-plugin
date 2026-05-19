@@ -16,7 +16,3 @@ Notation:
 
 - [ ] T-DOC-016: update README
 - [ ] T-DOC-017: create user-facing documentation.
-
-### Publishing, Signing, Marketplace, And CI
-
-- [ ] T-REL-016: publish test results to GitHub Actions.
