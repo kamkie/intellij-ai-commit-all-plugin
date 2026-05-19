@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub CI Security Fixes"
+  short_description: "Triage GitHub CI and security alerts"
+  default_prompt: "Use $gh-fix-ci-security-quality to debug and fix failing GitHub PR checks or security alerts."
