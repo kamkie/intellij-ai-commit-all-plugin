@@ -1,5 +1,18 @@
-<p>v0.1.0-alpha.7 prerelease.</p>
+<p>v0.1.0-alpha.8 prerelease.</p>
 <ul>
+    <li>Moves push-only outgoing-commit preparation and post-commit safe immediate pushes off the UI thread while keeping
+        the IDE push fallback on the event dispatch thread.
+    </li>
+    <li>Refreshes outgoing-commit availability after Git repository and push completion events so the Push section does
+        not stay enabled after outgoing commits are pushed.
+    </li>
+    <li>Keeps the Push section animation active until safe immediate Git pushes report completion instead of stopping
+        immediately after push start.
+    </li>
+    <li>Routes the IDE push shortcut to the plugin Push section while shortcut takeover is enabled.</li>
+    <li>Uses the safe immediate push path for outgoing-only Push clicks before invoking the IDE push workflow, avoiding
+        the Push window for protected tracked branches when no force push is needed.
+    </li>
     <li>Keeps the Push section available for already-created outgoing Git commits when there are no committable changes,
         delegating that case to the IDE push workflow.
     </li>

@@ -24,7 +24,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowUi
-import pl.devopssolutions.aicommitall.ai.*
+import pl.devopssolutions.aicommitall.ai.AiCommitMessageActionInvocationResult
+import pl.devopssolutions.aicommitall.ai.AiCommitMessageActionInvocationService
+import pl.devopssolutions.aicommitall.ai.AiCommitMessagePreparation
+import pl.devopssolutions.aicommitall.ai.AiGenerationActivityPhase
+import pl.devopssolutions.aicommitall.ai.AiGenerationActivityStateService
+import pl.devopssolutions.aicommitall.ai.AiGenerationActivityToken
+import pl.devopssolutions.aicommitall.ai.AiGenerationCompletionResult
+import pl.devopssolutions.aicommitall.ai.AiGenerationCompletionService
 import pl.devopssolutions.aicommitall.settings.AiCommitAllSettings
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
 import pl.devopssolutions.aicommitall.vcs.GitOutgoingCommitsService

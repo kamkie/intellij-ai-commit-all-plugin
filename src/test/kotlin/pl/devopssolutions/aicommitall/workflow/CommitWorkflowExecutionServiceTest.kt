@@ -116,11 +116,13 @@ internal class CommitWorkflowExecutionServiceTest {
     @Test
     fun `starts safe immediate push through default commit and post-commit push listener`() {
         val scheduler = CapturingScheduler()
+        val postCommitPushScheduler = CapturingScheduler()
         val pushPlan = CapturingSafeImmediatePushPlan()
         val registrar = CapturingCommitResultRegistrar()
         var pushStartedCount = 0
         val service = CommitWorkflowExecutionService(
             scheduler = scheduler,
+            postCommitPushScheduler = postCommitPushScheduler,
             safeImmediatePushSupport = TestSafeImmediatePushSupport(
                 SafeImmediatePushDecision.Immediate(pushPlan),
             ),
@@ -152,6 +154,12 @@ internal class CommitWorkflowExecutionServiceTest {
         registrar.resultHandler?.onSuccess()
 
         assertEquals(1, pushStartedCount)
+        assertEquals(0, pushPlan.pushCallCount)
+        assertEquals(1, postCommitPushScheduler.scheduledActionCount)
+        assertFalse(started.completion.isDone)
+
+        postCommitPushScheduler.runScheduledActions()
+
         assertEquals(1, pushPlan.pushCallCount)
         assertFalse(started.completion.isDone)
 

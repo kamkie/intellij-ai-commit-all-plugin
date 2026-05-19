@@ -15,6 +15,7 @@
  */
 package pl.devopssolutions.aicommitall.workflow
 
+import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -31,6 +32,7 @@ import java.util.concurrent.CompletableFuture
 @Service(Service.Level.PROJECT)
 internal class CommitWorkflowExecutionService(
     private val scheduler: CommitWorkflowExecutionScheduler = IntellijCommitWorkflowExecutionScheduler,
+    private val postCommitPushScheduler: CommitWorkflowExecutionScheduler = IntellijPostCommitPushScheduler,
     private val safeImmediatePushSupport: SafeImmediatePushSupport = FallbackSafeImmediatePushSupport,
     private val commitResultRegistrar: CommitWorkflowResultRegistrar = IntellijCommitWorkflowResultRegistrar,
 ) {
@@ -170,6 +172,7 @@ internal class CommitWorkflowExecutionService(
         workflowHandler = workflowHandler,
         resultHandler = PostCommitPushResultHandler(
             pushPlan = pushPlan,
+            pushScheduler = postCommitPushScheduler,
             onPushStarted = onPushStarted,
             completion = completion,
         ),
@@ -240,11 +243,18 @@ private class CommitAndPushResultHandler(
 
 private class PostCommitPushResultHandler(
     private val pushPlan: SafeImmediatePushPlan,
+    private val pushScheduler: CommitWorkflowExecutionScheduler,
     private val onPushStarted: () -> Unit,
     private val completion: CompletableFuture<Unit>,
 ) : CommitWorkflowResultHandler {
     override fun onSuccess() {
         onPushStarted()
+        pushScheduler.schedule {
+            executePush()
+        }
+    }
+
+    private fun executePush() {
         try {
             pushPlan.push()
                 .whenComplete { _, throwable ->
@@ -285,6 +295,12 @@ private object IntellijCommitWorkflowExecutionScheduler : CommitWorkflowExecutio
         } else {
             application.invokeLater(action)
         }
+    }
+}
+
+private object IntellijPostCommitPushScheduler : CommitWorkflowExecutionScheduler {
+    override fun schedule(action: () -> Unit) {
+        JobScheduler.getScheduler().execute(action)
     }
 }
 

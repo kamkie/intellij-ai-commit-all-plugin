@@ -4,11 +4,13 @@ All notable public plugin-facing changes are documented in this file.
 
 The format is based on Keep a Changelog. Release tags should use semantic version tags in the form `vMAJOR.MINOR.PATCH` for stable releases or `vMAJOR.MINOR.PATCH-PRERELEASE` for prereleases.
 
-This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.7` is the current implementation prerelease candidate prepared from this repository.
+This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.8` is the current implementation prerelease candidate prepared from this repository.
 
 This changelog records plugin source and runtime behavior changes, public plugin documentation changes, compatibility and support changes, and CI or release pipeline changes that affect the plugin artifact or publication. Internal AI-agent documentation, repository workflow notes, plans, proposals, ADR maintenance, scenario-coverage tracking, and test-case inventory changes are intentionally omitted unless they also change public plugin behavior or release artifacts.
 
 ## [Unreleased]
+
+## [v0.1.0-alpha.8] - 2026-05-19
 
 ### Added
 
@@ -17,7 +19,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 ### Fixed
 
 - Avoided duplicated standalone Gradle wrapper validation in GitHub Actions while keeping wrapper validation enabled through `setup-gradle`.
-- Moved push-only outgoing-commit preparation off the UI thread while keeping the IDE push fallback on the event dispatch thread.
+- Moved push-only outgoing-commit preparation and post-commit safe immediate pushes off the UI thread while keeping the IDE push fallback on the event dispatch thread.
 - Refreshed outgoing-commit availability after Git repository and push completion events so the `Push` section does not stay enabled after outgoing commits are pushed.
 - Kept the `Push` section animation active until safe immediate Git pushes report completion instead of stopping immediately after push start.
 - Routed the IDE push shortcut, including `Ctrl+Shift+K` on the default Windows/Linux keymap, to the plugin `Push` section while shortcut takeover is enabled.
