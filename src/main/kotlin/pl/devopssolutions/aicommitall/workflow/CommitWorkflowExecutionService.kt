@@ -22,11 +22,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.vcs.commit.CommitExecutorListener
 import com.intellij.vcs.commit.CommitWorkflowHandler
-import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
-import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushDecision
-import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushFallbackReason
-import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushPlan
-import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushSupport
+import pl.devopssolutions.aicommitall.vcs.*
 import java.util.concurrent.CompletableFuture
 
 @Service(Service.Level.PROJECT)
