@@ -8,6 +8,9 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 ij_wrap_on_typing = false
 
+[config/detekt/baseline.xml]
+ij_formatter_enabled = false
+
 [*.{kt,kts}]
 indent_size = 4
 continuation_indent_size = 4
