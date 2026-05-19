@@ -13,7 +13,7 @@ description: Repository documentation workflow for this IntelliJ plugin. Use whe
     - Proposals: `docs/proposals/README.md`
     - ADRs and open questions: `docs/decisions/README.md`
     - Plans: `.agents/references/planning.md`
-  - Repository prompts: `.agents/prompts/README.md`
+    - Repository prompts: `.agents/prompts/README.md`
     - Testing or validation docs: `.agents/references/testing.md`
     - Reviews: `.agents/references/reviews.md`
     - Release docs or changelog: `.agents/references/releases.md`
