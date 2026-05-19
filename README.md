@@ -3,6 +3,7 @@
 [![CI](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/workflows/ci.yml)
 [![Plugin Verifier](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/workflows/plugin-verifier.yml/badge.svg)](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/workflows/plugin-verifier.yml)
 [![CodeQL](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/workflows/codeql.yml/badge.svg)](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/workflows/codeql.yml)
+[![Security](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/workflows/security.yml/badge.svg)](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/workflows/security.yml)
 [![Codecov](https://codecov.io/gh/kamkie/intellij-ai-commit-all-plugin/branch/main/graph/badge.svg)](https://codecov.io/gh/kamkie/intellij-ai-commit-all-plugin)
 [![License](https://img.shields.io/github/license/kamkie/intellij-ai-commit-all-plugin)](LICENSE)
 
@@ -75,6 +76,12 @@ Run source formatting checks:
 .\gradlew.bat spotlessCheck
 ```
 
+Run Kotlin static analysis against the checked-in baseline and generate Detekt reports uploaded by CI:
+
+```powershell
+.\gradlew.bat detekt
+```
+
 Apply mechanical source formatting and Kotlin license-header fixes:
 
 ```powershell
@@ -93,7 +100,7 @@ Run the sandbox IDE:
 .\gradlew.bat runIde
 ```
 
-Pull-request CI validates the Gradle wrapper, source formatting, documentation, tests, JaCoCo coverage report generation, plugin structure, and plugin packaging without Marketplace or signing secrets. It publishes Gradle JUnit test results to the GitHub Actions run summary, uploads the Gradle XML and HTML test reports as a GitHub Actions artifact, uploads the packaged plugin ZIP as an artifact, and sends the JaCoCo XML test coverage report and Gradle JUnit XML test results to Codecov using GitHub Actions OIDC. The separate Plugin Verifier workflow checks the configured IDE matrix, and the CodeQL workflow scans Java/Kotlin code on pull requests, pushes to `main`, and a weekly schedule.
+Pull-request CI validates the Gradle wrapper, source formatting, Detekt Kotlin static analysis, documentation, tests, JaCoCo coverage report generation, plugin structure, and plugin packaging without Marketplace or signing secrets. It publishes Detekt SARIF to GitHub code scanning, uploads Detekt reports as a GitHub Actions artifact, publishes Gradle JUnit test results to the GitHub Actions run summary, uploads the Gradle XML and HTML test reports as a GitHub Actions artifact, uploads the packaged plugin ZIP as an artifact, and sends the JaCoCo XML test coverage report and Gradle JUnit XML test results to Codecov using GitHub Actions OIDC. The separate Plugin Verifier workflow checks the configured IDE matrix, the CodeQL workflow scans Java/Kotlin code on pull requests, pushes to `main`, and a weekly schedule, and the Security workflow runs a Trivy filesystem scan with SARIF code-scanning upload and artifact retention.
 
 ## Usage
 

@@ -1,0 +1,253 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+    <ManuallySuppressedIssues/>
+    <CurrentIssues>
+        <ID>ComplexCondition:GitStageSelectionItems.kt:GitStageSelectionItems$isIgnored() || isNotChanged() ||
+            isConflicted() || index == ' ' || index == '?'
+        </ID>
+        <ID>MagicNumber:AiCommitAllConfigurable.kt:AiCommitAllConfigurable$4</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$0.5f</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$10</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$10f</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$12</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$13</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$14</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$15</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$17</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$27</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$28</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$3</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$4</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$5</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$7</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$8</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$9</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x238449</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x263C32</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x28394E</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x2E9D50</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x2F3A35</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x2F5AA0</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x303641</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x315FAE</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x342A47</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x6F4BB8</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x834DF0</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x8AF0A1</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x9DB6E3</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0xA571E6</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0xB99BE8</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0xDCEAE2</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0xE4E8F0</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0xE8F5EC</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0xEAF1FF</ID>
+        <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0xF0E9FF</ID>
+        <ID>MagicNumber:GitStageConfirmation.kt:GitStageConfirmation$250</ID>
+        <ID>MaxLineLength:AiCommitAllActions.kt:AiCommitAllControlState$fun isSectionEnabled: Boolean</ID>
+        <ID>MaxLineLength:AiCommitAllActions.kt:ProjectAiCommitAllWorkflowActivityProvider$override fun runningSection:
+            AiCommitAllControlSection?
+        </ID>
+        <ID>MaxLineLength:AiCommitAllShortcutActions.kt:ProjectAiCommitAllShortcutSettingsProvider$override fun
+            useVcsShortcutsForAiCommitAll: Boolean
+        </ID>
+        <ID>
+            MaxLineLength:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$AiCommitAllControlSection.Push
+            to Rectangle(bounds.x + aiWidth + commitWidth, bounds.y, pushWidth, bounds.height)
+        </ID>
+        <ID>MaxLineLength:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$cursor = if (nextHover ==
+            null) Cursor.getDefaultCursor() else Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+        </ID>
+        <ID>MaxLineLength:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$graphics.drawLine(x + (4 *
+            scale).toInt(), y + (15 * scale).toInt(), x + (14 * scale).toInt(), y + (15 * scale).toInt())
+        </ID>
+        <ID>MaxLineLength:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$graphics.drawLine(x + (9 *
+            scale).toInt(), y + (3 * scale).toInt(), x + (9 * scale).toInt(), y + (12 * scale).toInt())
+        </ID>
+        <ID>MaxLineLength:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$private</ID>
+        <ID>MaxLineLength:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$private fun centerIconY:
+            Int
+        </ID>
+        <ID>MaxLineLength:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$private fun controlBounds:
+            Rectangle
+        </ID>
+        <ID>MaxLineLength:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$private fun
+            firstEnabledSection: AiCommitAllControlSection?
+        </ID>
+        <ID>MaxLineLength:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$private fun
+            runningIndicatorPathLength: Float
+        </ID>
+        <ID>MaxLineLength:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$val aiColor =
+            sectionForeground(AiCommitAllControlSection.Ai, highlighted.contains(AiCommitAllControlSection.Ai))
+        </ID>
+        <ID>MaxLineLength:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.&lt;no name
+            provided>$override fun getAccessibleDescription: String
+        </ID>
+        <ID>MaxLineLength:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.&lt;no name
+            provided>$override fun getAccessibleName: String
+        </ID>
+        <ID>MaxLineLength:AiCommitAllThreeSectionControlTest.kt:AiCommitAllThreeSectionControlTest$private fun
+            AiCommitAllThreeSectionControl.toolTipFor: String?
+        </ID>
+        <ID>MaxLineLength:AiCommitAllWorkflowCoordinator.kt:AiCommitAllWorkflowRunner$private</ID>
+        <ID>MaxLineLength:AiCommitAllWorkflowCoordinator.kt:IntellijAiCommitAllWorkflowScheduler$override fun &lt;T>
+            supplyBackground: CompletableFuture&lt;T>
+        </ID>
+        <ID>MaxLineLength:AiCommitAllWorkflowCoordinator.kt:ProjectAiCommitAllWorkflowDependencies$override</ID>
+        <ID>MaxLineLength:AiCommitAllWorkflowCoordinator.kt:ProjectAiCommitAllWorkflowDependencies$override fun
+            checkReadiness: VcsOperationReadinessResult
+        </ID>
+        <ID>MaxLineLength:AiCommitAllWorkflowCoordinator.kt:ProjectAiCommitAllWorkflowDependencies$override fun
+            hasOutgoingCommitsToPush: Boolean
+        </ID>
+        <ID>MaxLineLength:AiCommitAllWorkflowRunnerTest.kt:AiCommitAllWorkflowRunnerTest.Companion$private fun runner:
+            AiCommitAllWorkflowRunner
+        </ID>
+        <ID>MaxLineLength:AiCommitMessageActionDiscoveryService.kt:AiCommitMessageActionDiscovery$private</ID>
+        <ID>MaxLineLength:AiCommitMessageActionDiscoveryService.kt:AiCommitMessageActionDiscoveryService$override fun
+            findCommitMessageAction: AiCommitMessageActionReference?
+        </ID>
+        <ID>MaxLineLength:AiCommitMessageActionDiscoveryService.kt:IntellijAiActionLookup$override fun getActionIdList:
+            List&lt;String>
+        </ID>
+        <ID>MaxLineLength:AiGenerationCompletion.kt:AiCommitMessageSnapshot.Companion$fun capture:
+            AiCommitMessageSnapshot
+        </ID>
+        <ID>MaxLineLength:AiGenerationCompletion.kt:AiGenerationCompletionObserver$private fun
+            String.isUsableChangedMessage: Boolean
+        </ID>
+        <ID>MaxLineLength:AiGenerationCompletion.kt:AiGenerationCompletionService$fun captureInitialMessage:
+            AiCommitMessageSnapshot
+        </ID>
+        <ID>MaxLineLength:AiGenerationCompletion.kt:AwtAiCompletionFocusState$override fun isApplicationFocused:
+            Boolean
+        </ID>
+        <ID>MaxLineLength:CommitMessageUiAccessors.kt:CommitMessageUiAccessors$private fun editorTextComponent:
+            EditorTextComponent?
+        </ID>
+        <ID>MaxLineLength:CommitWorkflowExecutionService.kt:FallbackSafeImmediatePushSupport$override fun prepare:
+            SafeImmediatePushDecision
+        </ID>
+        <ID>MaxLineLength:CommitWorkflowExecutionServiceTest.kt:CommitWorkflowExecutionServiceTest$private fun
+            CommitWorkflowExecutionResult.asStarted: CommitWorkflowExecutionResult.Started
+        </ID>
+        <ID>
+            MaxLineLength:CommitWorkflowExecutionServiceTest.kt:CommitWorkflowExecutionServiceTest.CapturingCommitWorkflowHandler$override
+            fun getState: CommitWorkflowHandlerState
+        </ID>
+        <ID>
+            MaxLineLength:CommitWorkflowExecutionServiceTest.kt:CommitWorkflowExecutionServiceTest.CapturingCommitWorkflowHandler$override
+            fun isExecutorEnabled: Boolean
+        </ID>
+        <ID>
+            MaxLineLength:CommitWorkflowExecutionServiceTest.kt:CommitWorkflowExecutionServiceTest.UnsupportedCommitWorkflowHandler$override
+            fun getState: CommitWorkflowHandlerState
+        </ID>
+        <ID>MaxLineLength:CommitWorkflowSelectionService.kt:CommitWorkflowSelectionService$private fun
+            chooseActiveChangeList: LocalChangeList
+        </ID>
+        <ID>MaxLineLength:CommitWorkflowSelectionService.kt:CommitWorkflowSelectionService$return
+            CommitWorkflowSelectionResult.UnsupportedWorkflow("No Git changelist owns the selected tracked changes.")
+        </ID>
+        <ID>MaxLineLength:CommitWorkflowSelectionService.kt:CommitWorkflowSelectionService$return
+            CommitWorkflowSelectionResult.UnsupportedWorkflow("The Commit tool window workflow could not be activated.")
+        </ID>
+        <ID>MaxLineLength:GitStageConfirmation.kt:GitStageConfirmation$if</ID>
+        <ID>MaxLineLength:GitStageSelectionItems.kt:GitStageSelectionItems$private</ID>
+        <ID>MaxLineLength:PushOnlyWorkflowExecutionServiceTest.kt:PushOnlyWorkflowExecutionServiceTest$private fun
+            CommitWorkflowExecutionResult.asStarted: CommitWorkflowExecutionResult.Started
+        </ID>
+        <ID>MaxLineLength:ReflectiveCommitWorkflowSynchronizer.kt:ReflectiveCommitWorkflowSynchronizer$private</ID>
+        <ID>MaxLineLength:SafeImmediatePushService.kt:SafeImmediatePushDecisionPolicy$if</ID>
+        <ID>MaxLineLength:SafeImmediatePushService.kt:private fun GitChangeSelection.hasUnresolvedConflicts: Boolean
+        </ID>
+        <ID>ReturnCount:AiCommitAllActions.kt:ProjectAiCommitAllWorkflowAvailabilityProvider$override fun availability:
+            AiCommitAllWorkflowActionAvailability
+        </ID>
+        <ID>ReturnCount:AiCommitAllConfigurable.kt:AiCommitAllConfigurable$override fun apply</ID>
+        <ID>ReturnCount:AiCommitAllShortcutActions.kt:AiCommitAllShortcutAction$internal fun isTakeoverAvailable:
+            Boolean
+        </ID>
+        <ID>ReturnCount:AiCommitAllShortcutActions.kt:AiCommitAllShortcutAction$override fun actionPerformed</ID>
+        <ID>ReturnCount:AiCommitAllWorkflowCoordinator.kt:AiCommitAllWorkflowRunner$private fun prepareWorkflow:
+            AiCommitAllWorkflowPreparationResult
+        </ID>
+        <ID>ReturnCount:AiCommitMessageActionDiscoveryService.kt:AiCommitMessageActionDiscovery$private fun
+            AnAction.toPresentationFallbackReference: AiCommitMessageActionReference?
+        </ID>
+        <ID>ReturnCount:AiCommitMessageActionInvocationService.kt:AiCommitMessageActionInvoker$fun
+            invokeCommitMessageGeneration: AiCommitMessageActionInvocationResult
+        </ID>
+        <ID>ReturnCount:AiGenerationCompletion.kt:AiGenerationCompletionObserver$fun awaitCompletion:
+            AiGenerationCompletionResult
+        </ID>
+        <ID>ReturnCount:AiGenerationCompletion.kt:EdtCommitMessageUiTextAccess$override fun readText: String</ID>
+        <ID>ReturnCount:CommitMessageUserEditSignal.kt:AwtCommitMessageUserEditDetector$override fun
+            isUserEditEventInProgress: Boolean
+        </ID>
+        <ID>ReturnCount:CommitMessageUserEditSignal.kt:CommitMessageUserEditSignalFactory$fun create:
+            ActiveCommitMessageUserEditSignal
+        </ID>
+        <ID>ReturnCount:CommitWorkflowExecutionService.kt:CommitWorkflowExecutionService$fun canExecuteCommitAndPush:
+            Boolean
+        </ID>
+        <ID>ReturnCount:CommitWorkflowExecutionService.kt:CommitWorkflowExecutionService$fun executeCommit:
+            CommitWorkflowExecutionResult
+        </ID>
+        <ID>ReturnCount:CommitWorkflowExecutionService.kt:CommitWorkflowExecutionService$fun executeCommitAndPush:
+            CommitWorkflowExecutionResult
+        </ID>
+        <ID>ReturnCount:CommitWorkflowExecutionService.kt:CommitWorkflowExecutionService$private fun
+            executeImmediatePushWhenSafe: Boolean
+        </ID>
+        <ID>ReturnCount:CommitWorkflowResultRegistrar.kt:IntellijCommitWorkflowResultRegistrar$override fun register:
+            CommitWorkflowResultRegistration?
+        </ID>
+        <ID>ReturnCount:CommitWorkflowSelectionService.kt:CommitWorkflowSelectionService$fun prepareAllFilesSelection:
+            CommitWorkflowSelectionResult
+        </ID>
+        <ID>ReturnCount:CommitWorkflowSelectionService.kt:CommitWorkflowUiThreadAccess$fun &lt;T> run: T</ID>
+        <ID>ReturnCount:GitOutgoingCommitsService.kt:GitOutgoingCommitsService$private fun
+            GitRepository.hasOutgoingCommits: Boolean
+        </ID>
+        <ID>ReturnCount:GitOutgoingCommitsService.kt:GitOutgoingCommitsService$private fun loadHasOutgoingCommitsToPush:
+            Boolean
+        </ID>
+        <ID>ReturnCount:GitStageConfirmation.kt:GitStageConfirmation$fun confirm: GitStageTracker.State?</ID>
+        <ID>ReturnCount:ReflectiveCommitWorkflowSynchronizer.kt:ReflectiveCommitWorkflowSynchronizer$fun synchronize:
+            Boolean
+        </ID>
+        <ID>ReturnCount:SafeImmediatePushService.kt:SafeImmediatePushDecisionPolicy$fun fallbackReason:
+            SafeImmediatePushFallbackReason?
+        </ID>
+        <ID>ReturnCount:SafeImmediatePushService.kt:SafeImmediatePushService$override fun prepare:
+            SafeImmediatePushDecision
+        </ID>
+        <ID>ReturnCount:SafeImmediatePushService.kt:SafeImmediatePushService$override fun prepareOutgoingCommits:
+            SafeImmediatePushDecision
+        </ID>
+        <ID>ReturnCount:SafeImmediatePushService.kt:SafeImmediatePushService$private fun
+            GitRepository.localMatchesTrackedUpstream: Boolean
+        </ID>
+        <ID>TooGenericExceptionCaught:AiCommitAllWorkflowCoordinator.kt:throwable: Throwable</ID>
+        <ID>TooGenericExceptionCaught:CommitWorkflowExecutionService.kt:CommitWorkflowExecutionService$throwable:
+            Throwable
+        </ID>
+        <ID>TooGenericExceptionCaught:CommitWorkflowExecutionService.kt:PostCommitPushResultHandler$throwable:
+            Throwable
+        </ID>
+        <ID>TooGenericExceptionCaught:CommitWorkflowSelectionService.kt:CommitWorkflowUiThreadAccess$throwable:
+            Throwable
+        </ID>
+        <ID>TooGenericExceptionCaught:PushOnlyWorkflowExecutionService.kt:PushOnlyWorkflowExecutionService$throwable:
+            Throwable
+        </ID>
+        <ID>TooGenericExceptionCaught:SafeImmediatePushService.kt:SafeImmediatePushService$throwable: Throwable</ID>
+        <ID>TooManyFunctions:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl : JComponent</ID>
+        <ID>UnusedParameter:PushOnlyWorkflowExecutionService.kt:PushOnlyWorkflowExecutionService$dataContext:
+            DataContext
+        </ID>
+        <ID>UnusedParameter:PushOnlyWorkflowExecutionService.kt:PushOnlyWorkflowExecutionService$inputEvent:
+            InputEvent?
+        </ID>
+    </CurrentIssues>
+</SmellBaseline>

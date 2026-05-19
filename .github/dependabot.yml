@@ -51,6 +51,8 @@ updates:
           - "org.jetbrains.kotlin:*"
           - "com.diffplug.spotless*"
           - "com.diffplug.spotless:*"
+          - "dev.detekt*"
+          - "dev.detekt:*"
         update-types:
           - "minor"
           - "patch"

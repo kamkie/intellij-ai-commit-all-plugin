@@ -12,7 +12,9 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ### Added
 
+- Added Detekt Kotlin static analysis with a checked-in baseline, SARIF uploads to GitHub code scanning, and report artifacts in CI.
 - Published Gradle unit test summaries and test report artifacts in GitHub Actions CI.
+- Added a Trivy filesystem security workflow with SARIF uploads to GitHub code scanning and report artifacts.
 
 ### Fixed
 

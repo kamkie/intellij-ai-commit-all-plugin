@@ -1,4 +1,5 @@
 import com.palantir.gradle.gitversion.VersionDetails
+import dev.detekt.gradle.Detekt
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.w3c.dom.Element
 import javax.xml.parsers.DocumentBuilderFactory
@@ -6,6 +7,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 plugins {
     kotlin("jvm") version "2.3.21"
     jacoco
+    id("dev.detekt") version "2.0.0-alpha.3"
     id("com.diffplug.spotless") version "8.5.1"
     id("com.palantir.git-version") version "5.0.0"
     id("org.jetbrains.intellij.platform")
@@ -62,6 +64,24 @@ kotlin {
 java {
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
+}
+
+detekt {
+    toolVersion = "2.0.0-alpha.3"
+    source.setFrom("src/main/kotlin", "src/test/kotlin")
+    baseline = file("config/detekt/baseline.xml")
+    basePath.set(projectDir)
+}
+
+tasks.withType<Detekt>().configureEach {
+    jvmTarget.set("21")
+
+    reports {
+        checkstyle.required.set(true)
+        html.required.set(true)
+        sarif.required.set(true)
+        markdown.required.set(true)
+    }
 }
 
 tasks.test {

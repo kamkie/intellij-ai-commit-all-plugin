@@ -16,3 +16,11 @@ Notation:
 
 - [ ] T-DOC-016: update README
 - [ ] T-DOC-017: create user-facing documentation.
+
+### Testing
+
+- [ ] T-TEST-003: increase test coverage.
+
+### Detekt Plugin
+
+- [ ] T-DETEKT-001: clean detekt findings.
