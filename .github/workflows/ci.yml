@@ -63,10 +63,6 @@ jobs:
           path: build/reports/detekt/**
           if-no-files-found: warn
 
-      - name: Fail on Detekt findings
-        if: ${{ steps.detekt-analysis.outcome == 'failure' }}
-        run: exit 1
-
       - name: Test, generate coverage, verify plugin structure, and package
         id: gradle-validation
         run: ./gradlew test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin
@@ -129,3 +125,7 @@ jobs:
           disable_search: true
           fail_ci_if_error: true
           use_oidc: true
+
+      - name: Fail on Detekt findings
+        if: ${{ steps.detekt-analysis.outcome == 'failure' }}
+        run: exit 1
