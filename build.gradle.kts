@@ -1,5 +1,7 @@
 import com.palantir.gradle.gitversion.VersionDetails
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.w3c.dom.Element
+import javax.xml.parsers.DocumentBuilderFactory
 
 plugins {
     kotlin("jvm") version "2.3.21"
@@ -64,15 +66,61 @@ java {
 
 tasks.test {
     useJUnitPlatform()
+
+    extensions.configure<JacocoTaskExtension> {
+        isIncludeNoLocationClasses = true
+        excludes = listOf("jdk.internal.*")
+    }
 }
 
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
+    classDirectories.setFrom(layout.buildDirectory.dir("instrumented/instrumentCode"))
 
     reports {
         xml.required.set(true)
         csv.required.set(false)
         html.required.set(true)
+    }
+}
+
+val jacocoXmlReport = layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml")
+
+val verifyJacocoCoverageReport by tasks.registering {
+    group = "verification"
+    description = "Verifies the JaCoCo XML report contains executed production coverage."
+    dependsOn(tasks.jacocoTestReport)
+
+    inputs.file(jacocoXmlReport)
+
+    doLast {
+        val reportFile = jacocoXmlReport.get().asFile
+        val documentBuilderFactory = DocumentBuilderFactory.newInstance()
+        documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+        documentBuilderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false)
+        documentBuilderFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+
+        val document = documentBuilderFactory
+            .newDocumentBuilder()
+            .parse(reportFile)
+        val rootChildren = document.documentElement.childNodes
+        val coveredInstructions = (0 until rootChildren.length)
+            .asSequence()
+            .map { index -> rootChildren.item(index) }
+            .filterIsInstance<Element>()
+            .first { element ->
+                element.tagName == "counter" &&
+                    element.getAttribute("type") == "INSTRUCTION"
+            }
+            .getAttribute("covered")
+            .toLong()
+
+        if (coveredInstructions <= 0) {
+            throw GradleException(
+                "JaCoCo XML report contains zero covered instructions. " +
+                    "Check the test JaCoCo agent and report class directories.",
+            )
+        }
     }
 }
 

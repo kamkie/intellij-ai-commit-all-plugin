@@ -52,8 +52,8 @@ internal class GitHubActionsWorkflowTest {
             "CI workflow must grant OIDC permission for Codecov upload authentication.",
         )
         assertTrue(
-            content.contains("./gradlew test jacocoTestReport verifyPluginStructure buildPlugin"),
-            "CI workflow must generate the JaCoCo XML report before uploading coverage.",
+            content.contains("./gradlew test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin"),
+            "CI workflow must generate and verify the JaCoCo XML report before uploading coverage.",
         )
         assertTrue(
             content.contains("codecov/codecov-action@v6"),
@@ -70,6 +70,24 @@ internal class GitHubActionsWorkflowTest {
         assertTrue(
             content.contains("use_oidc: true"),
             "CI workflow must use OIDC instead of requiring a Codecov token secret.",
+        )
+    }
+
+    @Test
+    fun `jacoco report uses intellij instrumented production classes`() {
+        val content = Files.readString(Path.of("build.gradle.kts"))
+
+        assertTrue(
+            content.contains("classDirectories.setFrom(layout.buildDirectory.dir(\"instrumented/instrumentCode\"))"),
+            "JaCoCo must report against the IntelliJ-instrumented production classes used by plugin tests.",
+        )
+        assertTrue(
+            content.contains("isIncludeNoLocationClasses = true"),
+            "JaCoCo must instrument plugin classes loaded through the IntelliJ test classloader.",
+        )
+        assertTrue(
+            content.contains("verifyJacocoCoverageReport"),
+            "The build must fail when the JaCoCo XML report contains no executed production coverage.",
         )
     }
 

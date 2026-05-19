@@ -16,6 +16,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ### Fixed
 
+- Fixed JaCoCo coverage reporting for IntelliJ plugin tests so CI uploads nonzero production coverage instead of an all-uncovered report.
 - Prevented outgoing-only `Push` from opening the IDE Push dialog when there are no files to commit, while allowing normal tracked-branch outgoing commits to use safe immediate push.
 
 ## [v0.1.0-alpha.9] - 2026-05-19

@@ -43,7 +43,7 @@ jobs:
 
       - name: Test, generate coverage, verify plugin structure, and package
         id: gradle-validation
-        run: ./gradlew test jacocoTestReport verifyPluginStructure buildPlugin
+        run: ./gradlew test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin
 
       - name: Publish unit test summary
         if: ${{ !cancelled() && steps.gradle-validation.outcome != 'skipped' && hashFiles('build/test-results/test/*.xml') != '' }}
