@@ -1,4 +1,4 @@
-# Backlog Grooming
+# Backlog Triage
 
 Review backlog, archive, and open-question artifacts for stale, duplicate, blocked, or misplaced work.
 

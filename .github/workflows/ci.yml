@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   build:
@@ -40,5 +41,26 @@ jobs:
         shell: pwsh
         run: scripts/validate-docs.ps1
 
-      - name: Test, verify plugin structure, and package
-        run: ./gradlew test verifyPluginStructure buildPlugin
+      - name: Test, generate coverage, verify plugin structure, and package
+        run: ./gradlew test jacocoTestReport verifyPluginStructure buildPlugin
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          files: build/test-results/test/*.xml
+          flags: unit
+          name: ai-commit-all-unit-test-results
+          disable_search: true
+          fail_ci_if_error: true
+          use_oidc: true
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v6
+        with:
+          files: build/reports/jacoco/test/jacocoTestReport.xml
+          flags: unit
+          name: ai-commit-all-unit-tests
+          disable_search: true
+          fail_ci_if_error: true
+          use_oidc: true

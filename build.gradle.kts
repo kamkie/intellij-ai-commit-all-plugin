@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("jvm") version "2.3.21"
+    jacoco
     id("com.diffplug.spotless") version "8.5.1"
     id("com.palantir.git-version") version "5.0.0"
     id("org.jetbrains.intellij.platform")
@@ -63,6 +64,16 @@ java {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+
+    reports {
+        xml.required.set(true)
+        csv.required.set(false)
+        html.required.set(true)
+    }
 }
 
 spotless {

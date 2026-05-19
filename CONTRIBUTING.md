@@ -18,6 +18,7 @@ Use the smallest validation set that matches the change. Common commands are:
 .\gradlew.bat spotlessCheck
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1
 .\gradlew.bat test
+.\gradlew.bat jacocoTestReport
 .\gradlew.bat buildPlugin
 .\gradlew.bat runIde
 ```

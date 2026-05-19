@@ -57,6 +57,12 @@ Run automated tests:
 .\gradlew.bat test
 ```
 
+Generate the JaCoCo coverage report uploaded by CI to Codecov:
+
+```powershell
+.\gradlew.bat jacocoTestReport
+```
+
 Run source formatting checks:
 
 ```powershell
@@ -81,7 +87,7 @@ Run the sandbox IDE:
 .\gradlew.bat runIde
 ```
 
-Pull-request CI validates the Gradle wrapper, source formatting, documentation, tests, plugin structure, and plugin packaging without Marketplace or signing secrets. The separate Plugin Verifier workflow checks the configured IDE matrix, and the CodeQL workflow scans Java/Kotlin code on pull requests, pushes to `main`, and a weekly schedule.
+Pull-request CI validates the Gradle wrapper, source formatting, documentation, tests, JaCoCo coverage report generation, plugin structure, and plugin packaging without Marketplace or signing secrets. It uploads the JaCoCo XML test coverage report and Gradle JUnit XML test results to Codecov using GitHub Actions OIDC. The separate Plugin Verifier workflow checks the configured IDE matrix, and the CodeQL workflow scans Java/Kotlin code on pull requests, pushes to `main`, and a weekly schedule.
 
 ## Usage
 
