@@ -103,6 +103,32 @@ internal class GitHubActionsWorkflowTest {
         )
     }
 
+    @Test
+    fun `ci workflow uploads built plugin zip artifact`() {
+        val content = Files.readString(Path.of(".github", "workflows", "ci.yml"))
+
+        assertTrue(
+            content.contains("actions/upload-artifact@v6"),
+            "CI workflow must upload the packaged plugin ZIP as a GitHub Actions artifact.",
+        )
+        assertTrue(
+            content.contains("name: ai-commit-all-plugin"),
+            "CI workflow must give the plugin ZIP artifact a stable name.",
+        )
+        assertTrue(
+            content.contains("path: build/distributions/*.zip"),
+            "CI workflow must upload the ZIP files produced by buildPlugin.",
+        )
+        assertTrue(
+            content.contains("if-no-files-found: error"),
+            "CI workflow must fail visibly when buildPlugin does not produce a ZIP.",
+        )
+        assertTrue(
+            content.contains("compression-level: 0"),
+            "CI workflow must avoid recompressing plugin ZIP artifacts.",
+        )
+    }
+
     private fun gradleWorkflows(): List<Path> = Files.list(Path.of(".github", "workflows")).use { workflows ->
         workflows
             .filter { workflow -> workflow.name.endsWith(".yml") || workflow.name.endsWith(".yaml") }

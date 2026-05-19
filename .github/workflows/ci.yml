@@ -44,6 +44,14 @@ jobs:
       - name: Test, generate coverage, verify plugin structure, and package
         run: ./gradlew test jacocoTestReport verifyPluginStructure buildPlugin
 
+      - name: Upload plugin ZIP artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ai-commit-all-plugin
+          path: build/distributions/*.zip
+          if-no-files-found: error
+          compression-level: 0
+
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
         uses: codecov/test-results-action@v1
