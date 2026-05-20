@@ -40,14 +40,17 @@ import java.awt.event.InputEvent
 import java.util.concurrent.CompletableFuture
 
 @Service(Service.Level.PROJECT)
-internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
-    private val runner = AiCommitAllWorkflowRunner(ProjectAiCommitAllWorkflowDependencies(project))
-
+internal class AiCommitAllWorkflowCoordinator @JvmOverloads constructor(
+    project: Project,
+    private val starter: AiCommitAllWorkflowStarter = AiCommitAllWorkflowRunnerStarter(
+        AiCommitAllWorkflowRunner(ProjectAiCommitAllWorkflowDependencies(project)),
+    ),
+) {
     fun start(
         mode: AiCommitAllWorkflowMode,
         dataContext: DataContext,
         inputEvent: InputEvent? = null,
-    ): CompletableFuture<AiCommitAllWorkflowResult> = runner.start(
+    ): CompletableFuture<AiCommitAllWorkflowResult> = starter.start(
         mode = mode,
         dataContext = dataContext,
         inputEvent = inputEvent,
@@ -56,6 +59,28 @@ internal class AiCommitAllWorkflowCoordinator(private val project: Project) {
     companion object {
         fun getInstance(project: Project): AiCommitAllWorkflowCoordinator = project.service()
     }
+}
+
+internal interface AiCommitAllWorkflowStarter {
+    fun start(
+        mode: AiCommitAllWorkflowMode,
+        dataContext: DataContext,
+        inputEvent: InputEvent?,
+    ): CompletableFuture<AiCommitAllWorkflowResult>
+}
+
+private class AiCommitAllWorkflowRunnerStarter(
+    private val runner: AiCommitAllWorkflowRunner,
+) : AiCommitAllWorkflowStarter {
+    override fun start(
+        mode: AiCommitAllWorkflowMode,
+        dataContext: DataContext,
+        inputEvent: InputEvent?,
+    ): CompletableFuture<AiCommitAllWorkflowResult> = runner.start(
+        mode = mode,
+        dataContext = dataContext,
+        inputEvent = inputEvent,
+    )
 }
 
 internal class AiCommitAllWorkflowRunner(

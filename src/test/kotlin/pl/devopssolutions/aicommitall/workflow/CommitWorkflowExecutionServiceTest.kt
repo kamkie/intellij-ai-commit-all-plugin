@@ -38,6 +38,33 @@ internal class CommitWorkflowExecutionServiceTest {
     private val gitCommitAndPushExecutorId = "Git.Commit.And.Push.Executor"
 
     @Test
+    fun `reports whether default commit executor can be called`() {
+        val service = CommitWorkflowExecutionService(CapturingScheduler())
+
+        assertTrue(service.canExecuteCommit(CapturingCommitWorkflowHandler()))
+        assertFalse(service.canExecuteCommit(UnsupportedCommitWorkflowHandler))
+        assertFalse(service.canExecuteCommit(null))
+    }
+
+    @Test
+    fun `reports whether Git commit and push executor can be called`() {
+        val service = CommitWorkflowExecutionService(CapturingScheduler())
+        val enabledWorkflow = CapturingCommitWorkflowHandler(
+            commitAndPushExecutor = TestCommitAndPushExecutor,
+            commitAndPushEnabled = true,
+        )
+        val disabledWorkflow = CapturingCommitWorkflowHandler(
+            commitAndPushExecutor = TestCommitAndPushExecutor,
+            commitAndPushEnabled = false,
+        )
+
+        assertTrue(service.canExecuteCommitAndPush(enabledWorkflow))
+        assertFalse(service.canExecuteCommitAndPush(disabledWorkflow))
+        assertFalse(service.canExecuteCommitAndPush(CapturingCommitWorkflowHandler()))
+        assertFalse(service.canExecuteCommitAndPush(null))
+    }
+
+    @Test
     fun `starts default commit through workflow executor listener`() {
         val scheduler = CapturingScheduler()
         val service = CommitWorkflowExecutionService(scheduler)
@@ -87,6 +114,32 @@ internal class CommitWorkflowExecutionServiceTest {
             scheduler.runScheduledActions()
         }
         assertEquals(1, workflowHandler.executorCallCount)
+    }
+
+    @Test
+    fun `registered default commit completion completes on cancel or failure`() {
+        listOf<CommitWorkflowResultHandler.() -> Unit>(
+            CommitWorkflowResultHandler::onCancel,
+            CommitWorkflowResultHandler::onFailure,
+        ).forEach { complete ->
+            val scheduler = CapturingScheduler()
+            val registrar = CapturingCommitResultRegistrar()
+            val service = CommitWorkflowExecutionService(
+                scheduler = scheduler,
+                commitResultRegistrar = registrar,
+            )
+            val workflowHandler = CapturingCommitWorkflowHandler()
+
+            val result = service.executeCommit(workflowHandler).asStarted()
+
+            scheduler.runScheduledActions()
+
+            assertFalse(result.completion.isDone)
+
+            registrar.resultHandler?.complete()
+
+            assertTrue(result.completion.isDone)
+        }
     }
 
     @Test

@@ -33,22 +33,25 @@ import git4idea.repo.GitRepositoryChangeListener
 import git4idea.repo.GitRepositoryManager
 
 @Service(Service.Level.PROJECT)
-internal class GitOutgoingCommitsService(private val project: Project) : Disposable {
+internal class GitOutgoingCommitsService @JvmOverloads constructor(
+    project: Project,
+    environment: GitOutgoingCommitsEnvironment = IntellijGitOutgoingCommitsEnvironment(project),
+    scheduler: GitOutgoingCommitsRefreshScheduler = IntellijGitOutgoingCommitsRefreshScheduler,
+    actionRefresh: GitOutgoingCommitsActionRefresh = IntellijGitOutgoingCommitsActionRefresh,
+) : Disposable {
     private val outgoingCommitsStatus = GitOutgoingCommitsStatus(
-        loader = ::loadHasOutgoingCommitsToPush,
-        scheduler = IntellijGitOutgoingCommitsRefreshScheduler,
-        actionRefresh = IntellijGitOutgoingCommitsActionRefresh,
+        loader = environment::hasOutgoingCommitsToPush,
+        scheduler = scheduler,
+        actionRefresh = actionRefresh,
     )
 
     init {
-        project.messageBus.connect(this).apply {
-            subscribe(
-                GitRepository.GIT_REPO_CHANGE,
-                GitRepositoryChangeListener { refreshHasOutgoingCommitsToPush() },
-            )
+        environment.subscribeToRepositoryChanges(this) {
+            refreshHasOutgoingCommitsToPush()
         }
-        GitPushCompletionService.getInstance(project)
-            .addCompletionListener(this) { refreshHasOutgoingCommitsToPush() }
+        environment.subscribeToPushCompletion(this) {
+            refreshHasOutgoingCommitsToPush()
+        }
     }
 
     fun hasOutgoingCommitsToPush(): Boolean = outgoingCommitsStatus.hasOutgoingCommitsToPush()
@@ -61,16 +64,40 @@ internal class GitOutgoingCommitsService(private val project: Project) : Disposa
 
     override fun dispose() = Unit
 
-    private fun loadHasOutgoingCommitsToPush(): Boolean {
-        if (project.isDisposed) {
-            return false
-        }
+    companion object {
+        fun getInstance(project: Project): GitOutgoingCommitsService = project.service()
+    }
+}
 
-        val pushSupport = gitPushSupport() ?: return false
-        return GitRepositoryManager.getInstance(project).repositories.any { repository ->
-            repository.hasOutgoingCommits(pushSupport)
+internal interface GitOutgoingCommitsEnvironment {
+    fun subscribeToRepositoryChanges(parentDisposable: Disposable, refresh: () -> Unit)
+
+    fun subscribeToPushCompletion(parentDisposable: Disposable, refresh: () -> Unit)
+
+    fun hasOutgoingCommitsToPush(): Boolean
+}
+
+private class IntellijGitOutgoingCommitsEnvironment(private val project: Project) : GitOutgoingCommitsEnvironment {
+    override fun subscribeToRepositoryChanges(parentDisposable: Disposable, refresh: () -> Unit) {
+        project.messageBus.connect(parentDisposable).apply {
+            subscribe(
+                GitRepository.GIT_REPO_CHANGE,
+                GitRepositoryChangeListener { refresh() },
+            )
         }
     }
+
+    override fun subscribeToPushCompletion(parentDisposable: Disposable, refresh: () -> Unit) {
+        GitPushCompletionService.getInstance(project)
+            .addCompletionListener(parentDisposable) { refresh() }
+    }
+
+    override fun hasOutgoingCommitsToPush(): Boolean = !project.isDisposed &&
+        gitPushSupport()?.let { pushSupport ->
+            GitRepositoryManager.getInstance(project).repositories.any { repository ->
+                repository.hasOutgoingCommits(pushSupport)
+            }
+        } == true
 
     private fun gitPushSupport(): GitPushSupport? = PushSupport.PUSH_SUPPORT_EP
         .getExtensionList(project)
@@ -78,25 +105,20 @@ internal class GitOutgoingCommitsService(private val project: Project) : Disposa
         .firstOrNull { pushSupport -> pushSupport.vcs === GitVcs.getInstance(project) }
 
     private fun GitRepository.hasOutgoingCommits(pushSupport: GitPushSupport): Boolean {
-        if (state != Repository.State.NORMAL) {
-            return false
+        val source = pushSupport.getSource(this)
+        val target = source?.let { pushSource -> pushSupport.getDefaultTarget(this, pushSource) }
+        val outgoingResult = if (state == Repository.State.NORMAL && source != null && target != null) {
+            runCatching {
+                pushSupport.outgoingCommitsProvider.getOutgoingCommits(
+                    this,
+                    PushSpec<GitPushSource, GitPushTarget>(source, target),
+                    false,
+                )
+            }.getOrNull()
+        } else {
+            null
         }
-
-        val source = pushSupport.getSource(this) ?: return false
-        val target = pushSupport.getDefaultTarget(this, source) ?: return false
-
-        val outgoingResult = runCatching {
-            pushSupport.outgoingCommitsProvider.getOutgoingCommits(
-                this,
-                PushSpec<GitPushSource, GitPushTarget>(source, target),
-                false,
-            )
-        }.getOrNull()
         return outgoingResult?.commits?.isNotEmpty() == true
-    }
-
-    companion object {
-        fun getInstance(project: Project): GitOutgoingCommitsService = project.service()
     }
 }
 

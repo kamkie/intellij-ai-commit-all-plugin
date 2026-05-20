@@ -2,6 +2,7 @@ import com.palantir.gradle.gitversion.VersionDetails
 import dev.detekt.gradle.Detekt
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.w3c.dom.Element
+import java.util.*
 import javax.xml.parsers.DocumentBuilderFactory
 
 plugins {
@@ -111,6 +112,12 @@ abstract class VerifyJacocoCoverageReportTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val reportFile: RegularFileProperty
 
+    @get:Input
+    abstract val minimumLineCoverage: Property<Double>
+
+    @get:Input
+    abstract val minimumBranchCoverage: Property<Double>
+
     @TaskAction
     fun verify() {
         val documentBuilderFactory = DocumentBuilderFactory.newInstance()
@@ -121,17 +128,7 @@ abstract class VerifyJacocoCoverageReportTask : DefaultTask() {
         val document = documentBuilderFactory
             .newDocumentBuilder()
             .parse(reportFile.get().asFile)
-        val rootChildren = document.documentElement.childNodes
-        val coveredInstructions = (0 until rootChildren.length)
-            .asSequence()
-            .map { index -> rootChildren.item(index) }
-            .filterIsInstance<Element>()
-            .first { element ->
-                element.tagName == "counter" &&
-                    element.getAttribute("type") == "INSTRUCTION"
-            }
-            .getAttribute("covered")
-            .toLong()
+        val coveredInstructions = counter(document.documentElement, "INSTRUCTION").covered
 
         if (coveredInstructions <= 0) {
             throw GradleException(
@@ -139,6 +136,67 @@ abstract class VerifyJacocoCoverageReportTask : DefaultTask() {
                     "Check the test JaCoCo agent and report class directories.",
             )
         }
+
+        verifyMinimumCoverage(
+            label = "line",
+            actual = counter(document.documentElement, "LINE").ratio,
+            minimum = minimumLineCoverage.get(),
+        )
+        verifyMinimumCoverage(
+            label = "branch",
+            actual = counter(document.documentElement, "BRANCH").ratio,
+            minimum = minimumBranchCoverage.get(),
+        )
+    }
+
+    private fun counter(
+        root: Element,
+        type: String,
+    ): CoverageCounter {
+        val rootChildren = root.childNodes
+        val element = (0 until rootChildren.length)
+            .asSequence()
+            .map { index -> rootChildren.item(index) }
+            .filterIsInstance<Element>()
+            .firstOrNull { element ->
+                element.tagName == "counter" &&
+                    element.getAttribute("type") == type
+            }
+            ?: throw GradleException("JaCoCo XML report is missing the $type counter.")
+        return CoverageCounter(
+            covered = element.getAttribute("covered").toLong(),
+            missed = element.getAttribute("missed").toLong(),
+        )
+    }
+
+    private fun verifyMinimumCoverage(
+        label: String,
+        actual: Double,
+        minimum: Double,
+    ) {
+        if (actual < minimum) {
+            throw GradleException(
+                "JaCoCo $label coverage ${actual.asPercentage()} is below the required " +
+                    "${minimum.asPercentage()}.",
+            )
+        }
+    }
+
+    private fun Double.asPercentage(): String = String.format(Locale.ROOT, "%.1f%%", this * 100)
+
+    private data class CoverageCounter(
+        val covered: Long,
+        val missed: Long,
+    ) {
+        val ratio: Double
+            get() {
+                val total = covered + missed
+                return if (total == 0L) {
+                    1.0
+                } else {
+                    covered.toDouble() / total
+                }
+            }
     }
 }
 
@@ -149,6 +207,8 @@ val verifyJacocoCoverageReport by tasks.registering(VerifyJacocoCoverageReportTa
     description = "Verifies the JaCoCo XML report contains executed production coverage."
     dependsOn(tasks.jacocoTestReport)
     reportFile.set(jacocoXmlReport)
+    minimumLineCoverage.set(0.68)
+    minimumBranchCoverage.set(0.62)
 }
 
 spotless {

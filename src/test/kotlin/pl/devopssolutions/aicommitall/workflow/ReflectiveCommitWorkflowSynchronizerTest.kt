@@ -42,6 +42,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
 
         assertTrue(result)
         assertEquals(listOf(changeList), handler.synchronizedChangeLists)
+        assertEquals(0, handler.synchronizedUnversionedCount)
         assertEquals(changeList, handler.activeChangeList)
         assertEquals(items, handler.inclusionItems)
         assertTrue(handler.replaceInclusion)
@@ -57,6 +58,54 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = emptyList(),
+        )
+
+        assertFalse(result)
+    }
+
+    @Test
+    fun `fails closed before reflection when inclusion items are empty`() {
+        val handler = CompatibleHandler()
+        val changeList = TestChangeList("Default")
+
+        val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
+            workflowHandler = handler,
+            changeLists = listOf(changeList),
+            unversionedFiles = emptyList(),
+            activeChangeList = changeList,
+            inclusionItems = emptyList(),
+        )
+
+        assertFalse(result)
+        assertEquals(null, handler.synchronizedChangeLists)
+        assertEquals(null, handler.activeChangeList)
+    }
+
+    @Test
+    fun `fails closed when workflow handler has only synchronize inclusion method`() {
+        val changeList = TestChangeList("Default")
+
+        val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
+            workflowHandler = MissingSetCommitStateHandler(),
+            changeLists = listOf(changeList),
+            unversionedFiles = emptyList(),
+            activeChangeList = changeList,
+            inclusionItems = listOf(Any()),
+        )
+
+        assertFalse(result)
+    }
+
+    @Test
+    fun `fails closed when workflow synchronization throws`() {
+        val changeList = TestChangeList("Default")
+
+        val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
+            workflowHandler = ThrowingHandler(),
+            changeLists = listOf(changeList),
+            unversionedFiles = emptyList(),
+            activeChangeList = changeList,
+            inclusionItems = listOf(Any()),
         )
 
         assertFalse(result)
@@ -93,6 +142,24 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
     }
 
     private class IncompatibleHandler : TestCommitWorkflowHandler()
+
+    private class MissingSetCommitStateHandler : TestCommitWorkflowHandler() {
+        var synchronizedInputCount = 0
+
+        fun synchronizeInclusion(changeLists: List<LocalChangeList>, unversionedFiles: List<*>) {
+            synchronizedInputCount = changeLists.size + unversionedFiles.size
+        }
+    }
+
+    private class ThrowingHandler : TestCommitWorkflowHandler() {
+        fun synchronizeInclusion(changeLists: List<LocalChangeList>, unversionedFiles: List<*>) {
+            error("synchronization failed for ${changeLists.size} lists and ${unversionedFiles.size} files")
+        }
+
+        fun setCommitState(changeList: LocalChangeList, items: Collection<Any>, replaceInclusion: Boolean) {
+            error("setCommitState should not run for ${changeList.name}, ${items.size}, $replaceInclusion")
+        }
+    }
 
     private class TestChangeList(private val listName: String) : LocalChangeList() {
         override fun getChanges(): Collection<Change> = emptyList()

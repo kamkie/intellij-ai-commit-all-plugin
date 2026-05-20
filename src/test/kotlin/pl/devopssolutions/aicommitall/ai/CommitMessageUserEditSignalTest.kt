@@ -22,12 +22,16 @@ import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.UserDataHolderBase
+import com.intellij.ui.EditorTextComponent
+import com.intellij.vcs.commit.CommitMessageUi
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
+import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTextArea
 import kotlin.test.Test
 import kotlin.test.assertFalse
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 internal class CommitMessageUserEditSignalTest {
@@ -91,6 +95,80 @@ internal class CommitMessageUserEditSignalTest {
         }
 
         assertTrue(detector.isUserEditEventInProgress())
+    }
+
+    @Test
+    fun `factory creates active document signal when commit message ui exposes editor component`() {
+        val document = TestDocument("old")
+        val editorComponent = JPanel()
+        val signal = CommitMessageUserEditSignalFactory.create(
+            TestCommitMessageUi(TestEditorTextComponent(document, editorComponent)),
+        )
+
+        assertTrue(signal is DocumentCommitMessageUserEditSignal)
+        signal.close()
+    }
+
+    @Test
+    fun `factory returns not edited signal when editor field is missing`() {
+        val signal = CommitMessageUserEditSignalFactory.create(TestCommitMessageUi(null))
+
+        assertSame(ActiveCommitMessageUserEditSignal.NotEdited, signal)
+        assertFalse(signal.isUserEdited())
+        signal.close()
+    }
+
+    @Test
+    fun `factory returns not edited signal when editor component is unavailable`() {
+        val signal = CommitMessageUserEditSignalFactory.create(
+            TestCommitMessageUi(DocumentOnlyEditorField(TestDocument("old"))),
+        )
+
+        assertSame(ActiveCommitMessageUserEditSignal.NotEdited, signal)
+        assertFalse(signal.isUserEdited())
+        signal.close()
+    }
+
+    private class TestCommitMessageUi(private val editorField: Any?) : CommitMessageUi {
+        override fun getText(): String = ""
+
+        override fun setText(text: String?) = Unit
+
+        override fun focus() = Unit
+
+        override fun startLoading() = Unit
+
+        override fun stopLoading() = Unit
+
+        fun getEditorField(): Any? = editorField
+    }
+
+    private class TestEditorTextComponent(
+        private val document: Document,
+        private val component: JComponent,
+    ) : EditorTextComponent {
+        private val listenerDisposables = mutableMapOf<DocumentListener, Disposable>()
+
+        override fun getText(): String = document.text
+
+        override fun getComponent(): JComponent = component
+
+        override fun getDocument(): Document = document
+
+        override fun addDocumentListener(listener: DocumentListener) {
+            val disposable = Disposer.newDisposable("Test editor text component")
+            listenerDisposables[listener] = disposable
+            document.addDocumentListener(listener, disposable)
+        }
+
+        override fun removeDocumentListener(listener: DocumentListener) {
+            listenerDisposables.remove(listener)?.let { disposable -> Disposer.dispose(disposable) }
+            document.removeDocumentListener(listener)
+        }
+    }
+
+    private class DocumentOnlyEditorField(private val document: Document) {
+        fun getDocument(): Document = document
     }
 
     private class TestDocument(initialText: String) :

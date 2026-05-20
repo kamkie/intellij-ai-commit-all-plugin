@@ -53,6 +53,12 @@ For day-to-day plugin development, run a sandbox IDE instead:
 .\gradlew.bat runIde
 ```
 
+The JaCoCo verification gate requires at least 68% overall line coverage and 62% overall branch coverage:
+
+```powershell
+.\gradlew.bat test jacocoTestReport verifyJacocoCoverageReport
+```
+
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full build, test, and validation command set.
 
 ## Usage

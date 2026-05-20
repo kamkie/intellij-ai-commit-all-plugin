@@ -21,13 +21,6 @@ Notation:
 - [ ] T-DOC-022: add a Troubleshooting and FAQ section in `README.md` for missing or disabled AI Assistant, AI generation timeout, push fallback to the IDE dialog, and unresolved conflicts. (`README.md`)
 - [ ] T-DOC-023: add a macOS keymap row to the `README.md` shortcut table and confirm both keymaps match `plugin.xml`. (`README.md`, `src/main/resources/META-INF/plugin.xml`)
 
-### Testing
-
-- [ ] T-TEST-003: increase test coverage (umbrella for remaining T-TEST-006, T-TEST-007, and T-TEST-009). Current JaCoCo line coverage is ~64% overall; weakest packages are `aicommitall` root (0%), `vcs` (~37%), `workflow` (~55%), and `notifications` (~68%).
-- [ ] T-TEST-006: increase coverage in the `vcs` package, targeting `ReflectiveCommitWorkflowSynchronizer`, `SafeImmediatePushService`, `GitOutgoingCommitsService`, and `GitStageConfirmation` happy and fallback branches. (`src/test/kotlin/.../vcs/`)
-- [ ] T-TEST-007: increase coverage in the `workflow` package, targeting `AiCommitAllWorkflowCoordinator`, `CommitWorkflowExecutionService`, and `CommitMessageUserEditSignal` running, timeout, and user-edit branches. (`src/test/kotlin/.../workflow/`)
-- [ ] T-TEST-009: raise the Gradle JaCoCo coverage verification thresholds in `build.gradle.kts` once the remaining coverage tasks T-TEST-006 and T-TEST-007 land, and document the new floor in `README.md`. (`build.gradle.kts`, `README.md`)
-
 ### Validation
 
 - [ ] T-VAL-024: execute and record the current manual sandbox release matrix before Marketplace publication, covering final control rendering, staging-area modes, shortcut takeover, AI Assistant unavailable states, and full commit/push UI behavior. (`docs/validation/manual-sandbox.md`, `docs/scenario-coverage.md`)

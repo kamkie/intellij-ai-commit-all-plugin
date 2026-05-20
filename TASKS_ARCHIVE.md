@@ -4,6 +4,20 @@ Completed tasks move here from [TASKS.md](TASKS.md) only after the work is finis
 
 Preserve stable `T-AREA-NNN` task IDs, wording, grouping, and evidence links when moving entries unless a small clarity fix is needed.
 
+Archived as of 2026-05-20 workflow coverage and JaCoCo gate.
+
+### Testing
+
+- [x] T-TEST-003: increase test coverage (umbrella completed by T-TEST-004 through T-TEST-009). Current JaCoCo line coverage is 68.2% overall; weakest packages are `aicommitall` root (0%), `vcs` (54.7%), `workflow` (56.9%), and `notifications` (68.4%). (validation: `.\gradlew.bat test jacocoTestReport`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
+- [x] T-TEST-007: increase coverage in the `workflow` package, targeting `AiCommitAllWorkflowCoordinator`, `CommitWorkflowExecutionService`, and `CommitMessageUserEditSignal` running, timeout, and user-edit branches. (`src/test/kotlin/.../workflow/AiCommitAllWorkflowCoordinatorTest.kt`, `src/test/kotlin/.../workflow/CommitWorkflowExecutionServiceTest.kt`, `src/test/kotlin/.../ai/CommitMessageUserEditSignalTest.kt`; validation: red `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowCoordinatorTest" --tests "pl.devopssolutions.aicommitall.ai.CommitMessageUserEditSignalTest" --tests "pl.devopssolutions.aicommitall.workflow.CommitWorkflowExecutionServiceTest"` failed on missing `AiCommitAllWorkflowStarter`; green same command, `.\gradlew.bat test jacocoTestReport`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
+- [x] T-TEST-009: raise the Gradle JaCoCo coverage verification thresholds in `build.gradle.kts` once T-TEST-007 lands, and document the new floor in `README.md`. (`build.gradle.kts`, `README.md`; floor: 68% overall line coverage and 62% overall branch coverage; validation: `.\gradlew.bat verifyJacocoCoverageReport`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
+
+Archived as of 2026-05-20 VCS coverage.
+
+### Testing
+
+- [x] T-TEST-006: increase coverage in the `vcs` package, targeting `ReflectiveCommitWorkflowSynchronizer`, `SafeImmediatePushService`, `GitOutgoingCommitsService`, and `GitStageConfirmation` happy and fallback branches. (`src/test/kotlin/.../vcs/SafeImmediatePushServiceTest.kt`, `src/test/kotlin/.../vcs/GitOutgoingCommitsServiceTest.kt`, `src/test/kotlin/.../workflow/ReflectiveCommitWorkflowSynchronizerTest.kt`; validation: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.vcs.SafeImmediatePushServiceTest"`, `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.vcs.GitOutgoingCommitsServiceTest"`, `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.workflow.ReflectiveCommitWorkflowSynchronizerTest"`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
+
 Archived as of 2026-05-20 notification service coverage.
 
 ### Testing
