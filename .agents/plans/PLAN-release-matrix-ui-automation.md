@@ -10,8 +10,8 @@ Filename: `.agents/plans/PLAN-release-matrix-ui-automation.md`
 
 ## Readiness
 
-- Plan readiness: Not ready until the maintainer approves the deterministic AI test boundary and CI gate scope.
-- Open questions: Yes; see `## Open Questions`.
+- Plan readiness: Ready for explicit maintainer approval. Implementation must not start while `Status` is `Draft`.
+- Open questions: None. The maintainer answered the task-local questions in this draft.
 - Implementation progress: Not started.
 
 ## Status History
@@ -20,9 +20,9 @@ Filename: `.agents/plans/PLAN-release-matrix-ui-automation.md`
 
 ## Goal
 
-Make the `T-VAL-024` release matrix runnable automatically for the current IDEA, PyCharm, and WebStorm line by adding an IntelliJ integration-test lane that launches real IDE products, installs the built plugin, opens local Git fixtures, drives the Commit tool window, and records machine-checkable evidence.
+Make the `T-VAL-024` release matrix runnable automatically for current IntelliJ IDEA first by adding an IntelliJ integration-test lane that launches the real IDE product, installs the built plugin, opens local Git fixtures, drives the Commit tool window, and records machine-checkable evidence.
 
-The intended result is a deterministic release validation command that covers final control rendering, staging-area modes, shortcut takeover, AI Assistant unavailable states, and full commit/push UI behavior without contacting real remotes or requiring a signed-in JetBrains AI account in CI.
+The intended result is a deterministic release validation command that covers final control rendering, staging-area modes, shortcut takeover, AI Assistant unavailable states, and full commit/push UI behavior for IDEA without contacting real remotes or requiring a signed-in JetBrains AI account in CI.
 
 ## Non-Goals
 
@@ -31,6 +31,7 @@ The intended result is a deterministic release validation command that covers fi
 - Do not contact real Git remotes; all push checks must use temporary local bare remotes.
 - Do not remove residual manual rows until an automated test owns the row's primary assertion under `docs/scenario-coverage.md` counting rules.
 - Do not change user-facing runtime behavior except for narrow accessibility or testability seams that are useful outside tests.
+- Do not automate PyCharm or WebStorm release-matrix scenarios in the first implementation pass.
 
 ## Assumptions
 
@@ -39,17 +40,19 @@ The intended result is a deterministic release validation command that covers fi
 - Add UI integration tests as a separate release-matrix lane first, then decide whether they become required on every pull request after stability data exists.
 - Use a deterministic test-only AI Assistant substitute for happy-path `AI`, `Commit`, and `Push` automation.
 - Keep one optional local smoke check for real signed-in AI Assistant behavior unless a later accepted decision allows credentials outside the repository.
+- Start with IDEA-only release-matrix automation. PyCharm and WebStorm remain manual or future automation scope.
+- Prefer the test-only `com.intellij.ml.llm` plugin substitute. A production test mode or injectable production `AiCommitMessageActionFinder` is more invasive and should be attempted only if the fake dependency cannot satisfy plugin loading and action invocation.
 
 ## Open Questions
 
-- Can the integration tests install a test-only plugin with ID `com.intellij.ml.llm` that registers `Vcs.LLMCommitMessageAction` and writes a deterministic commit message through the supplied `CommitWorkflowUi` data context?
-    - ues test-only plugin
-- If a fake AI Assistant dependency is not acceptable, should production code expose a narrow test mode for `AiCommitMessageActionFinder` or should happy-path AI generation remain manual?
-    - how easy or problematic that would be? it maybe semi-automated test running only locally?
-- Should the new UI matrix run as a pull-request gate, a scheduled/nightly job, or a manually triggered release workflow? Recommendation: manual release workflow first, then scheduled, then PR gate only if stable.
-    - release workflow first
-- Which product matrix is required for automation acceptance: IDEA-only for every scenario plus PyCharm/WebStorm smoke, or full IDEA/PyCharm/WebStorm for every scenario?
-    - just IDEA for now
+- None.
+
+## Decisions For This Plan
+
+- Use a test-only plugin substitute for JetBrains AI Assistant. Task 1 must prove that a local plugin with ID `com.intellij.ml.llm` can satisfy the required dependency and register `Vcs.LLMCommitMessageAction`.
+- Keep production AI discovery unchanged unless the fake dependency route is blocked. A production test mode is more problematic because it risks introducing release-only switches or non-user-facing behavior into production code.
+- Run the UI matrix as a manually triggered release workflow first.
+- Automate IDEA scenarios only in this first pass.
 
 ## Proposed Changes
 
@@ -57,7 +60,7 @@ The intended result is a deterministic release validation command that covers fi
     - Add `src/integrationTest/kotlin` and `src/integrationTest/resources`.
     - Add Gradle dependencies for Starter/Driver integration tests, JUnit 5, and required runtime helpers under an `integrationTestImplementation` configuration.
     - Register a `releaseMatrixUiTest` task using `intellijPlatformTesting.testIdeUi`.
-    - Pass the built plugin path and target IDE product/version matrix through Gradle properties.
+  - Pass the built plugin path and target IDEA version through Gradle properties.
 
 - Task 2: Add deterministic IDE fixtures.
     - Add an integration-test fixture builder for temporary Git repositories with modified, deleted, renamed, unversioned, ignored, already staged, multi-root, and local bare remote states.
@@ -82,7 +85,7 @@ The intended result is a deterministic release validation command that covers fi
     - Keep real AI Assistant signed-out service behavior as an optional local smoke lane if fake action cannot reproduce the platform-owned message.
 
 - Task 6: Add CI workflow and evidence records.
-    - Add a manually triggered GitHub Actions workflow for release-matrix UI tests.
+    - Add a manually triggered GitHub Actions workflow for IDEA release-matrix UI tests.
     - Upload JUnit XML, IDE logs, screenshots, and local Git evidence as artifacts.
     - Keep pull-request CI on fast checks until the UI lane has enough stability data.
     - Update `docs/validation/manual-sandbox.md`, `docs/scenario-coverage.md`, and `TASKS.md` only after the automated evidence is real.
@@ -90,7 +93,7 @@ The intended result is a deterministic release validation command that covers fi
 ## Execution Model
 
 - Execute sequentially with `Workers: 1`.
-- Treat Task 1 as a spike with a hard stop if Driver cannot launch the current product matrix locally.
+- Treat Task 1 as a spike with a hard stop if Driver cannot launch the current IDEA build locally or the test-only AI dependency cannot satisfy plugin loading.
 - Do not reclassify manual scenarios until a test passes locally and produces evidence.
 - Use one commit per implementation task if commits are requested during approved execution.
 
@@ -112,7 +115,7 @@ flowchart TD
 
 - `.\gradlew.bat test`
 - `.\gradlew.bat buildPlugin`
-- `.\gradlew.bat releaseMatrixUiTest -PideProducts=IU,PY,WS -PideVersion=2026.1.2`
+- `.\gradlew.bat releaseMatrixUiTest -PideProducts=IU -PideVersion=2026.1.2`
 - `.\gradlew.bat verifyPlugin -PpluginVerifierIdeVersions="IU-2026.1.2,PY-2026.1.2,WS-2026.1.2"`
 - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1`
 - `git diff --check`
@@ -123,8 +126,8 @@ flowchart TD
 - UI tests need a real graphical environment; GitHub-hosted Linux will likely need Xvfb, and macOS keyboard automation needs Accessibility permissions.
 - A fake AI Assistant action proves the plugin workflow, not JetBrains' live AI service behavior.
 - Fake dependency loading must not leak into production packaging or Marketplace metadata.
-- Product-specific Commit tool window details may differ between IDEA, PyCharm, and WebStorm.
-- Full matrix tests may be slow and flaky enough to be release-only rather than pull-request checks.
+- Product-specific Commit tool window details may differ between IDEA, PyCharm, and WebStorm; only IDEA is automated in this first pass.
+- The UI tests may be slow and flaky enough to remain release-only rather than pull-request checks.
 
 ## Handoff Notes
 
