@@ -17,118 +17,17 @@ The Commit tool window gets a compact `<AI icon> AI | Commit | Push` control:
 
 ## Current Status
 
-The executable Gradle/Kotlin IntelliJ plugin implementation is present for the first workflow slice. It is still an unreleased prerelease project and is not yet published to JetBrains Marketplace.
+This is an unreleased prerelease project and is not yet published to JetBrains Marketplace. The latest tagged candidate is `v0.1.0-alpha.9`; changes listed under `Unreleased` in [CHANGELOG.md](CHANGELOG.md) have not been Marketplace-published.
 
-The latest tagged implementation prerelease candidate documented in the changelog is `v0.1.0-alpha.9`; changes listed under `Unreleased` have not been Marketplace-published.
-
-The current implementation:
-
-- Targets the IntelliJ Platform 2026.1 release line and currently builds against IntelliJ Platform `2026.1.1`.
-- Supports Git projects, including multiple Git roots.
-- Includes modified, added, deleted, moved or renamed, unversioned, and resolved-conflict paths exposed by IntelliJ VCS APIs.
-- Supports both changelist-backed commit workflows and the Git staging-area commit workflow.
-- Excludes ignored files through IntelliJ VCS APIs.
-- Invokes JetBrains AI Assistant commit-message generation through the IntelliJ action system.
-- Clears stale commit-message text before AI generation by default.
-- Lets the `AI` section stop after AI generation without committing.
-- Waits for AI generation to complete before the `Commit` or `Push` sections continue.
-- Stops without committing or pushing when AI generation times out, produces an empty or unchanged message, or the user edits the message while generation is running.
-- Executes commit and commit-and-push through the active IntelliJ commit workflow so IDE before-commit checks, confirmations, warnings, commit errors, and push errors stay in charge.
-- Skips the Push Commits dialog when every affected Git root is on a normal tracked branch and the target is the standard tracked branch. Commit-and-push checks the branch against its tracked upstream before committing; outgoing-only push allows the local branch to be ahead of its tracked upstream. Protected branch settings do not force the dialog when the push is a normal non-force push.
-- Keeps `Push` available for already-created outgoing commits even when there are no committable Git changes.
-- Replaces the standard Commit tool window `Commit and Push...` toolbar button with the plugin's three-section control while keeping standard IDE commit, push, and shortcut delegation paths available.
-- Uses the ADR 0053 violet AI, blue Commit, green Push segmented styling with cumulative hover and a snake-loop running indication on the active section.
-- Uses the IDE commit shortcut for the `Commit` section and the IDE push shortcut for the `Push` section by default, with a settings opt-out.
-
-Manual sandbox validation is tracked in [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
-
-The full behavior specification used for requirement validation is in [docs/specification.md](docs/specification.md).
+The plugin targets the IntelliJ Platform 2026.1 release line and currently builds against `2026.1.1`. The full behavior specification used for requirement validation is in [docs/specification.md](docs/specification.md). Manual sandbox validation is tracked in [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
 
 ## Requirements
 
-- JDK 21.
-- Node.js with `npx` for Markdown linting during documentation validation.
-- Git for local repository validation and development fixtures.
-- JetBrains IDE with the 2026.1 IntelliJ Platform line and the non-modal Commit tool window.
+- JetBrains IDE on the 2026.1 IntelliJ Platform line with the non-modal Commit tool window.
 - JetBrains AI Assistant, required by plugin dependency `com.intellij.ml.llm`.
+- A Git working copy.
 
 If JetBrains AI Assistant is missing or disabled, the IDE should reject or fail plugin loading through the required dependency instead of falling back to a non-AI commit message.
-
-## Build And Test
-
-Build the plugin package:
-
-```powershell
-.\gradlew.bat buildPlugin
-```
-
-Run automated tests:
-
-```powershell
-.\gradlew.bat test
-```
-
-Generate the JaCoCo coverage report uploaded by CI to Codecov:
-
-```powershell
-.\gradlew.bat jacocoTestReport
-```
-
-Verify that the JaCoCo XML report contains executed production coverage:
-
-```powershell
-.\gradlew.bat verifyJacocoCoverageReport
-```
-
-Run source formatting checks:
-
-```powershell
-.\gradlew.bat spotlessCheck
-```
-
-Run Kotlin static analysis against the checked-in baseline and generate Detekt reports uploaded by CI:
-
-```powershell
-.\gradlew.bat detekt
-```
-
-Apply mechanical source formatting and Kotlin license-header fixes:
-
-```powershell
-.\gradlew.bat spotlessApply
-```
-
-Run documentation validation:
-
-```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1
-```
-
-Verify plugin descriptor structure:
-
-```powershell
-.\gradlew.bat verifyPluginStructure
-```
-
-Run IntelliJ Plugin Verifier locally with the default verifier target from `gradle.properties`:
-
-```powershell
-.\gradlew.bat verifyPlugin
-```
-
-Run IntelliJ Plugin Verifier against the CI matrix:
-
-```powershell
-.\gradlew.bat verifyPlugin -PpluginVerifierIdeVersions="IU-2026.1.1,PY-2026.1.1,WS-2026.1.1"
-```
-
-Run the sandbox IDE:
-
-```powershell
-.\gradlew.bat runIde
-```
-
-Pull-request CI validates the Gradle wrapper, source formatting, Detekt Kotlin static analysis, documentation, tests, JaCoCo coverage report generation, nonzero JaCoCo XML coverage, plugin structure, and plugin packaging without Marketplace or signing secrets. It publishes Detekt SARIF to GitHub code scanning, uploads Detekt reports as a GitHub Actions artifact, publishes Gradle JUnit test results to the GitHub Actions run summary, uploads the Gradle XML and HTML test reports as a GitHub Actions artifact, uploads the packaged plugin ZIP as an artifact, and sends the JaCoCo XML test coverage report and Gradle JUnit XML test results to Codecov using GitHub Actions OIDC. The separate Plugin Verifier workflow checks IntelliJ IDEA, PyCharm, and WebStorm `2026.1.1`, the CodeQL workflow scans Java/Kotlin code on pull requests, pushes to `main`, and a weekly schedule, and the Security workflow runs a Trivy filesystem scan with SARIF code-scanning upload and artifact retention.
 
 ## Usage
 
@@ -169,39 +68,21 @@ Both timing values must be positive. Timeout and user-edit paths stop without co
 
 The canonical source repository is [github.com/kamkie/intellij-ai-commit-all-plugin](https://github.com/kamkie/intellij-ai-commit-all-plugin). Marketplace-facing plugin metadata points users and contributors to that source location.
 
-## Release And Publication
-
-Release publication is intentionally manual and gated:
-
-1. Complete implementation, documentation, validation, and changelog review on `main`.
-2. Run local validation for the release candidate, including `spotlessCheck`, documentation validation, `detekt`, `test`, `jacocoTestReport`, `verifyJacocoCoverageReport`, `verifyPluginStructure`, `buildPlugin`, and the IntelliJ Plugin Verifier matrix.
-3. Confirm manual sandbox validation evidence is current where release scope depends on it.
-4. Configure the GitHub Environment named `jetbrains-marketplace` with required reviewer protection.
-5. Add GitHub Actions secrets `CERTIFICATE_CHAIN`, `PRIVATE_KEY`, `PRIVATE_KEY_PASSWORD`, and `PUBLISH_TOKEN`.
-6. Verify GitHub secret scanning and push protection are enabled for the repository where available.
-7. Start the `Release` workflow manually with the intended Marketplace channel, usually `default`.
-
-Builds derive the Gradle project version and IntelliJ plugin descriptor version from Git metadata using Palantir `gradle-git-version`. Normal local and CI builds use `<latest-tag>-<commit-distance>-g<short-sha>`, tagged commits use `<latest-tag>-g<short-sha>`, and dirty working trees append `.dirty`. Set `GIT_VERSION` only when a packaging environment must override Git-derived version discovery.
-
-The release workflow fails on non-`main` refs, validates documentation, formatting, Detekt, tests, coverage, plugin structure, packaging, and the IntelliJ IDEA, PyCharm, and WebStorm verifier matrix, then signs the plugin and calls `publishPlugin` only after manual dispatch and environment approval. Do not create tags or publish Marketplace updates unless release execution is explicitly requested.
-
 ## Project
 
 - Plugin ID and base package: `pl.devopssolutions.aicommitall`.
 - Vendor: DevOps Solutions Kamil Kiewisz, `https://devopssolutions.pl`, `kontakt@devopssolutions.pl`.
 - License: Apache License 2.0.
 
-Implementation guidance for future agents is in [AGENTS.md](AGENTS.md).
-
-Guidance for working with AI agents on this repository is in [docs/WORKING_WITH_AI.md](docs/WORKING_WITH_AI.md).
-
-Human contribution guidance is in [CONTRIBUTING.md](CONTRIBUTING.md).
+Human contribution guidance, including build, test, and validation commands, is in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Notable changes are tracked in [CHANGELOG.md](CHANGELOG.md).
 
 Support status and issue-reporting expectations are in [SUPPORT.md](SUPPORT.md).
 
 Security reporting and release-secret handling are in [SECURITY.md](SECURITY.md).
+
+Implementation guidance for future agents is in [AGENTS.md](AGENTS.md). Guidance for working with AI agents on this repository is in [docs/WORKING_WITH_AI.md](docs/WORKING_WITH_AI.md).
 
 ## License
 

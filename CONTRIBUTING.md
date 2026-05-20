@@ -8,7 +8,14 @@ This repository is an unreleased IntelliJ Platform plugin project. Keep contribu
 - Read [SUPPORT.md](SUPPORT.md) before filing bugs or support requests.
 - Use [docs/DEVELOPMENT_LIFECYCLE.md](docs/DEVELOPMENT_LIFECYCLE.md) for changes that affect behavior, repository workflow, release automation, or multiple files.
 - Check [TASKS.md](TASKS.md), [docs/decisions/](docs/decisions/), and [docs/proposals/](docs/proposals/) for existing tasks, accepted decisions, and active proposals.
+- If you plan to use AI agents to help with your contribution, read [docs/WORKING_WITH_AI.md](docs/WORKING_WITH_AI.md) for how to frame requests, what context to load, and the repository's expectations for agent-driven work.
 - Do not include secrets, tokens, private repository contents, proprietary commit messages, or unsanitized logs.
+
+## Prerequisites
+
+- JDK 21.
+- Node.js with `npx` for Markdown linting in documentation validation.
+- Git for local repository validation and development fixtures.
 
 ## Local Validation
 
@@ -16,11 +23,24 @@ Use the smallest validation set that matches the change. Common commands are:
 
 ```powershell
 .\gradlew.bat spotlessCheck
+.\gradlew.bat spotlessApply
+.\gradlew.bat detekt
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1
 .\gradlew.bat test
 .\gradlew.bat jacocoTestReport
+.\gradlew.bat verifyJacocoCoverageReport
+.\gradlew.bat verifyPluginStructure
 .\gradlew.bat buildPlugin
 .\gradlew.bat runIde
+```
+
+`spotlessApply` applies mechanical source formatting and Kotlin license-header fixes. `detekt` runs Kotlin static analysis against the checked-in baseline.
+
+Run the IntelliJ Plugin Verifier locally with the default verifier target from `gradle.properties`, or against the CI matrix:
+
+```powershell
+.\gradlew.bat verifyPlugin
+.\gradlew.bat verifyPlugin -PpluginVerifierIdeVersions="IU-2026.1.1,PY-2026.1.1,WS-2026.1.1"
 ```
 
 For documentation-only changes, run documentation validation and `git diff --check`. For plugin code changes, include targeted tests and build checks. For release, signing, publishing, or supported-scope changes, also review [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md) and [.agents/references/releases.md](.agents/references/releases.md).
