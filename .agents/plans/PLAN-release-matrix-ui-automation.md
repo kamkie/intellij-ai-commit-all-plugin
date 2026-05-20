@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-release-matrix-ui-automation.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-20T23:07:23+02:00
 - Open questions: None. The maintainer answered the task-local questions in this draft.
-- Implementation progress: Task 1 completed; Task 2 pending.
+- Implementation progress: Tasks 1 and 2 completed; Task 3 pending.
 
 ## Status History
 
@@ -22,6 +22,7 @@ Filename: `.agents/plans/PLAN-release-matrix-ui-automation.md`
 - 2026-05-20T23:07:23+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded from request to approve `.agents/plans/PLAN-release-matrix-ui-automation.md`.
 - 2026-05-20T23:08:38+02:00: Approved -> In Progress by Codex <codex@openai.com>; Task 1 implementation started after approval.
 - 2026-05-20T23:23:51+02:00: Task 1 completed by Codex <codex@openai.com>; `releaseMatrixUiTest` launches IDEA 2026.1.2, installs the built plugin plus a test-only `com.intellij.ml.llm` substitute, and verifies `Vcs.LLMCommitMessageAction` is registered through Driver.
+- 2026-05-20T23:57:35+02:00: Task 2 completed by Codex <codex@openai.com>; deterministic Git fixtures and fake AI commit-message generation were added to the IDEA UI automation lane.
 
 ## Goal
 
@@ -128,6 +129,14 @@ flowchart TD
     - `git diff --check` passed.
     - The test installs `build/distributions/ai-commit-all-*.zip` plus `build/integrationTest/plugins/fake-ai-assistant-plugin-0.0.1-test.zip` and verifies the fake plugin registers `Vcs.LLMCommitMessageAction` from the IDE process through Driver.
     - The initial fake plugin ZIP layout was corrected from `plugins/lib/...jar` to `plugins/fake-ai-assistant-plugin/lib/...jar` after IntelliJ reported `com.intellij.ml.llm` was not installed.
+- Task 2 added `ReleaseMatrixGitFixtureBuilder` for temporary local Git repositories covering modified, deleted, renamed, unversioned, ignored, already staged, multi-root, and local bare remote states.
+- Task 2 updated the fake AI Assistant action so `Vcs.LLMCommitMessageAction` writes `AI Commit All release matrix message` through IDE commit-message data keys and exposes a `progressIndicator` field compatible with the production completion observer.
+- Task 2 updates `releaseMatrixUiTest` to open the local Git fixture as an IDEA project, wait for Driver to see the project, and verify the fake AI action writes the deterministic commit message inside an IDE write-action context.
+- Task 2 local validation:
+    - `.\gradlew.bat compileIntegrationTestKotlin` passed.
+    - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` passed on Windows after fixing fake plugin JUnit discovery and EDT action invocation.
+    - `.\gradlew.bat test buildPlugin` passed.
+    - `.\gradlew.bat spotlessCheck` passed.
 
 ## Validation
 

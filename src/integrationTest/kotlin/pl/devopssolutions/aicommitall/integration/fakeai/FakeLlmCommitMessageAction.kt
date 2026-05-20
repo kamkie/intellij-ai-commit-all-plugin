@@ -17,7 +17,57 @@ package pl.devopssolutions.aicommitall.integration.fakeai
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.vcs.CommitMessageI
+import com.intellij.openapi.vcs.VcsDataKeys
+import com.intellij.vcs.commit.CommitMessageUi
 
 class FakeLlmCommitMessageAction : AnAction() {
-    override fun actionPerformed(event: AnActionEvent) = Unit
+    @Suppress("unused")
+    private var progressIndicator: ProgressIndicator? = null
+
+    override fun actionPerformed(event: AnActionEvent) {
+        writeGeneratedMessage(event)
+    }
+
+    private fun writeGeneratedMessage(event: AnActionEvent) {
+        mutateCommitMessage {
+            val dataContext = event.dataContext
+            VcsDataKeys.COMMIT_WORKFLOW_UI.getData(dataContext)
+                ?.commitMessageUi
+                ?.writeText(GENERATED_MESSAGE)
+            VcsDataKeys.COMMIT_MESSAGE_CONTROL.getData(dataContext)
+                ?.setCommitMessage(GENERATED_MESSAGE)
+            VcsDataKeys.COMMIT_MESSAGE_DOCUMENT.getData(dataContext)
+                ?.writeText(GENERATED_MESSAGE)
+        }
+    }
+
+    private fun mutateCommitMessage(action: () -> Unit) {
+        val application = ApplicationManager.getApplication()
+        val writeAction = Runnable {
+            application?.runWriteAction(action) ?: action()
+        }
+
+        if (application == null || application.isDispatchThread) {
+            writeAction.run()
+        } else {
+            application.invokeAndWait(writeAction)
+        }
+    }
+
+    private fun CommitMessageUi.writeText(message: String) {
+        text = message
+        (this as? CommitMessageI)?.setCommitMessage(message)
+    }
+
+    private fun Document.writeText(message: String) {
+        setText(message)
+    }
+
+    companion object {
+        const val GENERATED_MESSAGE: String = "AI Commit All release matrix message"
+    }
 }

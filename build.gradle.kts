@@ -286,6 +286,7 @@ val releaseMatrixUiTest by intellijPlatformTesting.testIdeUi.registering {
         testClassesDirs = integrationTestSourceSet.output.classesDirs
         classpath = integrationTestSourceSet.runtimeClasspath
         useJUnitPlatform()
+        exclude("pl/devopssolutions/aicommitall/integration/fakeai/**")
         shouldRunAfter(tasks.test)
         dependsOn(fakeAiAssistantPlugin)
         systemProperty("aicommitall.ide.products", releaseMatrixIdeProducts.get())
