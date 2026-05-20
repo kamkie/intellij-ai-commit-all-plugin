@@ -1,6 +1,6 @@
 # Evaluate AI Guidance
 
-Evaluate the live repository AI guidance for lifecycle conformance, owner clarity, stale references, duplication, and context-load cost.
+Evaluate the live repository AI guidance for lifecycle conformance, owner clarity, non-current references, duplication, and context-load cost.
 
 ## Read First
 

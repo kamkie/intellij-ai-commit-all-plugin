@@ -17,17 +17,17 @@ Required ADR topics include:
 - Compatibility policy for IntelliJ Platform API changes.
 - Repository rule or workflow changes.
 
-Routine wording cleanup, task execution notes, local implementation details, and mechanical artifact maintenance do not need ADRs unless they change one of those durable decisions.
+Routine wording cleanup, task execution notes, local implementation details, and mechanical artifact maintenance do not need ADRs unless they affect one of those durable decisions.
 
-When work changes a prior accepted decision, prefer a new ADR that supersedes the old one. Update the older ADR status to `superseded by adr-NNNN` only as part of the accepted superseding decision. Use a direct edit to an accepted ADR only for mechanical corrections or metadata maintenance that does not change the decision.
+Decision replacement uses a new ADR. Once the replacement ADR is accepted, set the replaced ADR status to `superseded by adr-NNNN`. Direct edits to accepted ADRs are for mechanical corrections or metadata maintenance only.
 
 When an ADR is required:
 
 1. Create the ADR from `ADR_TEMPLATE.md`, using the next four-digit sequence and a lowercase slug, for example `adr-0068-example-decision.md`.
 2. Set `decision-makers` to the configured Git identity in `Name <email>` form unless the user explicitly supplies another decision-maker.
-3. Stop after drafting the ADR. Do not change governed implementation, workflow guidance, backlog, validation rules, or related behavior yet.
+3. Stop after drafting the ADR. Keep governed implementation, workflow guidance, backlog, validation rules, and related behavior unchanged until acceptance.
 4. Continue only after the user has reviewed and explicitly accepted the ADR.
-5. After acceptance, update this README's ADR index and implementation tracker, then make the governed changes through the appropriate task or plan flow.
+5. After acceptance, update this README's ADR index and implementation tracker, then apply governed work through the appropriate task or plan flow.
 6. Run documentation validation after ADR, index, tracker, or governed guidance edits.
 
 Use the MADR `status` front matter field:
@@ -36,13 +36,13 @@ Use the MADR `status` front matter field:
 - `accepted`: current guidance.
 - `superseded by adr-NNNN`: replaced by a newer decision.
 - `rejected`: intentionally not chosen.
-- `deprecated`: retained for history but no longer recommended.
+- `deprecated`: retained for reference, but not current guidance.
 
 Accepted ADRs created or materially updated from ADR 0045 onward must include `accepted_at: <timestamp>` in front matter. Use ISO 8601 timestamps with timezone offsets, for example `2026-05-15T10:30:00+02:00`. Historical accepted ADRs may omit `accepted_at` unless they are materially updated.
 
 ADR `status` is decision-lifecycle metadata. Track whether the accepted decision has landed separately in the ADR Implementation Tracker.
 
-When a requested change needs an implementation plan instead of, or after, an ADR, create or update the plan first and stop. Implementation may start only after the user has reviewed and explicitly approved the plan.
+When requested work needs an implementation plan instead of, or after, an ADR, create or update the plan first and stop. Implementation may start only after the user has reviewed and explicitly approved the plan.
 
 ## ADR Index
 
@@ -125,7 +125,7 @@ This tracker is the source of truth for ADR implementation state. Use these impl
 - `pending`: implementation is required but not yet covered by an approved plan, task, or landed change.
 - `planned`: implementation is covered by an approved plan or explicit open task.
 - `in-progress`: implementation has started but has not landed completely.
-- `implemented`: the required code, documentation, validation, or workflow changes have landed.
+- `implemented`: the required code, documentation, validation, or workflow is present.
 - `blocked`: implementation is waiting on unresolved input, dependency, or external condition.
 
 Every ADR listed in the ADR index must have exactly one row here.
@@ -161,7 +161,7 @@ Implementation evidence can be a task, approved plan, commit, file, validation r
 | [adr-0024](adr-0024-resolve-plan-questions-before-implementation.md)                        | implemented    | [.agents/references/planning.md](../../.agents/references/planning.md), [.agents/plans/PLAN_TEMPLATE.md](../../.agents/plans/PLAN_TEMPLATE.md)                                                                                                                                                                                                                                                                                                         | 2026-05-17 |
 | [adr-0025](adr-0025-create-split-button-styling-drafts.md)                                  | implemented    | [PLAN-pre-release-adr-implementation](../../.agents/plans/archive/PLAN-pre-release-adr-implementation.md)                                                                                                                                                                                                                                                                                                                                              | 2026-05-17 |
 | [adr-0026](adr-0026-use-orchestrator-and-fresh-task-workers-for-plans.md)                   | implemented    | [.agents/references/execution.md](../../.agents/references/execution.md), [.agents/references/planning.md](../../.agents/references/planning.md)                                                                                                                                                                                                                                                                                                       | 2026-05-17 |
-| [adr-0027](adr-0027-use-generated-placeholder-graphic-for-split-button-styling.md)          | implemented    | Historical placeholder styling was implemented for the old control; superseded by [adr-0053](adr-0053-select-violet-ai-snake-three-section-control-style.md).                                                                                                                                                                                                                                                                                          | 2026-05-17 |
+| [adr-0027](adr-0027-use-generated-placeholder-graphic-for-split-button-styling.md)          | implemented    | Superseded by [adr-0053](adr-0053-select-violet-ai-snake-three-section-control-style.md).                                                                                                                                                                                                                                                                                                                                                              | 2026-05-17 |
 | [adr-0028](adr-0028-use-stable-task-ids.md)                                                 | implemented    | [TASKS.md](../../TASKS.md), [validate-docs.ps1](../../scripts/validate-docs.ps1)                                                                                                                                                                                                                                                                                                                                                                       | 2026-05-17 |
 | [adr-0029](adr-0029-add-changelog-support-and-release-guidance.md)                          | implemented    | [CHANGELOG.md](../../CHANGELOG.md), [SUPPORT.md](../../SUPPORT.md), [.agents/references/releases.md](../../.agents/references/releases.md)                                                                                                                                                                                                                                                                                                             | 2026-05-17 |
 | [adr-0030](adr-0030-orchestrator-maintains-changelog.md)                                    | implemented    | [.agents/references/releases.md](../../.agents/references/releases.md), [CHANGELOG.md](../../CHANGELOG.md)                                                                                                                                                                                                                                                                                                                                             | 2026-05-17 |

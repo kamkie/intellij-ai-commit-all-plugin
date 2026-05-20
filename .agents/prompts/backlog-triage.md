@@ -31,5 +31,5 @@ If the user asks to edit, keep changes mechanical and owner-specific: preserve t
 
 - Do not implement backlog tasks.
 - Do not close open questions unless the answer is explicit in accepted artifacts or the user directly supplies the answer.
-- Do not archive active work without clear evidence that it is completed, superseded, rejected, or no longer needed.
+- Do not archive active work without clear evidence that it is completed, superseded, rejected, or not needed.
 - Do not create new product direction without an ADR, proposal, plan, or explicit user instruction.

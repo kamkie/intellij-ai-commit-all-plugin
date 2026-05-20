@@ -69,7 +69,7 @@ State any constraint that would change the implementation or validation path:
 
 The agent should stop instead of implementing when the requested work needs:
 
-- A new or changed repository decision: follow the ADR flow in `docs/decisions/README.md`.
+- A new or superseding repository decision: follow the ADR flow in `docs/decisions/README.md`.
 - A multi-step implementation plan: create or update the plan first.
 - Missing user input: record or point to `docs/decisions/OPEN_QUESTIONS.md`.
 - Maintainer triage of findings or options: create a proposal instead of implementing.

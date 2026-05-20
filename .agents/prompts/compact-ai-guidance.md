@@ -21,7 +21,7 @@ Compact standing AI instruction files without changing the current policy.
 
 ## Output
 
-Look for duplicate or overlapping rules, guidance in the wrong owner file, stale references, broken anchors, verbose examples, and accumulated history such as dated decisions or "previously/now" migration prose.
+Look for duplicate or overlapping rules, guidance in the wrong owner file, non-current references, broken anchors, verbose examples, and prose that does not describe current guidance.
 Keep current rules, move guidance to the single best owner, replace duplicates with short cross-references, and do not touch archive content.
 If ownership is unclear, flag the item instead of deleting it.
 
