@@ -12,7 +12,7 @@ Use the repository Gradle wrapper in validation examples: `.\gradlew.bat <task>`
 - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` for repository skill and prompt structure checks when `.agents/skills/` or `.agents/prompts/` changed.
 - `.\gradlew.bat jacocoTestReport` for the JaCoCo XML coverage report uploaded to Codecov by CI.
 - `.\gradlew.bat test` for JUnit XML test result reports under `build/test-results/test/`, uploaded to Codecov by CI.
-- `.\gradlew.bat buildPlugin` for packaging and basic compile validation once a Gradle scaffold exists.
+- `.\gradlew.bat buildPlugin` for packaging and basic compile validation.
 - `.\gradlew.bat verifyPlugin` when configured.
 - Plugin signing and signature verification once signing configuration exists.
 - IntelliJ Plugin Verifier for the supported IDE version range once compatibility targets are chosen.
@@ -20,7 +20,7 @@ Use the repository Gradle wrapper in validation examples: `.\gradlew.bat <task>`
 
 ## Sandbox Checks
 
-Use `.\gradlew.bat runIde` for manual sandbox testing once the scaffold exists.
+Use `.\gradlew.bat runIde` for manual sandbox testing.
 
 Use current stable JetBrains IDE builds available through the user's All Products Pack. Record exact product names and build numbers in validation reports.
 

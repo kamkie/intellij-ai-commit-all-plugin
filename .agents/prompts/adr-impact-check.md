@@ -26,7 +26,7 @@ Return a short governance decision with:
 - explicit stop or continue recommendation
 - minimal validation expected after the eventual change
 
-When an ADR or plan is required, stop after recommending or drafting that artifact unless the user has already explicitly accepted the governing artifact.
+When an ADR or plan is required, return the stop recommendation from `docs/decisions/README.md` or `.agents/references/planning.md`.
 
 ## Non-Goals
 

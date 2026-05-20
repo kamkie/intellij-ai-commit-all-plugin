@@ -28,7 +28,7 @@ Use this guide when adding or updating repository documentation.
 
 - Keep docs proportional to the repo's current size.
 - Do not copy Spring, REST, OpenAPI, release, deployment, operations, benchmark, or frontend guidance from other repositories.
-- Treat the Gradle/Kotlin IntelliJ plugin scaffold as present. Do not describe pre-scaffold limitations as current state; keep implementation-status wording aligned with `README.md` and `TASKS.md`.
+- Keep implementation-status wording aligned with `README.md` and `TASKS.md`.
 - Prefer concrete commands and artifact names over generic process language.
 - Do not load every AI instruction file automatically. Start from `AGENTS.md`, use the guidance map, and load only the owner documents needed for the current documentation change unless the task is a broad guidance audit or cross-document consistency review.
 - Do not read `docs/WORKING_WITH_AI.md` as part of normal AI-agent workflow. It is for humans preparing requests, and should be updated only when rules, request shapes, or human-facing expectations for AI work change.
@@ -47,8 +47,7 @@ Use this guide when adding or updating repository documentation.
 - Use three-digit proposal finding IDs such as `F001`, `E001`, `D001`, and `S001` for active proposal findings; archived proposals may keep historical IDs unless materially updated.
 - Keep new proposal finding decisions empty until maintainer triage. When a finding decision becomes non-empty, set the finding metadata table's `Decision at` field to an ISO 8601 timestamp with timezone offset.
 - Mark blocked `TASKS.md` items with `depends on: Q-ID`, and tasks that answer questions with `resolves: Q-ID`.
-- Follow `docs/decisions/README.md` for project decisions and repository rule changes.
-- When a requested documentation or workflow change requires creating an ADR, create the ADR first and stop. Continue with governed docs only after the user reviews and explicitly accepts it.
+- Follow `docs/decisions/README.md` for ADR requirements, project decisions, and repository rule changes.
 - Update documentation before or alongside behavior changes that affect users, validation, supported IDEs, or AI agent workflow.
 - Update `CHANGELOG.md` only for notable public plugin-facing changes: plugin source or runtime behavior, public plugin documentation, compatibility, support, security or privacy behavior, or CI and release pipeline behavior that affects the plugin artifact or publication.
 - Do not update `CHANGELOG.md` for AI-agent documentation, `.agents/` skills or references, plans, proposals, ADR maintenance, scenario-coverage or test-case inventories, manual validation logs, or internal repository workflow changes unless they also change public plugin behavior, public docs, support promises, or release artifacts.
@@ -56,16 +55,3 @@ Use this guide when adding or updating repository documentation.
 - Update `SUPPORT.md` when supported IDE versions, supported VCS scope, plugin dependency requirements, Marketplace availability, or support channels change.
 - Use `docs/proposals/` for analysis documents that list findings, duplications, simplifications, or improvement options for maintainer triage.
 - Keep proposals advisory until accepted through ADRs, plans, or tasks.
-
-## When To Add ADRs
-
-See `docs/decisions/README.md` for required ADR topics, including:
-
-- Minimum supported IntelliJ Platform version.
-- Runtime-discovered AI Assistant action versus direct API dependency.
-- Split-button commit/push presentation versus separate commit-and-push action.
-- Repository rule or workflow changes.
-
-Use the existing ADR structure for project decisions and repository rule changes.
-
-When an ADR is required for a requested change, create the ADR first and stop until the user explicitly accepts it.

@@ -11,7 +11,7 @@ description: IntelliJ Platform plugin development workflow for this repository. 
 - Read `.agents/references/code-style.md` for plugin implementation constraints.
 - Read `.agents/references/testing.md` before selecting validation.
 - Read the relevant ADR, task, or approved plan before changing governed behavior.
-- If the request changes repository rules, supported IDE scope, plugin dependency policy, commit/push behavior, or validation expectations, create or update an ADR first and stop until approval.
+- Use `docs/decisions/README.md` for ADR requirements when the request may change repository rules, supported IDE scope, plugin dependency policy, commit/push behavior, or validation expectations.
 
 ## Implementation
 

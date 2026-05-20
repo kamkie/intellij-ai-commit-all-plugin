@@ -38,7 +38,7 @@ For very small requests, a task ID, filename, prompt name, or concrete bug repor
 - Proposal: ask for a proposal when you want findings, duplication, simplification, or improvement options collected for later triage.
 - Release: ask only after implementation is integrated and validation evidence is ready.
 
-Design output can stay in chat when no durable record is needed. If design work chooses or changes durable project direction, repository rules, compatibility policy, user behavior, validation expectations, or future maintenance policy, expect an ADR and a stop for explicit acceptance.
+Design output can stay in chat when no durable record is needed. If design work chooses or changes durable project direction, repository rules, compatibility policy, user behavior, validation expectations, or future maintenance policy, expect the ADR flow in `docs/decisions/README.md`.
 
 ## Useful References To Name
 
@@ -69,7 +69,7 @@ State any constraint that would change the implementation or validation path:
 
 The agent should stop instead of implementing when the requested work needs:
 
-- A new or changed repository decision: create an ADR first.
+- A new or changed repository decision: follow the ADR flow in `docs/decisions/README.md`.
 - A multi-step implementation plan: create or update the plan first.
 - Missing user input: record or point to `docs/decisions/OPEN_QUESTIONS.md`.
 - Maintainer triage of findings or options: create a proposal instead of implementing.

@@ -4,17 +4,9 @@ Use this directory for project decisions, repository rule changes, and open ques
 
 `adr-NNNN-<slug>.md` Markdown files are ADRs. `OPEN_QUESTIONS.md` is the active register for unresolved user input and is not an ADR.
 
-Every project decision must be recorded as an ADR before or alongside the implementation it affects.
+## Working With ADRs
 
-Every repository rule change must be recorded as a new ADR or as an update that supersedes an existing ADR before or alongside the rule edit.
-
-When a requested change requires creating an ADR, create the ADR first and stop. Continue with the governed implementation, workflow guidance, backlog, validation rules, or related behavior only after the user has reviewed and explicitly accepted the ADR.
-
-When a requested change needs an implementation plan, create or update the plan first and stop. Implementation may start only after the user has reviewed and explicitly approved the plan.
-
-Routine task execution notes do not need ADRs unless they choose or change project direction, repository rules, compatibility, user behavior, validation expectations, or future maintenance policy.
-
-## When To Add A Decision
+ADRs are required when work chooses or changes durable project direction, repository rules, compatibility policy, user-facing behavior, validation expectations, or future maintenance policy.
 
 Required ADR topics include:
 
@@ -25,9 +17,20 @@ Required ADR topics include:
 - Compatibility policy for IntelliJ Platform API changes.
 - Repository rule or workflow changes.
 
-## Status Values
+Routine wording cleanup, task execution notes, local implementation details, and mechanical artifact maintenance do not need ADRs unless they change one of those durable decisions.
 
-Use the MADR `status` front matter field with values such as:
+When work changes a prior accepted decision, prefer a new ADR that supersedes the old one. Update the older ADR status to `superseded by adr-NNNN` only as part of the accepted superseding decision. Use a direct edit to an accepted ADR only for mechanical corrections or metadata maintenance that does not change the decision.
+
+When an ADR is required:
+
+1. Create the ADR from `ADR_TEMPLATE.md`, using the next four-digit sequence and a lowercase slug, for example `adr-0068-example-decision.md`.
+2. Set `decision-makers` to the configured Git identity in `Name <email>` form unless the user explicitly supplies another decision-maker.
+3. Stop after drafting the ADR. Do not change governed implementation, workflow guidance, backlog, validation rules, or related behavior yet.
+4. Continue only after the user has reviewed and explicitly accepted the ADR.
+5. After acceptance, update this README's ADR index and implementation tracker, then make the governed changes through the appropriate task or plan flow.
+6. Run documentation validation after ADR, index, tracker, or governed guidance edits.
+
+Use the MADR `status` front matter field:
 
 - `proposed`: under discussion.
 - `accepted`: current guidance.
@@ -39,19 +42,7 @@ Accepted ADRs created or materially updated from ADR 0045 onward must include `a
 
 ADR `status` is decision-lifecycle metadata. Track whether the accepted decision has landed separately in the ADR Implementation Tracker.
 
-## Naming
-
-Use a four-digit sequence and lowercase slug in this filename shape:
-
-```text
-adr-0000-initial-repository-creation-and-scaffolding.md
-adr-0001-import-lightweight-ai-guidance-model.md
-adr-0002-record-rule-changes-and-project-decisions.md
-```
-
-Start from `ADR_TEMPLATE.md`, which follows MADR 4.0.0.
-
-Set `decision-makers` to the configured Git identity in `Name <email>` form.
+When a requested change needs an implementation plan instead of, or after, an ADR, create or update the plan first and stop. Implementation may start only after the user has reviewed and explicitly approved the plan.
 
 ## ADR Index
 

@@ -66,8 +66,7 @@ A useful plan should include:
 - Do not duplicate the full backlog from `TASKS.md`.
 - Move unresolved user decisions to `docs/decisions/OPEN_QUESTIONS.md`.
 - Before implementation starts from an `Approved` plan, every plan question and required project decision must be answered, explicitly decided, or recorded as a documented assumption that the current user request allows.
-- Record project decisions and repository rule changes in `docs/decisions/` before or alongside the plan or implementation they affect.
-- Follow `docs/decisions/README.md` for project decisions and repository rule changes.
+- Follow `docs/decisions/README.md` for ADR requirements before recording project decisions or repository rule changes in a plan.
 - Update or delete stale plans when implementation makes them obsolete.
 - For multi-task plans, name tasks clearly enough to use in `Project-Plan-Task:` commit metadata.
 - Reference the stable `Plan-ID` in implementation handoffs, review notes, and commit metadata when work comes from a plan.
