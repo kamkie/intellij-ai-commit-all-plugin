@@ -4,6 +4,16 @@ Completed tasks move here from [TASKS.md](TASKS.md) only after the work is finis
 
 Preserve stable `T-AREA-NNN` task IDs, wording, grouping, and evidence links when moving entries unless a small clarity fix is needed.
 
+Archived as of 2026-05-20 backlog triage.
+
+### Documentation
+
+- [x] T-DOC-021: add a Settings reference table in `README.md` covering timeout, completion-check interval, clear-message default, and shortcut takeover. (`README.md`)
+
+### Testing
+
+- [x] T-TEST-008: add branch-coverage tests for `AiGenerationCompletionObserver` for empty message, unchanged message, focus-loss, and user-edit-during-generation paths. (`src/test/kotlin/.../ai/AiGenerationCompletionObserverTest.kt`)
+
 Archived as of 2026-05-20 README refresh.
 
 ### Documentation

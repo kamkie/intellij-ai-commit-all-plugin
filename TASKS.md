@@ -18,9 +18,8 @@ Notation:
 - [ ] T-DOC-018: expand `config/intellij-platform/description.html` Marketplace description with feature summary, requirements, AI Assistant dependency, link to source, and license note. (`config/intellij-platform/description.html`)
 - [ ] T-DOC-019: keep `config/intellij-platform/change-notes.html` aligned with the `CHANGELOG.md` `Unreleased` and latest tagged release sections during release preparation. (`config/intellij-platform/change-notes.html`, `CHANGELOG.md`)
 - [ ] T-DOC-020: add screenshots or a short animation of the `AI | Commit | Push` control in light and dark themes, and link them from `README.md` and the Marketplace description. (`README.md`, `config/intellij-platform/description.html`, `docs/concepts/graphics/`)
-- [ ] T-DOC-021: add a Settings reference table in `README.md` covering timeout, completion-check interval, clear-message default, and shortcut takeover. (`README.md`)
 - [ ] T-DOC-022: add a Troubleshooting and FAQ section in `README.md` for missing or disabled AI Assistant, AI generation timeout, push fallback to the IDE dialog, and unresolved conflicts. (`README.md`)
-- [ ] T-DOC-023: document default keyboard shortcuts for Windows/Linux and macOS keymaps in `README.md` and confirm they match `plugin.xml`. (`README.md`, `src/main/resources/META-INF/plugin.xml`)
+- [ ] T-DOC-023: add a macOS keymap row to the `README.md` shortcut table and confirm both keymaps match `plugin.xml`. (`README.md`, `src/main/resources/META-INF/plugin.xml`)
 
 ### Testing
 
@@ -29,8 +28,10 @@ Notation:
 - [ ] T-TEST-005: add tests for `AiCommitAllNotificationService` notification routing and group registration so the `notifications` package leaves 0% coverage. (`src/test/kotlin/.../notifications/`)
 - [ ] T-TEST-006: increase coverage in the `vcs` package, targeting `ReflectiveCommitWorkflowSynchronizer`, `SafeImmediatePushService`, `GitOutgoingCommitsService`, and `GitStageConfirmation` happy and fallback branches. (`src/test/kotlin/.../vcs/`)
 - [ ] T-TEST-007: increase coverage in the `workflow` package, targeting `AiCommitAllWorkflowCoordinator`, `CommitWorkflowExecutionService`, and `CommitMessageUserEditSignal` running, timeout, and user-edit branches. (`src/test/kotlin/.../workflow/`)
-- [ ] T-TEST-008: add branch-coverage tests for `AiGenerationCompletionObserver` for empty message, unchanged message, focus-loss, and user-edit-during-generation paths. (`src/test/kotlin/.../ai/`)
-- [ ] T-TEST-009: raise the Gradle JaCoCo coverage verification thresholds in `build.gradle.kts` once T-TEST-004..T-TEST-008 land, and document the new floor in `README.md`. (`build.gradle.kts`, `README.md`)
+- [ ] T-TEST-009: raise the Gradle JaCoCo coverage verification thresholds in `build.gradle.kts` once T-TEST-004..T-TEST-007 land, and document the new floor in `README.md`. (`build.gradle.kts`, `README.md`)
+
+### Validation
+
 - [ ] T-VAL-024: execute and record the current manual sandbox release matrix before Marketplace publication, covering final control rendering, staging-area modes, shortcut takeover, AI Assistant unavailable states, and full commit/push UI behavior. (`docs/validation/manual-sandbox.md`, `docs/scenario-coverage.md`)
 
 ### Detekt Plugin

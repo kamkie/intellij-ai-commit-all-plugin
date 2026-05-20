@@ -124,6 +124,7 @@ Internal:
 - [SUPPORT.md](SUPPORT.md) — support scope and issue reporting.
 - [SECURITY.md](SECURITY.md) — vulnerability reporting and release-secret handling.
 - [docs/specification.md](docs/specification.md) — full behavior specification.
+- [docs/requested-features.md](docs/requested-features.md) — curated inventory of user-requested features, mapped to the ADRs that captured them.
 - [AGENTS.md](AGENTS.md), [docs/WORKING_WITH_AI.md](docs/WORKING_WITH_AI.md) — guidance for AI-agent work in this repository.
 
 ## Project
