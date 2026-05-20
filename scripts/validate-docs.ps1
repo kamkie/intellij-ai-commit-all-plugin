@@ -79,11 +79,17 @@ function Invoke-AgentArtifactValidation
 Invoke-AgentArtifactValidation
 
 $markdownFiles = Get-ChildItem -LiteralPath $repoRoot -Recurse -File -Filter '*.md' |
-    Where-Object { $_.FullName -notmatch '\\.git\\' }
+    Where-Object {
+        $_.FullName -notmatch '\\.git\\' -and
+        $_.FullName -notmatch '\\.gradle\\' -and
+        $_.FullName -notmatch '\\.intellijPlatform\\' -and
+        $_.FullName -notmatch '\\build\\' -and
+        $_.FullName -notmatch '\\out\\'
+    }
 
 foreach ($file in $markdownFiles) {
     $relative = Get-RelativePath $file.FullName
-    $lines = Get-Content -LiteralPath $file.FullName
+    $lines = @(Get-Content -LiteralPath $file.FullName)
 
     for ($i = 0; $i -lt $lines.Count; $i++) {
         if ($lines[$i] -match '\s+$') {

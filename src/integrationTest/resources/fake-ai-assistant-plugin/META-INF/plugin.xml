@@ -1,0 +1,16 @@
+<idea-plugin>
+    <id>com.intellij.ml.llm</id>
+    <name>AI Assistant Test Substitute</name>
+    <version>0.0.1-test</version>
+    <vendor>DevOps Solutions Kamil Kiewisz</vendor>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <actions>
+        <action
+            id="Vcs.LLMCommitMessageAction"
+            class="pl.devopssolutions.aicommitall.integration.fakeai.FakeLlmCommitMessageAction"
+            text="Generate Commit Message With AI"
+            description="Test substitute for JetBrains AI Assistant commit message generation." />
+    </actions>
+</idea-plugin>

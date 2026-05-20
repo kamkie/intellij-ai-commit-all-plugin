@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-release-matrix-ui-automation
 
-Status: Draft
+Status: In Progress
 
 Workers: 1
 
@@ -10,13 +10,18 @@ Filename: `.agents/plans/PLAN-release-matrix-ui-automation.md`
 
 ## Readiness
 
-- Plan readiness: Ready for explicit maintainer approval. Implementation must not start while `Status` is `Draft`.
+- Plan readiness: In progress after approval.
+- Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Approved at: 2026-05-20T23:07:23+02:00
 - Open questions: None. The maintainer answered the task-local questions in this draft.
-- Implementation progress: Not started.
+- Implementation progress: Task 1 completed; Task 2 pending.
 
 ## Status History
 
 - 2026-05-20T22:47:01+02:00: none -> Draft by Codex <codex@openai.com>; plan created to automate the remaining `T-VAL-024` release matrix checks.
+- 2026-05-20T23:07:23+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded from request to approve `.agents/plans/PLAN-release-matrix-ui-automation.md`.
+- 2026-05-20T23:08:38+02:00: Approved -> In Progress by Codex <codex@openai.com>; Task 1 implementation started after approval.
+- 2026-05-20T23:23:51+02:00: Task 1 completed by Codex <codex@openai.com>; `releaseMatrixUiTest` launches IDEA 2026.1.2, installs the built plugin plus a test-only `com.intellij.ml.llm` substitute, and verifies `Vcs.LLMCommitMessageAction` is registered through Driver.
 
 ## Goal
 
@@ -60,7 +65,7 @@ The intended result is a deterministic release validation command that covers fi
     - Add `src/integrationTest/kotlin` and `src/integrationTest/resources`.
     - Add Gradle dependencies for Starter/Driver integration tests, JUnit 5, and required runtime helpers under an `integrationTestImplementation` configuration.
     - Register a `releaseMatrixUiTest` task using `intellijPlatformTesting.testIdeUi`.
-  - Pass the built plugin path and target IDEA version through Gradle properties.
+    - Pass the built plugin path and target IDEA version through Gradle properties.
 
 - Task 2: Add deterministic IDE fixtures.
     - Add an integration-test fixture builder for temporary Git repositories with modified, deleted, renamed, unversioned, ignored, already staged, multi-root, and local bare remote states.
@@ -111,11 +116,24 @@ flowchart TD
     O1 --> W1 --> W2 --> W3 --> W4 --> W5 --> W6
 ```
 
+## Implementation Evidence
+
+- Task 1 added the `integrationTest` source set, the `releaseMatrixUiTest` `testIdeUi` task, and a packaged test-only AI Assistant substitute plugin.
+- Task 1 local validation:
+    - `.\gradlew.bat spotlessCheck` passed after mechanical ktlint formatting.
+    - `.\gradlew.bat test buildPlugin` passed.
+    - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` passed on Windows after IDEA 2026.1.2 build `261.24374.151` was downloaded and cached by Starter.
+    - `.\gradlew.bat verifyPlugin "-PpluginVerifierIdeVersions=IU-2026.1.2,PY-2026.1.2,WS-2026.1.2"` passed with compatible reports for `IU-261.24374.151`, `PY-261.24374.152`, and `WS-261.24374.125`.
+    - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1` passed after excluding generated IDE test output from Markdown validation.
+    - `git diff --check` passed.
+    - The test installs `build/distributions/ai-commit-all-*.zip` plus `build/integrationTest/plugins/fake-ai-assistant-plugin-0.0.1-test.zip` and verifies the fake plugin registers `Vcs.LLMCommitMessageAction` from the IDE process through Driver.
+    - The initial fake plugin ZIP layout was corrected from `plugins/lib/...jar` to `plugins/fake-ai-assistant-plugin/lib/...jar` after IntelliJ reported `com.intellij.ml.llm` was not installed.
+
 ## Validation
 
 - `.\gradlew.bat test`
 - `.\gradlew.bat buildPlugin`
-- `.\gradlew.bat releaseMatrixUiTest -PideProducts=IU -PideVersion=2026.1.2`
+- `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"`
 - `.\gradlew.bat verifyPlugin -PpluginVerifierIdeVersions="IU-2026.1.2,PY-2026.1.2,WS-2026.1.2"`
 - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1`
 - `git diff --check`

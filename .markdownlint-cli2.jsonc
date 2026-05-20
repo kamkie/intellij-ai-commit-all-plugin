@@ -8,6 +8,7 @@
     ".idea/**",
     ".intellijPlatform/**",
     "build/**",
+    "out/**",
     "run/**",
     "sandbox/**"
   ],

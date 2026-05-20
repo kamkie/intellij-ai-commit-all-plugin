@@ -1,5 +1,7 @@
 import com.palantir.gradle.gitversion.VersionDetails
 import dev.detekt.gradle.Detekt
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.w3c.dom.Element
 import java.util.*
@@ -43,6 +45,23 @@ val pluginChangeNotes = providers.fileContents(
 val pluginDescription = providers.fileContents(
     layout.projectDirectory.file("config/intellij-platform/description.html"),
 ).asText
+val releaseMatrixIdeProducts = providers.gradleProperty("ideProducts").orElse("IU")
+val releaseMatrixIdeVersion = providers.gradleProperty("ideVersion")
+    .orElse(providers.gradleProperty("platformVersion"))
+
+val integrationTestSourceSet = sourceSets.create("integrationTest") {
+    compileClasspath += sourceSets.main.get().output
+    runtimeClasspath += sourceSets.main.get().output
+}
+val integrationTestImplementation by configurations.getting {
+    extendsFrom(configurations.testImplementation.get())
+}
+val integrationTestCompileOnly by configurations.getting {
+    extendsFrom(configurations.testCompileOnly.get())
+}
+val integrationTestRuntimeOnly by configurations.getting {
+    extendsFrom(configurations.testRuntimeOnly.get())
+}
 
 dependencies {
     intellijPlatform {
@@ -52,10 +71,15 @@ dependencies {
             providers.gradleProperty("aiAssistantPluginId").get(),
             providers.gradleProperty("aiAssistantPluginVersion").get(),
         )
+        testFramework(TestFrameworkType.Starter, configurationName = integrationTestImplementation.name)
         zipSigner()
     }
 
     testImplementation(kotlin("test"))
+    integrationTestImplementation(kotlin("test"))
+    integrationTestImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
+    integrationTestImplementation("org.kodein.di:kodein-di-jvm:7.20.2")
+    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.1")
 }
 
 kotlin {
@@ -209,6 +233,68 @@ val verifyJacocoCoverageReport by tasks.registering(VerifyJacocoCoverageReportTa
     reportFile.set(jacocoXmlReport)
     minimumLineCoverage.set(0.68)
     minimumBranchCoverage.set(0.62)
+}
+
+val fakeAiAssistantPluginJar by tasks.registering(Jar::class) {
+    group = "verification"
+    description = "Builds the test-only AI Assistant substitute plugin JAR."
+    archiveBaseName.set("fake-ai-assistant-plugin")
+    archiveVersion.set("0.0.1-test")
+    from(integrationTestSourceSet.output.classesDirs) {
+        include("pl/devopssolutions/aicommitall/integration/fakeai/**")
+    }
+    from(layout.projectDirectory.dir("src/integrationTest/resources/fake-ai-assistant-plugin")) {
+        include("META-INF/plugin.xml")
+    }
+}
+
+val fakeAiAssistantPlugin by tasks.registering(Zip::class) {
+    group = "verification"
+    description = "Packages the test-only AI Assistant substitute plugin."
+    archiveBaseName.set("fake-ai-assistant-plugin")
+    archiveVersion.set("0.0.1-test")
+    destinationDirectory.set(layout.buildDirectory.dir("integrationTest/plugins"))
+    from(fakeAiAssistantPluginJar) {
+        into("fake-ai-assistant-plugin/lib")
+    }
+}
+val fakeAiAssistantPluginArchiveFile = fakeAiAssistantPlugin.flatMap { plugin -> plugin.archiveFile }
+
+fun ideaReleaseMatrixProduct(products: String, version: String): IntelliJPlatformType {
+    val productCodes = products.split(',')
+        .map { product -> product.trim() }
+        .filter { product -> product.isNotEmpty() }
+    if (productCodes != listOf("IU")) {
+        throw GradleException(
+            "releaseMatrixUiTest currently supports IDEA only. Use -PideProducts=IU, not '$products'.",
+        )
+    }
+    return IntelliJPlatformType.fromCode("IU", version)
+}
+
+val releaseMatrixUiTest by intellijPlatformTesting.testIdeUi.registering {
+    type.set(
+        releaseMatrixIdeProducts.zip(releaseMatrixIdeVersion) { products, version ->
+            ideaReleaseMatrixProduct(products, version)
+        },
+    )
+    version.set(releaseMatrixIdeVersion)
+
+    task {
+        group = "verification"
+        description = "Runs IDEA release-matrix UI automation with Starter and Driver."
+        testClassesDirs = integrationTestSourceSet.output.classesDirs
+        classpath = integrationTestSourceSet.runtimeClasspath
+        useJUnitPlatform()
+        shouldRunAfter(tasks.test)
+        dependsOn(fakeAiAssistantPlugin)
+        systemProperty("aicommitall.ide.products", releaseMatrixIdeProducts.get())
+        systemProperty("aicommitall.ide.version", releaseMatrixIdeVersion.get())
+        systemProperty(
+            "aicommitall.fake.ai.plugin.path",
+            fakeAiAssistantPluginArchiveFile.get().asFile.absolutePath,
+        )
+    }
 }
 
 spotless {
