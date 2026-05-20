@@ -14,7 +14,6 @@ Notation:
 
 ### Documentation
 
-- [ ] T-DOC-016: update README
 - [ ] T-DOC-017: create user-facing documentation.
 
 ### Testing

@@ -19,9 +19,11 @@ The Commit tool window gets a compact `<AI icon> AI | Commit | Push` control:
 
 The executable Gradle/Kotlin IntelliJ plugin implementation is present for the first workflow slice. It is still an unreleased prerelease project and is not yet published to JetBrains Marketplace.
 
+The latest tagged implementation prerelease candidate documented in the changelog is `v0.1.0-alpha.9`; changes listed under `Unreleased` have not been Marketplace-published.
+
 The current implementation:
 
-- Targets the IntelliJ Platform 2026.1 release line.
+- Targets the IntelliJ Platform 2026.1 release line and currently builds against IntelliJ Platform `2026.1.1`.
 - Supports Git projects, including multiple Git roots.
 - Includes modified, added, deleted, moved or renamed, unversioned, and resolved-conflict paths exposed by IntelliJ VCS APIs.
 - Supports both changelist-backed commit workflows and the Git staging-area commit workflow.
@@ -70,6 +72,12 @@ Generate the JaCoCo coverage report uploaded by CI to Codecov:
 .\gradlew.bat jacocoTestReport
 ```
 
+Verify that the JaCoCo XML report contains executed production coverage:
+
+```powershell
+.\gradlew.bat verifyJacocoCoverageReport
+```
+
 Run source formatting checks:
 
 ```powershell
@@ -94,13 +102,31 @@ Run documentation validation:
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1
 ```
 
+Verify plugin descriptor structure:
+
+```powershell
+.\gradlew.bat verifyPluginStructure
+```
+
+Run IntelliJ Plugin Verifier locally with the default verifier target from `gradle.properties`:
+
+```powershell
+.\gradlew.bat verifyPlugin
+```
+
+Run IntelliJ Plugin Verifier against the CI matrix:
+
+```powershell
+.\gradlew.bat verifyPlugin -PpluginVerifierIdeVersions="IU-2026.1.1,PY-2026.1.1,WS-2026.1.1"
+```
+
 Run the sandbox IDE:
 
 ```powershell
 .\gradlew.bat runIde
 ```
 
-Pull-request CI validates the Gradle wrapper, source formatting, Detekt Kotlin static analysis, documentation, tests, JaCoCo coverage report generation, plugin structure, and plugin packaging without Marketplace or signing secrets. It publishes Detekt SARIF to GitHub code scanning, uploads Detekt reports as a GitHub Actions artifact, publishes Gradle JUnit test results to the GitHub Actions run summary, uploads the Gradle XML and HTML test reports as a GitHub Actions artifact, uploads the packaged plugin ZIP as an artifact, and sends the JaCoCo XML test coverage report and Gradle JUnit XML test results to Codecov using GitHub Actions OIDC. The separate Plugin Verifier workflow checks the configured IDE matrix, the CodeQL workflow scans Java/Kotlin code on pull requests, pushes to `main`, and a weekly schedule, and the Security workflow runs a Trivy filesystem scan with SARIF code-scanning upload and artifact retention.
+Pull-request CI validates the Gradle wrapper, source formatting, Detekt Kotlin static analysis, documentation, tests, JaCoCo coverage report generation, nonzero JaCoCo XML coverage, plugin structure, and plugin packaging without Marketplace or signing secrets. It publishes Detekt SARIF to GitHub code scanning, uploads Detekt reports as a GitHub Actions artifact, publishes Gradle JUnit test results to the GitHub Actions run summary, uploads the Gradle XML and HTML test reports as a GitHub Actions artifact, uploads the packaged plugin ZIP as an artifact, and sends the JaCoCo XML test coverage report and Gradle JUnit XML test results to Codecov using GitHub Actions OIDC. The separate Plugin Verifier workflow checks IntelliJ IDEA, PyCharm, and WebStorm `2026.1.1`, the CodeQL workflow scans Java/Kotlin code on pull requests, pushes to `main`, and a weekly schedule, and the Security workflow runs a Trivy filesystem scan with SARIF code-scanning upload and artifact retention.
 
 ## Usage
 
@@ -134,7 +160,7 @@ Both timing values must be positive. Timeout and user-edit paths stop without co
 - Git is the only supported VCS for the first implementation.
 - The plugin relies on compatible IntelliJ Commit tool window APIs and fail-closed reflection boundaries for inclusion state.
 - AI Assistant action discovery uses known action IDs and action presentation fallback; AI Assistant UI, sign-in, and runtime availability messages remain owned by JetBrains AI Assistant where available.
-- Manual sandbox validation for final three-section control rendering, staging-area modes, shortcut takeover, AI Assistant unavailable states, and full commit/push UI behavior is not yet complete. See [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
+- Manual sandbox validation for final three-section control rendering, staging-area modes, shortcut takeover, AI Assistant unavailable states, and full commit/push UI behavior is not yet complete. The current manual validation matrix records IntelliJ IDEA, PyCharm, and WebStorm `2026.1.1` targets in [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
 - Marketplace signing and publishing automation is configured but has not been executed for a public release. The first Marketplace upload may still require manual JetBrains setup.
 
 ## Source Repository

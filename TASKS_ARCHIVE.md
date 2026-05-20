@@ -4,6 +4,12 @@ Completed tasks move here from [TASKS.md](TASKS.md) only after the work is finis
 
 Preserve stable `T-AREA-NNN` task IDs, wording, grouping, and evidence links when moving entries unless a small clarity fix is needed.
 
+Archived as of 2026-05-20 README refresh.
+
+### Documentation
+
+- [x] T-DOC-016: update README. (`README.md`, `CHANGELOG.md`; validation: `scripts\validate-docs.ps1`)
+
 Archived as of 2026-05-18 backlog cleanup.
 
 ### Three-Section AI Commit Push Control

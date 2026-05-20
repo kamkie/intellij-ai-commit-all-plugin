@@ -19,6 +19,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 ### Changed
 
 - Enabled Gradle configuration cache and made coverage verification cache-compatible for faster local and CI Gradle configuration.
+- Updated README validation, prerelease status, CI, and manual-sandbox scope notes to match the current build and workflow configuration.
 
 ### Fixed
 
