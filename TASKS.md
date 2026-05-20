@@ -14,12 +14,31 @@ Notation:
 
 ### Documentation
 
-- [ ] T-DOC-017: create user-facing documentation.
+- [ ] T-DOC-017: create user-facing documentation (umbrella for T-DOC-018..T-DOC-023).
+- [ ] T-DOC-018: expand `config/intellij-platform/description.html` Marketplace description with feature summary, requirements, AI Assistant dependency, link to source, and license note. (`config/intellij-platform/description.html`)
+- [ ] T-DOC-019: keep `config/intellij-platform/change-notes.html` aligned with the `CHANGELOG.md` `Unreleased` and latest tagged release sections during release preparation. (`config/intellij-platform/change-notes.html`, `CHANGELOG.md`)
+- [ ] T-DOC-020: add screenshots or a short animation of the `AI | Commit | Push` control in light and dark themes, and link them from `README.md` and the Marketplace description. (`README.md`, `config/intellij-platform/description.html`, `docs/concepts/graphics/`)
+- [ ] T-DOC-021: add a Settings reference table in `README.md` covering timeout, completion-check interval, clear-message default, and shortcut takeover. (`README.md`)
+- [ ] T-DOC-022: add a Troubleshooting and FAQ section in `README.md` for missing or disabled AI Assistant, AI generation timeout, push fallback to the IDE dialog, and unresolved conflicts. (`README.md`)
+- [ ] T-DOC-023: document default keyboard shortcuts for Windows/Linux and macOS keymaps in `README.md` and confirm they match `plugin.xml`. (`README.md`, `src/main/resources/META-INF/plugin.xml`)
 
 ### Testing
 
-- [ ] T-TEST-003: increase test coverage.
+- [ ] T-TEST-003: increase test coverage (umbrella for T-TEST-004..T-TEST-009). Current JaCoCo line coverage is ~60% overall; weakest packages are `notifications` (0%), `aicommitall` root (0%), `settings` (~31%), and `vcs` (~37%).
+- [ ] T-TEST-004: add unit tests for `AiCommitAllConfigurable` covering `createComponent`, `isModified`, `apply`, and `reset` for every setting field, including invalid input paths. (`src/test/kotlin/.../settings/`)
+- [ ] T-TEST-005: add tests for `AiCommitAllNotificationService` notification routing and group registration so the `notifications` package leaves 0% coverage. (`src/test/kotlin/.../notifications/`)
+- [ ] T-TEST-006: increase coverage in the `vcs` package, targeting `ReflectiveCommitWorkflowSynchronizer`, `SafeImmediatePushService`, `GitOutgoingCommitsService`, and `GitStageConfirmation` happy and fallback branches. (`src/test/kotlin/.../vcs/`)
+- [ ] T-TEST-007: increase coverage in the `workflow` package, targeting `AiCommitAllWorkflowCoordinator`, `CommitWorkflowExecutionService`, and `CommitMessageUserEditSignal` running, timeout, and user-edit branches. (`src/test/kotlin/.../workflow/`)
+- [ ] T-TEST-008: add branch-coverage tests for `AiGenerationCompletionObserver` for empty message, unchanged message, focus-loss, and user-edit-during-generation paths. (`src/test/kotlin/.../ai/`)
+- [ ] T-TEST-009: raise the Gradle JaCoCo coverage verification thresholds in `build.gradle.kts` once T-TEST-004..T-TEST-008 land, and document the new floor in `README.md`. (`build.gradle.kts`, `README.md`)
 
 ### Detekt Plugin
 
-- [ ] T-DETEKT-001: clean detekt findings.
+- [ ] T-DETEKT-001: clean detekt findings (umbrella for T-DETEKT-002..T-DETEKT-008). The baseline at `config/detekt/baseline.xml` lists 117 suppressed findings to retire.
+- [ ] T-DETEKT-002: extract named constants for non-color `MagicNumber` findings in `AiCommitAllThreeSectionControl.kt` (geometry, scale factors, animation counts). (`src/main/kotlin/.../actions/AiCommitAllThreeSectionControl.kt`)
+- [ ] T-DETEKT-003: replace the `ControlColors` hex `MagicNumber` findings with a named colour container or `JBColor.namedColor` lookups, then remove the matching baseline entries. (`src/main/kotlin/.../actions/AiCommitAllThreeSectionControl.kt`, `config/detekt/baseline.xml`)
+- [ ] T-DETEKT-004: resolve `MaxLineLength` findings by refactoring offending declarations or raising the configured threshold with rationale in `config/detekt/`. (`src/main/kotlin/.../`, `src/test/kotlin/.../`, `config/detekt/`)
+- [ ] T-DETEKT-005: reduce `ReturnCount` violations in workflow, VCS, and AI services by extracting helpers or using sealed-result early returns. (`src/main/kotlin/.../workflow/`, `src/main/kotlin/.../vcs/`, `src/main/kotlin/.../ai/`)
+- [ ] T-DETEKT-006: replace `TooGenericExceptionCaught` (catch `Throwable`) sites with the narrowest safe exception types, keeping platform fail-closed behavior. (`src/main/kotlin/.../workflow/`, `src/main/kotlin/.../vcs/`)
+- [ ] T-DETEKT-007: address the remaining baseline findings: `ComplexCondition` in `GitStageSelectionItems`, `TooManyFunctions` in `AiCommitAllThreeSectionControl`, `UnusedParameter` in `PushOnlyWorkflowExecutionService`, and the `GitStageConfirmation` `250` constant. (`src/main/kotlin/.../vcs/`, `src/main/kotlin/.../actions/`, `src/main/kotlin/.../workflow/`)
+- [ ] T-DETEKT-008: empty `config/detekt/baseline.xml` once T-DETEKT-002..T-DETEKT-007 are landed and add a CI check that fails when the baseline grows. (`config/detekt/baseline.xml`, `build.gradle.kts`, `.github/workflows/ci.yml`)
