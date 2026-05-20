@@ -378,6 +378,40 @@ internal class GitHubActionsWorkflowTest {
         )
     }
 
+    @Test
+    fun `release workflow validates full release gate before publishing`() {
+        val content = Files.readString(Path.of(".github", "workflows", "release.yml"))
+
+        assertTrue(
+            content.contains("github.ref != 'refs/heads/main'"),
+            "Release workflow must reject manual publication from non-main refs.",
+        )
+        assertTrue(
+            content.contains("actions/setup-node@v6"),
+            "Release workflow must install Node.js before documentation validation.",
+        )
+        assertTrue(
+            content.contains("scripts/validate-docs.ps1"),
+            "Release workflow must validate documentation before publication.",
+        )
+        assertTrue(
+            content.contains("spotlessCheck detekt test jacocoTestReport"),
+            "Release workflow must include formatting, static analysis, tests, and coverage generation.",
+        )
+        assertTrue(
+            content.contains("verifyJacocoCoverageReport verifyPluginStructure buildPlugin verifyPlugin"),
+            "Release workflow must verify coverage, plugin structure, packaging, and Plugin Verifier.",
+        )
+        assertTrue(
+            content.contains("-PpluginVerifierIdeVersions=IU-2026.1.1,PY-2026.1.1,WS-2026.1.1"),
+            "Release workflow must verify the same supported IDE matrix used by compatibility CI.",
+        )
+        assertTrue(
+            content.indexOf("Validate release candidate") < content.indexOf("Sign and publish to JetBrains Marketplace"),
+            "Release workflow must finish validation before signing and publishing.",
+        )
+    }
+
     private fun gradleWorkflows(): List<Path> = Files.list(Path.of(".github", "workflows")).use { workflows ->
         workflows
             .filter { workflow -> workflow.name.endsWith(".yml") || workflow.name.endsWith(".yaml") }

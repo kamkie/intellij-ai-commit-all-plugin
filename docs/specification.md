@@ -34,7 +34,7 @@ This document is the requirement-validation reference for the `AI Commit All` In
 - REQ-ID-002: The plugin MUST declare the dependencies `com.intellij.modules.platform`, `com.intellij.modules.vcs`, `Git4Idea`, and `com.intellij.ml.llm`. Source: ADR 0013. Validates: SCN-STAGE-MAN-011.
 - REQ-ID-003: When JetBrains AI Assistant (`com.intellij.ml.llm`) is missing or disabled, the IDE MUST refuse to load the plugin through the required-dependency mechanism rather than the plugin falling back to a non-AI commit message. Source: ADR 0013. Validates: T-VAL-015 (manual).
 - REQ-ID-004: The plugin MUST target the IntelliJ Platform 2026.1 line. Source: ADR 0008. Validates: T-VAL-018 (manual).
-- REQ-ID-005: The plugin MUST be licensed under Apache License 2.0 and MUST identify its vendor as `DevOps Solutions Kamil Kiewisz`. Source: ADR 0018, ADR 0022.
+- REQ-ID-005: The plugin MUST be licensed under Apache License 2.0 and MUST identify its vendor as `DevOps Solutions Kamil Kiewisz` with email `kontakt@devopssolutions.pl` and URL `https://devopssolutions.pl`. Source: ADR 0018, ADR 0022.
 
 ## 2. Activation And Visibility
 
@@ -59,9 +59,9 @@ The control surface is `<AI icon> AI | Commit | Push`.
 
 ### 3.2 Enabled / Disabled / Running States
 
-- REQ-UI-007: While no workflow is running, sections MUST be enabled when committable Git changes exist (`AI` and `Commit`) or when committable Git changes or outgoing commits exist (`Push`). Source: ADR 0047, ADR 0052. Validates: SCN-WORKFLOW-*.
+- REQ-UI-007: While no workflow is running and the supported Git workflow context is present, section enablement MUST follow this matrix. When committable Git changes exist: `AI` is always enabled; `Commit` is enabled only when the IDE commit executor is available (`canExecuteCommit` is true) and disabled (but visible) otherwise; `Push` is enabled only when the IDE commit-and-push executor is available (`canExecuteCommitAndPush` is true) and disabled (but visible) otherwise. When no committable Git changes exist: `AI` and `Commit` are disabled (but visible); `Push` is enabled only when local outgoing commits exist, and disabled (but visible) otherwise. Source: ADR 0047, ADR 0052. Validates: SCN-WORKFLOW-*.
 - REQ-UI-008: While a plugin-owned workflow is running, every section MUST be disabled for further activation until the workflow completes. Source: PLAN-three-section-ai-commit-push-control. Validates: SCN-CONTROL-AUT-*.
-- REQ-UI-009: The currently running section MUST display the running indication (animated running indicator). The phase progression MUST be `AI` -> `Commit` -> `Push` as workflow phases advance. Source: ADR 0053. Validates: SCN-CONTROL-AUT-014.
+- REQ-UI-009: The currently running section MUST display the running indication (animated running indicator). The phase progression MUST follow the chosen workflow mode and MUST NOT advance past it: `Ai` mode keeps the indicator on the `AI` section for the entire run; `Commit` mode advances `Ai` -> `Commit` and stops there; `Push` mode advances `Ai` -> `Commit` -> `Push`, where the move to `Push` MUST happen when the push step starts (after the commit completes), not when the commit step starts. Source: ADR 0053. Validates: SCN-CONTROL-AUT-014.
 - REQ-UI-010: `Push` MUST remain enabled when there are no committable Git changes but the project has outgoing local commits to push, subject to push-executor availability. Source: ADR 0047. Validates: SCN-WORKFLOW-*.
 - REQ-UI-011: Rapid repeated activation MUST NOT start multiple concurrent plugin workflows. A second activation while the first is in flight MUST return the in-flight workflow rather than start a new one. Source: PLAN-ai-generation-completion. Validates: SCN-WORKFLOW-*.
 
@@ -93,11 +93,11 @@ The "selection" is the set of files acted on by a workflow run.
 ## 5. AI Section Behavior
 
 - REQ-AI-001: The `AI` workflow MUST collect the selection per Section 4, activate the non-modal commit workflow, prepare the staging area when applicable, capture the current commit message as a snapshot, invoke AI message generation, wait for completion, and stop without committing. Source: ADR 0052. Implements: T-AI-007. Validates: SCN-AI-*, T-VAL-023 (manual).
-- REQ-AI-002: AI Assistant action discovery MUST first try known stable action IDs and MUST fall back to scanning `Vcs.MessageActionGroup` and Commit toolbar actions by presentation text when no known ID matches. Source: PLAN-ai-assistant-message-generation. Implements: T-AI-001..003. Validates: SCN-AI-*.
+- REQ-AI-002: AI Assistant action discovery MUST attempt three stages in order and MUST return the first match: (1) the known stable action ID `Vcs.LLMCommitMessageAction`; (2) any action whose registered ID starts with `Vcs.LLM`, contains `commitmessage`, and contains `llm` or `ai` (case-insensitive, excluding `reword`); (3) any action whose registered ID starts with `Vcs.` and whose template presentation text or description contains `commit` and `message` and at least one of `generate`, `write`, `create`, `suggest`, `ai`, `assistant`, or `llm`, excluding actions whose text contains `reword`, `rewrite`, `resolve conflict`, or `conflict`. Source: PLAN-ai-assistant-message-generation. Implements: T-AI-001..003. Validates: SCN-AI-*.
 - REQ-AI-003: AI Assistant action invocation MUST supply a data context that includes the project, commit workflow handler, commit workflow UI, and commit message control. Source: PLAN-ai-assistant-message-generation. Implements: T-AI-004. Validates: SCN-AI-*.
 - REQ-AI-004: When the AI Assistant action cannot be discovered or invoked, the workflow MUST stop and MUST report `MissingAiAction`. Source: ADR 0014. Validates: SCN-AI-*, T-VAL-016 (manual).
 - REQ-AI-005: When `clearCommitMessageBeforeGeneration` is enabled, the commit-message control and underlying document MUST be cleared before AI generation begins. Source: PLAN-ai-generation-completion. Validates: SCN-SETTINGS-*.
-- REQ-AI-006: AI generation activity MUST move through the phase ladder `AI` -> `Commit` -> `Push` so the running indicator advances synchronously with workflow progress. Source: ADR 0053. Validates: SCN-CONTROL-AUT-014.
+- REQ-AI-006: AI generation activity MUST start in the `Ai` phase. The phase MUST advance according to the workflow mode as defined in REQ-UI-009 so the running indicator and workflow progress stay synchronized. Source: ADR 0053. Validates: SCN-CONTROL-AUT-014.
 - REQ-AI-007: AI Assistant sign-in, unavailable, and other generation messages MUST be surfaced through AI Assistant's standard UI where the IDE supports it, without being replaced by plugin-owned text. Source: ADR 0014. Implements: T-AI-006. Validates: T-VAL-016 (manual).
 
 ### 5.1 Completion Detection
@@ -108,7 +108,7 @@ The "selection" is the set of files acted on by a workflow run.
 - REQ-AI-011: When AI generation does not finish within `aiGenerationTimeoutMillis`, the workflow MUST stop without committing or pushing and MUST report `AiTimeout`. Source: ADR 0012. Implements: T-WAIT-006. Validates: SCN-AI-*, SCN-STAGE-MAN-012.
 - REQ-AI-012: When AI generation completes but the resulting message is empty, the workflow MUST stop and MUST report `EmptyMessage`. Source: ADR 0014. Validates: SCN-AI-*, SCN-STAGE-MAN-013.
 - REQ-AI-013: When AI generation completes but the message has not changed from the snapshot, the workflow MUST stop and MUST report `UnchangedMessage`. Source: ADR 0014. Validates: SCN-AI-*.
-- REQ-AI-014: When no reliable completion signal is observed within the timeout window, the workflow MUST stop and MUST report `NoCompletionSignal`. Source: ADR 0012. Validates: SCN-AI-*.
+- REQ-AI-014: When the plugin cannot determine the running state of the AI Assistant action (for example, the action class does not expose a `progressIndicator` field that the plugin can read, or reading it throws), the workflow MUST stop and MUST report `NoCompletionSignal`. This is distinct from `AiTimeout`, which is reported when the timeout window elapses while the running-state signal is readable. Source: ADR 0012. Validates: SCN-AI-*.
 
 ## 6. Commit Section Behavior
 
@@ -140,6 +140,7 @@ The "selection" is the set of files acted on by a workflow run.
 - REQ-SHC-004: An action promoter MUST promote the plugin shortcut actions over the mirrored IDE actions only when shortcut takeover is available. Source: ADR 0054. Validates: SCN-SHORTCUT-*.
 - REQ-SHC-005: The `AI` section MUST NOT receive a standard VCS shortcut. Source: ADR 0054. Validates: SCN-SHORTCUT-*.
 - REQ-SHC-006: Plugin shortcut actions MUST NOT permanently overwrite the user's keymap; opt-out MUST restore the standard IDE behavior without manual keymap edits. Source: ADR 0054. Validates: SCN-SHORTCUT-*.
+- REQ-SHC-007: When a plugin workflow is already running for the project, the IDE commit and push shortcuts MUST be no-ops while takeover is enabled: they MUST NOT start a second plugin workflow and MUST NOT delegate to the standard IDE action. The plugin shortcut action MUST report itself as disabled during this state. Source: PLAN-ai-generation-completion, ADR 0054. Validates: SCN-SHORTCUT-*.
 
 ## 9. Settings
 
@@ -169,23 +170,23 @@ Settings are stored at application scope in `aiCommitAll.xml` and exposed via `S
 
 The complete set of workflow stop reasons is fixed. Implementations MUST report exactly one of these values per stopped run, and MUST NOT add new values without updating this specification.
 
-| Stop Reason                     | Trigger                                                                        |
-|---------------------------------|--------------------------------------------------------------------------------|
-| `MissingWorkflow`               | Commit tool window workflow handler or UI was not present in the data context. |
-| `VcsFrozen`                     | `ChangeListManager` is frozen at selection time.                               |
-| `VcsBackgroundOperationRunning` | A background VCS operation is in progress.                                     |
-| `EmptySelection`                | After selection collection, no eligible files and no outgoing commits exist.   |
-| `UnsupportedVcs`                | The project's active VCS is not Git.                                           |
-| `UnsupportedWorkflow`           | The active commit workflow type cannot be driven by the plugin.                |
-| `MissingAiAction`               | AI Assistant commit-message action could not be located or invoked.            |
-| `AiCompletionFailed`            | AI generation reported a failure condition during completion detection.        |
-| `AiTimeout`                     | AI generation did not complete within `aiGenerationTimeoutMillis`.             |
-| `EmptyMessage`                  | AI generation produced an empty commit message.                                |
-| `UnchangedMessage`              | AI generation produced a message identical to the captured snapshot.           |
-| `NoCompletionSignal`            | No reliable completion signal observed within the timeout window.              |
-| `UserEditedMessage`             | The user edited or cleared the message during AI generation.                   |
-| `CommitExecutionUnavailable`    | IDE commit executor is unavailable for the current workflow state.             |
-| `PushExecutionUnavailable`      | IDE push executor is unavailable for the current workflow state.               |
+| Stop Reason                     | Trigger                                                                                               |
+|---------------------------------|-------------------------------------------------------------------------------------------------------|
+| `MissingWorkflow`               | Commit tool window workflow handler or UI was not present in the data context.                        |
+| `VcsFrozen`                     | `ChangeListManager` is frozen at selection time.                                                      |
+| `VcsBackgroundOperationRunning` | A background VCS operation is in progress.                                                            |
+| `EmptySelection`                | After selection collection, no eligible files and no outgoing commits exist.                          |
+| `UnsupportedVcs`                | The project's active VCS is not Git.                                                                  |
+| `UnsupportedWorkflow`           | The active commit workflow type cannot be driven by the plugin.                                       |
+| `MissingAiAction`               | AI Assistant commit-message action could not be located or invoked.                                   |
+| `AiCompletionFailed`            | AI generation reported a failure condition during completion detection.                               |
+| `AiTimeout`                     | AI generation did not complete within `aiGenerationTimeoutMillis`.                                    |
+| `EmptyMessage`                  | AI generation produced an empty commit message.                                                       |
+| `UnchangedMessage`              | AI generation produced a message identical to the captured snapshot.                                  |
+| `NoCompletionSignal`            | The plugin cannot read the AI action's running-state signal (e.g. missing `progressIndicator` field). |
+| `UserEditedMessage`             | The user edited or cleared the message during AI generation.                                          |
+| `CommitExecutionUnavailable`    | IDE commit executor is unavailable for the current workflow state.                                    |
+| `PushExecutionUnavailable`      | IDE push executor is unavailable for the current workflow state.                                      |
 
 ## 12. IDE Toolbar And Action Registration
 
@@ -220,7 +221,7 @@ Each ADR has at least one requirement; each requirement has at least one validat
 | ADR 0047 | REQ-UI-007, REQ-UI-010, REQ-PUSH-001..REQ-PUSH-007                                                                   |
 | ADR 0052 | REQ-UI-001..REQ-UI-004, REQ-UI-013, REQ-AI-001, REQ-COM-001, REQ-PUSH-001                                            |
 | ADR 0053 | REQ-UI-009, REQ-UI-012, REQ-UI-014, REQ-UI-015, REQ-AI-006                                                           |
-| ADR 0054 | REQ-SHC-001..REQ-SHC-006, REQ-SET-002, REQ-SET-003, REQ-INT-002                                                      |
+| ADR 0054 | REQ-SHC-001..REQ-SHC-007, REQ-SET-002, REQ-SET-003, REQ-INT-002                                                      |
 
 ## 15. Editing Rules
 
