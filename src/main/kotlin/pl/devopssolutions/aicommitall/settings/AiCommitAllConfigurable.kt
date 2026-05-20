@@ -26,7 +26,9 @@ import javax.swing.JPanel
 import javax.swing.JSpinner
 import javax.swing.SpinnerNumberModel
 
-internal class AiCommitAllConfigurable : SearchableConfigurable {
+internal class AiCommitAllConfigurable(
+    private val settings: AiCommitAllSettings = AiCommitAllSettings.getInstance(),
+) : SearchableConfigurable {
     private var panel: JPanel? = null
     private var timeoutSpinner: JSpinner? = null
     private var checkIntervalSpinner: JSpinner? = null
@@ -38,7 +40,6 @@ internal class AiCommitAllConfigurable : SearchableConfigurable {
     override fun getDisplayName(): String = AiCommitAllSettings.DISPLAY_NAME
 
     override fun createComponent(): JComponent {
-        val settings = AiCommitAllSettings.getInstance()
         val completionOptions = settings.completionOptions()
         timeoutSpinner = millisSpinner(completionOptions.timeout.toMillis())
         checkIntervalSpinner = millisSpinner(completionOptions.checkInterval.toMillis())
@@ -82,7 +83,6 @@ internal class AiCommitAllConfigurable : SearchableConfigurable {
     }
 
     override fun isModified(): Boolean {
-        val settings = AiCommitAllSettings.getInstance()
         val completionOptions = settings.completionOptions()
         return timeoutSpinner?.longValue() != completionOptions.timeout.toMillis() ||
             checkIntervalSpinner?.longValue() != completionOptions.checkInterval.toMillis() ||
@@ -101,20 +101,19 @@ internal class AiCommitAllConfigurable : SearchableConfigurable {
             throw ConfigurationException("Completion check interval must be positive.")
         }
 
-        AiCommitAllSettings.getInstance().updateCompletionOptions(
+        settings.updateCompletionOptions(
             timeoutMillis = timeoutMillis,
             checkIntervalMillis = checkIntervalMillis,
         )
-        AiCommitAllSettings.getInstance().updateClearCommitMessageBeforeGeneration(
+        settings.updateClearCommitMessageBeforeGeneration(
             enabled = clearCommitMessageCheckBox?.isSelected ?: return,
         )
-        AiCommitAllSettings.getInstance().updateUseVcsShortcutsForAiCommitAll(
+        settings.updateUseVcsShortcutsForAiCommitAll(
             enabled = useVcsShortcutsCheckBox?.isSelected ?: return,
         )
     }
 
     override fun reset() {
-        val settings = AiCommitAllSettings.getInstance()
         val completionOptions = settings.completionOptions()
         timeoutSpinner?.value = completionOptions.timeout.toMillis()
         checkIntervalSpinner?.value = completionOptions.checkInterval.toMillis()

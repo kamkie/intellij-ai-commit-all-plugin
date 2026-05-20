@@ -4,6 +4,12 @@ Completed tasks move here from [TASKS.md](TASKS.md) only after the work is finis
 
 Preserve stable `T-AREA-NNN` task IDs, wording, grouping, and evidence links when moving entries unless a small clarity fix is needed.
 
+Archived as of 2026-05-20 settings configurable coverage.
+
+### Testing
+
+- [x] T-TEST-004: add unit tests for `AiCommitAllConfigurable` covering `createComponent`, `isModified`, `apply`, and `reset` for every setting field, including invalid input paths. (`src/test/kotlin/.../settings/AiCommitAllConfigurableTest.kt`; validation: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.settings.AiCommitAllConfigurableTest"`, `.\gradlew.bat test`, `.\gradlew.bat jacocoTestReport`)
+
 Archived as of 2026-05-20 backlog triage.
 
 ### Documentation
