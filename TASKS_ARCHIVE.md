@@ -4,6 +4,12 @@ Completed tasks move here from [TASKS.md](TASKS.md) only after the work is finis
 
 Preserve stable `T-AREA-NNN` task IDs, wording, grouping, and evidence links when moving entries unless a small clarity fix is needed.
 
+Archived as of 2026-05-20 notification service coverage.
+
+### Testing
+
+- [x] T-TEST-005: add tests for `AiCommitAllNotificationService` notification routing and group registration so the `notifications` package leaves 0% coverage. (`src/test/kotlin/.../notifications/AiCommitAllNotificationServiceTest.kt`; validation: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.notifications.AiCommitAllNotificationServiceTest"`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
+
 Archived as of 2026-05-20 settings configurable coverage.
 
 ### Testing

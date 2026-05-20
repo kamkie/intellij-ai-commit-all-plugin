@@ -23,7 +23,10 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 
 @Service(Service.Level.PROJECT)
-internal class AiCommitAllNotificationService(private val project: Project) {
+internal class AiCommitAllNotificationService @JvmOverloads constructor(
+    private val project: Project,
+    private val router: AiCommitAllNotificationRouter = IntellijAiCommitAllNotificationRouter,
+) {
     fun notifyWarning(
         title: String,
         content: String,
@@ -38,14 +41,40 @@ internal class AiCommitAllNotificationService(private val project: Project) {
         title: String,
         content: String,
         type: NotificationType,
-    ): Notification = NotificationGroupManager.getInstance()
-        .getNotificationGroup(GROUP_ID)
-        .createNotification(title, content, type)
-        .also { notification -> notification.notify(project) }
+    ): Notification = router.notify(
+        project = project,
+        groupId = GROUP_ID,
+        title = title,
+        content = content,
+        type = type,
+    )
 
     companion object {
         const val GROUP_ID: String = "AI Commit All"
 
         fun getInstance(project: Project): AiCommitAllNotificationService = project.service()
     }
+}
+
+internal interface AiCommitAllNotificationRouter {
+    fun notify(
+        project: Project,
+        groupId: String,
+        title: String,
+        content: String,
+        type: NotificationType,
+    ): Notification
+}
+
+private object IntellijAiCommitAllNotificationRouter : AiCommitAllNotificationRouter {
+    override fun notify(
+        project: Project,
+        groupId: String,
+        title: String,
+        content: String,
+        type: NotificationType,
+    ): Notification = NotificationGroupManager.getInstance()
+        .getNotificationGroup(groupId)
+        .createNotification(title, content, type)
+        .also { notification -> notification.notify(project) }
 }

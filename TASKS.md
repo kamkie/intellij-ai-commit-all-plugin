@@ -23,11 +23,10 @@ Notation:
 
 ### Testing
 
-- [ ] T-TEST-003: increase test coverage (umbrella for remaining T-TEST-005..T-TEST-007 and T-TEST-009). Current JaCoCo line coverage is ~64% overall; weakest packages are `notifications` (0%), `aicommitall` root (0%), `vcs` (~37%), and `workflow` (~55%).
-- [ ] T-TEST-005: add tests for `AiCommitAllNotificationService` notification routing and group registration so the `notifications` package leaves 0% coverage. (`src/test/kotlin/.../notifications/`)
+- [ ] T-TEST-003: increase test coverage (umbrella for remaining T-TEST-006, T-TEST-007, and T-TEST-009). Current JaCoCo line coverage is ~64% overall; weakest packages are `aicommitall` root (0%), `vcs` (~37%), `workflow` (~55%), and `notifications` (~68%).
 - [ ] T-TEST-006: increase coverage in the `vcs` package, targeting `ReflectiveCommitWorkflowSynchronizer`, `SafeImmediatePushService`, `GitOutgoingCommitsService`, and `GitStageConfirmation` happy and fallback branches. (`src/test/kotlin/.../vcs/`)
 - [ ] T-TEST-007: increase coverage in the `workflow` package, targeting `AiCommitAllWorkflowCoordinator`, `CommitWorkflowExecutionService`, and `CommitMessageUserEditSignal` running, timeout, and user-edit branches. (`src/test/kotlin/.../workflow/`)
-- [ ] T-TEST-009: raise the Gradle JaCoCo coverage verification thresholds in `build.gradle.kts` once the remaining coverage tasks T-TEST-005..T-TEST-007 land, and document the new floor in `README.md`. (`build.gradle.kts`, `README.md`)
+- [ ] T-TEST-009: raise the Gradle JaCoCo coverage verification thresholds in `build.gradle.kts` once the remaining coverage tasks T-TEST-006 and T-TEST-007 land, and document the new floor in `README.md`. (`build.gradle.kts`, `README.md`)
 
 ### Validation
 
