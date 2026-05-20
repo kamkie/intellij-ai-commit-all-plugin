@@ -19,7 +19,7 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- None.
+- `PLAN-release-matrix-ui-automation` - Release Matrix UI Automation ([PLAN-release-matrix-ui-automation.md](PLAN-release-matrix-ui-automation.md)).
 
 ## Archived Plans
 
