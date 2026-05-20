@@ -28,7 +28,7 @@ Use this guide when adding or updating repository documentation.
 
 - Keep docs proportional to the repo's current size.
 - Do not copy Spring, REST, OpenAPI, release, deployment, operations, benchmark, or frontend guidance from other repositories.
-- Do not imply plugin implementation has started until Gradle, Kotlin, or IntelliJ plugin scaffold files exist.
+- Treat the Gradle/Kotlin IntelliJ plugin scaffold as present. Do not describe pre-scaffold limitations as current state; keep implementation-status wording aligned with `README.md` and `TASKS.md`.
 - Prefer concrete commands and artifact names over generic process language.
 - Do not load every AI instruction file automatically. Start from `AGENTS.md`, use the guidance map, and load only the owner documents needed for the current documentation change unless the task is a broad guidance audit or cross-document consistency review.
 - Do not read `docs/WORKING_WITH_AI.md` as part of normal AI-agent workflow. It is for humans preparing requests, and should be updated only when rules, request shapes, or human-facing expectations for AI work change.

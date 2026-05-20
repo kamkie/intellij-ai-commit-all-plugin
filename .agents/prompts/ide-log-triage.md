@@ -2,7 +2,7 @@
 
 Analyze IntelliJ IDE logs for plugin-related errors, warnings, or runtime symptoms.
 Treat a direct user request for this prompt, by title or filename, as explicit permission to inspect the IntelliJ log folder named by the user.
-When the user invokes this prompt without naming a folder, use the common IntelliJ IDEA 2026.1 log folder for this machine: `C:\Users\kamki\AppData\Local\JetBrains\IntelliJIdea2026.1\log`.
+When the user invokes this prompt without naming a folder, use the common IntelliJ IDEA 2026.1 log folder for this machine: `C:\Users\<username>\AppData\Local\JetBrains\IntelliJIdea<version>\log`.
 
 ## Read First
 

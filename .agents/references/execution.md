@@ -89,7 +89,7 @@ Before dispatching the next dependent task, the orchestrator must ensure the pla
 - Broaden the read set only when targeted discovery shows another owner document is needed, the user asks for a broad audit, or validation requires cross-document consistency checks.
 - Prefer existing IntelliJ Platform and Gradle plugin conventions over custom infrastructure.
 - Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; do not add unrelated release or operations files outside that scope.
-- If the repo is still unscaffolded, do not assume Gradle, Kotlin, or plugin descriptor files exist.
+- Treat the Gradle/Kotlin IntelliJ plugin scaffold as present. Do not describe pre-scaffold limitations as current state; keep implementation-status wording aligned with `README.md` and `TASKS.md`.
 - If a requested change requires creating an ADR, create the ADR first and stop. Do not update the governed implementation, workflow guidance, backlog, validation rules, or related behavior until the user has reviewed and explicitly accepted the ADR.
 - If a requested change needs a plan, create or update the plan first and stop. Do not start implementation until the user has reviewed and explicitly approved the plan.
 - Before implementing from an `Approved` plan, confirm the approval was explicit, `Approved by:` records the approver, and every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.

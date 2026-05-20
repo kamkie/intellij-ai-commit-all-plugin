@@ -4,21 +4,23 @@ Use validation that matches the change. Documentation-only changes do not requir
 
 ## Build Checks
 
-- `gradle spotlessCheck` for Kotlin and Gradle Kotlin DSL formatting and Kotlin source license-header enforcement.
+Use the repository Gradle wrapper in validation examples: `.\gradlew.bat <task>` for PowerShell on Windows. `./gradlew <task>` is the equivalent for Unix-like shells and CI scripts.
+
+- `.\gradlew.bat spotlessCheck` for Kotlin and Gradle Kotlin DSL formatting and Kotlin source license-header enforcement.
 - `npx --yes markdownlint-cli2@0.22.1` for Markdown linting.
 - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1` for Markdown linting, documentation structure, links, stable IDs, ADR numbering and index, and proposal tracker checks.
 - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` for repository skill and prompt structure checks when `.agents/skills/` or `.agents/prompts/` changed.
-- `gradle jacocoTestReport` for the JaCoCo XML coverage report uploaded to Codecov by CI.
-- `gradle test` for JUnit XML test result reports under `build/test-results/test/`, uploaded to Codecov by CI.
-- `gradle buildPlugin` for packaging and basic compile validation once a Gradle scaffold exists.
-- `gradle verifyPlugin` when configured.
+- `.\gradlew.bat jacocoTestReport` for the JaCoCo XML coverage report uploaded to Codecov by CI.
+- `.\gradlew.bat test` for JUnit XML test result reports under `build/test-results/test/`, uploaded to Codecov by CI.
+- `.\gradlew.bat buildPlugin` for packaging and basic compile validation once a Gradle scaffold exists.
+- `.\gradlew.bat verifyPlugin` when configured.
 - Plugin signing and signature verification once signing configuration exists.
 - IntelliJ Plugin Verifier for the supported IDE version range once compatibility targets are chosen.
 - CI workflow validation for pull-request checks without Marketplace or signing secrets once CI exists.
 
 ## Sandbox Checks
 
-Use `gradle runIde` for manual sandbox testing once the scaffold exists.
+Use `.\gradlew.bat runIde` for manual sandbox testing once the scaffold exists.
 
 Use current stable JetBrains IDE builds available through the user's All Products Pack. Record exact product names and build numbers in validation reports.
 

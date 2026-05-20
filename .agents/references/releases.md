@@ -4,8 +4,6 @@ Use this guide only for intentional release preparation after implementation wor
 
 Stay in `.agents/references/planning.md` and `.agents/references/execution.md` while work is still in an implementation plan or local task.
 
-This guide is adapted for this IntelliJ Platform plugin repository from the release and changelog conventions in `https://github.com/kamkie/technical-interview-demo`.
-
 ## Versioning And Changelog Rules
 
 - Use semantic version tags in the form `vMAJOR.MINOR.PATCH` for stable releases or `vMAJOR.MINOR.PATCH-PRERELEASE` for prereleases.
