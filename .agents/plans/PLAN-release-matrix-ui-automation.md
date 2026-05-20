@@ -43,9 +43,13 @@ The intended result is a deterministic release validation command that covers fi
 ## Open Questions
 
 - Can the integration tests install a test-only plugin with ID `com.intellij.ml.llm` that registers `Vcs.LLMCommitMessageAction` and writes a deterministic commit message through the supplied `CommitWorkflowUi` data context?
+    - ues test-only plugin
 - If a fake AI Assistant dependency is not acceptable, should production code expose a narrow test mode for `AiCommitMessageActionFinder` or should happy-path AI generation remain manual?
+    - how easy or problematic that would be? it maybe semi-automated test running only locally?
 - Should the new UI matrix run as a pull-request gate, a scheduled/nightly job, or a manually triggered release workflow? Recommendation: manual release workflow first, then scheduled, then PR gate only if stable.
+    - release workflow first
 - Which product matrix is required for automation acceptance: IDEA-only for every scenario plus PyCharm/WebStorm smoke, or full IDEA/PyCharm/WebStorm for every scenario?
+    - just IDEA for now
 
 ## Proposed Changes
 
