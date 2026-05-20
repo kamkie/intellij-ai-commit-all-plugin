@@ -7,83 +7,131 @@
 [![Codecov](https://codecov.io/gh/kamkie/intellij-ai-commit-all-plugin/branch/main/graph/badge.svg)](https://codecov.io/gh/kamkie/intellij-ai-commit-all-plugin)
 [![License](https://img.shields.io/github/license/kamkie/intellij-ai-commit-all-plugin)](LICENSE)
 
-AI Commit All is an IntelliJ Platform plugin for preparing, committing, and pushing every non-ignored Git change through the IDE Commit tool window after JetBrains AI Assistant generates the commit message.
+An IntelliJ Platform plugin that turns the Commit tool window into a one-click AI commit flow. JetBrains AI Assistant writes the message, then the plugin commits — or commits and pushes — every non-ignored Git change.
 
-The Commit tool window gets a compact `<AI icon> AI | Commit | Push` control:
+## What It Does
 
-- `AI` includes every eligible Git change, generates a commit message, and stops before committing.
-- `Commit` runs the `AI` section behavior, then commits all eligible Git changes through the standard IDE commit workflow.
-- `Push` runs the `Commit` section behavior when committable changes exist, then pushes immediately when the Git state is safe and unambiguous, including protected branches when no force push is required; otherwise it falls back to the IDE commit-and-push executor. When there are no committable changes but local commits are waiting to push, `Push` uses the same safe immediate push path without opening the IDE Push dialog.
+The Commit tool window gains a compact three-section control: `AI | Commit | Push`.
 
-## Current Status
+| Section  | Behavior                                                                                                                                                                                                                                                                                         |
+|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `AI`     | Includes every eligible Git change and asks AI Assistant to generate a commit message. Stops before committing.                                                                                                                                                                                  |
+| `Commit` | Runs the `AI` step, then commits through the standard IDE commit workflow.                                                                                                                                                                                                                       |
+| `Push`   | Runs the `Commit` step when there are changes, then pushes. Skips the Push Commits dialog when the Git state is safe (normal tracked branch, no force push); otherwise falls back to the IDE commit-and-push executor and dialog. When only outgoing commits exist, `Push` pushes them directly. |
 
-This is an unreleased prerelease project and is not yet published to JetBrains Marketplace. The latest tagged candidate is `v0.1.0-alpha.9`; changes listed under `Unreleased` in [CHANGELOG.md](CHANGELOG.md) have not been Marketplace-published.
+Eligible changes include modified, added, deleted, moved or renamed, unversioned, and resolved-conflict paths. Ignored files are excluded. Multiple Git roots and both changelist-backed and staging-area commit workflows are supported.
 
-The plugin targets the IntelliJ Platform 2026.1 release line and currently builds against `2026.1.1`. The full behavior specification used for requirement validation is in [docs/specification.md](docs/specification.md). Manual sandbox validation is tracked in [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
+## Status
+
+Unreleased prerelease — **not yet published to JetBrains Marketplace**. Latest tag: `v0.1.0-alpha.9`. Builds against IntelliJ Platform `2026.1.1`.
+
+- Pending release notes: [CHANGELOG.md](CHANGELOG.md) → `Unreleased`.
+- Full behavior contract: [docs/specification.md](docs/specification.md).
+- Manual sandbox validation status: [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
 
 ## Requirements
 
-- JetBrains IDE on the 2026.1 IntelliJ Platform line with the non-modal Commit tool window.
-- JetBrains AI Assistant, required by plugin dependency `com.intellij.ml.llm`.
+- A JetBrains IDE on the **2026.1** IntelliJ Platform line with the non-modal Commit tool window.
+- **JetBrains AI Assistant**, installed and signed in. Required by plugin dependency `com.intellij.ml.llm`.
 - A Git working copy.
 
-If JetBrains AI Assistant is missing or disabled, the IDE should reject or fail plugin loading through the required dependency instead of falling back to a non-AI commit message.
+If AI Assistant is missing or disabled, the IDE refuses to load this plugin — it does not silently fall back to a non-AI commit message.
+
+## Install
+
+Until the first Marketplace release, install from a local build:
+
+```powershell
+.\gradlew.bat buildPlugin
+```
+
+In the IDE, open `Settings | Plugins`, click the gear icon, choose `Install Plugin from Disk…`, and select `build/distributions/ai-commit-all-<version>.zip`.
+
+For day-to-day plugin development, run a sandbox IDE instead:
+
+```powershell
+.\gradlew.bat runIde
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full build, test, and validation command set.
 
 ## Usage
 
 1. Open a Git project in a supported JetBrains IDE.
-2. Open the Commit tool window.
-3. Make sure JetBrains AI Assistant is installed, enabled, and available for commit-message generation.
-4. Create committable Git changes, or create local commits that are not pushed yet.
-5. Use `AI` to generate a message without committing, `Commit` to generate and commit, or `Push` to generate, commit, and push. If only outgoing commits are present, use `Push` to push them immediately when the Git state is safe.
+2. Make sure JetBrains AI Assistant is enabled and signed in.
+3. Open the Commit tool window. Either create committable changes, or have local commits ready to push.
+4. Click `AI`, `Commit`, or `Push` on the segmented control.
 
-With the default shortcut setting enabled, the IDE's commit shortcut runs the plugin `Commit` workflow and the IDE's push shortcut runs the plugin `Push` workflow when the Commit tool window workflow is available. On the default Windows/Linux keymap, this makes `Ctrl+Shift+K` equivalent to clicking the `Push` section. Disable the shortcut setting to return those shortcuts to the standard IDE actions.
+### Keyboard shortcuts
 
-The control is hidden outside an active supported Git commit workflow. `AI` and `Commit` are disabled when no non-ignored committable Git files are available. `Push` stays enabled when outgoing Git commits are available to push, and otherwise follows the required workflow executor availability.
+With the default shortcut setting enabled, the IDE's commit and push shortcuts trigger the plugin instead of the standard IDE actions whenever the Commit tool window workflow is available:
 
-When the Git staging area commit workflow is active, the plugin stages eligible non-ignored paths before invoking AI Assistant so the IDE workflow can commit the intended content.
+| Shortcut (default Windows/Linux keymap) | Action          |
+|-----------------------------------------|-----------------|
+| `Ctrl+K`                                | Plugin `Commit` |
+| `Ctrl+Shift+K`                          | Plugin `Push`   |
 
-For `Push` with committable changes, missing upstreams, unresolved conflicts, non-normal Git states, ambiguous targets, or already-diverged local and upstream branches use the standard IDE commit-and-push executor and Push Commits dialog. Outgoing-only `Push` does not fall back to the IDE Push dialog when safe immediate push cannot be prepared.
+Disable the setting to return both shortcuts to the standard IDE actions.
+
+### When the control hides or disables
+
+- Hidden entirely outside an active Git commit workflow.
+- `AI` and `Commit` disable when there are no non-ignored committable files.
+- `Push` stays enabled when outgoing commits are available to push, even if nothing else is committable.
+
+### Generation guardrails
+
+The plugin clears stale message text before generation (configurable), then waits for AI Assistant to finish. It stops without committing or pushing when generation times out, returns an empty or unchanged message, or the user edits the message while generation is running.
+
+Commit and commit-and-push run through the active IntelliJ commit workflow, so IDE before-commit checks, confirmations, warnings, and commit/push error handling remain in charge.
+
+### Push fallback
+
+`Push` only takes the immediate-push path for normal tracked branches in a safe state. Missing upstream, unresolved conflicts, ambiguous targets, divergence from upstream, or any force-push requirement falls back to the IDE commit-and-push executor and Push Commits dialog. Outgoing-only `Push` does **not** fall back to the IDE Push dialog — when safe immediate push cannot be prepared, it stops.
+
+When the Git staging-area commit workflow is active, eligible non-ignored paths are staged before AI Assistant is invoked, so the resulting commit matches what the AI saw.
 
 ## Settings
 
-Open `Settings | Tools | AI Commit All` to configure:
+Open `Settings | Tools | AI Commit All`:
 
-- AI generation timeout, default `30000` ms.
-- Completion check interval, default `500` ms.
-- Clear commit message before AI generation, default enabled.
-- Use AI Commit All for IDE commit and push shortcuts, default enabled.
+| Setting                                             | Default |
+|-----------------------------------------------------|---------|
+| AI generation timeout (ms)                          | `30000` |
+| Completion check interval (ms)                      | `500`   |
+| Clear commit message before AI generation           | enabled |
+| Use AI Commit All for IDE commit and push shortcuts | enabled |
 
-Both timing values must be positive. Timeout and user-edit paths stop without committing or pushing.
+Both timing values must be positive.
 
-## Known Limitations
+## Limitations
 
-- Git is the only supported VCS for the first implementation.
-- The plugin relies on compatible IntelliJ Commit tool window APIs and fail-closed reflection boundaries for inclusion state.
-- AI Assistant action discovery uses known action IDs and action presentation fallback; AI Assistant UI, sign-in, and runtime availability messages remain owned by JetBrains AI Assistant where available.
-- Manual sandbox validation for final three-section control rendering, staging-area modes, shortcut takeover, AI Assistant unavailable states, and full commit/push UI behavior is not yet complete. The current manual validation matrix records IntelliJ IDEA, PyCharm, and WebStorm `2026.1.1` targets in [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
-- Marketplace signing and publishing automation is configured but has not been executed for a public release. The first Marketplace upload may still require manual JetBrains setup.
+User-visible:
 
-## Source Repository
+- Git only. No Mercurial, Subversion, or Perforce.
+- The first Marketplace upload still requires manual JetBrains setup; nothing has been published yet.
+- Manual sandbox validation of the final UI is incomplete — see [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
 
-The canonical source repository is [github.com/kamkie/intellij-ai-commit-all-plugin](https://github.com/kamkie/intellij-ai-commit-all-plugin). Marketplace-facing plugin metadata points users and contributors to that source location.
+Internal:
+
+- Inclusion state for the Commit tool window uses fail-closed reflection on IntelliJ APIs that are not part of the stable public surface.
+- AI Assistant action discovery uses known action IDs with a presentation-based fallback. AI Assistant sign-in, UI, and runtime-availability messaging remain owned by AI Assistant.
+
+## Documentation
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) — build commands, validation, pull-request expectations.
+- [CHANGELOG.md](CHANGELOG.md) — release notes.
+- [SUPPORT.md](SUPPORT.md) — support scope and issue reporting.
+- [SECURITY.md](SECURITY.md) — vulnerability reporting and release-secret handling.
+- [docs/specification.md](docs/specification.md) — full behavior specification.
+- [AGENTS.md](AGENTS.md), [docs/WORKING_WITH_AI.md](docs/WORKING_WITH_AI.md) — guidance for AI-agent work in this repository.
 
 ## Project
 
-- Plugin ID and base package: `pl.devopssolutions.aicommitall`.
-- Vendor: DevOps Solutions Kamil Kiewisz, `https://devopssolutions.pl`, `kontakt@devopssolutions.pl`.
-- License: Apache License 2.0.
-
-Human contribution guidance, including build, test, and validation commands, is in [CONTRIBUTING.md](CONTRIBUTING.md).
-
-Notable changes are tracked in [CHANGELOG.md](CHANGELOG.md).
-
-Support status and issue-reporting expectations are in [SUPPORT.md](SUPPORT.md).
-
-Security reporting and release-secret handling are in [SECURITY.md](SECURITY.md).
-
-Implementation guidance for future agents is in [AGENTS.md](AGENTS.md). Guidance for working with AI agents on this repository is in [docs/WORKING_WITH_AI.md](docs/WORKING_WITH_AI.md).
+- Plugin ID and base package: `pl.devopssolutions.aicommitall`
+- Vendor: DevOps Solutions Kamil Kiewisz · `kontakt@devopssolutions.pl` · [devopssolutions.pl](https://devopssolutions.pl)
+- Canonical source: [github.com/kamkie/intellij-ai-commit-all-plugin](https://github.com/kamkie/intellij-ai-commit-all-plugin)
 
 ## License
 
-Licensed under the Apache License 2.0. See [LICENSE](LICENSE).
+[Apache License 2.0](LICENSE).
