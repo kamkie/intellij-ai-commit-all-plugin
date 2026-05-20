@@ -14,7 +14,6 @@ This is the AI entry point for the repository. Keep task context small and read 
 
 ## Guidance Map
 
-- Human guide for asking AI to work here: `docs/WORKING_WITH_AI.md`
 - Development lifecycle: `docs/DEVELOPMENT_LIFECYCLE.md`
 - Implementation backlog: `TASKS.md`
 - Completed task archive: `TASKS_ARCHIVE.md`
@@ -59,6 +58,7 @@ When instructions overlap, apply this project-specific order:
 - Use the smallest task-shaped context that can safely answer the request.
 - Identify the behavior and governing artifact before editing.
 - Do not load every AI instruction file automatically; start from this file and then read only the specific mapped guidance needed for the current task.
+- Do not read `docs/WORKING_WITH_AI.md` during normal agent workflow; update it only when human-facing guidance for asking AI to work here changes.
 - Follow `docs/decisions/README.md` for project decisions and repository rule changes.
 - When a requested change requires creating an ADR, create the ADR first and stop. Continue only after the user reviews and explicitly accepts it.
 - When work needs an implementation plan, create or update the plan first and stop. Start implementation only after the user reviews and explicitly approves the plan.

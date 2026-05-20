@@ -16,8 +16,8 @@ Compact standing AI instruction files without changing the current policy.
     - `.agents/prompts/README.md`
     - `.agents/prompts/*.md`
     - `.agents/skills/*/SKILL.md`
-    - `docs/WORKING_WITH_AI.md`
     - `docs/DEVELOPMENT_LIFECYCLE.md`
+  - Exclude `docs/WORKING_WITH_AI.md` unless the user names it or the compaction changes human-facing request guidance.
 
 ## Output
 

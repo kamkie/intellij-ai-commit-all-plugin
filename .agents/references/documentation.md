@@ -11,7 +11,7 @@ Use this guide when adding or updating repository documentation.
 - `CHANGELOG.md`: public release-note history for plugin behavior, public plugin docs, compatibility, support, and release pipeline changes.
 - `SUPPORT.md`: support status, supported-scope summary, issue-reporting expectations, and privacy guidance.
 - `AGENTS.md`: short AI entry point, guidance map, priority order, and high-level workflow rules.
-- `docs/WORKING_WITH_AI.md`: human-facing guide for asking AI agents to work on the repository.
+- `docs/WORKING_WITH_AI.md`: human-facing guide for asking AI agents to work on the repository; update it when workflow rules change, but do not treat it as a normal agent read-set owner.
 - `docs/DEVELOPMENT_LIFECYCLE.md`: repository development lifecycle for larger changes.
 - `docs/proposals/`: repository analysis and proposal documents for maintainer triage; every proposal needs a stable `proposal_id`; start from `docs/proposals/PROPOSAL_TEMPLATE.md` and follow `docs/proposals/README.md`.
 - `docs/decisions/`: project decisions, repository rule changes, and ADR template.
@@ -31,6 +31,7 @@ Use this guide when adding or updating repository documentation.
 - Do not imply plugin implementation has started until Gradle, Kotlin, or IntelliJ plugin scaffold files exist.
 - Prefer concrete commands and artifact names over generic process language.
 - Do not load every AI instruction file automatically. Start from `AGENTS.md`, use the guidance map, and load only the owner documents needed for the current documentation change unless the task is a broad guidance audit or cross-document consistency review.
+- Do not read `docs/WORKING_WITH_AI.md` as part of normal AI-agent workflow. It is for humans preparing requests, and should be updated only when rules, request shapes, or human-facing expectations for AI work change.
 - Route artifact references by stable filename prefix before broad search: `adr-NNNN` to `docs/decisions/`, `PLAN-<slug>` to `.agents/plans/` then `.agents/plans/archive/`, `PROP-<slug>` to `docs/proposals/` then `docs/proposals/archive/`, and `T-<AREA>-NNN` to `TASKS.md` then `TASKS_ARCHIVE.md`.
 - Give open questions stable IDs in `docs/decisions/OPEN_QUESTIONS.md` using `Q-<AREA>-NNN`, for example `Q-UX-001`.
 - Give every `TASKS.md` and `TASKS_ARCHIVE.md` item a stable task ID in the form `T-AREA-NNN`, keep the ID stable when wording or ordering changes, and do not renumber existing task IDs.
