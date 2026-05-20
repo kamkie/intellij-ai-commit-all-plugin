@@ -8,8 +8,9 @@ Compact standing AI instruction files without changing the current policy.
 - `.agents/references/documentation.md`
 - `.agents/prompts/README.md`
 - this prompt
-- if the user names one or more guidance files or prompts, only those named artifacts and their owner guides
-- if the user does not name a guidance file, all live repository AI guidance:
+- Treat this prompt's own title or filename as prompt invocation, not as the target to compact.
+- If the user names one or more target guidance files or prompts after invoking this prompt, read only those target artifacts and their owner guides.
+- If the user invokes this prompt without a target file, read all live repository AI guidance:
     - `AGENTS.md`
     - `.agents/references/*.md`
     - `.agents/prompts/README.md`

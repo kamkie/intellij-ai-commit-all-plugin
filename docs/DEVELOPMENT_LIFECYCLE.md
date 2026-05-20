@@ -18,17 +18,9 @@ After creating or updating a required plan, stop for user review. Implementation
 
 Use `docs/proposals/` before planning when the task is to collect findings, duplications, simplifications, or improvement options for maintainer triage without immediate implementation.
 
-A plan should state:
-
-- Goal and non-goals.
-- Open questions or assumptions.
-- Files likely to change.
-- Validation expected.
-- Rollback or failure considerations when relevant.
-
 Small docs-only changes do not need a plan.
 
-Before implementation starts from an approved plan, confirm explicit approval and follow the readiness, per-task execution, and delegation rules in `.agents/references/planning.md` and `.agents/references/execution.md`.
+Use `.agents/references/planning.md` for required plan shape, readiness, approval, status history, worker metadata, execution graph, and delegation rules. Use `.agents/references/execution.md` for per-task implementation and commit rules.
 
 The later release workflow takes over after implementation tasks and owns whole-release review, broader manual checks and tests, documentation update passes, and release artifact preparation.
 
