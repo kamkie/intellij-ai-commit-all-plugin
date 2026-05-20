@@ -15,6 +15,7 @@ This is the AI entry point for the repository. Keep task context small and read 
 ## Guidance Map
 
 - Development lifecycle: `docs/DEVELOPMENT_LIFECYCLE.md`
+- Behavior specification: `docs/specification.md`
 - Implementation backlog: `TASKS.md`
 - Completed task archive: `TASKS_ARCHIVE.md`
 - Missing user input: `docs/decisions/OPEN_QUESTIONS.md`

@@ -42,6 +42,8 @@ The current implementation:
 
 Manual sandbox validation is tracked in [docs/validation/manual-sandbox.md](docs/validation/manual-sandbox.md).
 
+The full behavior specification used for requirement validation is in [docs/specification.md](docs/specification.md).
+
 ## Requirements
 
 - JDK 21.
