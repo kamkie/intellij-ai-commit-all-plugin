@@ -1,21 +1,29 @@
 # Manual Sandbox Validation
 
-Last updated: 2026-05-18
+Last updated: 2026-05-20
 
 This file records the manual sandbox coverage retained for scenarios that are not reliable to automate with the current Gradle, IntelliJ test framework, and CI setup.
 
 ## IDE Matrix
 
-Representative IDE builds for manual validation, queried from JetBrains product release data on 2026-05-15:
+Representative IDE builds for manual validation, queried from JetBrains product release data on 2026-05-20 and confirmed in local installations:
 
-- IntelliJ IDEA 2026.1.1, build 261.23567.138, product code `IIU`.
-- PyCharm 2026.1.1, build 261.23567.174, product code `PCP`.
-- WebStorm 2026.1.1, build 261.23567.141, product code `WS`.
+- IntelliJ IDEA 2026.1.2, build 261.24374.151, release data product code `IIU`.
+- PyCharm 2026.1.2, build 261.24374.152, release data product code `PCP`.
+- WebStorm 2026.1.2, build 261.24374.125, product code `WS`.
 
 Source queries:
 
 - `https://data.services.jetbrains.com/products?code=IU,PY,WS`
 - `https://data.services.jetbrains.com/products/releases?code=IU,PY,WS&latest=true&type=release`
+
+## Current Release Matrix Status
+
+Artifact prepared for the current manual validation cycle:
+`build/distributions/ai-commit-all-v0.1.0-alpha.9-43-gc2fc8e0716.zip`, produced by
+`.\gradlew.bat buildPlugin` on 2026-05-20.
+
+Manual scenario execution is still pending. The scenario rows below require live IDE observation, current plugin installation state, AI Assistant signed-in and unavailable states, and local Git fixture interaction before Marketplace release readiness can be claimed.
 
 ## Automated Coverage Added
 
@@ -88,10 +96,12 @@ Project-wide scenario counts, automated coverage, manual coverage, and test case
 
 ## Run Command
 
-Use the Gradle sandbox as the default manual validation entry point:
+Use the Gradle sandbox as the default implementation sandbox entry point:
 
 ```powershell
 .\gradlew.bat runIde
 ```
+
+For release-matrix validation, install the packaged plugin artifact into the current locally installed products named above. `runIde` covers the configured Gradle IntelliJ Platform product and does not exercise the full IDEA, PyCharm, and WebStorm matrix.
 
 Use temporary local Git repositories and local bare remotes for commit-and-push checks. Do not use a real remote while validating this workflow.
