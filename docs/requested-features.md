@@ -21,17 +21,18 @@ Excluded:
 
 ## UI and Control
 
-| Feature                                                                                      | ADR                                                                                          | Status                 | Resolved |
-|----------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|------------------------|----------|
-| Three-section toolbar control (`AI`, `Commit`, `Push`) with cumulative behavior              | [ADR-0052](decisions/adr-0052-use-three-section-ai-commit-push-control.md)                   | Shipped                | —        |
-| Violet AI Snake compact style as the final three-section styling                             | [ADR-0053](decisions/adr-0053-select-violet-ai-snake-three-section-control-style.md)         | Shipped                | —        |
-| Canonical product and action labels (`AI Commit All`, three-section section labels)          | [ADR-0005](decisions/adr-0005-canonical-product-and-action-labels.md)                        | Shipped                | —        |
-| AI-generated, IntelliJ-style icon bases                                                      | [ADR-0015](decisions/adr-0015-use-ai-generated-intellij-style-icon-bases.md)                 | Shipped                | Q-UX-2   |
-| Iterative styling drafts to choose from before final selection                               | [ADR-0025](decisions/adr-0025-create-split-button-styling-drafts.md)                         | Shipped                | Q-UX-5   |
-| Reuse standard IntelliJ error messages; do not invent custom text where the platform has one | [ADR-0016](decisions/adr-0016-reuse-standard-intellij-error-messages.md)                     | Shipped                | Q-UX-3   |
-| Use standard IDE confirmation barriers; no plugin-specific custom confirmation dialogs       | [ADR-0017](decisions/adr-0017-use-standard-ide-confirmation-barriers.md)                     | Shipped                | Q-UX-4   |
-| Split button with `AI Commit All` + `& Push` segments                                        | [ADR-0006](decisions/adr-0006-use-split-button-for-commit-and-push.md)                       | Superseded by ADR-0052 | —        |
-| Placeholder graphic as temporary styling reference                                           | [ADR-0027](decisions/adr-0027-use-generated-placeholder-graphic-for-split-button-styling.md) | Superseded by ADR-0053 | Q-UX-6   |
+| Feature                                                                                        | ADR                                                                                          | Status                 | Resolved |
+|------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|------------------------|----------|
+| Three-section toolbar control (`AI`, `Commit`, `Push`) with cumulative behavior                | [ADR-0052](decisions/adr-0052-use-three-section-ai-commit-push-control.md)                   | Shipped                | —        |
+| Violet AI Snake compact style as the final three-section styling                               | [ADR-0053](decisions/adr-0053-select-violet-ai-snake-three-section-control-style.md)         | Shipped                | —        |
+| Replace the standard `Commit and Push...` toolbar action with the plugin three-section control | [ADR-0070](decisions/adr-0070-replace-standard-commit-and-push-toolbar-action.md)            | Shipped                | —        |
+| Canonical product and action labels (`AI Commit All`, three-section section labels)            | [ADR-0005](decisions/adr-0005-canonical-product-and-action-labels.md)                        | Shipped                | —        |
+| AI-generated, IntelliJ-style icon bases                                                        | [ADR-0015](decisions/adr-0015-use-ai-generated-intellij-style-icon-bases.md)                 | Shipped                | Q-UX-2   |
+| Iterative styling drafts to choose from before final selection                                 | [ADR-0025](decisions/adr-0025-create-split-button-styling-drafts.md)                         | Shipped                | Q-UX-5   |
+| Reuse standard IntelliJ error messages; do not invent custom text where the platform has one   | [ADR-0016](decisions/adr-0016-reuse-standard-intellij-error-messages.md)                     | Shipped                | Q-UX-3   |
+| Use standard IDE confirmation barriers; no plugin-specific custom confirmation dialogs         | [ADR-0017](decisions/adr-0017-use-standard-ide-confirmation-barriers.md)                     | Shipped                | Q-UX-4   |
+| Split button with `AI Commit All` + `& Push` segments                                          | [ADR-0006](decisions/adr-0006-use-split-button-for-commit-and-push.md)                       | Superseded by ADR-0052 | —        |
+| Placeholder graphic as temporary styling reference                                             | [ADR-0027](decisions/adr-0027-use-generated-placeholder-graphic-for-split-button-styling.md) | Superseded by ADR-0053 | Q-UX-6   |
 
 ## Commit Behavior
 
@@ -44,16 +45,18 @@ Excluded:
 
 ## Push Behavior
 
-| Feature                                                                                                      | ADR                                                                | Status  | Resolved |
-|--------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------|---------|----------|
-| Safe immediate-push fast path on the push section; fall back to the standard IDE dialog when state is unsafe | [ADR-0047](decisions/adr-0047-use-safe-immediate-push-fallback.md) | Shipped | —        |
+| Feature                                                                                                                   | ADR                                                                                   | Status  | Resolved |
+|---------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|---------|----------|
+| Safe immediate-push fast path on the push section; fall back to the standard IDE dialog when state is unsafe              | [ADR-0047](decisions/adr-0047-use-safe-immediate-push-fallback.md)                    | Shipped | —        |
+| For outgoing-only `Push`, stop instead of opening the IDE Push Commits dialog when safe immediate push cannot be prepared | [ADR-0069](decisions/adr-0069-stop-outgoing-only-push-without-ide-dialog-fallback.md) | Shipped | —        |
 
 ## AI Integration
 
-| Feature                                                                                              | ADR                                                                              | Status  | Resolved               |
-|------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|---------|------------------------|
-| Detect AI generation completion via polling, with both interval and timeout configurable in Settings | [ADR-0012](decisions/adr-0012-detect-ai-completion-with-configurable-timeout.md) | Shipped | Q-AI-1, Q-AI-2, Q-AI-5 |
-| Require JetBrains AI Assistant as a hard plugin dependency; fail install if missing                  | [ADR-0013](decisions/adr-0013-require-jetbrains-ai-assistant-plugin.md)          | Shipped | Q-AI-3                 |
+| Feature                                                                                                                       | ADR                                                                              | Status  | Resolved               |
+|-------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|---------|------------------------|
+| Detect AI generation completion via an explicit AI-action signal, with a supporting check interval and a configurable timeout | [ADR-0012](decisions/adr-0012-detect-ai-completion-with-configurable-timeout.md) | Shipped | Q-AI-1, Q-AI-2, Q-AI-5 |
+| 30 second default for the configurable AI generation timeout (narrows ADR-0012's 5 second default)                            | [ADR-0068](decisions/adr-0068-use-30-second-default-ai-generation-timeout.md)    | Shipped | —                      |
+| Require JetBrains AI Assistant as a hard plugin dependency; fail install if missing                                           | [ADR-0013](decisions/adr-0013-require-jetbrains-ai-assistant-plugin.md)          | Shipped | Q-AI-3                 |
 
 ## Settings and Keymap
 

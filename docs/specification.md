@@ -41,7 +41,7 @@ This document is the requirement-validation reference for the `AI Commit All` In
 - REQ-ACT-001: The three-section control MUST be hidden in the Commit tool window outside an active supported Git commit workflow. Source: ADR 0009. Validates: SCN-CONTROL-AUT-007, SCN-CONTROL-AUT-008.
 - REQ-ACT-002: Git MUST be the only supported VCS for the first implementation. Non-Git VCS contexts MUST report `UnsupportedVcs` and MUST NOT start AI, commit, or push work. Source: ADR 0009. Validates: SCN-SELECT-*, SCN-WORKFLOW-*.
 - REQ-ACT-003: The control MUST be available for both the changelist-backed commit workflow and the Git staging-area commit workflow. Source: ADR 0020. Validates: SCN-STAGE-MAN-001..003, T-VAL-017 (manual).
-- REQ-ACT-004: A startup activity MUST remove the standard `Commit and Push...` action from the Commit tool window primary actions while the plugin three-section control is registered. Source: PLAN-three-section-ai-commit-push-control. Validates: SCN-CONTROL-AUT-001, T-IDEA-011 (manual).
+- REQ-ACT-004: A startup activity MUST remove the standard `Commit and Push...` action from the Commit tool window primary actions while the plugin three-section control is registered. Source: ADR 0070. Validates: SCN-CONTROL-AUT-001, T-IDEA-011 (manual).
 - REQ-ACT-005: The control MUST appear in `Vcs.Commit.PrimaryCommitActions` after `Git.Commit.And.Push.Executor`. Source: plugin descriptor. Validates: SCN-CONTROL-AUT-001.
 
 ## 3. Three-Section Control
@@ -127,7 +127,7 @@ The "selection" is the set of files acted on by a workflow run.
 - REQ-PUSH-003: Outgoing-only `Push` MUST NOT require local-matches-upstream verification, allowing an already-ahead local branch to push. Source: ADR 0047, alpha.9 fix. Validates: SCN-PUSH-*.
 - REQ-PUSH-004: Protected branch settings that prohibit force push MUST NOT by themselves force the IDE Push dialog when the push is a normal non-force push. Source: ADR 0047. Validates: T-BUG-015 (manual).
 - REQ-PUSH-005: When any verification in REQ-PUSH-002 fails for committable changes, push MUST fall back to the IDE commit-and-push executor and Push Commits dialog, and the fallback reason MUST be one of: `NoAffectedRepositories`, `MissingAffectedRepository`, `UnsafeRepositoryState`, `UnresolvedConflict`, `MissingTrackedUpstream`, `ForcePushStateUnverified`, `AmbiguousTarget`, `UnsupportedPushApi`. Source: ADR 0047. Validates: SCN-PUSH-*.
-- REQ-PUSH-006: Outgoing-only `Push` MUST NOT open the IDE Push Commits dialog when safe immediate push cannot be prepared; instead the workflow MUST stop. Source: ADR 0047, Unreleased fix. Validates: SCN-PUSH-*.
+- REQ-PUSH-006: Outgoing-only `Push` MUST NOT open the IDE Push Commits dialog when safe immediate push cannot be prepared; instead the workflow MUST stop. Source: ADR 0069. Validates: SCN-PUSH-*.
 - REQ-PUSH-007: A plugin-owned confirmation dialog MUST NOT be added for the safe immediate push path. Source: ADR 0047. Validates: SCN-PUSH-*.
 - REQ-PUSH-008: When the push executor is unavailable, the workflow MUST stop and MUST report `PushExecutionUnavailable`. Source: ADR 0016. Validates: SCN-WORKFLOW-*.
 - REQ-PUSH-009: The running indicator MUST remain active until the safe immediate push reports completion (success or failure), not stop immediately after the push request is dispatched. Source: alpha.8 fix. Validates: SCN-CONTROL-AUT-014.
@@ -153,7 +153,7 @@ Settings are stored at application scope in `aiCommitAll.xml` and exposed via `S
 | `clearCommitMessageBeforeGeneration` | Boolean | `true`  | n/a              | When `true`, the commit message control and document are cleared before AI invocation. |
 | `useVcsShortcutsForAiCommitAll`      | Boolean | `true`  | n/a              | When `true`, the IDE commit and push shortcuts run the plugin workflows.               |
 
-- REQ-SET-001: Both timing values MUST be validated as positive on apply. Non-positive values MUST be rejected or normalized to defaults; the plugin MUST NOT persist non-positive values. Source: ADR 0012, AiCommitAllSettings normalization. Validates: SCN-SETTINGS-*.
+- REQ-SET-001: Both timing values MUST be validated as positive on apply. Non-positive values MUST be rejected or normalized to defaults; the plugin MUST NOT persist non-positive values. Source: ADR 0012, ADR 0068, AiCommitAllSettings normalization. Validates: SCN-SETTINGS-*.
 - REQ-SET-002: Settings MUST persist across IDE restarts. Source: ADR 0054. Validates: SCN-SETTINGS-*.
 - REQ-SET-003: A change to `useVcsShortcutsForAiCommitAll` MUST take effect for subsequent shortcut activations without requiring an IDE restart. Source: ADR 0054. Validates: SCN-SHORTCUT-*.
 - REQ-SET-004: Default values MUST match the table above. Source: AiCommitAllSettings companion constants. Validates: SCN-SETTINGS-*.
@@ -192,7 +192,7 @@ The complete set of workflow stop reasons is fixed. Implementations MUST report 
 
 - REQ-INT-001: The plugin MUST register the action `pl.devopssolutions.aicommitall.actions.ThreeSectionControl` in `Vcs.Commit.PrimaryCommitActions` after `Git.Commit.And.Push.Executor`. Source: plugin descriptor. Validates: SCN-CONTROL-AUT-001.
 - REQ-INT-002: The plugin MUST register the shortcut actions `pl.devopssolutions.aicommitall.actions.CommitShortcut` and `pl.devopssolutions.aicommitall.actions.PushShortcut` with `use-shortcut-of` set to `CheckinProject` and `Vcs.Push` respectively, and with default `$default` keymap bindings of `control K` and `control shift K`. Source: ADR 0054. Validates: SCN-SHORTCUT-*.
-- REQ-INT-003: The plugin MUST replace, not duplicate, the standard `Commit and Push...` toolbar action while the three-section control is registered. Source: PLAN-three-section-ai-commit-push-control. Validates: T-IDEA-011 (manual).
+- REQ-INT-003: The plugin MUST replace, not duplicate, the standard `Commit and Push...` toolbar action while the three-section control is registered. Source: ADR 0070. Validates: T-IDEA-011 (manual).
 
 ## 13. Compatibility Surface
 
