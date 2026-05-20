@@ -41,7 +41,7 @@ Use this guide when adding or updating repository documentation.
 - Load repository prompts in two stages: identify the prompt from `.agents/prompts/README.md` by exact title, filename, or catalog entry, then load only the matching prompt and its declared read set.
 - Keep each prompt's read set small, state expected output, and name explicit non-goals.
 - Keep `.agents/skills/*/SKILL.md` front matter name in sync with the directory name, and include a `## Start` section for the first read set or startup workflow.
-- Run `scripts/ai/validate-agent-artifacts.ps1` directly when adding or changing repository skills or prompts; it also runs through `scripts/validate-docs.ps1`.
+- Run `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` when adding or changing repository skills or prompts; it also runs through `scripts/validate-docs.ps1`.
 - Do not use `.agents/prompts/` for active backlog items, implementation sequencing, durable policy, or executable workflow accelerators; use `TASKS.md`, `.agents/plans/`, `.agents/references/`, or `.agents/skills/` respectively.
 - Give every proposal a stable `proposal_id` in the form `PROP-<short-kebab-slug>`, include it in active and archived filenames, keep it stable when title, filename, status, wording, or archive location changes, and do not reuse retired proposal IDs.
 - Use three-digit proposal finding IDs such as `F001`, `E001`, `D001`, and `S001` for active proposal findings; archived proposals may keep historical IDs unless materially updated.

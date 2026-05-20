@@ -20,12 +20,14 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 - Enabled Gradle configuration cache and made coverage verification cache-compatible for faster local and CI Gradle configuration.
 - Updated README validation, prerelease status, CI, and manual-sandbox scope notes to match the current build and workflow configuration.
+- Expanded the manual release workflow gate to reject non-`main` refs and run documentation validation, formatting, Detekt, tests, coverage verification, plugin packaging, and the supported IDE Plugin Verifier matrix before Marketplace signing and publication.
 
 ### Fixed
 
 - Fixed JaCoCo coverage reporting for IntelliJ plugin tests so CI uploads nonzero production coverage instead of an all-uncovered report.
 - Replaced the deprecated Codecov test-results action with `codecov-action` test-result uploads and explicit JUnit XML file collection.
 - Prevented outgoing-only `Push` from opening the IDE Push dialog when there are no files to commit, while allowing normal tracked-branch outgoing commits to use safe immediate push.
+- Removed the deprecated IntelliJ action invocation API from standard commit and push shortcut delegation.
 
 ## [v0.1.0-alpha.9] - 2026-05-19
 

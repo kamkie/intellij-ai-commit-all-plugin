@@ -162,13 +162,7 @@ internal fun interface StandardVcsShortcutActionDelegate {
 internal object IntellijStandardVcsShortcutActionDelegate : StandardVcsShortcutActionDelegate {
     override fun perform(sourceActionId: String, event: AnActionEvent) {
         val sourceAction = ActionManager.getInstance().getAction(sourceActionId) ?: return
-        ActionUtil.invokeAction(
-            sourceAction,
-            event.dataContext,
-            event.place,
-            event.inputEvent,
-        ) {
-        }
+        ActionUtil.performAction(sourceAction, event)
     }
 }
 

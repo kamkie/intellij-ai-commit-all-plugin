@@ -21,7 +21,6 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import git4idea.push.GitPushListener
-import git4idea.push.GitPushRepoResult
 import git4idea.repo.GitRepository
 import java.util.concurrent.CompletableFuture
 
@@ -35,14 +34,7 @@ internal class GitPushCompletionService(private val project: Project) : Disposab
         project.messageBus.connect(this)
             .subscribe(
                 GitPushListener.TOPIC,
-                object : GitPushListener {
-                    override fun onCompleted(
-                        repository: GitRepository,
-                        pushResult: GitPushRepoResult,
-                    ) {
-                        completeRepositoryPush(repository)
-                    }
-                },
+                GitPushCompletionListener { repository -> completeRepositoryPush(repository) },
             )
     }
 

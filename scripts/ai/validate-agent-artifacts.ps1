@@ -12,7 +12,18 @@ function Add-ValidationError {
 function Get-RelativePath {
     param([string] $Path)
     $resolved = Resolve-Path -LiteralPath $Path
-    return [System.IO.Path]::GetRelativePath($repoRoot.Path, $resolved.Path).Replace('\', '/')
+    $getRelativePathMethod = [System.IO.Path].GetMethods() |
+        Where-Object { $_.Name -eq 'GetRelativePath' -and $_.GetParameters().Count -eq 2 } |
+        Select-Object -First 1
+    if ($null -ne $getRelativePathMethod)
+    {
+        return [System.IO.Path]::GetRelativePath($repoRoot.Path, $resolved.Path).Replace('\', '/')
+    }
+
+    $rootPath = [System.IO.Path]::GetFullPath($repoRoot.Path).TrimEnd('\', '/') + [System.IO.Path]::DirectorySeparatorChar
+    $resolvedPath = [System.IO.Path]::GetFullPath($resolved.Path)
+    $relativeUri = ([Uri]$rootPath).MakeRelativeUri([Uri]$resolvedPath)
+    return [Uri]::UnescapeDataString($relativeUri.ToString()).Replace('\', '/')
 }
 
 function Get-MarkdownHeadingTitle {

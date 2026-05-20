@@ -174,7 +174,7 @@ The canonical source repository is [github.com/kamkie/intellij-ai-commit-all-plu
 Release publication is intentionally manual and gated:
 
 1. Complete implementation, documentation, validation, and changelog review on `main`.
-2. Run local validation for the release candidate, including `test`, `verifyPluginStructure`, `buildPlugin`, and `verifyPlugin`.
+2. Run local validation for the release candidate, including `spotlessCheck`, documentation validation, `detekt`, `test`, `jacocoTestReport`, `verifyJacocoCoverageReport`, `verifyPluginStructure`, `buildPlugin`, and the IntelliJ Plugin Verifier matrix.
 3. Confirm manual sandbox validation evidence is current where release scope depends on it.
 4. Configure the GitHub Environment named `jetbrains-marketplace` with required reviewer protection.
 5. Add GitHub Actions secrets `CERTIFICATE_CHAIN`, `PRIVATE_KEY`, `PRIVATE_KEY_PASSWORD`, and `PUBLISH_TOKEN`.
@@ -183,7 +183,7 @@ Release publication is intentionally manual and gated:
 
 Builds derive the Gradle project version and IntelliJ plugin descriptor version from Git metadata using Palantir `gradle-git-version`. Normal local and CI builds use `<latest-tag>-<commit-distance>-g<short-sha>`, tagged commits use `<latest-tag>-g<short-sha>`, and dirty working trees append `.dirty`. Set `GIT_VERSION` only when a packaging environment must override Git-derived version discovery.
 
-The release workflow signs the plugin and calls `publishPlugin` only after manual dispatch and environment approval. Do not create tags or publish Marketplace updates unless release execution is explicitly requested.
+The release workflow fails on non-`main` refs, validates documentation, formatting, Detekt, tests, coverage, plugin structure, packaging, and the IntelliJ IDEA, PyCharm, and WebStorm verifier matrix, then signs the plugin and calls `publishPlugin` only after manual dispatch and environment approval. Do not create tags or publish Marketplace updates unless release execution is explicitly requested.
 
 ## Project
 
