@@ -1,15 +1,16 @@
 # Working With AI
 
-Use this guide when asking an AI agent to plan, implement, validate, or review work in this repository.
+Use this guide when asking an AI agent to plan, implement, validate, review, or release work in this repository.
 
-## Request Shape
+This file is for humans preparing requests. It is not part of the normal AI-agent read set. Agents should start from `AGENTS.md` and load only the specific owner guidance needed for the task.
 
-For implementation tasks, prefer a compact request with the details that constrain the work:
+## Fast Request Shape
+
+Most requests work best when they name the outcome, scope, constraints, and expected proof:
 
 ```text
 Task:
 Goal:
-Target IDE version:
 Target artifacts:
 Constraints:
 Validation expected:
@@ -18,103 +19,79 @@ Validation expected:
 Example:
 
 ```text
-Task: Scaffold the IntelliJ plugin project.
-Goal: Add a Kotlin Gradle project that can run an IDE sandbox.
-Target IDE version: 2026.1.
-Target artifacts: build.gradle.kts, settings.gradle.kts, plugin.xml.
-Constraints: Keep publishing, signing, and CI changes aligned with ADR 0019.
-Validation expected: gradle buildPlugin and gradle runIde startup.
+Task: Fix T-DETEKT-001.
+Goal: Reduce the Detekt baseline without changing runtime behavior.
+Target artifacts: config/detekt/baseline.xml and focused Kotlin files.
+Constraints: Keep changes mechanical unless a finding exposes a real bug.
+Validation expected: .\gradlew.bat detekt and targeted tests if code changes.
 ```
 
-For design tasks, ask for early shaping before deciding whether the idea needs a proposal, ADR, implementation plan, task update, documentation change, or direct implementation:
+For very small requests, a task ID, filename, prompt name, or concrete bug report is enough. The agent should use `AGENTS.md` lookup rules to find the owning artifact.
 
-```text
-Design goal:
-Non-goals:
-Relevant constraints or decisions:
-Options wanted:
-Recommendation wanted:
-Next artifact expected:
-```
+## Choose The Request Type
 
-Design tasks should usually ask the AI agent to identify the goal and non-goals, relevant constraints and existing decisions, one to three viable approaches, tradeoffs, risks, unanswered questions, and the likely next artifact.
-
-## Useful Task Types
-
-- Design: ask for early exploration of new product behavior, UX, APIs, architecture, repository structure, or workflow ideas before choosing a durable artifact or implementation path. Design output can stay in chat when no durable record is needed.
-- Planning: ask for a plan when the target IDE version, supported IDEs, or commit/push behavior is not settled.
-- Implementation: name the user-facing behavior, target files, validation expected, and any decisions already made.
-- Review: ask for bugs, unintended commit risk, AI Assistant integration risk, and missing validation.
-- Documentation: state whether the change affects users, contributors, or AI agents.
-- Proposal: ask for a proposal when you want findings, duplications, simplifications, or improvement options collected for later triage without immediate implementation.
+- Design: ask for early exploration before deciding whether an idea needs a proposal, ADR, plan, task, documentation change, or implementation.
+- Planning: ask for an implementation plan when work spans multiple behavior areas, files, or unresolved technical choices.
+- Implementation: name the behavior or task ID, the target files if known, constraints, and validation expected.
+- Review: ask for bugs, regressions, missing validation, compatibility risk, or architecture concerns.
+- Documentation: state whether the change affects plugin users, contributors, repository workflow, or AI-agent guidance.
+- Proposal: ask for a proposal when you want findings, duplication, simplification, or improvement options collected for later triage.
 - Release: ask only after implementation is integrated and validation evidence is ready.
 
-Design tasks do not replace the existing gates. If design work chooses or changes durable project direction, repository rules, compatibility policy, user behavior, validation expectations, or future maintenance policy, expect an ADR and a stop for explicit acceptance. If design work leads to multi-file implementation, behavior changes, or unresolved technical choices, expect an implementation plan and a stop for explicit approval. If the desired output is durable triage for findings or improvement options, use a proposal instead.
+Design output can stay in chat when no durable record is needed. If design work chooses or changes durable project direction, repository rules, compatibility policy, user behavior, validation expectations, or future maintenance policy, expect an ADR and a stop for explicit acceptance.
 
-## What AI Should Read
+## Useful References To Name
 
-- Start with `AGENTS.md`.
-- Do not ask or expect AI to load every AI instruction file automatically; it should use the guidance map and load only the specific owner documents needed for the task.
-- Use `TASKS.md` for backlog and scope boundaries.
-- Use `docs/decisions/OPEN_QUESTIONS.md` for missing user decisions.
-- Use `docs/DEVELOPMENT_LIFECYCLE.md` for multi-step changes.
-- Use `.agents/references/planning.md` before creating implementation plans.
-- Use `.agents/references/execution.md` before implementation.
-- Use `.agents/references/testing.md` before choosing validation.
-- Use `.agents/references/reviews.md` for review tasks.
-- Use `.agents/references/releases.md` for release preparation, changelog updates, and support-policy checks.
-- Use `.agents/references/code-style.md` before editing Kotlin, Gradle, or plugin descriptor files.
-- Use `.agents/references/documentation.md` before adding or changing docs.
-- Use `docs/proposals/README.md` before creating repository analysis or improvement proposal files.
-- Use `docs/decisions/` for project decisions and repository rule changes.
+Name stable IDs or files when they are relevant:
 
-If a requested change requires an ADR, expect the AI to create the ADR first and stop until you explicitly accept it.
+- `T-<AREA>-NNN` for backlog tasks in `TASKS.md` or `TASKS_ARCHIVE.md`.
+- `adr-NNNN` for decisions in `docs/decisions/`.
+- `PLAN-<slug>` for implementation plans in `.agents/plans/`.
+- `PROP-<slug>` for proposals in `docs/proposals/`.
+- Prompt filenames such as `backlog-triage.md` for reusable repository prompt recipes.
+- Concrete files when the request is intentionally narrow.
 
-If a requested change needs an implementation plan, expect the AI to create or update the plan first and stop until you explicitly approve it.
+Avoid asking the agent to load every guidance file. Ask for the work, the constraints, and the expected result; the agent should choose the smallest governing read set.
 
-## Constraints To State Explicitly
+## Constraints To State
 
-- Minimum supported IntelliJ Platform version, currently 2026.1.
-- Target IDEs, currently all JetBrains IDEs with VCS commit UI.
-- Git-only first-version behavior, including multiple Git roots.
-- Three-section control implementation details beyond the accepted ADR 0052 structure and ADR 0053 styling reference.
-- Plugin ID and base package `pl.devopssolutions.aicommitall`; vendor `DevOps Solutions Kamil Kiewisz`.
-- Apache-2.0 repository and plugin license.
-- Open-source publication to the official JetBrains Marketplace, including signing, Marketplace metadata, and CI.
-- Manual validation against current stable JetBrains IDE builds available through All Products Pack.
-- End-to-end validation against local Git repositories where practical.
-- Whether proprietary JetBrains AI Assistant APIs may be used directly. The default is no.
+State any constraint that would change the implementation or validation path:
 
-## Validation Expectations
+- Target IntelliJ Platform version, currently the 2026.1 line.
+- Target JetBrains IDEs, currently IDEs with the VCS Commit tool window.
+- Git-only behavior and multiple Git root expectations.
+- JetBrains AI Assistant dependency and whether proprietary APIs may be used directly. The default is no.
+- Three-section `AI | Commit | Push` behavior or styling constraints.
+- Plugin ID, package, vendor, license, Marketplace, signing, or CI constraints.
+- Manual sandbox validation scope, especially AI Assistant, Git staging area, commit-only, commit-and-push, and push behavior.
 
-Ask for validation that matches the change. For code changes, likely checks include:
+## Expected Stops
 
-- `gradle buildPlugin`
-- `gradle verifyPlugin` when configured
-- `gradle runIde` for sandbox validation
-- IntelliJ Plugin Verifier for supported IDE ranges
-- Manual sandbox checks for tracked, deleted, moved or renamed, unversioned, ignored-file exclusion, commit-only, commit-and-push, AI unavailable, and Git staging-area modes
+The agent should stop instead of implementing when the requested work needs:
 
-For documentation-only changes, a focused content review and link/path check is usually enough.
+- A new or changed repository decision: create an ADR first.
+- A multi-step implementation plan: create or update the plan first.
+- Missing user input: record or point to `docs/decisions/OPEN_QUESTIONS.md`.
+- Maintainer triage of findings or options: create a proposal instead of implementing.
+
+Implementation from a plan should start only after you explicitly approve that plan.
+
+## Validation To Ask For
+
+Ask for validation that matches the risk:
+
+- Documentation or AI-guidance changes: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1` and `git diff --check`.
+- Repository skills or prompts: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\ai\validate-agent-artifacts.ps1`.
+- Kotlin or Gradle changes: `.\gradlew.bat spotlessCheck`, focused tests, and broader tests when shared behavior changes.
+- Detekt cleanup: `.\gradlew.bat detekt`.
+- Plugin packaging or descriptor changes: `.\gradlew.bat buildPlugin` and `.\gradlew.bat verifyPluginStructure`.
+- Compatibility-sensitive changes: plugin verifier and targeted sandbox checks.
+- Runtime commit, push, AI Assistant, or UI workflow changes: targeted automated tests plus manual sandbox evidence where the live IDE owns the behavior.
+
+If the agent skips validation, expect a concrete reason.
 
 ## Commit Requests
 
-When asking AI to commit completed work, expect Conventional Commit messages with the metadata trailer block defined in [.gitmessage](../.gitmessage).
+The agent should not commit unless you ask for a commit or the approved task scope explicitly requires one.
 
-When asking AI to create or execute a plan, expect a stable non-number-only `Plan-ID` such as `PLAN-scaffold-plugin-project`.
-
-Implementation from a plan should start only after you review and explicitly approve that plan.
-
-When asking AI to create a proposal, expect a stable `proposal_id` such as `PROP-repository-analysis`.
-
-When work comes from `TASKS.md`, reference the stable `T-AREA-NNN` task ID in the request or expect AI to identify it before implementation.
-
-For approved plans, use `.agents/references/planning.md` and `.agents/references/execution.md` for readiness, stop-on-question behavior, per-task commits, and orchestrator or task-worker execution.
-
-For release preparation, use [.agents/references/releases.md](../.agents/references/releases.md). The release orchestrator owns [CHANGELOG.md](../CHANGELOG.md) updates and should check whether [SUPPORT.md](../SUPPORT.md) still matches the release scope.
-
-To use the same template locally:
-
-```text
-git config commit.template .gitmessage
-```
+When asking for a commit, expect a Conventional Commit message with the metadata trailer block defined in [.gitmessage](../.gitmessage). For approved plans, expect plan status and validation evidence to be current before each task commit.
