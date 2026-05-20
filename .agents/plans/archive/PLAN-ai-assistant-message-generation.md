@@ -10,6 +10,10 @@ Workers: 1
 
 Filename: `.agents/plans/archive/PLAN-ai-assistant-message-generation.md`
 
+## Superseded By
+
+`docs/specification.md` REQ-AI-002 owns the current AI commit-message action discovery behavior. The Task 1 wording below ("fall back to `Vcs.MessageActionGroup` or commit toolbar action presentation text") records the original design at archive time and does NOT match the current implementation, which uses a three-stage ladder over `Vcs.LLMCommitMessageAction`, then the `Vcs.LLM` ID prefix, then the `Vcs.` ID prefix with presentation heuristics. Treat this plan as a historical snapshot and consult `docs/specification.md` for current behavior.
+
 ## Readiness
 
 - Plan readiness: Closed; archived by user request.

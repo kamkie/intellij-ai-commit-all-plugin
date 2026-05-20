@@ -7,22 +7,36 @@ This project is a pre-release IntelliJ Platform plugin repository. No Marketplac
 - Support is best-effort until the first official JetBrains Marketplace release.
 - Current release candidate target: `v0.1.0-alpha.9`, an implementation prerelease.
 - Current `main` branch state: AI Commit All workflow implementation and release automation are present but not Marketplace-published.
-- Current IntelliJ Platform baseline target: 2026.1.
-- Current IDE scope target: JetBrains IDEs with the VCS Commit tool window and compatible commit workflow APIs.
+- Current IntelliJ Platform target: 2026.1; automated compatibility validation currently uses `2026.1.1`.
+- Current IDE scope: JetBrains IDEs with the VCS Commit tool window and compatible commit workflow APIs. The release verifier gate covers IntelliJ IDEA, PyCharm, and WebStorm `2026.1.1`.
 - Current VCS scope: Git only, including multiple Git roots.
 - JetBrains AI Assistant is declared as a required plugin dependency.
-- Manual sandbox validation remains required before release-readiness claims.
-- Marketplace signing and publishing are configured through gated automation but have not been executed for a public release.
+- Manual sandbox validation remains required before release-readiness claims for final control rendering, staging-area modes, shortcut takeover, AI Assistant unavailable states, and full commit/push UI behavior.
+- Marketplace signing and publishing are configured through gated automation. The release workflow runs only from `main`, validates documentation, formatting, Detekt, tests, coverage, plugin structure, packaging, and the supported IDE verifier matrix before signing and publishing.
 
 See [README.md](README.md) for the current supported scope decisions.
+
+## Supported Prerelease Scope
+
+Support covers repository-local validation and prerelease plugin behavior for:
+
+- Git repositories using the non-modal IntelliJ Commit tool window.
+- Changelist-backed commit workflows and the Git staging-area commit workflow.
+- Modified, added, deleted, moved or renamed, unversioned, and resolved-conflict paths exposed by IntelliJ VCS APIs.
+- JetBrains AI Assistant commit-message generation invoked through the IntelliJ action system.
+- The `AI`, `Commit`, and `Push` sections of the Commit tool window control.
+- Default IDE commit and push shortcut takeover, plus the settings opt-out.
+
+Support for Marketplace installation and update behavior starts after the first Marketplace publication.
 
 ## Getting Help
 
 Use repository issues or maintainer review channels for:
 
 - Build, setup, or sandbox startup problems.
-- Bugs in the plugin once implementation exists.
+- Bugs in the prerelease plugin implementation.
 - Supported IDE, Git, changelist, staging-area, commit, push, or AI Assistant integration questions.
+- Release workflow, packaging, signing, or verifier failures that occur in this repository.
 - Documentation gaps or unclear setup steps.
 
 Include as much of this context as applies:

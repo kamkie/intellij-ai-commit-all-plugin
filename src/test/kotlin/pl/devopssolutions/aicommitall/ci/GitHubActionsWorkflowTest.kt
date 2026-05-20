@@ -407,7 +407,8 @@ internal class GitHubActionsWorkflowTest {
             "Release workflow must verify the same supported IDE matrix used by compatibility CI.",
         )
         assertTrue(
-            content.indexOf("Validate release candidate") < content.indexOf("Sign and publish to JetBrains Marketplace"),
+            content.indexOf("Validate release candidate") <
+                content.indexOf("Sign and publish to JetBrains Marketplace"),
             "Release workflow must finish validation before signing and publishing.",
         )
     }
