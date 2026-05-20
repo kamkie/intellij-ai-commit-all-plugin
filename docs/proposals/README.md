@@ -10,7 +10,7 @@ Proposals are advisory until accepted through the normal repository flow. A prop
 
 Active proposals still have at least one non-terminal implementation status row or at least one untriaged finding in their `Progress Tracker`.
 
-- None.
+- `PROP-multi-agent-context-packets` - Multi-Agent Context Packet Workflow ([PROP-multi-agent-context-packets-2026-05-21T00-06.md](PROP-multi-agent-context-packets-2026-05-21T00-06.md)), active as of 2026-05-21.
 
 ### Completed Proposals
 
