@@ -57,6 +57,7 @@ internal class AiCommitAllThreeSectionControl(
     }
 
     init {
+        name = AI_COMMIT_ALL_CONTROL_COMPONENT_NAME
         isOpaque = false
         isFocusable = true
         border = JBUI.Borders.empty()
@@ -72,7 +73,8 @@ internal class AiCommitAllThreeSectionControl(
             accessibleContext = object : AccessibleJComponent() {
                 override fun getAccessibleName(): String = super.getAccessibleName()?.takeIf { it.isNotBlank() } ?: "AI Commit All"
 
-                override fun getAccessibleDescription(): String = super.getAccessibleDescription()?.takeIf { it.isNotBlank() } ?: "AI, Commit, and Push sections"
+                override fun getAccessibleDescription(): String = super.getAccessibleDescription()?.takeIf { it.isNotBlank() }
+                    ?: accessibleDescription()
             }
         }
         return accessibleContext
@@ -144,6 +146,20 @@ internal class AiCommitAllThreeSectionControl(
     }
 
     internal fun cornerArcForTest(): Float = buttonArc()
+
+    private fun accessibleDescription(): String {
+        state.runningSection?.let { section ->
+            return "AI, Commit, and Push sections; ${section.label} is running"
+        }
+        val enabledSections = AiCommitAllControlSection.entries
+            .filter { section -> state.isSectionEnabled(section) }
+            .joinToString(", ") { section -> section.label }
+        return if (enabledSections.isBlank()) {
+            "AI, Commit, and Push sections; no sections are enabled"
+        } else {
+            "AI, Commit, and Push sections"
+        }
+    }
 
     private fun paintControl(graphics: Graphics2D) {
         val bounds = controlBounds()

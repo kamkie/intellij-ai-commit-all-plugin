@@ -17,6 +17,7 @@ package pl.devopssolutions.aicommitall.actions
 
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
 
@@ -27,13 +28,26 @@ internal class AiCommitAllCommitToolbarStartupActivity : ProjectActivity {
 }
 
 internal object AiCommitAllCommitToolbarCustomizer {
-    fun removeStandardCommitAndPushAction(actionManager: ActionManager = ActionManager.getInstance()) {
+    fun removeStandardCommitAndPushAction(actionManager: ActionManager? = defaultActionManager()) {
+        if (actionManager == null) {
+            return
+        }
         val primaryCommitActions = actionManager.getAction(PRIMARY_COMMIT_ACTIONS_GROUP_ID) as? DefaultActionGroup
             ?: return
         val commitAndPushAction = actionManager.getAction(IDE_COMMIT_AND_PUSH_ACTION_ID)
-            ?: return
 
-        primaryCommitActions.remove(commitAndPushAction, actionManager)
+        primaryCommitActions.getChildren(actionManager)
+            .filter { action ->
+                action == commitAndPushAction || actionManager.getId(action) == IDE_COMMIT_AND_PUSH_ACTION_ID
+            }
+            .forEach { action -> primaryCommitActions.remove(action, actionManager) }
+    }
+
+    private fun defaultActionManager(): ActionManager? {
+        if (ApplicationManager.getApplication() == null) {
+            return null
+        }
+        return ActionManager.getInstance()
     }
 }
 

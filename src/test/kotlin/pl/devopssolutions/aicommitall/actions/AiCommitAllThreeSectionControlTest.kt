@@ -16,6 +16,7 @@
 package pl.devopssolutions.aicommitall.actions
 
 import com.intellij.ide.ui.laf.darcula.DarculaUIUtil
+import com.intellij.ui.JBColor
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
@@ -173,8 +174,32 @@ internal class AiCommitAllThreeSectionControlTest {
     fun `accessibility names the segmented control`() {
         val control = testControl()
 
+        assertEquals(AI_COMMIT_ALL_CONTROL_COMPONENT_NAME, control.name)
         assertEquals("AI Commit All", control.accessibleContext.accessibleName)
         assertEquals("AI, Commit, and Push sections", control.accessibleContext.accessibleDescription)
+    }
+
+    @Test
+    fun `accessibility reports disabled and running states`() {
+        val disabledControl = testControl(
+            state = testState(
+                AiCommitAllControlSection.Ai to AiCommitAllWorkflowActionAvailability.Disabled,
+                AiCommitAllControlSection.Commit to AiCommitAllWorkflowActionAvailability.Disabled,
+                AiCommitAllControlSection.Push to AiCommitAllWorkflowActionAvailability.Disabled,
+            ),
+        )
+        val runningControl = testControl(
+            state = testState(runningSection = AiCommitAllControlSection.Commit),
+        )
+
+        assertEquals(
+            "AI, Commit, and Push sections; no sections are enabled",
+            disabledControl.accessibleContext.accessibleDescription,
+        )
+        assertEquals(
+            "AI, Commit, and Push sections; Commit is running",
+            runningControl.accessibleContext.accessibleDescription,
+        )
     }
 
     @Test
@@ -236,6 +261,19 @@ internal class AiCommitAllThreeSectionControlTest {
         val control = testControl()
 
         assertEquals(DarculaUIUtil.BUTTON_ARC.getFloat(), control.cornerArcForTest())
+    }
+
+    @Test
+    fun `control rendering smoke is nonblank in light and dark modes`() {
+        val control = testControl(
+            state = testState(runningSection = AiCommitAllControlSection.Push),
+        )
+
+        listOf(false, true).forEach { dark ->
+            withDarkMode(dark) {
+                assertTrue(control.renderImage().hasNonblankContent(), "dark=$dark rendering must be nonblank")
+            }
+        }
     }
 
     private fun testControl(
@@ -323,5 +361,44 @@ internal class AiCommitAllThreeSectionControlTest {
         val field = AiCommitAllThreeSectionControl::class.java.getDeclaredField("snakeOffset")
         field.isAccessible = true
         field.setFloat(this, offset)
+    }
+
+    private fun AiCommitAllThreeSectionControl.renderImage(): BufferedImage {
+        val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        val graphics = image.createGraphics()
+        try {
+            paint(graphics)
+        } finally {
+            graphics.dispose()
+        }
+        return image
+    }
+
+    private fun BufferedImage.hasNonblankContent(): Boolean {
+        var opaquePixels = 0
+        val colors = mutableSetOf<Int>()
+        for (x in 0 until width) {
+            for (y in 0 until height) {
+                val pixel = getRGB(x, y)
+                if ((pixel ushr 24) > 0) {
+                    opaquePixels++
+                    colors += pixel
+                }
+            }
+        }
+        return opaquePixels > 0 && colors.size > 1
+    }
+
+    private fun withDarkMode(
+        dark: Boolean,
+        block: () -> Unit,
+    ) {
+        val previousDarkMode = !JBColor.isBright()
+        JBColor.setDark(dark)
+        try {
+            block()
+        } finally {
+            JBColor.setDark(previousDarkMode)
+        }
     }
 }

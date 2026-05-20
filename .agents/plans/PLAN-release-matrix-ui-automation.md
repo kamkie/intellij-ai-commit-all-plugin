@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-release-matrix-ui-automation.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-20T23:07:23+02:00
 - Open questions: None. The maintainer answered the task-local questions in this draft.
-- Implementation progress: Tasks 1 and 2 completed; Task 3 pending.
+- Implementation progress: Tasks 1, 2, and 3 completed; Task 4 pending.
 
 ## Status History
 
@@ -23,6 +23,7 @@ Filename: `.agents/plans/PLAN-release-matrix-ui-automation.md`
 - 2026-05-20T23:08:38+02:00: Approved -> In Progress by Codex <codex@openai.com>; Task 1 implementation started after approval.
 - 2026-05-20T23:23:51+02:00: Task 1 completed by Codex <codex@openai.com>; `releaseMatrixUiTest` launches IDEA 2026.1.2, installs the built plugin plus a test-only `com.intellij.ml.llm` substitute, and verifies `Vcs.LLMCommitMessageAction` is registered through Driver.
 - 2026-05-20T23:57:35+02:00: Task 2 completed by Codex <codex@openai.com>; deterministic Git fixtures and fake AI commit-message generation were added to the IDEA UI automation lane.
+- 2026-05-21T00:31:45+02:00: Task 3 completed by Codex <codex@openai.com>; Commit tool window Driver checks now verify the AI Commit All control, disabled state, toolbar replacement, segment clicks, and nonblank light/dark screenshots.
 
 ## Goal
 
@@ -137,6 +138,16 @@ flowchart TD
     - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` passed on Windows after fixing fake plugin JUnit discovery and EDT action invocation.
     - `.\gradlew.bat test buildPlugin` passed.
     - `.\gradlew.bat spotlessCheck` passed.
+- Task 3 added a stable Swing component name and state-aware accessible descriptions for the AI Commit All three-section control.
+- Task 3 hardened toolbar replacement so the standard `Git.Commit.And.Push.Executor` action is removed by resolved group-child action ID and is also rechecked when the custom component is created.
+- Task 3 added a clean Git fixture variant and a Driver-backed Commit tool window test that opens IDEA, waits for the control, verifies the standard `Commit and Push...` action is absent from the resolved primary commit group, clicks `AI`, `Commit`, and `Push` segments, asserts disabled accessibility state, and writes nonblank light/dark screenshots under `build/reports/releaseMatrixUiTest/screenshots/commit-control/`.
+- Task 3 local validation:
+    - `.\gradlew.bat compileIntegrationTestKotlin` passed.
+    - `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.actions.AiCommitAllCommitToolbarCustomizerTest" --tests "pl.devopssolutions.aicommitall.actions.AiCommitAllThreeSectionControlTest"` passed.
+    - `.\gradlew.bat spotlessCheck test buildPlugin` passed.
+    - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` passed on Windows and produced `ai-commit-all-control-light.png` and `ai-commit-all-control-dark.png`.
+    - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1` passed.
+    - `git diff --check` passed.
 
 ## Validation
 

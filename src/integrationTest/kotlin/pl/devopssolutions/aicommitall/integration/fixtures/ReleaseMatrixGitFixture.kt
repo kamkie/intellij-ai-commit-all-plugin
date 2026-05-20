@@ -30,14 +30,34 @@ internal data class ReleaseMatrixGitFixture(
 )
 
 internal object ReleaseMatrixGitFixtureBuilder {
-    fun create(baseDirectory: Path): ReleaseMatrixGitFixture {
+    fun create(baseDirectory: Path): ReleaseMatrixGitFixture = create(
+        baseDirectory = baseDirectory,
+        dirty = true,
+    )
+
+    fun createClean(baseDirectory: Path): ReleaseMatrixGitFixture = create(
+        baseDirectory = baseDirectory,
+        dirty = false,
+    )
+
+    private fun create(
+        baseDirectory: Path,
+        dirty: Boolean,
+    ): ReleaseMatrixGitFixture {
         val projectDirectory = baseDirectory.resolve("release-matrix-project")
         val bareRemote = IntegrationGitRepository.initBare(baseDirectory.resolve("origin.git"))
         val primaryRepository = IntegrationGitRepository.init(projectDirectory.resolve("root-a"))
         val secondaryRepository = IntegrationGitRepository.init(projectDirectory.resolve("root-b"))
 
-        configurePrimaryRepository(primaryRepository, bareRemote)
-        configureSecondaryRepository(secondaryRepository)
+        configurePrimaryRepository(
+            repository = primaryRepository,
+            bareRemote = bareRemote,
+            dirty = dirty,
+        )
+        configureSecondaryRepository(
+            repository = secondaryRepository,
+            dirty = dirty,
+        )
 
         return ReleaseMatrixGitFixture(
             projectDirectory = projectDirectory,
@@ -50,6 +70,7 @@ internal object ReleaseMatrixGitFixtureBuilder {
     private fun configurePrimaryRepository(
         repository: IntegrationGitRepository,
         bareRemote: IntegrationGitRepository,
+        dirty: Boolean,
     ) {
         repository.write("modified.txt", "original\n")
         repository.write("delete-me.txt", "delete\n")
@@ -62,6 +83,10 @@ internal object ReleaseMatrixGitFixtureBuilder {
         repository.git("remote", "add", "origin", bareRemote.root.toString())
         repository.git("push", "-u", "origin", "HEAD:main")
 
+        if (!dirty) {
+            return
+        }
+
         repository.write("modified.txt", "modified\n")
         repository.delete("delete-me.txt")
         repository.git("mv", "rename-source.txt", "rename-target.txt")
@@ -71,10 +96,18 @@ internal object ReleaseMatrixGitFixtureBuilder {
         repository.git("add", "already-staged.txt")
     }
 
-    private fun configureSecondaryRepository(repository: IntegrationGitRepository) {
+    private fun configureSecondaryRepository(
+        repository: IntegrationGitRepository,
+        dirty: Boolean,
+    ) {
         repository.write("secondary-tracked.txt", "secondary original\n")
         repository.git("add", ".")
         repository.git("commit", "-m", "initial secondary")
+
+        if (!dirty) {
+            return
+        }
+
         repository.write("secondary-tracked.txt", "secondary modified\n")
         repository.write("secondary-unversioned.txt", "secondary new\n")
     }

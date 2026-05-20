@@ -69,6 +69,7 @@ internal class AiCommitAllThreeSectionAction(
         presentation: Presentation,
         place: String,
     ): JComponent {
+        AiCommitAllCommitToolbarCustomizer.removeStandardCommitAndPushAction()
         lateinit var control: AiCommitAllThreeSectionControl
         control = AiCommitAllThreeSectionControl { section, inputEvent ->
             startSection(
@@ -143,6 +144,9 @@ internal enum class AiCommitAllControlSection(
 
 internal const val AI_COMMIT_ALL_THREE_SECTION_ACTION_ID: String =
     "pl.devopssolutions.aicommitall.actions.ThreeSectionControl"
+
+internal const val AI_COMMIT_ALL_CONTROL_COMPONENT_NAME: String =
+    "AI Commit All three-section control"
 
 internal data class AiCommitAllControlState(
     val sections: Map<AiCommitAllControlSection, AiCommitAllWorkflowActionAvailability>,

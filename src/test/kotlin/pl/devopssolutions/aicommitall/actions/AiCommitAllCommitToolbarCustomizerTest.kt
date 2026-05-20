@@ -54,6 +54,29 @@ internal class AiCommitAllCommitToolbarCustomizerTest {
         assertSame(commitAndPushAction, actionManager.getAction(IDE_COMMIT_AND_PUSH_ACTION_ID))
     }
 
+    @Test
+    fun `customizer removes standard commit and push child by action id`() {
+        val registeredCommitAndPushAction = TestAction()
+        val groupedCommitAndPushAction = TestAction()
+        val pluginAction = TestAction()
+        val group = DefaultActionGroup(groupedCommitAndPushAction, pluginAction)
+        val actionManager = TestActionManager(
+            actions = mapOf(
+                PRIMARY_COMMIT_ACTIONS_GROUP_ID to group,
+                IDE_COMMIT_AND_PUSH_ACTION_ID to registeredCommitAndPushAction,
+                AI_COMMIT_ALL_THREE_SECTION_ACTION_ID to pluginAction,
+            ),
+            extraIds = mapOf(groupedCommitAndPushAction to IDE_COMMIT_AND_PUSH_ACTION_ID),
+        )
+
+        AiCommitAllCommitToolbarCustomizer.removeStandardCommitAndPushAction(actionManager)
+
+        val children = group.getChildren(actionManager).toList()
+        assertFalse(groupedCommitAndPushAction in children)
+        assertContains(children, pluginAction)
+        assertSame(registeredCommitAndPushAction, actionManager.getAction(IDE_COMMIT_AND_PUSH_ACTION_ID))
+    }
+
     private class TestAction : AnAction() {
         override fun actionPerformed(event: AnActionEvent) = Unit
     }
@@ -61,8 +84,9 @@ internal class AiCommitAllCommitToolbarCustomizerTest {
     @Suppress("OVERRIDE_DEPRECATION")
     private class TestActionManager(
         private val actions: Map<String, AnAction>,
+        private val extraIds: Map<AnAction, String> = emptyMap(),
     ) : com.intellij.openapi.actionSystem.ActionManager() {
-        private val ids = actions.entries.associate { (id, action) -> action to id }
+        private val ids = actions.entries.associate { (id, action) -> action to id } + extraIds
 
         override fun createActionPopupMenu(
             place: String,
