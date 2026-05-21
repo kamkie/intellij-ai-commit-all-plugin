@@ -20,8 +20,6 @@ import com.intellij.driver.client.Remote
 import com.intellij.driver.sdk.Project
 import com.intellij.driver.sdk.getOpenProjects
 import com.intellij.driver.sdk.openToolWindow
-import com.intellij.driver.sdk.ui.components.UiComponent
-import com.intellij.driver.sdk.ui.ui
 import com.intellij.driver.sdk.waitFor
 import com.intellij.driver.sdk.waitForOne
 import com.intellij.ide.starter.ci.CIServer
@@ -42,7 +40,6 @@ import org.kodein.di.bindSingleton
 import pl.devopssolutions.aicommitall.integration.fixtures.IntegrationGitCli
 import pl.devopssolutions.aicommitall.integration.fixtures.ReleaseMatrixGitFixture
 import pl.devopssolutions.aicommitall.integration.fixtures.ReleaseMatrixGitFixtureBuilder
-import java.awt.Point
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.assertContains
@@ -159,13 +156,12 @@ class ReleaseMatrixUiHarnessTest {
             }
 
             val control = visibleAiCommitAllControl(project)
-            assertEquals(AI_COMMIT_ALL_CONTROL_ACCESSIBLE_NAME, control.component.getAccessibleContext()?.getAccessibleName())
             assertEquals(AI_COMMIT_ALL_CONTROL_ACCESSIBLE_NAME, probe.aiCommitAllControlAccessibleName(project))
             assertEquals(DISABLED_CONTROL_ACCESSIBLE_DESCRIPTION, probe.aiCommitAllControlAccessibleDescription(project))
             assertFalse(probe.isAiCommitAllControlEnabled(project), "A clean fixture should leave all sections disabled.")
 
             listOf("AI", "Commit", "Push").forEach { section ->
-                visibleAiCommitAllControl(project).clickSection(section)
+                clickAiCommitAllSection(project, section)
             }
             assertEquals(DISABLED_CONTROL_ACCESSIBLE_DESCRIPTION, probe.aiCommitAllControlAccessibleDescription(project))
 
@@ -247,7 +243,7 @@ class ReleaseMatrixUiHarnessTest {
             fixture = fixture,
         ) {
             val project = openReleaseMatrixCommitToolWindow()
-            visibleAiCommitAllControl(project).clickSection("Commit")
+            clickAiCommitAllSection(project, "Commit")
             waitForPrimaryRepositoryCommit(
                 fixture = fixture,
                 initialCommitCount = initialCommitCount,
@@ -269,7 +265,7 @@ class ReleaseMatrixUiHarnessTest {
             fixture = fixture,
         ) {
             val project = openReleaseMatrixCommitToolWindow()
-            visibleAiCommitAllControl(project).clickSection("Push")
+            clickAiCommitAllSection(project, "Push")
             waitForPrimaryRepositoryCommit(
                 fixture = fixture,
                 initialCommitCount = initialCommitCount,
@@ -307,7 +303,7 @@ class ReleaseMatrixUiHarnessTest {
             ) {
                 probe.hasOutgoingCommitsToPush(project) && probe.isAiCommitAllControlEnabled(project)
             }
-            visibleAiCommitAllControl(project).clickSection("Push")
+            clickAiCommitAllSection(project, "Push")
             waitFor(
                 message = "outgoing-only local commit reaches temporary bare remote",
                 timeout = 60.seconds,
@@ -335,16 +331,27 @@ class ReleaseMatrixUiHarnessTest {
         return project
     }
 
-    private fun Driver.visibleAiCommitAllControl(project: Project): UiComponent {
+    private fun Driver.visibleAiCommitAllControl(project: Project) {
         val probe = utility(RemoteFakeAiAssistantProbe::class)
         waitFor(
-            message = "IDE window and AI Commit All control are visible before clicking",
+            message = "IDE window and AI Commit All control are visible before in-process input dispatch",
             timeout = 30.seconds,
             interval = 1.seconds,
         ) {
             probe.openCommitToolWindow(project) && probe.isIdeFrameAndAiCommitAllControlVisible(project)
         }
-        return ui.x { byJavaClass(AI_COMMIT_ALL_CONTROL_CLASS_NAME) }
+    }
+
+    private fun Driver.clickAiCommitAllSection(
+        project: Project,
+        section: String,
+    ) {
+        val probe = utility(RemoteFakeAiAssistantProbe::class)
+        visibleAiCommitAllControl(project)
+        assertTrue(
+            probe.clickAiCommitAllSection(project, section),
+            "AI Commit All $section section was not visible for in-process click dispatch.",
+        )
     }
 
     private fun waitForPrimaryRepositoryCommit(
@@ -392,17 +399,6 @@ class ReleaseMatrixUiHarnessTest {
         checker = { project -> project.getName() == "release-matrix-project" },
     )
 
-    private fun UiComponent.clickSection(section: String) {
-        val bounds = component.getBounds()
-        val xRatio = when (section) {
-            "AI" -> 0.13
-            "Commit" -> 0.45
-            "Push" -> 0.82
-            else -> error("Unknown AI Commit All control section: $section")
-        }
-        click(Point((bounds.width * xRatio).toInt(), bounds.height / 2))
-    }
-
     private fun requiredSystemProperty(name: String): String {
         val value = System.getProperty(name)?.takeIf { propertyValue -> propertyValue.isNotBlank() }
         return requireNotNull(value) {
@@ -420,6 +416,7 @@ private interface RemoteFakeAiAssistantProbe {
     fun activateCommitToolWindow(project: Project): Boolean
     fun isAiCommitAllControlShowing(project: Project): Boolean
     fun isIdeFrameAndAiCommitAllControlVisible(project: Project): Boolean
+    fun clickAiCommitAllSection(project: Project, section: String): Boolean
     fun aiCommitAllControlAccessibleName(project: Project): String?
     fun aiCommitAllControlAccessibleDescription(project: Project): String?
     fun isAiCommitAllControlEnabled(project: Project): Boolean

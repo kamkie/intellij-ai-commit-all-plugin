@@ -40,7 +40,9 @@ import java.awt.Container
 import java.awt.Frame
 import java.awt.Graphics2D
 import java.awt.KeyboardFocusManager
+import java.awt.Point
 import java.awt.Window
+import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import java.nio.file.Files
 import java.nio.file.Path
@@ -119,6 +121,20 @@ object FakeAiAssistantProbe {
     @JvmStatic
     fun isAiCommitAllControlEnabled(project: Project): Boolean = runOnEdt {
         findAiCommitAllControl(project)?.isEnabled == true
+    }
+
+    @JvmStatic
+    fun clickAiCommitAllSection(
+        project: Project,
+        section: String,
+    ): Boolean = runOnEdt {
+        val control = findAiCommitAllControl(project) ?: return@runOnEdt false
+        if (!control.isShowing) {
+            return@runOnEdt false
+        }
+        control.requestFocusInWindow()
+        control.dispatchClick(section)
+        true
     }
 
     @JvmStatic
@@ -268,6 +284,35 @@ object FakeAiAssistantProbe {
             graphics.dispose()
         }
         return image
+    }
+
+    private fun JComponent.dispatchClick(section: String) {
+        val clickPoint = sectionClickPoint(section)
+        listOf(MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_RELEASED, MouseEvent.MOUSE_CLICKED).forEach { eventId ->
+            dispatchEvent(
+                MouseEvent(
+                    this,
+                    eventId,
+                    System.currentTimeMillis(),
+                    0,
+                    clickPoint.x,
+                    clickPoint.y,
+                    1,
+                    false,
+                    MouseEvent.BUTTON1,
+                ),
+            )
+        }
+    }
+
+    private fun JComponent.sectionClickPoint(section: String): Point {
+        val xRatio = when (section) {
+            "AI" -> 0.13
+            "Commit" -> 0.45
+            "Push" -> 0.82
+            else -> error("Unknown AI Commit All control section: $section")
+        }
+        return Point((width * xRatio).toInt(), height / 2)
     }
 
     private fun BufferedImage.hasNonblankContent(): Boolean {
