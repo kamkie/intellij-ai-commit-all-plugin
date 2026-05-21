@@ -77,10 +77,25 @@ object FakeAiAssistantProbe {
     @JvmStatic
     fun openCommitToolWindow(project: Project): Boolean = runOnEdt {
         performToolWindowActivationAction()
+        val frame = WindowManager.getInstance().getFrame(project)
+        frame?.apply {
+            if (extendedState and java.awt.Frame.ICONIFIED != 0) {
+                extendedState = extendedState and java.awt.Frame.ICONIFIED.inv()
+            }
+            toFront()
+            requestFocus()
+        }
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(COMMIT_TOOL_WINDOW_ID)
             ?: return@runOnEdt false
         toolWindow.activate(null, true)
         true
+    }
+
+    @JvmStatic
+    fun isIdeFrameAndAiCommitAllControlVisible(project: Project): Boolean = runOnEdt {
+        val frame = WindowManager.getInstance().getFrame(project) ?: return@runOnEdt false
+        frame.isShowing && frame.isVisible && frame.state and java.awt.Frame.ICONIFIED == 0 &&
+            findAiCommitAllControl(project)?.isShowing == true
     }
 
     @JvmStatic
