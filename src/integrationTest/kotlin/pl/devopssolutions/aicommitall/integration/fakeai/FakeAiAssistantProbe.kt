@@ -127,12 +127,7 @@ object FakeAiAssistantProbe {
     fun activateAiCommitAllSection(
         project: Project,
         section: String,
-    ): Boolean = when (section) {
-        "Commit" -> performAction(project, AI_COMMIT_ALL_COMMIT_SHORTCUT_ACTION_ID)
-        "Push" -> performAction(project, AI_COMMIT_ALL_PUSH_SHORTCUT_ACTION_ID)
-        "AI" -> clickAiCommitAllSection(project, section)
-        else -> error("Unknown AI Commit All control section: $section")
-    }
+    ): Boolean = clickAiCommitAllSection(project, section)
 
     @JvmStatic
     fun clickAiCommitAllSection(
@@ -188,15 +183,15 @@ object FakeAiAssistantProbe {
             null,
         )
 
-        ActionUtil.performAction(action, event)
+        runOnEdt {
+            ActionUtil.performAction(action, event)
+        }
 
+        val generatedMessage = awaitGeneratedCommitMessage(document, commitMessageControl)
         check(document.text == commitMessageControl.message) {
             "Fake AI action wrote different commit messages through document and control APIs."
         }
-        check(document.text.isNotBlank()) {
-            "Fake AI action did not write a commit message."
-        }
-        return document.text
+        return generatedMessage
     }
 
     @JvmStatic
@@ -264,6 +259,44 @@ object FakeAiAssistantProbe {
         return service.javaClass.getDeclaredMethod("hasOutgoingCommitsToPush").invoke(service) as Boolean
     }
 
+    @JvmStatic
+    fun hasCommittableContent(project: Project): Boolean {
+        val serviceClass = aiCommitAllPluginClass("pl.devopssolutions.aicommitall.vcs.GitChangeSelectionService")
+        val companion = serviceClass.getDeclaredField("Companion").get(null)
+        val service = companion.javaClass.getDeclaredMethod("getInstance", Project::class.java).invoke(companion, project)
+        val selection = service.javaClass.getDeclaredMethod("collectSelection").invoke(service)
+        return selection.javaClass.getDeclaredMethod("getHasCommittableContent").invoke(selection) as Boolean
+    }
+
+    @JvmStatic
+    fun setGitStagingAreaEnabled(enabled: Boolean) {
+        val settings = gitVcsApplicationSettings()
+        settings.javaClass.getDeclaredMethod("setStagingAreaEnabled", java.lang.Boolean.TYPE)
+            .invoke(settings, enabled)
+    }
+
+    @JvmStatic
+    fun isGitStagingAreaEnabled(): Boolean {
+        val settings = gitVcsApplicationSettings()
+        return settings.javaClass.getDeclaredMethod("isStagingAreaEnabled").invoke(settings) as Boolean
+    }
+
+    @JvmStatic
+    fun commitWorkflowHandlerClassName(project: Project): String? = runOnEdt {
+        val control = findAiCommitAllControl(project) ?: return@runOnEdt null
+        VcsDataKeys.COMMIT_WORKFLOW_HANDLER.getData(DataManager.getInstance().getDataContext(control))
+            ?.javaClass
+            ?.name
+    }
+
+    @JvmStatic
+    fun commitMessageText(project: Project): String? = runOnEdt {
+        val control = findAiCommitAllControl(project) ?: return@runOnEdt null
+        VcsDataKeys.COMMIT_WORKFLOW_UI.getData(DataManager.getInstance().getDataContext(control))
+            ?.commitMessageUi
+            ?.text
+    }
+
     private fun writeControlScreenshot(
         control: JComponent,
         outputFile: Path,
@@ -314,6 +347,21 @@ object FakeAiAssistantProbe {
                 ),
             )
         }
+    }
+
+    private fun awaitGeneratedCommitMessage(
+        document: com.intellij.openapi.editor.Document,
+        commitMessageControl: CapturingCommitMessageControl,
+    ): String {
+        val deadline = System.currentTimeMillis() + FAKE_GENERATION_TIMEOUT_MILLIS
+        while (System.currentTimeMillis() <= deadline) {
+            val message = document.text
+            if (message.isNotBlank() && message == commitMessageControl.message) {
+                return message
+            }
+            Thread.sleep(FAKE_GENERATION_POLL_MILLIS)
+        }
+        error("Fake AI action did not write a commit message.")
     }
 
     private fun JComponent.sectionClickPoint(section: String): Point {
@@ -429,6 +477,18 @@ object FakeAiAssistantProbe {
         return Class.forName(className, true, plugin.pluginClassLoader)
     }
 
+    private fun gitVcsApplicationSettings(): Any {
+        val gitPlugin = requireNotNull(PluginManagerCore.getPlugin(PluginId.getId(GIT_PLUGIN_ID))) {
+            "Git plugin descriptor was not found."
+        }
+        val settingsClass = Class.forName(
+            "git4idea.config.GitVcsApplicationSettings",
+            true,
+            gitPlugin.pluginClassLoader,
+        )
+        return settingsClass.getDeclaredMethod("getInstance").invoke(null)
+    }
+
     private fun projectDataContext(project: Project): DataContext = SimpleDataContext.builder()
         .add(CommonDataKeys.PROJECT, project)
         .build()
@@ -453,4 +513,7 @@ object FakeAiAssistantProbe {
     private const val AI_COMMIT_ALL_COMMIT_SHORTCUT_ACTION_ID = "pl.devopssolutions.aicommitall.actions.CommitShortcut"
     private const val AI_COMMIT_ALL_PUSH_SHORTCUT_ACTION_ID = "pl.devopssolutions.aicommitall.actions.PushShortcut"
     private const val AI_COMMIT_ALL_PLUGIN_ID = "pl.devopssolutions.aicommitall"
+    private const val GIT_PLUGIN_ID = "Git4Idea"
+    private const val FAKE_GENERATION_TIMEOUT_MILLIS = 5_000L
+    private const val FAKE_GENERATION_POLL_MILLIS = 100L
 }

@@ -118,9 +118,7 @@ class ReleaseMatrixUiHarnessTest {
             )
             assertEquals(
                 "AI Commit All release matrix message",
-                withWriteAction {
-                    utility(RemoteFakeAiAssistantProbe::class).generatedCommitMessageThroughDataContext()
-                },
+                utility(RemoteFakeAiAssistantProbe::class).generatedCommitMessageThroughDataContext(),
             )
         }
     }
@@ -233,16 +231,52 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     @Test
-    fun commitSectionCreatesLocalCommitThroughCommitToolWindow() {
+    fun aiSectionGeneratesCommitMessageWithoutCreatingCommit() {
         assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
-        val fixture = ReleaseMatrixGitFixtureBuilder.createCommitOnly(tempDirectory.resolve("commit-flow-fixture"))
+        val fixture = ReleaseMatrixGitFixtureBuilder.createCommitOnly(tempDirectory.resolve("ai-only-flow-fixture"))
         val initialCommitCount = fixture.primaryRepository.commitCount()
 
         runIdeaWithFixture(
-            testName = "release-matrix-ui-commit-flow",
+            testName = "release-matrix-ui-ai-only-flow",
             fixture = fixture,
         ) {
             val project = openReleaseMatrixCommitToolWindow()
+            activateAiCommitAllSection(project, "AI")
+            waitForCommitMessage(project, GENERATED_COMMIT_MESSAGE)
+            assertEquals(initialCommitCount, fixture.primaryRepository.commitCount())
+            assertTrue(
+                fixture.primaryRepository.statusLines().isNotEmpty(),
+                "AI-only generation must not consume the pending Git changes.",
+            )
+        }
+    }
+
+    @Test
+    fun commitSectionCreatesLocalCommitWithStagingAreaDisabled() {
+        commitSectionCreatesLocalCommitThroughCommitToolWindow(stagingAreaEnabled = false)
+    }
+
+    @Test
+    fun commitSectionCreatesLocalCommitWithStagingAreaEnabled() {
+        commitSectionCreatesLocalCommitThroughCommitToolWindow(stagingAreaEnabled = true)
+    }
+
+    private fun commitSectionCreatesLocalCommitThroughCommitToolWindow(stagingAreaEnabled: Boolean) {
+        assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
+        val fixture = ReleaseMatrixGitFixtureBuilder.createCommitOnly(
+            tempDirectory.resolve("commit-flow-fixture-${if (stagingAreaEnabled) "staging" else "changelists"}"),
+        )
+        val initialCommitCount = fixture.primaryRepository.commitCount()
+
+        runIdeaWithFixture(
+            testName = "release-matrix-ui-commit-flow-${if (stagingAreaEnabled) "staging" else "changelists"}",
+            fixture = fixture,
+        ) {
+            val probe = utility(RemoteFakeAiAssistantProbe::class)
+            probe.setGitStagingAreaEnabled(stagingAreaEnabled)
+            assertEquals(stagingAreaEnabled, probe.isGitStagingAreaEnabled())
+            val project = openReleaseMatrixCommitToolWindow()
+            waitForCommitWorkflowMode(project, stagingAreaEnabled)
             activateAiCommitAllSection(project, "Commit")
             waitForPrimaryRepositoryCommit(
                 fixture = fixture,
@@ -328,6 +362,19 @@ class ReleaseMatrixUiHarnessTest {
         ) {
             probe.openCommitToolWindow(project) && probe.isIdeFrameAndAiCommitAllControlVisible(project)
         }
+        waitFor(
+            message = "AI Commit All control is enabled before workflow activation",
+            timeout = 60.seconds,
+            interval = 1.seconds,
+            errorMessage = {
+                "controlEnabled=${probe.isAiCommitAllControlEnabled(project)}, " +
+                    "hasCommittableContent=${probe.hasCommittableContent(project)}, " +
+                    "hasOutgoingCommits=${probe.hasOutgoingCommitsToPush(project)}, " +
+                    "description=${probe.aiCommitAllControlAccessibleDescription(project)}"
+            },
+        ) {
+            probe.isAiCommitAllControlEnabled(project)
+        }
         return project
     }
 
@@ -364,6 +411,37 @@ class ReleaseMatrixUiHarnessTest {
             probe.activateAiCommitAllSection(project, section),
             "AI Commit All $section section was not available for in-process action activation.",
         )
+    }
+
+    private fun Driver.waitForCommitWorkflowMode(
+        project: Project,
+        stagingAreaEnabled: Boolean,
+    ) {
+        val probe = utility(RemoteFakeAiAssistantProbe::class)
+        waitFor(
+            message = "Commit workflow mode matches stagingAreaEnabled=$stagingAreaEnabled",
+            timeout = 30.seconds,
+            interval = 1.seconds,
+            errorMessage = { "handler=${probe.commitWorkflowHandlerClassName(project)}" },
+        ) {
+            val handlerClass = probe.commitWorkflowHandlerClassName(project) ?: return@waitFor false
+            handlerClass.isNotBlank() && (handlerClass.contains("GitStageCommitWorkflowHandler") == stagingAreaEnabled)
+        }
+    }
+
+    private fun Driver.waitForCommitMessage(
+        project: Project,
+        expectedMessage: String,
+    ) {
+        val probe = utility(RemoteFakeAiAssistantProbe::class)
+        waitFor(
+            message = "Commit message becomes '$expectedMessage'",
+            timeout = 60.seconds,
+            interval = 1.seconds,
+            errorMessage = { "message=${probe.commitMessageText(project)}" },
+        ) {
+            probe.commitMessageText(project) == expectedMessage
+        }
     }
 
     private fun waitForPrimaryRepositoryCommit(
@@ -447,6 +525,11 @@ private interface RemoteFakeAiAssistantProbe {
     ): Boolean
 
     fun hasOutgoingCommitsToPush(project: Project): Boolean
+    fun hasCommittableContent(project: Project): Boolean
+    fun setGitStagingAreaEnabled(enabled: Boolean)
+    fun isGitStagingAreaEnabled(): Boolean
+    fun commitWorkflowHandlerClassName(project: Project): String?
+    fun commitMessageText(project: Project): String?
 }
 private const val AI_COMMIT_ALL_CONTROL_ACCESSIBLE_NAME = "AI Commit All"
 private const val AI_COMMIT_ALL_CONTROL_CLASS_NAME =

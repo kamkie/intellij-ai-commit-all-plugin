@@ -83,6 +83,10 @@ internal object ReleaseMatrixGitFixtureBuilder {
             repository = secondaryRepository,
             dirty = dirty,
         )
+        configureIdeaProject(
+            projectDirectory = projectDirectory,
+            repositories = listOf(primaryRepository, secondaryRepository),
+        )
 
         return ReleaseMatrixGitFixture(
             projectDirectory = projectDirectory,
@@ -155,11 +159,35 @@ internal object ReleaseMatrixGitFixtureBuilder {
             dirty = false,
         )
         dirtyState(primaryRepository)
+        configureIdeaProject(
+            projectDirectory = projectDirectory,
+            repositories = listOf(primaryRepository, secondaryRepository),
+        )
         return ReleaseMatrixGitFixture(
             projectDirectory = projectDirectory,
             primaryRepository = primaryRepository,
             secondaryRepository = secondaryRepository,
             bareRemote = bareRemote,
+        )
+    }
+
+    private fun configureIdeaProject(
+        projectDirectory: Path,
+        repositories: List<IntegrationGitRepository>,
+    ) {
+        val ideaDirectory = projectDirectory.resolve(".idea").createDirectories()
+        val mappings = repositories.joinToString("\n") { repository ->
+            val relativePath = projectDirectory.relativize(repository.root).toString().replace('\\', '/')
+            """    <mapping directory="${'$'}PROJECT_DIR${'$'}/$relativePath" vcs="Git" />"""
+        }
+        ideaDirectory.resolve("vcs.xml").writeText(
+            """
+            <project version="4">
+              <component name="VcsDirectoryMappings">
+            $mappings
+              </component>
+            </project>
+            """.trimIndent(),
         )
     }
 }
