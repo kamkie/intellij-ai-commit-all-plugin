@@ -75,31 +75,16 @@ object FakeAiAssistantProbe {
     }
 
     @JvmStatic
-    fun openCommitWorkflow(project: Project): Boolean = runOnEdt {
-        val commitToolWindowShown = activateCommitToolWindow(project)
-        if (findAiCommitAllControl(project)?.isShowing == true) {
-            return@runOnEdt true
-        }
-        val action = ActionManager.getInstance().getAction(IDE_COMMIT_ACTION_ID) ?: return@runOnEdt commitToolWindowShown
-        val event = AnActionEvent.createEvent(
-            action,
-            projectDataContext(project),
-            action.templatePresentation.clone(),
-            ActionPlaces.UNKNOWN,
-            ActionUiKind.NONE,
-            null,
-        )
-        ActionUtil.performAction(action, event)
-        commitToolWindowShown
+    fun openCommitToolWindow(project: Project): Boolean = runOnEdt {
+        performToolWindowActivationAction()
+        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(COMMIT_TOOL_WINDOW_ID)
+            ?: return@runOnEdt false
+        toolWindow.activate(null, true)
+        true
     }
 
     @JvmStatic
-    fun activateCommitToolWindow(project: Project): Boolean = runOnEdt {
-        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(COMMIT_TOOL_WINDOW_ID)
-            ?: return@runOnEdt false
-        toolWindow.show()
-        true
-    }
+    fun activateCommitToolWindow(project: Project): Boolean = openCommitToolWindow(project)
 
     @JvmStatic
     fun isAiCommitAllControlShowing(project: Project): Boolean = runOnEdt {
@@ -333,6 +318,19 @@ object FakeAiAssistantProbe {
         }
     }
 
+    private fun performToolWindowActivationAction() {
+        val action = ActionManager.getInstance().getAction(ACTIVATE_COMMIT_TOOL_WINDOW_ACTION_ID) ?: return
+        val event = AnActionEvent.createEvent(
+            action,
+            DataContext.EMPTY_CONTEXT,
+            action.templatePresentation.clone(),
+            ActionPlaces.UNKNOWN,
+            ActionUiKind.NONE,
+            null,
+        )
+        ActionUtil.performAction(action, event)
+    }
+
     private fun aiCommitAllSettingsInstance(): Any {
         val settingsClass = aiCommitAllPluginClass("pl.devopssolutions.aicommitall.settings.AiCommitAllSettings")
         val companion = settingsClass.getDeclaredField("Companion").get(null)
@@ -361,7 +359,7 @@ object FakeAiAssistantProbe {
 
     private const val ALPHA_SHIFT = 24
     private const val COMMIT_TOOL_WINDOW_ID = "Commit"
-    private const val IDE_COMMIT_ACTION_ID = "CheckinProject"
+    private const val ACTIVATE_COMMIT_TOOL_WINDOW_ACTION_ID = "ActivateCommitToolWindow"
     private const val CONTROL_ACCESSIBLE_NAME = "AI Commit All"
     private const val CONTROL_CLASS_NAME =
         "pl.devopssolutions.aicommitall.actions.AiCommitAllThreeSectionControl"

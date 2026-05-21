@@ -324,13 +324,13 @@ class ReleaseMatrixUiHarnessTest {
         val project = waitForReleaseMatrixProject()
         val probe = utility(RemoteFakeAiAssistantProbe::class)
         openToolWindow(COMMIT_TOOL_WINDOW_ID)
-        assertTrue(probe.openCommitWorkflow(project))
+        assertTrue(probe.openCommitToolWindow(project))
         waitFor(
             message = "AI Commit All control is visible in the Commit tool window",
             timeout = 60.seconds,
             interval = 1.seconds,
         ) {
-            probe.openCommitWorkflow(project) && probe.isAiCommitAllControlShowing(project)
+            probe.openCommitToolWindow(project) && probe.isAiCommitAllControlShowing(project)
         }
         return project
     }
@@ -404,7 +404,7 @@ private interface RemoteFakeAiAssistantProbe {
     fun isCommitMessageActionRegistered(): Boolean
     fun primaryCommitActionsContain(actionId: String): Boolean
     fun primaryCommitActionIds(): List<String>
-    fun openCommitWorkflow(project: Project): Boolean
+    fun openCommitToolWindow(project: Project): Boolean
     fun activateCommitToolWindow(project: Project): Boolean
     fun isAiCommitAllControlShowing(project: Project): Boolean
     fun aiCommitAllControlAccessibleName(project: Project): String?
