@@ -1,3 +1,4 @@
+import com.adarshr.gradle.testlogger.theme.ThemeType
 import com.palantir.gradle.gitversion.VersionDetails
 import dev.detekt.gradle.Detekt
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
@@ -13,6 +14,7 @@ plugins {
     id("dev.detekt") version "2.0.0-alpha.3"
     id("com.diffplug.spotless") version "8.5.1"
     id("com.palantir.git-version") version "5.0.0"
+    id("com.adarshr.test-logger") version "4.0.0"
     id("org.jetbrains.intellij.platform")
 }
 
@@ -109,6 +111,20 @@ tasks.withType<Detekt>().configureEach {
         sarif.required.set(true)
         markdown.required.set(true)
     }
+}
+
+testlogger {
+    theme = ThemeType.MOCHA
+    showPassed = true
+    showSkipped = true
+    showFailed = true
+    showSummary = true
+    showStandardStreams = false
+    showExceptions = true
+    showCauses = true
+    showStackTraces = true
+    showFullStackTraces = false
+    slowThreshold = 2_000
 }
 
 tasks.test {
