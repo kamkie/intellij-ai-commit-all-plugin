@@ -39,9 +39,7 @@ import java.awt.Component
 import java.awt.Container
 import java.awt.Frame
 import java.awt.Graphics2D
-import java.awt.KeyboardFocusManager
 import java.awt.Point
-import java.awt.Window
 import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import java.nio.file.Files
@@ -83,7 +81,7 @@ object FakeAiAssistantProbe {
     fun openCommitToolWindow(project: Project): Boolean = runOnEdt {
         performToolWindowActivationAction()
         val frame = WindowManager.getInstance().getFrame(project)
-        frame?.bringToFrontForInput()
+        frame?.restoreIfMinimized()
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(COMMIT_TOOL_WINDOW_ID)
             ?: return@runOnEdt false
         toolWindow.activate(null, true)
@@ -96,7 +94,6 @@ object FakeAiAssistantProbe {
         frame.isShowing &&
             frame.isVisible &&
             frame.extendedState and Frame.ICONIFIED == 0 &&
-            frame.isForegroundWindowForInput() &&
             findAiCommitAllControl(project)?.isShowing == true
     }
 
@@ -229,7 +226,7 @@ object FakeAiAssistantProbe {
             ActionUiKind.NONE,
             null,
         )
-        ActionUtil.performDumbAwareUpdate(action, event, false)
+        ActionUtil.updateAction(action, event)
         event.presentation.isEnabled
     }
 
@@ -266,6 +263,12 @@ object FakeAiAssistantProbe {
         val service = companion.javaClass.getDeclaredMethod("getInstance", Project::class.java).invoke(companion, project)
         val selection = service.javaClass.getDeclaredMethod("collectSelection").invoke(service)
         return selection.javaClass.getDeclaredMethod("getHasCommittableContent").invoke(selection) as Boolean
+    }
+
+    @JvmStatic
+    fun resetReleaseMatrixSettings() {
+        setUseVcsShortcutsForAiCommitAll(true)
+        setGitStagingAreaEnabled(false)
     }
 
     @JvmStatic
@@ -450,18 +453,10 @@ object FakeAiAssistantProbe {
         ActionUtil.performAction(action, event)
     }
 
-    private fun Frame.bringToFrontForInput() {
+    private fun Frame.restoreIfMinimized() {
         if (extendedState and Frame.ICONIFIED != 0) {
             extendedState = extendedState and Frame.ICONIFIED.inv()
         }
-        toFront()
-        requestFocus()
-        requestFocusInWindow()
-    }
-
-    private fun Window.isForegroundWindowForInput(): Boolean {
-        val focusedWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().focusedWindow
-        return isActive || isFocused || focusedWindow == this || focusedWindow?.owner == this
     }
 
     private fun aiCommitAllSettingsInstance(): Any {
