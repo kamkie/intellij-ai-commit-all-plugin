@@ -243,7 +243,7 @@ class ReleaseMatrixUiHarnessTest {
             fixture = fixture,
         ) {
             val project = openReleaseMatrixCommitToolWindow()
-            clickAiCommitAllSection(project, "Commit")
+            activateAiCommitAllSection(project, "Commit")
             waitForPrimaryRepositoryCommit(
                 fixture = fixture,
                 initialCommitCount = initialCommitCount,
@@ -265,7 +265,7 @@ class ReleaseMatrixUiHarnessTest {
             fixture = fixture,
         ) {
             val project = openReleaseMatrixCommitToolWindow()
-            clickAiCommitAllSection(project, "Push")
+            activateAiCommitAllSection(project, "Push")
             waitForPrimaryRepositoryCommit(
                 fixture = fixture,
                 initialCommitCount = initialCommitCount,
@@ -303,7 +303,7 @@ class ReleaseMatrixUiHarnessTest {
             ) {
                 probe.hasOutgoingCommitsToPush(project) && probe.isAiCommitAllControlEnabled(project)
             }
-            clickAiCommitAllSection(project, "Push")
+            activateAiCommitAllSection(project, "Push")
             waitFor(
                 message = "outgoing-only local commit reaches temporary bare remote",
                 timeout = 60.seconds,
@@ -351,6 +351,18 @@ class ReleaseMatrixUiHarnessTest {
         assertTrue(
             probe.clickAiCommitAllSection(project, section),
             "AI Commit All $section section was not visible for in-process click dispatch.",
+        )
+    }
+
+    private fun Driver.activateAiCommitAllSection(
+        project: Project,
+        section: String,
+    ) {
+        val probe = utility(RemoteFakeAiAssistantProbe::class)
+        visibleAiCommitAllControl(project)
+        assertTrue(
+            probe.activateAiCommitAllSection(project, section),
+            "AI Commit All $section section was not available for in-process action activation.",
         )
     }
 
@@ -417,6 +429,7 @@ private interface RemoteFakeAiAssistantProbe {
     fun isAiCommitAllControlShowing(project: Project): Boolean
     fun isIdeFrameAndAiCommitAllControlVisible(project: Project): Boolean
     fun clickAiCommitAllSection(project: Project, section: String): Boolean
+    fun activateAiCommitAllSection(project: Project, section: String): Boolean
     fun aiCommitAllControlAccessibleName(project: Project): String?
     fun aiCommitAllControlAccessibleDescription(project: Project): String?
     fun isAiCommitAllControlEnabled(project: Project): Boolean

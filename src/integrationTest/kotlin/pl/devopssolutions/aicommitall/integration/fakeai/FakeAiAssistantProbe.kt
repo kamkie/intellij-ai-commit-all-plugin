@@ -124,6 +124,17 @@ object FakeAiAssistantProbe {
     }
 
     @JvmStatic
+    fun activateAiCommitAllSection(
+        project: Project,
+        section: String,
+    ): Boolean = when (section) {
+        "Commit" -> performAction(project, AI_COMMIT_ALL_COMMIT_SHORTCUT_ACTION_ID)
+        "Push" -> performAction(project, AI_COMMIT_ALL_PUSH_SHORTCUT_ACTION_ID)
+        "AI" -> clickAiCommitAllSection(project, section)
+        else -> error("Unknown AI Commit All control section: $section")
+    }
+
+    @JvmStatic
     fun clickAiCommitAllSection(
         project: Project,
         section: String,
@@ -439,5 +450,7 @@ object FakeAiAssistantProbe {
         "pl.devopssolutions.aicommitall.actions.AiCommitAllThreeSectionControl"
     private const val CONTROL_COMPONENT_NAME = "AI Commit All three-section control"
     private const val PRIMARY_COMMIT_ACTIONS_GROUP_ID = "Vcs.Commit.PrimaryCommitActions"
+    private const val AI_COMMIT_ALL_COMMIT_SHORTCUT_ACTION_ID = "pl.devopssolutions.aicommitall.actions.CommitShortcut"
+    private const val AI_COMMIT_ALL_PUSH_SHORTCUT_ACTION_ID = "pl.devopssolutions.aicommitall.actions.PushShortcut"
     private const val AI_COMMIT_ALL_PLUGIN_ID = "pl.devopssolutions.aicommitall"
 }
