@@ -1,7 +1,7 @@
 ---
-status: proposed
+status: accepted
 date: 2026-05-21
-accepted_at:
+accepted_at: 2026-05-21T21:08:46+02:00
 decision-makers: Kamil Kiewisz <kamkie@outlook.com>
 consulted: GitHub Copilot
 informed: repository maintainers
@@ -89,4 +89,3 @@ If accepted, implementation should:
 - Refresh the ADR filename example in `docs/decisions/README.md` to use `adr-NNNN-example-decision.md` instead of a real historical number.
 
 After this ADR is accepted, update the ADR Implementation Tracker in `docs/decisions/README.md` with implementation status, evidence, and last updated date.
-

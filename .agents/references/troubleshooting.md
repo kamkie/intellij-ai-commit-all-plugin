@@ -13,7 +13,7 @@ Use this reference when validation, sandbox runs, plugin packaging, or manual In
 ## Documentation Validation
 
 - Run `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1`.
-- Run `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\ai\validate-agent-artifacts.ps1` when the failure mentions `.agents/skills` or `.agents/prompts`.
+- Run `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\ai\validate-agent-artifacts.ps1` when the failure mentions `.agents/references`, `.agents/skills`, `.agents/prompts`, `.agents/plans`, or agent-artifact links.
 - Fix missing ADR index rows, implementation tracker rows, prompt catalog rows, broken local links, malformed stable IDs, or Markdown lint failures at the owning artifact.
 - Do not silence markdownlint or remove governance checks unless a new accepted ADR changes the validation policy.
 

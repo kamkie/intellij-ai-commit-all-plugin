@@ -19,7 +19,7 @@ Use this guide when adding or updating repository documentation.
 - `.agents/references/troubleshooting.md`: repository-specific validation, Gradle, IntelliJ Plugin, sandbox, test, and IDE log troubleshooting.
 - `.agents/plans/`: task-specific implementation plans and plan template; every active and archived plan needs a stable `Plan-ID` included in the filename.
 - `.agents/prompts/`: reusable repository prompt recipes for named session starters; `.agents/prompts/README.md` owns the catalog and loading rules.
-- `scripts/ai/validate-agent-artifacts.ps1`: validates `.agents/skills/` and `.agents/prompts/` structure and catalog consistency.
+- `scripts/ai/validate-agent-artifacts.ps1`: validates `.agents/references/`, `.agents/skills/`, `.agents/prompts/`, `.agents/plans/`, catalog links, plan metadata, and concrete `.agents/...` file references.
 - `LICENSE`: Apache-2.0 license text for the repository and plugin.
 - `.gitmessage`: commit-message template, Conventional Commit type guidance, and AI metadata trailer schema.
 - `.agents/references/releases.md`: release preparation, changelog update rules, support-policy checks, version tags, and release preconditions.
@@ -41,7 +41,7 @@ Use this guide when adding or updating repository documentation.
 - Load repository prompts in two stages: identify the prompt from `.agents/prompts/README.md` by exact title, filename, or catalog entry, then load only the matching prompt and its declared read set.
 - Keep each prompt's read set small, state expected output, and name explicit non-goals.
 - Keep `.agents/skills/*/SKILL.md` front matter name in sync with the directory name, and include a `## Start` section for the first read set or startup workflow.
-- Run `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` when adding or changing repository skills or prompts; it also runs through `scripts/validate-docs.ps1`.
+- Run `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` when adding or changing repository references, skills, prompts, plans, or concrete `.agents/...` links; it also runs through `scripts/validate-docs.ps1`.
 - Do not use `.agents/prompts/` for active backlog items, implementation sequencing, durable policy, or executable workflow accelerators; use `TASKS.md`, `.agents/plans/`, `.agents/references/`, or `.agents/skills/` respectively.
 - Give every proposal a stable `proposal_id` in the form `PROP-<short-kebab-slug>`, include it in active and archived filenames, keep it stable when title, filename, status, wording, or archive location changes, and do not reuse retired proposal IDs.
 - Use three-digit proposal finding IDs such as `F001`, `E001`, `D001`, and `S001` for active proposal findings; archived proposals may keep historical IDs unless materially updated.

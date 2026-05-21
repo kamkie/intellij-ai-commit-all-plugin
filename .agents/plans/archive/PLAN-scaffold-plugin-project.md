@@ -8,12 +8,21 @@ Close-Reason: Archived
 
 Workers: 1
 
+Filename: `.agents/plans/archive/PLAN-scaffold-plugin-project.md`
+
 ## Readiness
 
 - Plan readiness: Complete.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Approved at: 2026-05-15T02:35:41+02:00
 - Open questions: None.
 - Implementation progress: Implemented in commits `f6fb83e`, `de91f49`, and `b84bc3d`; archived during `v0.1.0-alpha.1` release preparation.
+
+## Status History
+
+- 2026-05-15T02:35:41+02:00: none -> Approved by Kamil Kiewisz <kamkie@outlook.com>; historical approval metadata backfilled from archived scaffold plan history.
+- 2026-05-15T02:44:52+02:00: Approved -> Implemented by Codex <codex@openai.com>; scaffold implementation completed through Task 3.
+- 2026-05-15T03:10:28+02:00: Implemented -> Closed by Kamil Kiewisz <kamkie@outlook.com>; archived during prerelease preparation.
 
 ## Goal
 

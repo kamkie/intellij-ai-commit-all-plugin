@@ -58,6 +58,217 @@ function Test-RequiredHeading {
     }
 }
 
+function Get-AgentMarkdownArtifactFiles
+{
+    $pathsByFullName = @{ }
+    foreach ($relativeRoot in @('.agents/references', '.agents/skills', '.agents/prompts', '.agents/plans'))
+    {
+        $root = Join-Path $repoRoot $relativeRoot
+        if (-not (Test-Path -LiteralPath $root))
+        {
+            continue
+        }
+
+        $files = Get-ChildItem -LiteralPath $root -Recurse -File -Filter '*.md'
+        foreach ($file in $files)
+        {
+            $pathsByFullName[$file.FullName] = $file
+        }
+    }
+
+    return $pathsByFullName.Values | Sort-Object FullName
+}
+
+function Test-AgentReferences
+{
+    $referencesRoot = Join-Path $repoRoot '.agents/references'
+    if (-not (Test-Path -LiteralPath $referencesRoot))
+    {
+        return
+    }
+
+    $referenceFiles = Get-ChildItem -LiteralPath $referencesRoot -File -Filter '*.md' | Sort-Object Name
+    foreach ($referenceFile in $referenceFiles)
+    {
+        $relative = Get-RelativePath $referenceFile.FullName
+        $text = Get-Content -Raw -LiteralPath $referenceFile.FullName
+        $title = Get-MarkdownHeadingTitle -Text $text -RelativePath $relative
+        if ($null -ne $title -and [string]::IsNullOrWhiteSpace($title))
+        {
+            Add-ValidationError "$relative has an empty level-one title"
+        }
+    }
+}
+
+function Test-AgentBacktickFileReferences
+{
+    foreach ($file in (Get-AgentMarkdownArtifactFiles))
+    {
+        $relative = Get-RelativePath $file.FullName
+        $text = Get-Content -Raw -LiteralPath $file.FullName
+        $matches = [regex]::Matches($text, '`(\.agents[\\/][^`]+)`')
+        foreach ($match in $matches)
+        {
+            $reference = $match.Groups[1].Value.Trim()
+            $normalized = $reference.Replace('\', '/')
+            $pathOnly = ($normalized -split '#')[0]
+            if ([string]::IsNullOrWhiteSpace($pathOnly) -or
+                $pathOnly.EndsWith('/') -or
+                $pathOnly -match '[*?<>]')
+            {
+                continue
+            }
+
+            $segments = $pathOnly -split '/'
+            $leaf = $segments[$segments.Count - 1]
+            if ($leaf -notmatch '\.[A-Za-z0-9]+$')
+            {
+                continue
+            }
+
+            $targetRelative = $pathOnly.Replace('/', [System.IO.Path]::DirectorySeparatorChar)
+            $targetPath = Join-Path $repoRoot $targetRelative
+            if (-not (Test-Path -LiteralPath $targetPath -PathType Leaf))
+            {
+                Add-ValidationError "$relative references missing agent artifact '$reference'"
+            }
+        }
+    }
+}
+
+function Test-PlanCatalogLinks
+{
+    $plansRoot = Join-Path $repoRoot '.agents/plans'
+    $readmePath = Join-Path $plansRoot 'README.md'
+    if (-not (Test-Path -LiteralPath $readmePath))
+    {
+        Add-ValidationError '.agents/plans is missing README.md'
+        return
+    }
+
+    $readmeText = Get-Content -Raw -LiteralPath $readmePath
+    foreach ($catalogLink in [regex]::Matches($readmeText, '\[([^\]]+)\]\(([^)]+\.md)\)'))
+    {
+        $target = $catalogLink.Groups[2].Value
+        $targetPath = Join-Path $plansRoot $target
+        if (-not (Test-Path -LiteralPath $targetPath -PathType Leaf))
+        {
+            Add-ValidationError ".agents/plans/README.md links to missing plan $target"
+        }
+    }
+}
+
+function Test-AgentPlans
+{
+    $plansRoot = Join-Path $repoRoot '.agents/plans'
+    if (-not (Test-Path -LiteralPath $plansRoot))
+    {
+        return
+    }
+
+    Test-PlanCatalogLinks
+
+    $allowedPlanStatuses = @('Draft', 'Approved', 'In Progress', 'Blocked', 'Implemented', 'Closed')
+    $statusesRequiringApproval = @('Approved', 'In Progress', 'Blocked', 'Implemented', 'Closed')
+    $planFiles = Get-ChildItem -LiteralPath $plansRoot -Recurse -File -Filter '*.md' |
+        Where-Object { $_.Name -notin @('README.md', 'PLAN_TEMPLATE.md') } |
+        Sort-Object FullName
+
+    foreach ($planFile in $planFiles)
+    {
+        $relative = Get-RelativePath $planFile.FullName
+        $text = Get-Content -Raw -LiteralPath $planFile.FullName
+
+        $planIdMatch = [regex]::Match($text, '(?m)^Plan-ID:\s+(PLAN-[A-Za-z0-9][A-Za-z0-9-]*)\s*$')
+        if (-not $planIdMatch.Success)
+        {
+            Add-ValidationError "$relative is missing Plan-ID metadata"
+        }
+
+        $status = $null
+        $statusMatch = [regex]::Match($text, '(?m)^Status:\s+(.+?)\s*$')
+        if (-not $statusMatch.Success)
+        {
+            Add-ValidationError "$relative is missing Status metadata"
+        }
+        else
+        {
+            $status = $statusMatch.Groups[1].Value.Trim()
+            if ($allowedPlanStatuses -notcontains $status)
+            {
+                Add-ValidationError "$relative has invalid Status '$status'"
+            }
+        }
+
+        if ([regex]::Matches($text, '(?m)^Workers:\s+(.+?)\s*$').Count -ne 1)
+        {
+            Add-ValidationError "$relative must contain exactly one Workers metadata line"
+        }
+
+        $filenameMatch = [regex]::Match($text, '(?m)^Filename:\s+(.+?)\s*$')
+        if (-not $filenameMatch.Success)
+        {
+            Add-ValidationError "$relative is missing Filename metadata"
+        }
+        else
+        {
+            $filenameValue = $filenameMatch.Groups[1].Value.Trim().Trim('`')
+            if ($filenameValue.Replace('\', '/') -ne $relative)
+            {
+                Add-ValidationError "$relative Filename metadata must match its repository path"
+            }
+        }
+
+        $closeReasonMatch = [regex]::Match($text, '(?m)^Close-Reason:\s+(.+?)\s*$')
+        if ($status -eq 'Closed' -and -not $closeReasonMatch.Success)
+        {
+            Add-ValidationError "$relative has Status 'Closed' but is missing Close-Reason"
+        }
+        elseif ($null -ne $status -and $status -ne 'Closed' -and $closeReasonMatch.Success)
+        {
+            Add-ValidationError "$relative has Close-Reason but Status is '$status'"
+        }
+
+        foreach ($heading in @('Readiness', 'Status History', 'Execution Graph'))
+        {
+            Test-RequiredHeading -Text $text -RelativePath $relative -Heading $heading
+        }
+
+        $readinessMatch = [regex]::Match($text, '(?ms)^## Readiness\s*(.*?)(?=^## |\z)')
+        if ($readinessMatch.Success -and $null -ne $status -and $statusesRequiringApproval -contains $status)
+        {
+            $readinessText = $readinessMatch.Groups[1].Value
+            $approvedByMatch = [regex]::Match($readinessText, '(?m)^-\s+Approved by:\s*(.*?)\s*$')
+            $approvedAtMatch = [regex]::Match($readinessText, '(?m)^-\s+Approved at:\s*(.*?)\s*$')
+            $approvedBy = if ($approvedByMatch.Success)
+            {
+                $approvedByMatch.Groups[1].Value.Trim()
+            }
+            else
+            {
+                ''
+            }
+            $approvedAt = if ($approvedAtMatch.Success)
+            {
+                $approvedAtMatch.Groups[1].Value.Trim()
+            }
+            else
+            {
+                ''
+            }
+            if ( [string]::IsNullOrWhiteSpace($approvedBy))
+            {
+                Add-ValidationError "$relative has Status '$status' but is missing Approved by in ## Readiness"
+            }
+
+            if ( [string]::IsNullOrWhiteSpace($approvedAt))
+            {
+                Add-ValidationError "$relative has Status '$status' but is missing Approved at in ## Readiness"
+            }
+        }
+    }
+}
+
 function Test-AgentSkills {
     $skillsRoot = Join-Path $repoRoot '.agents/skills'
     if (-not (Test-Path -LiteralPath $skillsRoot)) {
@@ -169,7 +380,10 @@ function Test-RepositoryPrompts {
 }
 
 Test-AgentSkills
+Test-AgentReferences
 Test-RepositoryPrompts
+Test-AgentPlans
+Test-AgentBacktickFileReferences
 
 if ($errors.Count -gt 0) {
     foreach ($validationError in $errors) {

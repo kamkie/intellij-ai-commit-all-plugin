@@ -9,7 +9,7 @@ Use the repository Gradle wrapper in validation examples: `.\gradlew.bat <task>`
 - `.\gradlew.bat spotlessCheck` for Kotlin and Gradle Kotlin DSL formatting and Kotlin source license-header enforcement.
 - `npx --yes markdownlint-cli2@0.22.1` for Markdown linting.
 - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1` for Markdown linting, documentation structure, links, stable IDs, ADR numbering and index, and proposal tracker checks.
-- `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` for repository skill and prompt structure checks when `.agents/skills/` or `.agents/prompts/` changed.
+- `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` for repository agent-artifact checks when `.agents/references/`, `.agents/skills/`, `.agents/prompts/`, or `.agents/plans/` changed.
 - `.\gradlew.bat jacocoTestReport` for the JaCoCo XML coverage report uploaded to Codecov by CI.
 - `.\gradlew.bat test` for JUnit XML test result reports under `build/test-results/test/`, uploaded to Codecov by CI.
 - `.\gradlew.bat buildPlugin` for packaging and basic compile validation.
