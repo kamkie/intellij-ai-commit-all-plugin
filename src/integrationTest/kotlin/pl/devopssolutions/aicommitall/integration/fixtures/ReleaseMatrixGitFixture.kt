@@ -20,6 +20,7 @@ import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
+import kotlin.io.path.name
 import kotlin.io.path.writeText
 
 internal data class ReleaseMatrixGitFixture(
@@ -39,6 +40,30 @@ internal object ReleaseMatrixGitFixtureBuilder {
         baseDirectory = baseDirectory,
         dirty = false,
     )
+
+    fun createAllStaged(baseDirectory: Path): ReleaseMatrixGitFixture = create(
+        baseDirectory = baseDirectory,
+        dirty = true,
+    ).also { fixture ->
+        fixture.primaryRepository.git("add", "--all")
+        fixture.secondaryRepository.git("add", "--all")
+    }
+
+    fun createCommitOnly(baseDirectory: Path): ReleaseMatrixGitFixture = createSingleRootFixture(baseDirectory) { repository ->
+        repository.write("commit-only.txt", "updated by release matrix\n")
+        repository.write("new-commit-only.txt", "new release matrix file\n")
+    }
+
+    fun createCommitAndPush(baseDirectory: Path): ReleaseMatrixGitFixture = createSingleRootFixture(baseDirectory) { repository ->
+        repository.write("modified.txt", "updated by release matrix push\n")
+        repository.write("push-flow.txt", "new release matrix push file\n")
+    }
+
+    fun createOutgoingOnly(baseDirectory: Path): ReleaseMatrixGitFixture = createSingleRootFixture(baseDirectory) { repository ->
+        repository.write("outgoing-only.txt", "outgoing only release matrix\n")
+        repository.git("add", "--all")
+        repository.git("commit", "-m", "AI Commit All outgoing only")
+    }
 
     private fun create(
         baseDirectory: Path,
@@ -111,6 +136,32 @@ internal object ReleaseMatrixGitFixtureBuilder {
         repository.write("secondary-tracked.txt", "secondary modified\n")
         repository.write("secondary-unversioned.txt", "secondary new\n")
     }
+
+    private fun createSingleRootFixture(
+        baseDirectory: Path,
+        dirtyState: (IntegrationGitRepository) -> Unit,
+    ): ReleaseMatrixGitFixture {
+        val projectDirectory = baseDirectory.resolve("release-matrix-project")
+        val bareRemote = IntegrationGitRepository.initBare(baseDirectory.resolve("origin.git"))
+        val primaryRepository = IntegrationGitRepository.init(projectDirectory.resolve("root-a"))
+        val secondaryRepository = IntegrationGitRepository.init(projectDirectory.resolve("root-b"))
+        configurePrimaryRepository(
+            repository = primaryRepository,
+            bareRemote = bareRemote,
+            dirty = false,
+        )
+        configureSecondaryRepository(
+            repository = secondaryRepository,
+            dirty = false,
+        )
+        dirtyState(primaryRepository)
+        return ReleaseMatrixGitFixture(
+            projectDirectory = projectDirectory,
+            primaryRepository = primaryRepository,
+            secondaryRepository = secondaryRepository,
+            bareRemote = bareRemote,
+        )
+    }
 }
 
 internal class IntegrationGitRepository private constructor(val root: Path) {
@@ -129,6 +180,14 @@ internal class IntegrationGitRepository private constructor(val root: Path) {
     fun statusLines(vararg arguments: String): List<String> = git("status", "--porcelain", *arguments).stdout.lines()
         .filter { line -> line.isNotBlank() }
 
+    fun head(): String = git("rev-parse", "HEAD").stdout.trim()
+
+    fun commitCount(): Int = git("rev-list", "--count", "HEAD").stdout.trim().toInt()
+
+    fun latestCommitSubject(): String = git("log", "-1", "--pretty=%s").stdout.trim()
+
+    fun remoteHead(branch: String = "main"): String = git("rev-parse", "refs/heads/$branch").stdout.trim()
+
     companion object {
         fun init(root: Path): IntegrationGitRepository {
             Files.createDirectories(root)
@@ -141,7 +200,7 @@ internal class IntegrationGitRepository private constructor(val root: Path) {
 
         fun initBare(root: Path): IntegrationGitRepository {
             Files.createDirectories(root.parent)
-            IntegrationGitCli.run(root.parent, "init", "--bare", root.fileName.toString())
+            IntegrationGitCli.run(root.parent, "init", "--bare", root.fileName.name)
             return IntegrationGitRepository(root)
         }
     }

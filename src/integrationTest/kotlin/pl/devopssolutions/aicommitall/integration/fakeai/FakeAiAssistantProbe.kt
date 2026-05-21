@@ -15,15 +15,20 @@
  */
 package pl.devopssolutions.aicommitall.integration.fakeai
 
+import com.intellij.ide.DataManager
+import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionUiKind
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.CommitMessageI
 import com.intellij.openapi.vcs.VcsDataKeys
@@ -67,6 +72,25 @@ object FakeAiAssistantProbe {
                 ?: action.templatePresentation.text
                 ?: action.javaClass.name
         }
+    }
+
+    @JvmStatic
+    fun openCommitWorkflow(project: Project): Boolean = runOnEdt {
+        val commitToolWindowShown = activateCommitToolWindow(project)
+        if (findAiCommitAllControl(project)?.isShowing == true) {
+            return@runOnEdt true
+        }
+        val action = ActionManager.getInstance().getAction(IDE_COMMIT_ACTION_ID) ?: return@runOnEdt commitToolWindowShown
+        val event = AnActionEvent.createEvent(
+            action,
+            projectDataContext(project),
+            action.templatePresentation.clone(),
+            ActionPlaces.UNKNOWN,
+            ActionUiKind.NONE,
+            null,
+        )
+        ActionUtil.performAction(action, event)
+        commitToolWindowShown
     }
 
     @JvmStatic
@@ -146,6 +170,71 @@ object FakeAiAssistantProbe {
             "Fake AI action did not write a commit message."
         }
         return document.text
+    }
+
+    @JvmStatic
+    fun registeredKeyboardShortcutText(actionId: String): String? = ActionManager.getInstance()
+        .getKeyboardShortcut(actionId)
+        ?.toString()
+
+    @JvmStatic
+    fun setUseVcsShortcutsForAiCommitAll(enabled: Boolean) {
+        val settings = aiCommitAllSettingsInstance()
+        settings.javaClass
+            .getDeclaredMethod("updateUseVcsShortcutsForAiCommitAll", java.lang.Boolean.TYPE)
+            .invoke(settings, enabled)
+    }
+
+    @JvmStatic
+    fun useVcsShortcutsForAiCommitAll(): Boolean {
+        val settings = aiCommitAllSettingsInstance()
+        return settings.javaClass
+            .getDeclaredMethod("useVcsShortcutsForAiCommitAll")
+            .invoke(settings) as Boolean
+    }
+
+    @JvmStatic
+    fun isShortcutActionEnabled(
+        project: Project,
+        actionId: String,
+    ): Boolean = runOnEdt {
+        val action = ActionManager.getInstance().getAction(actionId) ?: return@runOnEdt false
+        val event = AnActionEvent.createEvent(
+            action,
+            commitWorkflowDataContext(project),
+            action.templatePresentation.clone(),
+            ActionPlaces.CHANGES_VIEW_TOOLBAR,
+            ActionUiKind.NONE,
+            null,
+        )
+        ActionUtil.performDumbAwareUpdate(action, event, false)
+        event.presentation.isEnabled
+    }
+
+    @JvmStatic
+    fun performAction(
+        project: Project,
+        actionId: String,
+    ): Boolean = runOnEdt {
+        val action = ActionManager.getInstance().getAction(actionId) ?: return@runOnEdt false
+        val event = AnActionEvent.createEvent(
+            action,
+            commitWorkflowDataContext(project),
+            action.templatePresentation.clone(),
+            ActionPlaces.CHANGES_VIEW_TOOLBAR,
+            ActionUiKind.NONE,
+            null,
+        )
+        ActionUtil.performAction(action, event)
+        true
+    }
+
+    @JvmStatic
+    fun hasOutgoingCommitsToPush(project: Project): Boolean {
+        val serviceClass = aiCommitAllPluginClass("pl.devopssolutions.aicommitall.vcs.GitOutgoingCommitsService")
+        val companion = serviceClass.getDeclaredField("Companion").get(null)
+        val service = companion.javaClass.getDeclaredMethod("getInstance", Project::class.java).invoke(companion, project)
+        return service.javaClass.getDeclaredMethod("hasOutgoingCommitsToPush").invoke(service) as Boolean
     }
 
     private fun writeControlScreenshot(
@@ -235,6 +324,32 @@ object FakeAiAssistantProbe {
         return value.get()
     }
 
+    private fun commitWorkflowDataContext(project: Project): DataContext {
+        val control = findAiCommitAllControl(project)
+        return if (control == null) {
+            projectDataContext(project)
+        } else {
+            DataManager.getInstance().getDataContext(control)
+        }
+    }
+
+    private fun aiCommitAllSettingsInstance(): Any {
+        val settingsClass = aiCommitAllPluginClass("pl.devopssolutions.aicommitall.settings.AiCommitAllSettings")
+        val companion = settingsClass.getDeclaredField("Companion").get(null)
+        return companion.javaClass.getDeclaredMethod("getInstance").invoke(companion)
+    }
+
+    private fun aiCommitAllPluginClass(className: String): Class<*> {
+        val plugin = requireNotNull(PluginManagerCore.getPlugin(PluginId.getId(AI_COMMIT_ALL_PLUGIN_ID))) {
+            "AI Commit All plugin descriptor was not found."
+        }
+        return Class.forName(className, true, plugin.pluginClassLoader)
+    }
+
+    private fun projectDataContext(project: Project): DataContext = SimpleDataContext.builder()
+        .add(CommonDataKeys.PROJECT, project)
+        .build()
+
     private class CapturingCommitMessageControl : CommitMessageI {
         var message: String = ""
             private set
@@ -246,9 +361,11 @@ object FakeAiAssistantProbe {
 
     private const val ALPHA_SHIFT = 24
     private const val COMMIT_TOOL_WINDOW_ID = "Commit"
+    private const val IDE_COMMIT_ACTION_ID = "CheckinProject"
     private const val CONTROL_ACCESSIBLE_NAME = "AI Commit All"
     private const val CONTROL_CLASS_NAME =
         "pl.devopssolutions.aicommitall.actions.AiCommitAllThreeSectionControl"
     private const val CONTROL_COMPONENT_NAME = "AI Commit All three-section control"
     private const val PRIMARY_COMMIT_ACTIONS_GROUP_ID = "Vcs.Commit.PrimaryCommitActions"
+    private const val AI_COMMIT_ALL_PLUGIN_ID = "pl.devopssolutions.aicommitall"
 }

@@ -186,6 +186,171 @@ class ReleaseMatrixUiHarnessTest {
         }
     }
 
+    @Test
+    fun fixtureBuilderCreatesAllStagedReleaseMatrixGitState() {
+        assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
+        val fixture = ReleaseMatrixGitFixtureBuilder.createAllStaged(tempDirectory.resolve("all-staged-fixture"))
+
+        assertContains(fixture.primaryRepository.statusLines(), "M  modified.txt")
+        assertContains(fixture.primaryRepository.statusLines(), "D  delete-me.txt")
+        assertContains(fixture.primaryRepository.statusLines(), "R  rename-source.txt -> rename-target.txt")
+        assertContains(fixture.primaryRepository.statusLines(), "A  unversioned.txt")
+        assertContains(fixture.secondaryRepository.statusLines(), "M  secondary-tracked.txt")
+        assertContains(fixture.secondaryRepository.statusLines(), "A  secondary-unversioned.txt")
+        assertFalse(
+            fixture.primaryRepository.statusLines("--ignored").any { line -> line.contains("ignored.txt") && !line.startsWith("!!") },
+            "Ignored files must stay outside the staged fixture state.",
+        )
+    }
+
+    @Test
+    fun vcsShortcutTakeoverCanBeToggledInReleaseMatrixIde() {
+        assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
+        val fixture = ReleaseMatrixGitFixtureBuilder.createCommitOnly(tempDirectory.resolve("shortcut-ide-fixture"))
+
+        runIdeaWithFixture(
+            testName = "release-matrix-ui-shortcuts",
+            fixture = fixture,
+        ) {
+            val project = openReleaseMatrixCommitToolWindow()
+            val probe = utility(RemoteFakeAiAssistantProbe::class)
+
+            val commitShortcutText = probe.registeredKeyboardShortcutText(AI_COMMIT_ALL_COMMIT_SHORTCUT_ACTION_ID).orEmpty()
+            val pushShortcutText = probe.registeredKeyboardShortcutText(AI_COMMIT_ALL_PUSH_SHORTCUT_ACTION_ID).orEmpty()
+            assertTrue(commitShortcutText.contains("K", ignoreCase = true), "Unexpected commit shortcut: $commitShortcutText")
+            assertTrue(pushShortcutText.contains("K", ignoreCase = true), "Unexpected push shortcut: $pushShortcutText")
+            probe.setUseVcsShortcutsForAiCommitAll(true)
+            assertTrue(probe.useVcsShortcutsForAiCommitAll())
+            assertTrue(
+                probe.isShortcutActionEnabled(project, AI_COMMIT_ALL_COMMIT_SHORTCUT_ACTION_ID),
+                "Commit shortcut takeover should be enabled when committable content is available.",
+            )
+
+            probe.setUseVcsShortcutsForAiCommitAll(false)
+            assertFalse(probe.useVcsShortcutsForAiCommitAll())
+            assertFalse(
+                probe.isShortcutActionEnabled(project, AI_COMMIT_ALL_COMMIT_SHORTCUT_ACTION_ID),
+                "Commit shortcut takeover should be disabled when the setting is off.",
+            )
+            probe.setUseVcsShortcutsForAiCommitAll(true)
+        }
+    }
+
+    @Test
+    fun commitSectionCreatesLocalCommitThroughCommitToolWindow() {
+        assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
+        val fixture = ReleaseMatrixGitFixtureBuilder.createCommitOnly(tempDirectory.resolve("commit-flow-fixture"))
+        val initialCommitCount = fixture.primaryRepository.commitCount()
+
+        runIdeaWithFixture(
+            testName = "release-matrix-ui-commit-flow",
+            fixture = fixture,
+        ) {
+            openReleaseMatrixCommitToolWindow()
+            ui.x { byJavaClass(AI_COMMIT_ALL_CONTROL_CLASS_NAME) }.clickSection("Commit")
+            waitForPrimaryRepositoryCommit(
+                fixture = fixture,
+                initialCommitCount = initialCommitCount,
+                expectedMessage = GENERATED_COMMIT_MESSAGE,
+            )
+            assertEquals(emptyList(), fixture.primaryRepository.statusLines())
+        }
+    }
+
+    @Test
+    fun pushSectionCommitsAndPushesToTemporaryBareRemote() {
+        assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
+        val fixture = ReleaseMatrixGitFixtureBuilder.createCommitAndPush(tempDirectory.resolve("push-flow-fixture"))
+        val initialCommitCount = fixture.primaryRepository.commitCount()
+        val initialRemoteHead = fixture.bareRemote.remoteHead()
+
+        runIdeaWithFixture(
+            testName = "release-matrix-ui-push-flow",
+            fixture = fixture,
+        ) {
+            openReleaseMatrixCommitToolWindow()
+            ui.x { byJavaClass(AI_COMMIT_ALL_CONTROL_CLASS_NAME) }.clickSection("Push")
+            waitForPrimaryRepositoryCommit(
+                fixture = fixture,
+                initialCommitCount = initialCommitCount,
+                expectedMessage = GENERATED_COMMIT_MESSAGE,
+            )
+            waitFor(
+                message = "temporary bare remote receives AI Commit All push",
+                timeout = 60.seconds,
+                interval = 1.seconds,
+                errorMessage = { "Remote HEAD stayed at ${fixture.bareRemote.remoteHead()}" },
+            ) {
+                fixture.bareRemote.remoteHead() != initialRemoteHead &&
+                    fixture.bareRemote.remoteHead() == fixture.primaryRepository.head()
+            }
+        }
+    }
+
+    @Test
+    fun pushSectionPushesOutgoingOnlyLocalCommitToTemporaryBareRemote() {
+        assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
+        val fixture = ReleaseMatrixGitFixtureBuilder.createOutgoingOnly(tempDirectory.resolve("outgoing-only-fixture"))
+        val outgoingHead = fixture.primaryRepository.head()
+        val initialRemoteHead = fixture.bareRemote.remoteHead()
+
+        runIdeaWithFixture(
+            testName = "release-matrix-ui-outgoing-only-push",
+            fixture = fixture,
+        ) {
+            val project = openReleaseMatrixCommitToolWindow()
+            val probe = utility(RemoteFakeAiAssistantProbe::class)
+            waitFor(
+                message = "outgoing-only fixture enables push workflow",
+                timeout = 60.seconds,
+                interval = 1.seconds,
+            ) {
+                probe.hasOutgoingCommitsToPush(project) && probe.isAiCommitAllControlEnabled(project)
+            }
+            ui.x { byJavaClass(AI_COMMIT_ALL_CONTROL_CLASS_NAME) }.clickSection("Push")
+            waitFor(
+                message = "outgoing-only local commit reaches temporary bare remote",
+                timeout = 60.seconds,
+                interval = 1.seconds,
+                errorMessage = { "Remote HEAD stayed at ${fixture.bareRemote.remoteHead()}" },
+            ) {
+                fixture.bareRemote.remoteHead() != initialRemoteHead && fixture.bareRemote.remoteHead() == outgoingHead
+            }
+            assertEquals(emptyList(), fixture.primaryRepository.statusLines())
+        }
+    }
+
+    private fun Driver.openReleaseMatrixCommitToolWindow(): Project {
+        val project = waitForReleaseMatrixProject()
+        val probe = utility(RemoteFakeAiAssistantProbe::class)
+        openToolWindow(COMMIT_TOOL_WINDOW_ID)
+        assertTrue(probe.openCommitWorkflow(project))
+        waitFor(
+            message = "AI Commit All control is visible in the Commit tool window",
+            timeout = 60.seconds,
+            interval = 1.seconds,
+        ) {
+            probe.openCommitWorkflow(project) && probe.isAiCommitAllControlShowing(project)
+        }
+        return project
+    }
+
+    private fun waitForPrimaryRepositoryCommit(
+        fixture: ReleaseMatrixGitFixture,
+        initialCommitCount: Int,
+        expectedMessage: String,
+    ) {
+        waitFor(
+            message = "AI Commit All creates local commit '$expectedMessage'",
+            timeout = 60.seconds,
+            interval = 1.seconds,
+            errorMessage = { "Latest commit: ${fixture.primaryRepository.latestCommitSubject()}" },
+        ) {
+            fixture.primaryRepository.commitCount() > initialCommitCount &&
+                fixture.primaryRepository.latestCommitSubject() == expectedMessage
+        }
+    }
+
     private fun runIdeaWithFixture(
         testName: String,
         fixture: ReleaseMatrixGitFixture,
@@ -237,29 +402,29 @@ class ReleaseMatrixUiHarnessTest {
 @Remote("pl.devopssolutions.aicommitall.integration.fakeai.FakeAiAssistantProbe", plugin = "com.intellij.ml.llm")
 private interface RemoteFakeAiAssistantProbe {
     fun isCommitMessageActionRegistered(): Boolean
-
     fun primaryCommitActionsContain(actionId: String): Boolean
-
     fun primaryCommitActionIds(): List<String>
-
+    fun openCommitWorkflow(project: Project): Boolean
     fun activateCommitToolWindow(project: Project): Boolean
-
     fun isAiCommitAllControlShowing(project: Project): Boolean
-
     fun aiCommitAllControlAccessibleName(project: Project): String?
-
     fun aiCommitAllControlAccessibleDescription(project: Project): String?
-
     fun isAiCommitAllControlEnabled(project: Project): Boolean
-
     fun writeAiCommitAllControlScreenshots(
         project: Project,
         outputDirectory: String,
     ): List<String>
-
     fun generatedCommitMessageThroughDataContext(): String
-}
+    fun registeredKeyboardShortcutText(actionId: String): String?
+    fun setUseVcsShortcutsForAiCommitAll(enabled: Boolean)
+    fun useVcsShortcutsForAiCommitAll(): Boolean
+    fun isShortcutActionEnabled(
+        project: Project,
+        actionId: String,
+    ): Boolean
 
+    fun hasOutgoingCommitsToPush(project: Project): Boolean
+}
 private const val AI_COMMIT_ALL_CONTROL_ACCESSIBLE_NAME = "AI Commit All"
 private const val AI_COMMIT_ALL_CONTROL_CLASS_NAME =
     "pl.devopssolutions.aicommitall.actions.AiCommitAllThreeSectionControl"
@@ -267,3 +432,6 @@ private const val COMMIT_TOOL_WINDOW_ID = "Commit"
 private const val DISABLED_CONTROL_ACCESSIBLE_DESCRIPTION =
     "AI, Commit, and Push sections; no sections are enabled"
 private const val IDE_COMMIT_AND_PUSH_ACTION_ID = "Git.Commit.And.Push.Executor"
+private const val AI_COMMIT_ALL_COMMIT_SHORTCUT_ACTION_ID = "pl.devopssolutions.aicommitall.actions.CommitShortcut"
+private const val AI_COMMIT_ALL_PUSH_SHORTCUT_ACTION_ID = "pl.devopssolutions.aicommitall.actions.PushShortcut"
+private const val GENERATED_COMMIT_MESSAGE = "AI Commit All release matrix message"
