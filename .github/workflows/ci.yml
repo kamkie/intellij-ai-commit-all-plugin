@@ -131,4 +131,28 @@ jobs:
 
       - name: Fail on Detekt findings
         if: ${{ steps.detekt-analysis.outcome == 'failure' }}
-        run: exit 1
+        shell: bash
+        run: |
+          echo "::error::Detekt found static analysis issues. See the report excerpt below and the ai-commit-all-detekt-reports artifact."
+
+          markdown_report="build/reports/detekt/detekt.md"
+          xml_report="build/reports/detekt/detekt.xml"
+
+          if [ -f "${markdown_report}" ]; then
+            echo "## Detekt findings" >> "${GITHUB_STEP_SUMMARY}"
+            cat "${markdown_report}" >> "${GITHUB_STEP_SUMMARY}"
+
+            echo "::group::Detekt Markdown report"
+            cat "${markdown_report}"
+            echo "::endgroup::"
+          elif [ -f "${xml_report}" ]; then
+            echo "Detekt Markdown report was not found; showing the first 200 lines of the Checkstyle XML report."
+            echo "::group::Detekt Checkstyle XML report"
+            sed -n '1,200p' "${xml_report}"
+            echo "::endgroup::"
+          else
+            echo "Detekt report files were not found. Available build/reports files:"
+            find build/reports -maxdepth 3 -type f | sort || true
+          fi
+
+          exit 1
