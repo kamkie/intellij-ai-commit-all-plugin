@@ -37,7 +37,10 @@ import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.JBColor
 import java.awt.Component
 import java.awt.Container
+import java.awt.Frame
 import java.awt.Graphics2D
+import java.awt.KeyboardFocusManager
+import java.awt.Window
 import java.awt.image.BufferedImage
 import java.nio.file.Files
 import java.nio.file.Path
@@ -78,13 +81,7 @@ object FakeAiAssistantProbe {
     fun openCommitToolWindow(project: Project): Boolean = runOnEdt {
         performToolWindowActivationAction()
         val frame = WindowManager.getInstance().getFrame(project)
-        frame?.apply {
-            if (extendedState and java.awt.Frame.ICONIFIED != 0) {
-                extendedState = extendedState and java.awt.Frame.ICONIFIED.inv()
-            }
-            toFront()
-            requestFocus()
-        }
+        frame?.bringToFrontForInput()
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(COMMIT_TOOL_WINDOW_ID)
             ?: return@runOnEdt false
         toolWindow.activate(null, true)
@@ -94,7 +91,10 @@ object FakeAiAssistantProbe {
     @JvmStatic
     fun isIdeFrameAndAiCommitAllControlVisible(project: Project): Boolean = runOnEdt {
         val frame = WindowManager.getInstance().getFrame(project) ?: return@runOnEdt false
-        frame.isShowing && frame.isVisible && frame.state and java.awt.Frame.ICONIFIED == 0 &&
+        frame.isShowing &&
+            frame.isVisible &&
+            frame.extendedState and Frame.ICONIFIED == 0 &&
+            frame.isForegroundWindowForInput() &&
             findAiCommitAllControl(project)?.isShowing == true
     }
 
@@ -344,6 +344,20 @@ object FakeAiAssistantProbe {
             null,
         )
         ActionUtil.performAction(action, event)
+    }
+
+    private fun Frame.bringToFrontForInput() {
+        if (extendedState and Frame.ICONIFIED != 0) {
+            extendedState = extendedState and Frame.ICONIFIED.inv()
+        }
+        toFront()
+        requestFocus()
+        requestFocusInWindow()
+    }
+
+    private fun Window.isForegroundWindowForInput(): Boolean {
+        val focusedWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().focusedWindow
+        return isActive || isFocused || focusedWindow == this || focusedWindow?.owner == this
     }
 
     private fun aiCommitAllSettingsInstance(): Any {
