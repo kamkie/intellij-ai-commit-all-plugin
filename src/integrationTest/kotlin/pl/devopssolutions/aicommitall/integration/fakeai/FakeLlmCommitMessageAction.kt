@@ -15,21 +15,40 @@
  */
 package pl.devopssolutions.aicommitall.integration.fakeai
 
+import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.progress.EmptyProgressIndicator
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.vcs.CommitMessageI
 import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.vcs.commit.CommitMessageUi
+import java.util.concurrent.TimeUnit
 
 class FakeLlmCommitMessageAction : AnAction() {
     @Suppress("unused")
+    @Volatile
     private var progressIndicator: ProgressIndicator? = null
 
     override fun actionPerformed(event: AnActionEvent) {
-        writeGeneratedMessage(event)
+        val indicator = EmptyProgressIndicator().also { progress ->
+            progress.start()
+        }
+        progressIndicator = indicator
+        JobScheduler.getScheduler().schedule(
+            {
+                try {
+                    writeGeneratedMessage(event)
+                } finally {
+                    indicator.stop()
+                    progressIndicator = null
+                }
+            },
+            FAKE_GENERATION_DELAY_MILLIS,
+            TimeUnit.MILLISECONDS,
+        )
     }
 
     private fun writeGeneratedMessage(event: AnActionEvent) {
@@ -69,5 +88,6 @@ class FakeLlmCommitMessageAction : AnAction() {
 
     companion object {
         const val GENERATED_MESSAGE: String = "AI Commit All release matrix message"
+        private const val FAKE_GENERATION_DELAY_MILLIS: Long = 750
     }
 }
