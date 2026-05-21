@@ -195,8 +195,10 @@ internal class AiCommitAllThreeSectionControl(
         )
     }
 
-    private fun controlFont(): Font = (font ?: UIManager.getFont("Button.font")
-    ?: Font(Font.SANS_SERIF, Font.BOLD, JBUI.scale(12)))
+    private fun controlFont(): Font = (
+        font ?: UIManager.getFont("Button.font")
+            ?: Font(Font.SANS_SERIF, Font.BOLD, JBUI.scale(12))
+        )
         .deriveFont(Font.BOLD, JBUI.scale(12).toFloat())
 
     private fun paintDividers(
@@ -513,7 +515,8 @@ internal class AiCommitAllThreeSectionControl(
     }
 
     private fun controlBounds(): Rectangle = Rectangle(
-        0, 0,
+        0,
+        0,
         width.takeIf { it > 0 }
             ?: preferredSize.width,
         height.takeIf { it > 0 } ?: preferredSize.height,
@@ -560,8 +563,12 @@ internal class AiCommitAllThreeSectionControl(
         }
     }
 
-    private fun centerIconY(iconSize: Int): Int = ((height.takeIf { it > 0 }
-        ?: preferredSize.height) - JBUI.scale(iconSize)) / 2
+    private fun centerIconY(iconSize: Int): Int = (
+        (
+            height.takeIf { it > 0 }
+                ?: preferredSize.height
+            ) - JBUI.scale(iconSize)
+        ) / 2
 
     private fun buttonArc(): Float = DarculaUIUtil.BUTTON_ARC.getFloat()
 

@@ -16,10 +16,12 @@
 package pl.devopssolutions.aicommitall.integration.fakeai
 
 import com.intellij.ide.DataManager
+import com.intellij.ide.IdeEventQueue
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionUiKind
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
@@ -29,17 +31,22 @@ import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.extensions.PluginId
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vcs.CommitMessageI
 import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.JBColor
+import com.intellij.vcs.commit.CommitMessageUi
+import java.awt.AWTEvent
 import java.awt.Component
 import java.awt.Container
 import java.awt.Frame
 import java.awt.Graphics2D
 import java.awt.Point
+import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import java.nio.file.Files
@@ -51,6 +58,17 @@ import javax.swing.JComponent
 object FakeAiAssistantProbe {
     @JvmStatic
     fun isCommitMessageActionRegistered(): Boolean = ActionManager.getInstance().getAction("Vcs.LLMCommitMessageAction") != null
+
+    @JvmStatic
+    fun isAiCommitAllPluginEnabled(): Boolean = PluginManagerCore.isLoaded(PluginId.getId(AI_COMMIT_ALL_PLUGIN_ID))
+
+    @JvmStatic
+    fun isAiCommitAllThreeSectionActionRegistered(): Boolean = ActionManager
+        .getInstance()
+        .getAction(AI_COMMIT_ALL_THREE_SECTION_ACTION_ID) != null
+
+    @JvmStatic
+    fun isProjectSmart(project: Project): Boolean = !DumbService.getInstance(project).isDumb
 
     @JvmStatic
     fun primaryCommitActionsContain(actionId: String): Boolean {
@@ -213,6 +231,54 @@ object FakeAiAssistantProbe {
     }
 
     @JvmStatic
+    fun setAiCompletionOptions(
+        timeoutMillis: Long,
+        checkIntervalMillis: Long,
+    ) {
+        val settings = aiCommitAllSettingsInstance()
+        settings.javaClass
+            .getDeclaredMethod("updateCompletionOptions", java.lang.Long.TYPE, java.lang.Long.TYPE)
+            .invoke(settings, timeoutMillis, checkIntervalMillis)
+    }
+
+    @JvmStatic
+    fun setClearCommitMessageBeforeGeneration(enabled: Boolean) {
+        val settings = aiCommitAllSettingsInstance()
+        settings.javaClass
+            .getDeclaredMethod("updateClearCommitMessageBeforeGeneration", java.lang.Boolean.TYPE)
+            .invoke(settings, enabled)
+    }
+
+    @JvmStatic
+    fun setFakeAiBehavior(behaviorName: String) {
+        FakeLlmCommitMessageAction.setBehavior(
+            when (behaviorName) {
+                "generated" -> FakeLlmCommitMessageBehavior.Generated
+                "empty" -> FakeLlmCommitMessageBehavior.Empty
+                "unchanged" -> FakeLlmCommitMessageBehavior.Unchanged
+                "never-finishes" -> FakeLlmCommitMessageBehavior.NeverFinishes
+                else -> error("Unknown fake AI behavior: $behaviorName")
+            },
+        )
+    }
+
+    @JvmStatic
+    fun fakeAiInvocationCount(): Int = FakeLlmCommitMessageAction.invocationCount()
+
+    @JvmStatic
+    fun unregisterFakeAiAction() {
+        val actionManager = ActionManager.getInstance()
+        if (actionManager.getAction(FAKE_AI_ACTION_ID) != null) {
+            actionManager.unregisterAction(FAKE_AI_ACTION_ID)
+        }
+    }
+
+    @JvmStatic
+    fun replaceFakeAiActionWithUnavailableSignal() {
+        registerFakeAiAction(FakeUnavailableLlmCommitMessageAction())
+    }
+
+    @JvmStatic
     fun isShortcutActionEnabled(
         project: Project,
         actionId: String,
@@ -267,6 +333,13 @@ object FakeAiAssistantProbe {
 
     @JvmStatic
     fun resetReleaseMatrixSettings() {
+        registerFakeAiAction(FakeLlmCommitMessageAction())
+        FakeLlmCommitMessageAction.reset()
+        setAiCompletionOptions(
+            timeoutMillis = DEFAULT_AI_COMPLETION_TIMEOUT_MILLIS,
+            checkIntervalMillis = DEFAULT_AI_COMPLETION_CHECK_INTERVAL_MILLIS,
+        )
+        setClearCommitMessageBeforeGeneration(true)
         setUseVcsShortcutsForAiCommitAll(true)
         setGitStagingAreaEnabled(false)
     }
@@ -294,10 +367,61 @@ object FakeAiAssistantProbe {
 
     @JvmStatic
     fun commitMessageText(project: Project): String? = runOnEdt {
-        val control = findAiCommitAllControl(project) ?: return@runOnEdt null
-        VcsDataKeys.COMMIT_WORKFLOW_UI.getData(DataManager.getInstance().getDataContext(control))
-            ?.commitMessageUi
-            ?.text
+        commitMessageUi(project)?.text
+    }
+
+    @JvmStatic
+    fun setCommitMessageText(
+        project: Project,
+        message: String,
+    ): Boolean = runOnEdt {
+        val commitMessageUi = commitMessageUi(project) ?: return@runOnEdt false
+        commitMessageUi.text = message
+        (commitMessageUi as? CommitMessageI)?.setCommitMessage(message)
+        true
+    }
+
+    @JvmStatic
+    fun dispatchUserCommitMessageEdit(
+        project: Project,
+        message: String,
+    ): Boolean = runOnEdt {
+        val commitMessageUi = commitMessageUi(project) ?: return@runOnEdt false
+        val editorComponent = commitMessageUi.editorComponent() ?: return@runOnEdt false
+        val eventQueue = IdeEventQueue.getInstance()
+        val disposable = Disposer.newDisposable("AI Commit All release matrix user edit dispatch")
+        var edited = false
+        val dispatcher = object : IdeEventQueue.NonLockedEventDispatcher {
+            override fun dispatch(e: AWTEvent): Boolean {
+                if (e is KeyEvent && e.source === editorComponent && e.keyChar == USER_EDIT_SENTINEL_KEY) {
+                    edited = true
+                    commitMessageUi.text = message
+                    (commitMessageUi as? CommitMessageI)?.setCommitMessage(message)
+                    return true
+                }
+                return false
+            }
+        }
+
+        try {
+            eventQueue.addDispatcher(dispatcher, disposable)
+            commitMessageUi.focus()
+            editorComponent.requestFocusInWindow()
+            eventQueue.dispatchEvent(
+                KeyEvent(
+                    editorComponent,
+                    KeyEvent.KEY_TYPED,
+                    System.currentTimeMillis(),
+                    0,
+                    KeyEvent.VK_UNDEFINED,
+                    USER_EDIT_SENTINEL_KEY,
+                ),
+            )
+        } finally {
+            Disposer.dispose(disposable)
+        }
+
+        edited && commitMessageUi.text == message
     }
 
     private fun writeControlScreenshot(
@@ -403,6 +527,17 @@ object FakeAiAssistantProbe {
             }
     }
 
+    private fun commitMessageUi(project: Project): CommitMessageUi? {
+        val control = findAiCommitAllControl(project) ?: return null
+        return VcsDataKeys.COMMIT_WORKFLOW_UI.getData(DataManager.getInstance().getDataContext(control))
+            ?.commitMessageUi
+    }
+
+    private fun CommitMessageUi.editorComponent(): Component? {
+        val editorField = javaClass.findNoArgumentMethod("getEditorField")?.invoke(this) ?: return null
+        return editorField.javaClass.findNoArgumentMethod("getComponent")?.invoke(editorField) as? Component
+    }
+
     private fun Component.descendants(): Sequence<Component> = sequence {
         yield(this@descendants)
         if (this@descendants is Container) {
@@ -429,6 +564,10 @@ object FakeAiAssistantProbe {
         }
         throwable.get()?.let { error -> throw error }
         return value.get()
+    }
+
+    private fun Class<*>.findNoArgumentMethod(name: String) = methods.firstOrNull { method ->
+        method.name == name && method.parameterCount == 0
     }
 
     private fun commitWorkflowDataContext(project: Project): DataContext {
@@ -472,6 +611,14 @@ object FakeAiAssistantProbe {
         return Class.forName(className, true, plugin.pluginClassLoader)
     }
 
+    private fun registerFakeAiAction(action: AnAction) {
+        val actionManager = ActionManager.getInstance()
+        if (actionManager.getAction(FAKE_AI_ACTION_ID) != null) {
+            actionManager.unregisterAction(FAKE_AI_ACTION_ID)
+        }
+        actionManager.registerAction(FAKE_AI_ACTION_ID, action)
+    }
+
     private fun gitVcsApplicationSettings(): Any {
         val gitPlugin = requireNotNull(PluginManagerCore.getPlugin(PluginId.getId(GIT_PLUGIN_ID))) {
             "Git plugin descriptor was not found."
@@ -505,10 +652,15 @@ object FakeAiAssistantProbe {
         "pl.devopssolutions.aicommitall.actions.AiCommitAllThreeSectionControl"
     private const val CONTROL_COMPONENT_NAME = "AI Commit All three-section control"
     private const val PRIMARY_COMMIT_ACTIONS_GROUP_ID = "Vcs.Commit.PrimaryCommitActions"
+    private const val AI_COMMIT_ALL_THREE_SECTION_ACTION_ID = "pl.devopssolutions.aicommitall.actions.ThreeSectionControl"
     private const val AI_COMMIT_ALL_COMMIT_SHORTCUT_ACTION_ID = "pl.devopssolutions.aicommitall.actions.CommitShortcut"
     private const val AI_COMMIT_ALL_PUSH_SHORTCUT_ACTION_ID = "pl.devopssolutions.aicommitall.actions.PushShortcut"
     private const val AI_COMMIT_ALL_PLUGIN_ID = "pl.devopssolutions.aicommitall"
     private const val GIT_PLUGIN_ID = "Git4Idea"
     private const val FAKE_GENERATION_TIMEOUT_MILLIS = 5_000L
     private const val FAKE_GENERATION_POLL_MILLIS = 100L
+    private const val DEFAULT_AI_COMPLETION_TIMEOUT_MILLIS = 30_000L
+    private const val DEFAULT_AI_COMPLETION_CHECK_INTERVAL_MILLIS = 500L
+    private const val FAKE_AI_ACTION_ID = "Vcs.LLMCommitMessageAction"
+    private const val USER_EDIT_SENTINEL_KEY = '\u001D'
 }

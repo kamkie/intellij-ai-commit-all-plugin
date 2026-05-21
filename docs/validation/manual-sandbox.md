@@ -1,6 +1,6 @@
 # Manual Sandbox Validation
 
-Last updated: 2026-05-20
+Last updated: 2026-05-22
 
 This file records the manual sandbox coverage retained for scenarios that are not reliable to automate with the current Gradle, IntelliJ test framework, and CI setup.
 
@@ -23,7 +23,15 @@ Artifact prepared for the current manual validation cycle:
 `build/distributions/ai-commit-all-v0.1.0-alpha.9-43-gc2fc8e0716.zip`, produced by
 `.\gradlew.bat buildPlugin` on 2026-05-20.
 
-Manual scenario execution is still pending. The scenario rows below require live IDE observation, current plugin installation state, AI Assistant signed-in and unavailable states, and local Git fixture interaction before Marketplace release readiness can be claimed.
+IDEA release-matrix UI automation now covers the deterministic local-fixture lane with a test-only AI Assistant substitute:
+
+```powershell
+.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"
+```
+
+Local evidence from 2026-05-22: 19 passing tests in `ReleaseMatrixUiHarnessTest`, including Commit tool window rendering, staging-area enabled and disabled commit flows, shortcut takeover, missing AI dependency, unavailable AI signal, AI timeout, empty/unchanged/user-edited messages, local commit, safe local push, and outgoing-only push.
+
+Manual scenario execution is still retained for PyCharm/WebStorm product coverage, real signed-in JetBrains AI Assistant behavior, platform-owned AI Assistant signed-out messages, before-commit and push error UI, resolved-conflict marking, settings dialog rendering, and other cases where a deterministic fake action does not own the primary assertion.
 
 ## Automated Coverage Added
 
@@ -59,13 +67,24 @@ The push scenario uses only repositories under the test temporary directory and 
 - Disabling takeover when the settings opt-out is off.
 - Promoting plugin shortcut actions over the mirrored IDE actions only when takeover is available.
 
+`src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt` covers the IDEA release-matrix UI lane for:
+
+- Launching IntelliJ IDEA 2026.1.2 with the packaged plugin and a test-only `com.intellij.ml.llm` substitute.
+- Verifying the `AI Commit All` Commit tool window control is visible, accessible, and replaces the standard `Commit and Push...` toolbar action.
+- Producing nonblank light and dark control screenshots under `build/reports/releaseMatrixUiTest/screenshots/`.
+- Running `AI`, `Commit`, and `Push` sections through local Git fixtures without real remotes.
+- Running staging-area enabled and disabled commit flows.
+- Running shortcut takeover commit and push flows through the IDE action system.
+- Verifying missing AI dependency, missing AI action, unavailable completion signal, AI timeout, empty message, unchanged message, and user-edited message stop paths leave local and remote Git state unchanged.
+- Writing local Git evidence under `build/reports/releaseMatrixUiTest/git-evidence/`.
+
 ## Manual Sandbox Scenarios
 
 Record manual results in this file or in a linked release validation report before making release-readiness claims.
 
 | ID | Scenario | IDE coverage | Status | Evidence to record |
 |----|----------|--------------|--------|--------------------|
-| T-VAL-003 | Open a Git project in the sandbox IDE and confirm the Commit tool window is available. | `IIU`, plus `PCP` and `WS` where practical. | Not run in this automated task. | Product name, build, project fixture path, result. |
+| T-VAL-003 | Open a Git project in the sandbox IDE and confirm the Commit tool window is available. | `IIU`, plus `PCP` and `WS` where practical. | Automated for IDEA by `ReleaseMatrixUiHarnessTest`; manual retained for `PCP`/`WS`. | Product name, build, project fixture path, result. |
 | T-VAL-005 | Modified tracked file is included by `AI Commit All`. | `IIU`, plus representative non-IDEA IDE. | Not run in this automated task. | Commit tool window before/after inclusion state. |
 | T-VAL-006 | Unversioned file is included. | `IIU`, plus representative non-IDEA IDE. | Not run in this automated task. | Commit tool window before/after inclusion state. |
 | T-VAL-007 | Deleted file is included. | `IIU`, plus representative non-IDEA IDE. | Not run in this automated task. | Commit tool window before/after inclusion state. |
@@ -73,20 +92,20 @@ Record manual results in this file or in a linked release validation report befo
 | T-VAL-009 | Files in multiple changelists are included. | `IIU`. | Not run in this automated task. | Changelist names and inclusion state. |
 | T-VAL-010 | Files across multiple Git roots are included. | `IIU`. | Not run in this automated task. | Root paths and inclusion state. |
 | T-VAL-011 | Ignored files are excluded. | `IIU`, plus representative non-IDEA IDE. | Not run in this automated task. | `.gitignore` content and absence from inclusion state. |
-| T-VAL-012 | `Commit` section commits after AI message generation. | `IIU`. | Not run in this automated task. | Generated message, resulting commit hash, no push attempted. |
-| T-VAL-013 | `Push` section pushes after a successful commit to a local remote. | `IIU`. | Not run in this automated task. | Local remote path, resulting commit hash, remote branch hash. |
-| T-VAL-014 | Three-section control renders passive, disabled, cumulative hover, running states, and inactive divider shades in light and dark themes. | `IIU`, plus representative non-IDEA IDE. | Not run in this automated task. | Theme names and screenshot or visual confirmation, including light `Clicked: Staging + AI` `Commit`/`Push` divider shade. |
-| T-VAL-015 | Missing or disabled JetBrains AI Assistant dependency fails installation or loading. | `IIU`. | Not run in this automated task. | Plugin manager or IDE log evidence. |
-| T-VAL-016 | AI Assistant present but unavailable or not signed in stops without commit or push. | `IIU`. | Not run in this automated task. | AI Assistant state, notification/error shown, git log unchanged. |
-| T-VAL-017 | Git staging area enabled and disabled both preserve intended inclusion. | `IIU`. | Not run in this automated task. | Staging setting state and inclusion result. |
+| T-VAL-012 | `Commit` section commits after AI message generation. | `IIU`. | Automated for IDEA with fake AI; real signed-in AI remains manual. | Generated message, resulting commit hash, no push attempted. |
+| T-VAL-013 | `Push` section pushes after a successful commit to a local remote. | `IIU`. | Automated for IDEA with a temporary local bare remote. | Local remote path, resulting commit hash, remote branch hash. |
+| T-VAL-014 | Three-section control renders passive, disabled, cumulative hover, running states, and inactive divider shades in light and dark themes. | `IIU`, plus representative non-IDEA IDE. | Automated for IDEA light/dark screenshot smoke; full visual review retained manually. | Theme names and screenshot or visual confirmation, including light `Clicked: Staging + AI` `Commit`/`Push` divider shade. |
+| T-VAL-015 | Missing or disabled JetBrains AI Assistant dependency fails installation or loading. | `IIU`. | Automated for IDEA by probe-only sandbox with `com.intellij.ml.llm` disabled. | Plugin manager or IDE log evidence. |
+| T-VAL-016 | AI Assistant present but unavailable or not signed in stops without commit or push. | `IIU`. | Deterministic unavailable/no-signal stop automated; live signed-out AI Assistant remains manual. | AI Assistant state, notification/error shown, git log unchanged. |
+| T-VAL-017 | Git staging area enabled and disabled both preserve intended inclusion. | `IIU`. | Automated for IDEA commit flows with staging enabled and disabled. | Staging setting state and inclusion result. |
 | T-VAL-018 | Current stable IDE builds are represented. | `IIU`, `PCP`, `WS`. | Product/build matrix recorded above. | Product name and build number. |
 | T-VAL-022 | Non-automated E2E scenarios stay on the manual checklist. | `IIU`, plus `PCP` and `WS` where practical. | Checklist retained here. | Completed rows or linked release report. |
-| T-VAL-023 | `AI` section includes eligible files, generates a message, and stops without commit or push. | `IIU`. | Not run in this automated task. | Generated message, commit log unchanged, remote branch unchanged. |
-| T-IDEA-010 | `Push` is enabled and pushes immediately when only safe outgoing commits are present. | `IIU`. | Not run in this automated task. | Local and remote branch hashes before and after push, plus Commit tool window enabled state. |
+| T-VAL-023 | `AI` section includes eligible files, generates a message, and stops without commit or push. | `IIU`. | Automated for IDEA with fake AI; real signed-in AI remains manual. | Generated message, commit log unchanged, remote branch unchanged. |
+| T-IDEA-010 | `Push` is enabled and pushes immediately when only safe outgoing commits are present. | `IIU`. | Automated for IDEA against a temporary local bare remote. | Local and remote branch hashes before and after push, plus Commit tool window enabled state. |
 | T-BUG-015 | `Push` does not open the Push window for protected tracked branches when no force push is required. | `IIU`. | Not run in this automated task. | Protected branch setting, local remote path, resulting commit and remote branch hashes, and no Push window observation. |
-| T-IDEA-011 | The plugin control replaces the standard `Commit and Push...` toolbar action in the Commit tool window. | `IIU`, plus representative non-IDEA IDE. | Not run in this automated task. | Commit toolbar screenshot or observation showing plugin control visible and standard action absent. |
-| ADR-0054-1 | With shortcut takeover enabled, the IDE commit shortcut runs the `Commit` section workflow. | `IIU`, plus macOS keymap equivalent where practical. | Not run in this automated task. | Keymap name, setting value, generated message, resulting commit hash. |
-| ADR-0054-2 | With shortcut takeover enabled, the IDE push shortcut runs the `Push` section workflow. | `IIU`, plus macOS keymap equivalent where practical. | Not run in this automated task. | Keymap name, setting value, local remote path, resulting commit and remote branch hashes. |
+| T-IDEA-011 | The plugin control replaces the standard `Commit and Push...` toolbar action in the Commit tool window. | `IIU`, plus representative non-IDEA IDE. | Automated for IDEA; representative non-IDEA toolbar observation retained manually. | Commit toolbar screenshot or observation showing plugin control visible and standard action absent. |
+| ADR-0054-1 | With shortcut takeover enabled, the IDE commit shortcut runs the `Commit` section workflow. | `IIU`, plus macOS keymap equivalent where practical. | Automated for IDEA action-system path; macOS keymap equivalent retained manually. | Keymap name, setting value, generated message, resulting commit hash. |
+| ADR-0054-2 | With shortcut takeover enabled, the IDE push shortcut runs the `Push` section workflow. | `IIU`, plus macOS keymap equivalent where practical. | Automated for IDEA action-system path; macOS keymap equivalent retained manually. | Keymap name, setting value, local remote path, resulting commit and remote branch hashes. |
 | ADR-0054-3 | With shortcut takeover disabled, the IDE commit shortcut runs the standard IDE commit action. | `IIU`, plus macOS keymap equivalent where practical. | Not run in this automated task. | Keymap name, setting value, observed standard Commit action behavior. |
 | ADR-0054-4 | With shortcut takeover disabled, the IDE push shortcut runs the standard IDE push action. | `IIU`, plus macOS keymap equivalent where practical. | Not run in this automated task. | Keymap name, setting value, observed standard Push action behavior. |
 

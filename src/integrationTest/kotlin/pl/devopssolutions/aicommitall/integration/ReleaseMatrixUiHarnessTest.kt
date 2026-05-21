@@ -37,15 +37,22 @@ import org.junit.jupiter.api.fail
 import org.junit.jupiter.api.io.TempDir
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
+import pl.devopssolutions.aicommitall.integration.fakeai.FakeAiAssistantProbe
 import pl.devopssolutions.aicommitall.integration.fixtures.IntegrationGitCli
 import pl.devopssolutions.aicommitall.integration.fixtures.ReleaseMatrixGitFixture
 import pl.devopssolutions.aicommitall.integration.fixtures.ReleaseMatrixGitFixtureBuilder
+import java.io.File
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class ReleaseMatrixUiHarnessTest {
@@ -111,6 +118,7 @@ class ReleaseMatrixUiHarnessTest {
             fixture = fixture,
         ) {
             val project = waitForReleaseMatrixProject()
+            waitForProjectSmart(project)
             assertEquals("release-matrix-project", project.getName())
             assertTrue(
                 utility(RemoteFakeAiAssistantProbe::class).isCommitMessageActionRegistered(),
@@ -133,6 +141,7 @@ class ReleaseMatrixUiHarnessTest {
             fixture = fixture,
         ) {
             val project = waitForReleaseMatrixProject()
+            waitForProjectSmart(project)
             val probe = utility(RemoteFakeAiAssistantProbe::class)
 
             openToolWindow(COMMIT_TOOL_WINDOW_ID)
@@ -250,6 +259,7 @@ class ReleaseMatrixUiHarnessTest {
                 expectedMessage = GENERATED_COMMIT_MESSAGE,
             )
             assertEquals(emptyList(), fixture.primaryRepository.statusLines())
+            writeGitEvidence("commit-shortcut", fixture)
         }
     }
 
@@ -282,6 +292,7 @@ class ReleaseMatrixUiHarnessTest {
                 fixture.bareRemote.remoteHead() != initialRemoteHead &&
                     fixture.bareRemote.remoteHead() == fixture.primaryRepository.head()
             }
+            writeGitEvidence("push-shortcut", fixture)
         }
     }
 
@@ -303,7 +314,107 @@ class ReleaseMatrixUiHarnessTest {
                 fixture.primaryRepository.statusLines().isNotEmpty(),
                 "AI-only generation must not consume the pending Git changes.",
             )
+            writeGitEvidence("ai-only-flow", fixture)
         }
+    }
+
+    @Test
+    fun missingFakeAiDependencyDisablesAiCommitAllPlugin() {
+        assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
+        val fixture = ReleaseMatrixGitFixtureBuilder.createClean(tempDirectory.resolve("missing-fake-ai-dependency-fixture"))
+        val probePluginPath = createReleaseMatrixProbePlugin(tempDirectory.resolve("release-matrix-probe-plugin.zip"))
+
+        runIdeaWithFixture(
+            testName = "release-matrix-ui-missing-fake-ai-dependency",
+            fixture = fixture,
+            installFakeAiPlugin = false,
+            extraDisabledPluginIds = setOf(FAKE_AI_ASSISTANT_PLUGIN_ID),
+            extraPluginPaths = listOf(probePluginPath),
+        ) {
+            waitForReleaseMatrixProject()
+            val probe = utility(RemoteReleaseMatrixProbe::class)
+
+            assertFalse(
+                probe.isAiCommitAllPluginEnabled(),
+                "AI Commit All should be disabled when the AI Assistant dependency is absent.",
+            )
+            assertFalse(
+                probe.isAiCommitAllThreeSectionActionRegistered(),
+                "AI Commit All toolbar action should not be registered when the plugin is disabled.",
+            )
+            writeGitEvidence(
+                name = "missing-fake-ai-dependency",
+                fixture = fixture,
+                details = mapOf("aiCommitAllPluginEnabled" to probe.isAiCommitAllPluginEnabled().toString()),
+            )
+        }
+    }
+
+    @Test
+    fun missingAiActionStopsWithoutCommitOrPush() {
+        fakeAiStopPathLeavesGitStateUnchanged(
+            testNameSuffix = "missing-ai-action",
+            expectFakeInvocation = false,
+        ) { probe, _ ->
+            probe.unregisterFakeAiAction()
+        }
+    }
+
+    @Test
+    fun unavailableAiCompletionSignalStopsWithoutCommitOrPush() {
+        fakeAiStopPathLeavesGitStateUnchanged(
+            testNameSuffix = "unavailable-ai-signal",
+        ) { probe, _ ->
+            probe.replaceFakeAiActionWithUnavailableSignal()
+        }
+    }
+
+    @Test
+    fun aiTimeoutStopsWithoutCommitOrPush() {
+        fakeAiStopPathLeavesGitStateUnchanged(
+            testNameSuffix = "ai-timeout",
+        ) { probe, _ ->
+            probe.setAiCompletionOptions(timeoutMillis = 1_000, checkIntervalMillis = 100)
+            probe.setFakeAiBehavior("never-finishes")
+        }
+    }
+
+    @Test
+    fun emptyGeneratedMessageStopsWithoutCommitOrPush() {
+        fakeAiStopPathLeavesGitStateUnchanged(
+            testNameSuffix = "empty-message",
+        ) { probe, _ ->
+            probe.setAiCompletionOptions(timeoutMillis = 5_000, checkIntervalMillis = 100)
+            probe.setFakeAiBehavior("empty")
+        }
+    }
+
+    @Test
+    fun unchangedGeneratedMessageStopsWithoutCommitOrPush() {
+        fakeAiStopPathLeavesGitStateUnchanged(
+            testNameSuffix = "unchanged-message",
+        ) { probe, project ->
+            probe.setAiCompletionOptions(timeoutMillis = 5_000, checkIntervalMillis = 100)
+            probe.setClearCommitMessageBeforeGeneration(false)
+            assertTrue(probe.setCommitMessageText(project, EXISTING_COMMIT_MESSAGE))
+            probe.setFakeAiBehavior("unchanged")
+        }
+    }
+
+    @Test
+    fun userEditedMessageStopsWithoutCommitOrPush() {
+        fakeAiStopPathLeavesGitStateUnchanged(
+            testNameSuffix = "user-edited-message",
+            workflowIdleTimeout = 5.seconds,
+            configure = { probe, _ ->
+                probe.setAiCompletionOptions(timeoutMillis = 30_000, checkIntervalMillis = 100)
+                probe.setFakeAiBehavior("never-finishes")
+            },
+            afterFakeInvocation = { probe, project ->
+                assertTrue(probe.dispatchUserCommitMessageEdit(project, USER_EDITED_COMMIT_MESSAGE))
+                assertEquals(USER_EDITED_COMMIT_MESSAGE, probe.commitMessageText(project))
+            },
+        )
     }
 
     @Test
@@ -339,6 +450,7 @@ class ReleaseMatrixUiHarnessTest {
                 expectedMessage = GENERATED_COMMIT_MESSAGE,
             )
             assertEquals(emptyList(), fixture.primaryRepository.statusLines())
+            writeGitEvidence("commit-flow-${if (stagingAreaEnabled) "staging" else "changelists"}", fixture)
         }
     }
 
@@ -369,6 +481,7 @@ class ReleaseMatrixUiHarnessTest {
                 fixture.bareRemote.remoteHead() != initialRemoteHead &&
                     fixture.bareRemote.remoteHead() == fixture.primaryRepository.head()
             }
+            writeGitEvidence("push-flow", fixture)
         }
     }
 
@@ -402,11 +515,56 @@ class ReleaseMatrixUiHarnessTest {
                 fixture.bareRemote.remoteHead() != initialRemoteHead && fixture.bareRemote.remoteHead() == outgoingHead
             }
             assertEquals(emptyList(), fixture.primaryRepository.statusLines())
+            writeGitEvidence("outgoing-only-push", fixture)
+        }
+    }
+
+    private fun fakeAiStopPathLeavesGitStateUnchanged(
+        testNameSuffix: String,
+        expectFakeInvocation: Boolean = true,
+        workflowIdleTimeout: Duration = 60.seconds,
+        afterFakeInvocation: (RemoteFakeAiAssistantProbe, Project) -> Unit = { _, _ -> },
+        configure: (RemoteFakeAiAssistantProbe, Project) -> Unit,
+    ) {
+        assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
+        val fixture = ReleaseMatrixGitFixtureBuilder.createCommitAndPush(
+            tempDirectory.resolve("$testNameSuffix-fixture"),
+        )
+        val initialState = GitStateSnapshot.capture(fixture)
+
+        runIdeaWithFixture(
+            testName = "release-matrix-ui-$testNameSuffix-stop",
+            fixture = fixture,
+        ) {
+            val project = openReleaseMatrixCommitToolWindow()
+            val probe = utility(RemoteFakeAiAssistantProbe::class)
+            configure(probe, project)
+            val initialInvocationCount = probe.fakeAiInvocationCount()
+            activateAiCommitAllSection(project, "Push")
+            if (expectFakeInvocation) {
+                waitFor(
+                    message = "fake AI action is invoked for $testNameSuffix",
+                    timeout = 30.seconds,
+                    interval = 100.milliseconds,
+                    errorMessage = { "invocations=${probe.fakeAiInvocationCount()}" },
+                ) {
+                    probe.fakeAiInvocationCount() > initialInvocationCount
+                }
+                afterFakeInvocation(probe, project)
+            }
+            waitForWorkflowIdle(project, timeout = workflowIdleTimeout)
+            initialState.assertUnchanged(fixture)
+            writeGitEvidence(
+                name = "$testNameSuffix-stop",
+                fixture = fixture,
+                details = initialState.evidence("initial"),
+            )
         }
     }
 
     private fun Driver.openReleaseMatrixCommitToolWindow(): Project {
         val project = waitForReleaseMatrixProject()
+        waitForProjectSmart(project)
         val probe = utility(RemoteFakeAiAssistantProbe::class)
         openToolWindow(COMMIT_TOOL_WINDOW_ID)
         assertTrue(probe.openCommitToolWindow(project))
@@ -468,6 +626,21 @@ class ReleaseMatrixUiHarnessTest {
         )
     }
 
+    private fun Driver.waitForWorkflowIdle(
+        project: Project,
+        timeout: Duration = 60.seconds,
+    ) {
+        val probe = utility(RemoteFakeAiAssistantProbe::class)
+        waitFor(
+            message = "AI Commit All workflow returns to idle",
+            timeout = timeout,
+            interval = 1.seconds,
+            errorMessage = { "description=${probe.aiCommitAllControlAccessibleDescription(project)}" },
+        ) {
+            !probe.aiCommitAllControlAccessibleDescription(project).orEmpty().contains("running")
+        }
+    }
+
     private fun Driver.waitForCommitWorkflowMode(
         project: Project,
         stagingAreaEnabled: Boolean,
@@ -515,9 +688,36 @@ class ReleaseMatrixUiHarnessTest {
         }
     }
 
+    private fun writeGitEvidence(
+        name: String,
+        fixture: ReleaseMatrixGitFixture,
+        details: Map<String, String> = emptyMap(),
+    ): Path {
+        val evidenceDirectory = Path.of("build", "reports", "releaseMatrixUiTest", "git-evidence").toAbsolutePath()
+        Files.createDirectories(evidenceDirectory)
+        val evidenceFile = evidenceDirectory.resolve("$name.txt")
+        val lines = buildList {
+            add("name=$name")
+            add("project=${fixture.projectDirectory}")
+            add("primary.root=${fixture.primaryRepository.root}")
+            add("primary.commitCount=${fixture.primaryRepository.commitCount()}")
+            add("primary.head=${fixture.primaryRepository.head()}")
+            add("primary.latestSubject=${fixture.primaryRepository.latestCommitSubject()}")
+            add("primary.status=${fixture.primaryRepository.statusLines().joinToString(separator = "|")}")
+            add("remote.root=${fixture.bareRemote.root}")
+            add("remote.main=${fixture.bareRemote.remoteHead()}")
+            details.toSortedMap().forEach { (key, value) -> add("$key=$value") }
+        }
+        Files.write(evidenceFile, lines)
+        return evidenceFile
+    }
+
     private fun runIdeaWithFixture(
         testName: String,
         fixture: ReleaseMatrixGitFixture,
+        installFakeAiPlugin: Boolean = true,
+        extraDisabledPluginIds: Set<String> = emptySet(),
+        extraPluginPaths: List<Path> = emptyList(),
         block: Driver.() -> Unit,
     ) {
         val ideVersion = requiredSystemProperty("aicommitall.ide.version")
@@ -534,13 +734,76 @@ class ReleaseMatrixUiHarnessTest {
             val pluginConfigurator = PluginConfigurator(this)
             Files.deleteIfExists(pluginConfigurator.disabledPluginsPath)
             pluginConfigurator
-                .disablePlugins(RELEASE_MATRIX_DISABLED_PLUGIN_IDS)
-                .installPluginFromPath(fakeAiPluginPath)
+                .disablePlugins(RELEASE_MATRIX_DISABLED_PLUGIN_IDS + extraDisabledPluginIds)
+                .apply {
+                    extraPluginPaths.forEach { pluginPath -> installPluginFromPath(pluginPath) }
+                    if (installFakeAiPlugin) {
+                        installPluginFromPath(fakeAiPluginPath)
+                    }
+                }
                 .installPluginFromPath(pluginPath)
         }.runIdeWithDriver().useDriverAndCloseIde {
-            utility(RemoteFakeAiAssistantProbe::class).resetReleaseMatrixSettings()
-            block()
+            if (installFakeAiPlugin) {
+                utility(RemoteFakeAiAssistantProbe::class).resetReleaseMatrixSettings()
+            }
+            var blockCompleted = false
+            try {
+                block()
+                blockCompleted = true
+            } finally {
+                if (installFakeAiPlugin && blockCompleted) {
+                    waitForOpenProjectSmart()
+                }
+            }
         }
+    }
+
+    private fun createReleaseMatrixProbePlugin(outputFile: Path): Path {
+        val classesRoot = Path.of(FakeAiAssistantProbe::class.java.protectionDomain.codeSource.location.toURI())
+        val packageRoot = classesRoot.resolve("pl/devopssolutions/aicommitall/integration/fakeai")
+        require(Files.isDirectory(packageRoot)) {
+            "Fake AI probe classes directory was not found: $packageRoot"
+        }
+
+        val jarFile = outputFile.parent.resolve("release-matrix-probe-plugin.jar")
+        ZipOutputStream(Files.newOutputStream(jarFile)).use { jar ->
+            jar.putTextEntry("META-INF/plugin.xml", RELEASE_MATRIX_PROBE_PLUGIN_XML)
+            Files.walk(packageRoot).use { paths ->
+                paths
+                    .filter(Files::isRegularFile)
+                    .forEach { classFile ->
+                        val entryName = "pl/devopssolutions/aicommitall/integration/fakeai/" +
+                            packageRoot.relativize(classFile).toString().replace(File.separatorChar, '/')
+                        jar.putFileEntry(entryName, classFile)
+                    }
+            }
+        }
+
+        ZipOutputStream(Files.newOutputStream(outputFile)).use { zip ->
+            zip.putFileEntry(
+                "release-matrix-probe-plugin/lib/release-matrix-probe-plugin.jar",
+                jarFile,
+            )
+        }
+        return outputFile
+    }
+
+    private fun ZipOutputStream.putTextEntry(
+        name: String,
+        text: String,
+    ) {
+        putNextEntry(ZipEntry(name))
+        write(text.toByteArray(StandardCharsets.UTF_8))
+        closeEntry()
+    }
+
+    private fun ZipOutputStream.putFileEntry(
+        name: String,
+        source: Path,
+    ) {
+        putNextEntry(ZipEntry(name))
+        Files.newInputStream(source).use { input -> input.copyTo(this) }
+        closeEntry()
     }
 
     private fun Driver.waitForReleaseMatrixProject(): Project = waitForOne(
@@ -550,6 +813,23 @@ class ReleaseMatrixUiHarnessTest {
         getter = { getOpenProjects() },
         checker = { project -> project.getName() == "release-matrix-project" },
     )
+
+    private fun Driver.waitForOpenProjectSmart() {
+        getOpenProjects()
+            .firstOrNull { project -> project.getName() == "release-matrix-project" }
+            ?.let { project -> waitForProjectSmart(project) }
+    }
+
+    private fun Driver.waitForProjectSmart(project: Project) {
+        val probe = utility(RemoteFakeAiAssistantProbe::class)
+        waitFor(
+            message = "release matrix project indexing is idle",
+            timeout = 120.seconds,
+            interval = 1.seconds,
+        ) {
+            probe.isProjectSmart(project)
+        }
+    }
 
     private fun requiredSystemProperty(name: String): String {
         val value = System.getProperty(name)?.takeIf { propertyValue -> propertyValue.isNotBlank() }
@@ -578,6 +858,7 @@ private interface RemoteFakeAiAssistantProbe {
         outputDirectory: String,
     ): List<String>
     fun generatedCommitMessageThroughDataContext(): String
+    fun isProjectSmart(project: Project): Boolean
     fun registeredKeyboardShortcutText(actionId: String): String?
     fun setUseVcsShortcutsForAiCommitAll(enabled: Boolean)
     fun useVcsShortcutsForAiCommitAll(): Boolean
@@ -594,6 +875,50 @@ private interface RemoteFakeAiAssistantProbe {
     fun commitMessageText(project: Project): String?
     fun performAction(project: Project, actionId: String): Boolean
     fun resetReleaseMatrixSettings()
+    fun setAiCompletionOptions(timeoutMillis: Long, checkIntervalMillis: Long)
+    fun setClearCommitMessageBeforeGeneration(enabled: Boolean)
+    fun setFakeAiBehavior(behaviorName: String)
+    fun fakeAiInvocationCount(): Int
+    fun unregisterFakeAiAction()
+    fun replaceFakeAiActionWithUnavailableSignal()
+    fun setCommitMessageText(project: Project, message: String): Boolean
+    fun dispatchUserCommitMessageEdit(project: Project, message: String): Boolean
+}
+
+@Remote("pl.devopssolutions.aicommitall.integration.fakeai.FakeAiAssistantProbe", plugin = RELEASE_MATRIX_PROBE_PLUGIN_ID)
+private interface RemoteReleaseMatrixProbe {
+    fun isAiCommitAllPluginEnabled(): Boolean
+    fun isAiCommitAllThreeSectionActionRegistered(): Boolean
+}
+
+private data class GitStateSnapshot(
+    private val commitCount: Int,
+    private val head: String,
+    private val statusLines: List<String>,
+    private val remoteHead: String,
+) {
+    fun assertUnchanged(fixture: ReleaseMatrixGitFixture) {
+        assertEquals(commitCount, fixture.primaryRepository.commitCount())
+        assertEquals(head, fixture.primaryRepository.head())
+        assertEquals(statusLines, fixture.primaryRepository.statusLines())
+        assertEquals(remoteHead, fixture.bareRemote.remoteHead())
+    }
+
+    fun evidence(prefix: String): Map<String, String> = mapOf(
+        "$prefix.primary.commitCount" to commitCount.toString(),
+        "$prefix.primary.head" to head,
+        "$prefix.primary.status" to statusLines.joinToString(separator = "|"),
+        "$prefix.remote.main" to remoteHead,
+    )
+
+    companion object {
+        fun capture(fixture: ReleaseMatrixGitFixture): GitStateSnapshot = GitStateSnapshot(
+            commitCount = fixture.primaryRepository.commitCount(),
+            head = fixture.primaryRepository.head(),
+            statusLines = fixture.primaryRepository.statusLines(),
+            remoteHead = fixture.bareRemote.remoteHead(),
+        )
+    }
 }
 
 private val RELEASE_MATRIX_DISABLED_PLUGIN_IDS = setOf(
@@ -611,3 +936,17 @@ private const val IDE_COMMIT_AND_PUSH_ACTION_ID = "Git.Commit.And.Push.Executor"
 private const val AI_COMMIT_ALL_COMMIT_SHORTCUT_ACTION_ID = "pl.devopssolutions.aicommitall.actions.CommitShortcut"
 private const val AI_COMMIT_ALL_PUSH_SHORTCUT_ACTION_ID = "pl.devopssolutions.aicommitall.actions.PushShortcut"
 private const val GENERATED_COMMIT_MESSAGE = "AI Commit All release matrix message"
+private const val EXISTING_COMMIT_MESSAGE = "Existing release matrix message"
+private const val USER_EDITED_COMMIT_MESSAGE = "User edited release matrix message"
+private const val FAKE_AI_ASSISTANT_PLUGIN_ID = "com.intellij.ml.llm"
+private const val RELEASE_MATRIX_PROBE_PLUGIN_ID = "pl.devopssolutions.aicommitall.integration.probe"
+private val RELEASE_MATRIX_PROBE_PLUGIN_XML = """
+    <idea-plugin>
+        <id>$RELEASE_MATRIX_PROBE_PLUGIN_ID</id>
+        <name>AI Commit All Release Matrix Probe</name>
+        <version>0.0.1-test</version>
+        <depends>com.intellij.modules.platform</depends>
+        <depends>com.intellij.modules.vcs</depends>
+        <depends>Git4Idea</depends>
+    </idea-plugin>
+""".trimIndent()

@@ -1,6 +1,6 @@
 # Scenario Coverage
 
-Last updated: 2026-05-18
+Last updated: 2026-05-22
 
 This public project document tracks validation scenarios across the plugin. Use it for feature work, bug fixes, release validation, and coverage planning when a scenario needs an explicit owner, execution mode, status, and evidence target. Add future feature or bug sets as new `SCN-<AREA>` entries instead of creating one-off bug-specific coverage files.
 
@@ -31,6 +31,16 @@ Manual status:
 |--------|-------|
 | Manual sandbox required | 55 |
 | Manual scenarios completed in current cycle | 0 |
+
+## IDEA UI Automation Evidence
+
+The `releaseMatrixUiTest` Gradle lane now runs IntelliJ IDEA through JetBrains Starter and Driver with a packaged plugin and a test-only `com.intellij.ml.llm` substitute. Local evidence from 2026-05-22 passed 19 `ReleaseMatrixUiHarnessTest` cases for IDEA 2026.1.2:
+
+- Commit tool window launch, control visibility, toolbar replacement, accessibility state, and nonblank light/dark screenshots.
+- `AI`, `Commit`, `Push`, staging-area enabled/disabled, shortcut takeover, local commit, safe local push, and outgoing-only push flows.
+- Missing AI dependency, missing AI action, unavailable completion signal, AI timeout, empty message, unchanged message, and user-edited message stop paths, each with unchanged local/remote Git state where applicable.
+
+The counts above are unchanged because the manual rows still own product-specific checks, real signed-in or signed-out JetBrains AI Assistant behavior, platform-owned before-commit and push error UI, and visual review beyond the deterministic IDEA fake-AI lane.
 
 ## Scenario Sets
 
@@ -445,12 +455,12 @@ Prefer automation for cases that can be isolated from the live Commit tool windo
 - `SCN-STAGE-MAN-001` through `SCN-STAGE-MAN-003`: keep manual. The primary evidence is live Commit tool window staging plus real AI Assistant workflow start/commit/push behavior.
 - `SCN-STAGE-MAN-004` through `SCN-STAGE-MAN-007`: keep manual but pair with automated counterparts `SCN-STAGE-AUT-021` through `SCN-STAGE-AUT-024`, because repository tests now cover Git state preservation while sandbox checks still own real staged-list rendering.
 - `SCN-STAGE-MAN-008`: keep manual. Resolved-conflict marking is IDE-owned, while selection primitives remain covered by `SCN-SELECT-AUT-013`.
-- `SCN-STAGE-MAN-009` and `SCN-STAGE-MAN-010`: keep manual. Shortcut keymap dispatch remains product-specific, while routing and fallback boundaries are covered by `SCN-SHORTCUT-AUT-001` through `SCN-SHORTCUT-AUT-010`.
+- `SCN-STAGE-MAN-009` and `SCN-STAGE-MAN-010`: keep manual for product-specific keymap confirmation. The IDEA action-system shortcut takeover path is now covered by `ReleaseMatrixUiHarnessTest.commitShortcutCreatesLocalCommitWhenTakeoverEnabled` and `ReleaseMatrixUiHarnessTest.pushShortcutCommitsAndPushesToTemporaryBareRemoteWhenTakeoverEnabled`.
 - `SCN-STAGE-MAN-011` through `SCN-STAGE-MAN-018`: keep manual. Automated workflow, readiness, and notification counterparts now cover deterministic stop reasons, but live AI Assistant/platform messages and staged-list retention remain sandbox evidence.
-- `SCN-CONTROL-MAN-001` through `SCN-CONTROL-MAN-003`: keep manual. Component assertions cover hidden, disabled, keyboard, hover, and nonblank painting states, but real toolbar placement and theme screenshots remain manual.
+- `SCN-CONTROL-MAN-001` through `SCN-CONTROL-MAN-003`: keep manual for visual review and non-IDEA products. IDEA Commit tool window placement, standard toolbar replacement, disabled state, and nonblank light/dark screenshot smoke checks are now covered by `ReleaseMatrixUiHarnessTest.commitToolWindowShowsPluginControlAndScreenshots`.
 - `SCN-SHORTCUT-MAN-001` through `SCN-SHORTCUT-MAN-004`: keep manual. Repository tests cover action promoter and delegation boundaries; real keymap behavior remains manual.
-- `SCN-AI-MAN-001` through `SCN-AI-MAN-007`: keep manual. Repository tests cover discovery fallbacks, timeout/user-edit stop results, descriptor dependency, and notification policy, but signed-in/unavailable AI Assistant behavior remains manual.
+- `SCN-AI-MAN-001` through `SCN-AI-MAN-007`: keep manual for live signed-in/signed-out AI Assistant behavior and platform-owned messaging. IDEA fake-AI counterparts now cover dependency absence, missing action, unavailable completion signal, timeout, empty message, unchanged message, and user-edited stop paths in `ReleaseMatrixUiHarnessTest`.
 - `SCN-SELECT-MAN-001` through `SCN-SELECT-MAN-006`: keep manual. Existing automated selection rows cover filters, changelists, resolved-conflict inclusion, unsupported VCS, and synchronization boundaries, but real Commit tool window inclusion state remains manual.
-- `SCN-WORKFLOW-MAN-001` through `SCN-WORKFLOW-MAN-008`: keep manual. Workflow runner and execution-service tests cover sequencing and stop decisions; end-to-end AI/commit/push UI safeguards remain manual.
-- `SCN-PUSH-MAN-001` through `SCN-PUSH-MAN-006`: keep manual. Policy and local Git fixtures cover safe/fallback states and local remotes, while platform push UI/errors remain manual.
+- `SCN-WORKFLOW-MAN-001` through `SCN-WORKFLOW-MAN-008`: keep manual for live AI and platform-owned safeguards. IDEA fake-AI UI automation now covers `AI`, `Commit`, `Push`, and deterministic failure stop decisions through the real Commit tool window.
+- `SCN-PUSH-MAN-001` through `SCN-PUSH-MAN-006`: keep manual for platform push UI/errors and unsafe fallback observations. IDEA UI automation now covers safe local bare-remote push and outgoing-only push without contacting real remotes.
 - `SCN-SETTINGS-MAN-001` through `SCN-SETTINGS-MAN-003`: keep manual. Settings service and descriptor registration are automated; Settings dialog rendering, restart persistence, and live runtime effect remain manual.

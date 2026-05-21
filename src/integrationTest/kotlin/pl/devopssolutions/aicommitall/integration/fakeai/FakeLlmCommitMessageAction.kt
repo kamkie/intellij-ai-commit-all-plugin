@@ -26,6 +26,7 @@ import com.intellij.openapi.vcs.CommitMessageI
 import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.vcs.commit.CommitMessageUi
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 class FakeLlmCommitMessageAction : AnAction() {
     @Suppress("unused")
@@ -33,14 +34,20 @@ class FakeLlmCommitMessageAction : AnAction() {
     private var progressIndicator: ProgressIndicator? = null
 
     override fun actionPerformed(event: AnActionEvent) {
+        recordInvocation()
         val indicator = EmptyProgressIndicator().also { progress ->
             progress.start()
         }
         progressIndicator = indicator
+        val behavior = currentBehavior()
+        if (behavior == FakeLlmCommitMessageBehavior.NeverFinishes) {
+            scheduleProgressCleanup(indicator)
+            return
+        }
         JobScheduler.getScheduler().schedule(
             {
                 try {
-                    writeGeneratedMessage(event)
+                    writeCommitMessage(event, messageForBehavior(event, behavior))
                 } finally {
                     indicator.stop()
                     progressIndicator = null
@@ -51,16 +58,52 @@ class FakeLlmCommitMessageAction : AnAction() {
         )
     }
 
-    private fun writeGeneratedMessage(event: AnActionEvent) {
+    private fun scheduleProgressCleanup(indicator: ProgressIndicator) {
+        JobScheduler.getScheduler().schedule(
+            {
+                indicator.stop()
+                if (progressIndicator === indicator) {
+                    progressIndicator = null
+                }
+            },
+            FAKE_TIMEOUT_CLEANUP_DELAY_MILLIS,
+            TimeUnit.MILLISECONDS,
+        )
+    }
+
+    private fun messageForBehavior(
+        event: AnActionEvent,
+        behavior: FakeLlmCommitMessageBehavior,
+    ): String = when (behavior) {
+        FakeLlmCommitMessageBehavior.Generated -> GENERATED_MESSAGE
+        FakeLlmCommitMessageBehavior.Empty -> ""
+        FakeLlmCommitMessageBehavior.Unchanged -> currentCommitMessage(event)
+        FakeLlmCommitMessageBehavior.NeverFinishes -> GENERATED_MESSAGE
+    }
+
+    private fun currentCommitMessage(event: AnActionEvent): String {
+        val dataContext = event.dataContext
+        return VcsDataKeys.COMMIT_WORKFLOW_UI.getData(dataContext)
+            ?.commitMessageUi
+            ?.text
+            ?: VcsDataKeys.COMMIT_MESSAGE_DOCUMENT.getData(dataContext)
+                ?.text
+            ?: ""
+    }
+
+    private fun writeCommitMessage(
+        event: AnActionEvent,
+        message: String,
+    ) {
         mutateCommitMessage {
             val dataContext = event.dataContext
             VcsDataKeys.COMMIT_WORKFLOW_UI.getData(dataContext)
                 ?.commitMessageUi
-                ?.writeText(GENERATED_MESSAGE)
+                ?.writeText(message)
             VcsDataKeys.COMMIT_MESSAGE_CONTROL.getData(dataContext)
-                ?.setCommitMessage(GENERATED_MESSAGE)
+                ?.setCommitMessage(message)
             VcsDataKeys.COMMIT_MESSAGE_DOCUMENT.getData(dataContext)
-                ?.writeText(GENERATED_MESSAGE)
+                ?.writeText(message)
         }
     }
 
@@ -88,6 +131,41 @@ class FakeLlmCommitMessageAction : AnAction() {
 
     companion object {
         const val GENERATED_MESSAGE: String = "AI Commit All release matrix message"
+        private val invocationCounter = AtomicInteger()
+
+        @Volatile
+        private var behavior: FakeLlmCommitMessageBehavior = FakeLlmCommitMessageBehavior.Generated
         private const val FAKE_GENERATION_DELAY_MILLIS: Long = 750
+        private const val FAKE_TIMEOUT_CLEANUP_DELAY_MILLIS: Long = 60_000
+
+        fun setBehavior(nextBehavior: FakeLlmCommitMessageBehavior) {
+            behavior = nextBehavior
+        }
+
+        fun reset() {
+            behavior = FakeLlmCommitMessageBehavior.Generated
+            invocationCounter.set(0)
+        }
+
+        fun invocationCount(): Int = invocationCounter.get()
+
+        fun recordInvocation() {
+            invocationCounter.incrementAndGet()
+        }
+
+        private fun currentBehavior(): FakeLlmCommitMessageBehavior = behavior
     }
+}
+
+class FakeUnavailableLlmCommitMessageAction : AnAction() {
+    override fun actionPerformed(event: AnActionEvent) {
+        FakeLlmCommitMessageAction.recordInvocation()
+    }
+}
+
+enum class FakeLlmCommitMessageBehavior {
+    Generated,
+    Empty,
+    Unchanged,
+    NeverFinishes,
 }
