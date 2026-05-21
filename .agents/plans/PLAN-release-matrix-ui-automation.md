@@ -97,6 +97,231 @@ The intended result is a deterministic release validation command that covers fi
     - Keep pull-request CI on fast checks until the UI lane has enough stability data.
     - Update `docs/validation/manual-sandbox.md`, `docs/scenario-coverage.md`, and `TASKS.md` only after the automated evidence is real.
 
+## Task Packets
+
+Completed Tasks 1, 2, and 3 predate ADR 0071 packet dispatch and remain summarized in `## Implementation Evidence`. The pending packets below govern future worker dispatch for this in-progress plan.
+
+### Task Packet: T4-staging-shortcut-commit-push-flows
+
+Task id: T4-staging-shortcut-commit-push-flows
+
+Lane: implementation
+
+Goal:
+
+- Automate staging-area, shortcut takeover, local commit, and safe immediate push UI flows for IDEA release-matrix validation.
+
+Allowed inputs:
+
+- `AGENTS.md`
+- `.agents/references/execution.md`
+- `.agents/references/testing.md`
+- `.agents/references/reviews.md`
+- Plan header, readiness summary, execution graph, this task packet, and completed implementation evidence for Tasks 1 through 3.
+- `build.gradle.kts`
+- `src/main/kotlin/pl/devopssolutions/aicommitall/actions/**`
+- `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/**`
+- `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/**`
+- `src/integrationTest/**`
+- `src/test/**` only when updating companion unit coverage.
+- `docs/specification.md` only when behavior-source lines must stay aligned.
+
+Forbidden inputs:
+
+- Unrelated archived plans.
+- Previous worker chat beyond the orchestrator handoff summary.
+- Implementation evidence from unrelated plan tasks or proposals.
+
+Write scope:
+
+- `src/integrationTest/**`
+- `src/test/**` only for companion coverage directly needed by this task.
+- `src/main/kotlin/pl/devopssolutions/aicommitall/actions/**`, `workflow/**`, or `vcs/**` only for narrow testability or bug fixes discovered by the UI flow.
+- `docs/specification.md` only when changed source behavior needs specification alignment.
+
+Dependencies:
+
+- Tasks 1, 2, and 3 complete.
+- Sequential before Tasks 5 and 6.
+
+Validation:
+
+- `.\gradlew.bat compileIntegrationTestKotlin`
+- `.\gradlew.bat test`
+- `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"`
+- `git diff --check`
+
+Stop conditions:
+
+- Safe immediate push needs a new repository rule or validation-policy decision.
+- UI automation requires real remotes, credentials, or live JetBrains AI Assistant access.
+- Shortcut takeover behavior differs from accepted ADRs or documented specification in a way that changes user-facing behavior.
+
+Expected output:
+
+- Changed files.
+- Validation evidence.
+- Commit and push outcome evidence against temporary local repositories.
+- Blockers or handoff notes.
+- Suggested changelog entry only if public plugin behavior changes.
+
+Result summary:
+
+- Status: pending
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence:
+- Blockers:
+- Review risks:
+- Handoff notes:
+
+### Task Packet: T5-failure-state-checks
+
+Task id: T5-failure-state-checks
+
+Lane: implementation
+
+Goal:
+
+- Automate deterministic failure-state checks for missing or unavailable AI, timeouts, unchanged messages, empty messages, and user-edit stop paths.
+
+Allowed inputs:
+
+- `AGENTS.md`
+- `.agents/references/execution.md`
+- `.agents/references/testing.md`
+- `.agents/references/reviews.md`
+- Plan header, readiness summary, execution graph, this task packet, and completed implementation evidence for Tasks 1 through 4.
+- `src/main/kotlin/pl/devopssolutions/aicommitall/ai/**`
+- `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/**`
+- `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/**`
+- `src/integrationTest/**`
+- `src/test/**` only when updating companion unit coverage.
+- `docs/specification.md` and `README.md` only when public behavior wording must stay aligned.
+
+Forbidden inputs:
+
+- Unrelated archived plans.
+- Previous worker chat beyond the orchestrator handoff summary.
+- Implementation evidence from unrelated plan tasks or proposals.
+
+Write scope:
+
+- `src/integrationTest/**`
+- `src/test/**` only for companion coverage directly needed by this task.
+- `src/main/kotlin/pl/devopssolutions/aicommitall/ai/**`, `workflow/**`, or `vcs/**` only for narrow testability or bug fixes discovered by failure automation.
+- `docs/specification.md` or `README.md` only when changed behavior needs user-facing alignment.
+
+Dependencies:
+
+- Task 4 complete.
+- Sequential before Task 6.
+
+Validation:
+
+- `.\gradlew.bat compileIntegrationTestKotlin`
+- `.\gradlew.bat test`
+- `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"`
+- `git diff --check`
+
+Stop conditions:
+
+- Failure-state automation requires live JetBrains AI Assistant service behavior that the fake action cannot model.
+- A missing dependency or timeout path requires a new product or repository decision.
+- Stop-path checks cannot prove unchanged git log or remote hash.
+
+Expected output:
+
+- Changed files.
+- Validation evidence.
+- Git log or remote hash evidence for stop paths.
+- Blockers or handoff notes.
+- Suggested changelog entry only if public plugin behavior changes.
+
+Result summary:
+
+- Status: pending
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence:
+- Blockers:
+- Review risks:
+- Handoff notes:
+
+### Task Packet: T6-ci-and-evidence-records
+
+Task id: T6-ci-and-evidence-records
+
+Lane: implementation
+
+Goal:
+
+- Add the manually triggered IDEA release-matrix UI workflow and update evidence records only after automated evidence exists.
+
+Allowed inputs:
+
+- `AGENTS.md`
+- `.agents/references/execution.md`
+- `.agents/references/testing.md`
+- `.agents/references/reviews.md`
+- `.agents/references/releases.md`
+- Plan header, readiness summary, execution graph, this task packet, and completed implementation evidence for Tasks 1 through 5.
+- `.github/workflows/**`
+- `docs/validation/manual-sandbox.md`
+- `docs/scenario-coverage.md`
+- `TASKS.md`
+- `build.gradle.kts` only if the workflow needs documented Gradle task wiring.
+
+Forbidden inputs:
+
+- Unrelated archived plans.
+- Previous worker chat beyond the orchestrator handoff summary.
+- Manual scenario rows that do not have real automated evidence.
+
+Write scope:
+
+- `.github/workflows/**`
+- `docs/validation/manual-sandbox.md`
+- `docs/scenario-coverage.md`
+- `TASKS.md`
+- `.agents/plans/PLAN-release-matrix-ui-automation.md`
+- `build.gradle.kts` only if workflow execution needs a small task wiring fix.
+
+Dependencies:
+
+- Task 5 complete.
+
+Validation:
+
+- `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1`
+- `git diff --check`
+- `.\gradlew.bat test`
+- `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` when the workflow or evidence update depends on fresh local evidence.
+
+Stop conditions:
+
+- CI workflow design needs a policy decision about making UI tests required on pull requests.
+- GitHub Actions execution requires secrets, credentials, or platform access not available to the repository.
+- Scenario rows cannot be tied to passing automated evidence.
+
+Expected output:
+
+- Changed files.
+- Documentation validation evidence.
+- UI workflow or evidence handoff notes.
+- Scenario coverage rows updated only for proven automated checks.
+- Suggested changelog entry only if release workflow changes affect public plugin artifacts or publication.
+
+Result summary:
+
+- Status: pending
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence:
+- Blockers:
+- Review risks:
+- Handoff notes:
+
 ## Execution Model
 
 - Execute sequentially with `Workers: 1`.

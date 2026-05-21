@@ -49,8 +49,9 @@ The orchestrator owns:
 
 - Confirming all plan questions and required decisions are answered before implementation starts.
 - Selecting the next named plan task.
-- Giving the task worker only task-shaped context needed for that task.
+- Maintaining task packets and giving each worker only the packet-shaped context needed for that task.
 - Handling new questions or missing decisions by stopping implementation and updating the owning document.
+- Recording compact task result summaries in the plan.
 - Reviewing worker output, validation evidence, self-review evidence, and commit metadata.
 - Starting the next task only after the current task is committed.
 
@@ -62,6 +63,14 @@ The task worker owns only its assigned task:
 - Update the governing plan file for the assigned task in the same commit as the task work. If that is unsafe or inappropriate, explicitly hand the plan-file update back to the orchestrator within the same execution step.
 - Commit the completed task when the task scope requires it, or return the exact commit-ready diff and evidence when the environment prevents worker commits.
 - Stop immediately and report if a new question, missing decision, unsafe assumption, or scope conflict appears.
+
+Use task packets as the dispatch contract for approved multi-task plans. Dispatch the plan header or readiness summary, execution graph, assigned task packet, and explicitly named governing artifacts or source files. Do not dispatch the full approved plan by default. A worker may load the full plan only when the packet allows it or when a blocker requires broader plan review; the worker must report that escalation in the handoff.
+
+Use an implementation worker lane by default. Add optional testing and review lanes only when task risk, validation design, or failure triage justifies the extra handoff:
+
+- Implementation workers own production or documentation edits inside the packet write scope.
+- Testing workers own tests, fixtures, validation investigation, or failure triage. They may edit tests only when the packet gives an explicit write scope.
+- Review workers are read-only by default and receive the task packet, diff, relevant spec or ADR, and validation output.
 
 Use a fresh task worker context for each plan task. Do not carry worker context from one plan task to the next.
 
@@ -77,7 +86,7 @@ The orchestrator must log structured worker events in the chat transcript:
 - Log whenever the active worker count changes.
 - Include ISO 8601 timestamp, event type, worker id, plan id, plan task id, agent mode, active worker count, and active worker ids.
 
-The chat transcript is the log destination. Do not create `.agents/runs/` logs unless a later accepted ADR defines ownership, retention, cleanup, and commit rules.
+The chat transcript is the event log destination. Do not create `.agents/runs/` logs unless a later accepted ADR defines ownership, retention, cleanup, and commit rules. Keep the durable repository record as a compact task result summary in the governing plan: worker id or lane, changed files or reviewed diff, validation evidence, blockers, review risks, and handoff notes. Do not paste raw test output, raw worker transcripts, or bulky run logs into the plan.
 
 Before dispatching the next dependent task, the orchestrator must ensure the plan file reflects the completed, failed, blocked, or otherwise current task state. If a task produces a public plugin-facing change, the orchestrator updates the next unreleased `CHANGELOG.md` section before dispatching the next task. Public plugin-facing changes include plugin source or runtime behavior, public plugin documentation, compatibility, support, security or privacy behavior, and CI, signing, publishing, or release workflow changes that affect the plugin artifact or publication. Omit internal AI-agent docs, skills, plans, proposals, ADR maintenance, workflow governance, scenario-coverage registers, test-case inventories, manual validation logs, and test-only changes unless they also change public plugin behavior, public docs, support promises, or release artifacts.
 

@@ -54,6 +54,6 @@ Use this reference when validation, sandbox runs, plugin packaging, or manual In
 
 - Ask before inspecting local IDE logs unless the user already granted permission for the specific log folder.
 - Remind the user not to share secrets, tokens, proprietary source content, or private commit messages.
-- For IntelliJ IDEA 2026.1 on this machine, the common log folder is `C:\Users\kamki\AppData\Local\JetBrains\IntelliJIdea2026.1\log`.
+- For IntelliJ IDEA on Windows, the common log folder is `%LOCALAPPDATA%\JetBrains\IntelliJIdea<version>\log`; ask the user for the exact folder when the IDE version or product is unclear.
 - Prefer `idea.log` and recent rotated logs over broad local search.
 - Capture only the lines needed to explain the failure.

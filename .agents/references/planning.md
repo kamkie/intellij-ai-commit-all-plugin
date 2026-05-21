@@ -40,6 +40,7 @@ A useful plan should include:
 - Assumptions.
 - Open questions.
 - Proposed changes, split into named implementation tasks when the work has multiple tasks.
+- Task packets for worker-owned tasks in approved multi-task plans.
 - `Execution Graph` section with a fenced Mermaid graph that labels orchestrator nodes as `O<n>`, worker nodes as `W<n>`, includes worker agent modes, and shows task assignment plus sequence or wave ordering.
 - Validation.
 - Risks and fallback behavior.
@@ -52,6 +53,7 @@ A useful plan should include:
 - Include `Workers:` metadata near the plan status.
 - Keep `Plan-ID` stable when plan title, filename, status, or wording changes.
 - Include `## Execution Graph` in every plan. Sequential plans may use a compact graph; parallel plans must show waves that match `Workers:` and ADR 0026 disjoint write scopes.
+- For approved multi-task plans, include `## Task Packets` with a packet for each worker-owned task, or link to child packet files when the long-plan split rule applies.
 - Use only canonical plan statuses from `.agents/plans/README.md`; `Closed` plans must include a `Close-Reason`.
 - Treat `Approved` as an explicit user approval state, not an agent-assumed readiness label.
 - Do not implement from a plan until the user has reviewed it, explicitly approved it, the plan status is `Approved`, and `Approved by:` records the approver.
@@ -78,6 +80,29 @@ A useful plan should include:
 - Each task worker gets only the task-shaped context needed for its assigned plan task, not accumulated context from previous tasks.
 - Do not run task workers in parallel unless the `Approved` plan explicitly identifies independent tasks with disjoint write scopes, declares a parallel `Workers:` value, and shows the parallel wave in `## Execution Graph`.
 - Use the current branch for orchestrated multi-agent execution. Per-worker git worktrees require a future accepted ADR before use.
+
+## Task Packets
+
+Use task packets as the default dispatch contract for approved multi-task plans. The orchestrator owns the full approved plan; workers own only the packet assigned to them.
+
+Each task packet must include:
+
+- Task id and stable task label.
+- Worker lane: `implementation`, `testing`, or `review`.
+- Goal.
+- Allowed inputs, including the exact plan summary, governing artifacts, source files, specs, ADRs, or validation output the worker may read.
+- Forbidden inputs, especially unrelated archived plans, unrelated prior worker chat, and implementation evidence from other packets.
+- Write scope, or `read-only` for review packets.
+- Dependencies and sequence or wave constraints.
+- Validation or review checks.
+- Stop conditions.
+- Expected output, including changed files or reviewed diff, validation evidence, blockers, review risks, and handoff notes.
+
+By default, dispatch the plan header, readiness summary, execution graph, assigned task packet, and explicitly named governing artifacts or source files. Do not dispatch the full approved plan by default. A worker may load the full plan only when the packet allows it or when a blocker requires broader plan review; the worker must report that escalation in the handoff.
+
+Keep ordinary task packets inline in the parent plan. Use child packet files only when the parent plan would become difficult to scan, such as plans with more than six worker-owned tasks, multiple parallel waves, or expected parent-plan length above roughly 200 lines after packeting. Child packet files must preserve stable task packet ids and stay linked from the parent plan.
+
+Keep the parent plan focused on approval, readiness, dependencies, execution graph, packet index, and compact task result summaries. Do not paste raw test output, raw worker transcripts, or bulky run logs into the plan.
 
 ## Before Implementation
 
@@ -109,12 +134,13 @@ If a new question, missing decision, or unsafe assumption appears while implemen
 When using delegated agents for an `Approved` multi-task plan:
 
 - Keep one orchestrator responsible for the whole plan.
-- Start one fresh task worker for the current named plan task.
-- Give the worker `AGENTS.md`, the approved plan, the current task name, relevant ADRs, relevant source files, expected validation, and commit metadata requirements.
+- Start one fresh task worker for the current task packet.
+- Give the worker the plan header or readiness summary, assigned task packet, and explicitly named governing artifacts or source files.
 - Have the worker stop and report immediately if the task reveals a new question, missing decision, unsafe assumption, or scope conflict.
 - Have the worker report suggested `CHANGELOG.md` entries only for public plugin-facing task outcomes, but keep final changelog edits with the orchestrator.
 - Have the worker update the governing plan file for the assigned task in the same task commit. If the worker cannot or should not update the plan file, the worker must explicitly hand that responsibility to the orchestrator in the same execution step.
 - When plan-file responsibility is handed off, have the orchestrator update the plan file before dispatching the next dependent task.
+- Have the orchestrator record a compact task result summary in the plan instead of raw logs or full worker transcripts.
 - Have the orchestrator update the owning document and obtain the missing decision before resuming.
 - Have the orchestrator review worker output, confirm validation and self-review evidence, maintain `CHANGELOG.md` for notable public plugin-facing changes, and verify the task commit before starting the next task.
 - Have the orchestrator update the plan status to `Implemented` when all planned changes are complete and validated, using the responsible agent identity for the autonomous status-history entry.

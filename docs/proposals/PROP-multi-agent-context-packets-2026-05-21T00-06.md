@@ -50,11 +50,11 @@ Compact overview only. The metadata table inside each finding remains the source
 
 | Id   | Title                                           | Priority | Status | Decision |
 |------|-------------------------------------------------|----------|--------|----------|
-| F001 | Add task packet dispatch contracts              | 5        | open   | accepted |
-| F002 | Define optional review and testing worker lanes | 4        | open   | accepted |
-| F003 | Add compact orchestration records               | 5        | open   | accepted |
-| E001 | Full-plan dispatch weakens task-shaped context  | 3        | open   | accepted |
-| S001 | Split long plans into parent plans and packets  | 4        | open   | accepted |
+| F001 | Add task packet dispatch contracts              | 5        | done   | accepted |
+| F002 | Define optional review and testing worker lanes | 4        | done   | accepted |
+| F003 | Add compact orchestration records               | 5        | done   | accepted |
+| E001 | Full-plan dispatch weakens task-shaped context  | 3        | done   | accepted |
+| S001 | Split long plans into parent plans and packets  | 4        | done   | accepted |
 
 ## Proposal Items
 
@@ -64,12 +64,12 @@ Compact overview only. The metadata table inside each finding remains the source
 
 | Field       | Value                     |
 |-------------|---------------------------|
-| Status      | open                      |
+| Status      | done                      |
 | Decision    | accepted                  |
 | Decision at | 2026-05-21T20:36:31+02:00 |
 | Priority    | 5                         |
 | Owner       |                           |
-| Updated     | 2026-05-21T20:36:31+02:00 |
+| Updated     | 2026-05-21T20:56:11+02:00 |
 
 ##### Context
 
@@ -100,12 +100,12 @@ Author an ADR that adopts task packet dispatch for approved multi-task plan exec
 
 | Field       | Value                     |
 |-------------|---------------------------|
-| Status      | open                      |
+| Status      | done                      |
 | Decision    | accepted                  |
 | Decision at | 2026-05-21T20:36:31+02:00 |
 | Priority    | 4                         |
 | Owner       |                           |
-| Updated     | 2026-05-21T20:36:31+02:00 |
+| Updated     | 2026-05-21T20:56:11+02:00 |
 
 ##### Context
 
@@ -136,12 +136,12 @@ Add role-lane guidance for approved multi-task plans: implementation workers rem
 
 | Field       | Value                     |
 |-------------|---------------------------|
-| Status      | open                      |
+| Status      | done                      |
 | Decision    | accepted                  |
 | Decision at | 2026-05-21T20:36:31+02:00 |
 | Priority    | 5                         |
 | Owner       |                           |
-| Updated     | 2026-05-21T20:36:31+02:00 |
+| Updated     | 2026-05-21T20:56:11+02:00 |
 
 ##### Context
 
@@ -174,12 +174,12 @@ Author an ADR that compares chat-only logs, untracked local run logs, committed 
 
 | Field       | Value                     |
 |-------------|---------------------------|
-| Status      | open                      |
+| Status      | done                      |
 | Decision    | accepted                  |
 | Decision at | 2026-05-21T20:36:31+02:00 |
 | Priority    | 3                         |
 | Owner       |                           |
-| Updated     | 2026-05-21T20:36:31+02:00 |
+| Updated     | 2026-05-21T20:56:11+02:00 |
 
 ##### Context
 
@@ -216,12 +216,12 @@ _No tracked findings._
 
 | Field       | Value                     |
 |-------------|---------------------------|
-| Status      | open                      |
+| Status      | done                      |
 | Decision    | accepted                  |
 | Decision at | 2026-05-21T20:36:31+02:00 |
 | Priority    | 4                         |
 | Owner       |                           |
-| Updated     | 2026-05-21T20:36:31+02:00 |
+| Updated     | 2026-05-21T20:56:11+02:00 |
 
 ##### Context
 

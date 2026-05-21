@@ -10,13 +10,13 @@ Proposals are advisory until accepted through the normal repository flow. A prop
 
 Active proposals still have at least one non-terminal implementation status row or at least one untriaged finding in their `Progress Tracker`.
 
-- `PROP-multi-agent-context-packets` - Multi-Agent Context Packet Workflow ([PROP-multi-agent-context-packets-2026-05-21T00-06.md](PROP-multi-agent-context-packets-2026-05-21T00-06.md)), active as of 2026-05-21.
+- None.
 
 ### Completed Proposals
 
 Completed proposals have no non-terminal implementation status rows and no untriaged findings in their `Progress Tracker`. Keep them listed here until they are moved to `archive/`.
 
-- None.
+- `PROP-multi-agent-context-packets` - Multi-Agent Context Packet Workflow ([PROP-multi-agent-context-packets-2026-05-21T00-06.md](PROP-multi-agent-context-packets-2026-05-21T00-06.md)), completed as of 2026-05-21.
 
 Index entries should include the proposal ID, title, file link, and current status date when applicable.
 
@@ -26,13 +26,9 @@ This summary lists accepted findings whose implementation status is not terminal
 
 Implementation evidence can be a task, approved plan, ADR, changed file, commit, validation result, blocker, open question, or clear open-intake note. Do not create a `TASKS.md` entry solely to satisfy this summary when another evidence path is clearer.
 
-| Proposal                                                                                 | Finding | Title                                           | Priority | Status | Evidence                                                                                     |
-|------------------------------------------------------------------------------------------|---------|-------------------------------------------------|----------|--------|----------------------------------------------------------------------------------------------|
-| [PROP-multi-agent-context-packets](PROP-multi-agent-context-packets-2026-05-21T00-06.md) | F001    | Add task packet dispatch contracts              | 5        | open   | Follow-up ADR required before guidance and template edits.                                   |
-| [PROP-multi-agent-context-packets](PROP-multi-agent-context-packets-2026-05-21T00-06.md) | F002    | Define optional review and testing worker lanes | 4        | open   | Accepted for role-lane guidance intake; ADR or direct guidance clarification still required. |
-| [PROP-multi-agent-context-packets](PROP-multi-agent-context-packets-2026-05-21T00-06.md) | F003    | Add compact orchestration records               | 5        | open   | Follow-up ADR required to choose record ownership, retention, cleanup, and commit rules.     |
-| [PROP-multi-agent-context-packets](PROP-multi-agent-context-packets-2026-05-21T00-06.md) | E001    | Full-plan dispatch weakens task-shaped context  | 3        | open   | Accepted as an F001-linked correction; ADR or narrower guidance correction still required.   |
-| [PROP-multi-agent-context-packets](PROP-multi-agent-context-packets-2026-05-21T00-06.md) | S001    | Split long plans into parent plans and packets  | 4        | open   | Accepted for long-plan split intake; ADR or approved plan-template update still required.    |
+| Proposal | Finding | Title  | Priority | Status | Evidence                                                        |
+|----------|---------|--------|----------|--------|-----------------------------------------------------------------|
+| _None_   | _None_  | _None_ | _None_   | _None_ | _No accepted findings with non-terminal implementation status._ |
 
 ## When To Use A Proposal
 

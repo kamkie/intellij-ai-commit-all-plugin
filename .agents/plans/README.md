@@ -11,6 +11,7 @@ This directory holds task-specific implementation plans for work that is too lar
 - Include `Workers: 1` for sequential plans. Use `Workers: N (parallel, tasks: <task ids or labels>)` only when the approved plan marks those tasks independent and assigns disjoint write scopes.
 - Do not use a strictly number-based plan ID such as `PLAN-0001`; the ID should carry enough meaning to recognize the plan without its file path.
 - Keep plans focused on one task or milestone.
+- For approved multi-task plans, define task packets for worker-owned tasks. Use inline packets by default.
 - Include an `## Execution Graph` section with a fenced Mermaid graph. Label orchestrators as `O<n>` and workers as `W<n>`, include planned worker modes, and encode task assignment and ordering.
 - Link unresolved user input back to `docs/decisions/OPEN_QUESTIONS.md`, and move accepted project decisions or repository rule changes to `docs/decisions/`.
 - Follow `.agents/references/planning.md` and `.agents/references/execution.md` for plan readiness, per-task commits, and orchestrator or task-worker execution.
@@ -101,3 +102,21 @@ Workers: N (parallel, tasks: <task ids or labels>)
 `N` is the maximum intended active worker count. Parallel worker counts are valid only when the plan also marks the referenced tasks independent and assigns disjoint write scopes under ADR 0026.
 
 Every plan must also include an `## Execution Graph` section with a fenced Mermaid graph. Use `O<n>` labels for orchestrator nodes and `W<n>` labels for worker nodes. Each worker node must include its planned agent mode: `code`, `fast-code`, `setup`, `advanced-chat`, `run-verify`, `niche`, or `chat`. The graph must encode task assignment by plan task id or stable task label, and it must show sequence, wave, or handoff ordering. Parallel waves in the graph must match `Workers:` and the disjoint write scopes described in the plan.
+
+## Task Packets
+
+Approved multi-task plans must include task packets for worker-owned tasks. A task packet is the default worker dispatch contract and must include:
+
+- Task id and stable task label.
+- Worker lane: `implementation`, `testing`, or `review`.
+- Goal.
+- Allowed inputs and forbidden inputs.
+- Write scope, or `read-only` for review packets.
+- Dependencies and sequence or wave constraints.
+- Validation or review checks.
+- Stop conditions.
+- Expected output.
+
+Use inline task packets for ordinary plans. Use child packet files only when the parent plan would become difficult to scan, such as plans with more than six worker-owned tasks, multiple parallel waves, or expected parent-plan length above roughly 200 lines after packeting. Child packet files must preserve stable task packet ids and stay linked from the parent plan.
+
+The parent plan remains the source of approval, readiness, dependencies, execution graph, packet index, and compact task result summaries. Task result summaries should record worker id or lane, changed files or reviewed diff, validation evidence, blockers, review risks, and handoff notes. Do not paste raw test output, raw worker transcripts, or bulky run logs into the plan.

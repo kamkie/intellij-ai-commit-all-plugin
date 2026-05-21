@@ -46,10 +46,72 @@ List work that is intentionally out of scope.
 - Reference related `TASKS.md` items by stable `T-AREA-NNN` task ID when applicable.
 - For multi-task plans, use named tasks suitable for `Project-Plan-Task:` commit metadata.
 
+## Task Packets
+
+Use task packets for approved multi-task plans. For a single-task plan with no delegated task workers, write `No separate task packets.`
+
+### Task Packet: T1-<stable-task-label>
+
+Task id: T1-<stable-task-label>
+
+Lane: implementation
+
+Goal:
+
+- State the exact task outcome.
+
+Allowed inputs:
+
+- `AGENTS.md`
+- `.agents/references/execution.md`
+- `.agents/references/testing.md`
+- Plan header, readiness summary, execution graph, and this task packet.
+- List exact source files, specs, ADRs, or validation output needed by this task.
+
+Forbidden inputs:
+
+- Unrelated archived plans.
+- Previous worker chat beyond the orchestrator handoff summary.
+- Implementation evidence from unrelated task packets.
+
+Write scope:
+
+- List exact files or directories this task may edit, or write `read-only` for review packets.
+
+Dependencies:
+
+- List predecessor task packets, wave constraints, or `none`.
+
+Validation:
+
+- List task-specific commands, review checks, or manual checks.
+
+Stop conditions:
+
+- List missing decisions, unsafe assumptions, or scope conflicts that should stop work.
+
+Expected output:
+
+- Changed files or reviewed diff.
+- Validation evidence.
+- Blockers or handoff notes.
+- Suggested changelog entry only when public plugin behavior changes.
+
+Result summary:
+
+- Status: pending
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence:
+- Blockers:
+- Review risks:
+- Handoff notes:
+
 ## Execution Model
 
 - `Workers: 1` for sequential execution, or `Workers: N (parallel, tasks: <task ids or labels>)` when the approved plan marks those tasks independent with disjoint write scopes.
 - For multi-task plans, use an orchestrator plus one fresh task worker per named task when agent delegation is available.
+- Dispatch the plan header or readiness summary, execution graph, assigned task packet, and explicitly named governing artifacts or source files. Do not dispatch the full approved plan by default.
 - Record any task that is safe to run in parallel only when it has a disjoint write scope.
 - Use the current branch only unless a later accepted ADR authorizes per-worker git worktrees.
 
