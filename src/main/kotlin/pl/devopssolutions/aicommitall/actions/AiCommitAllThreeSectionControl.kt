@@ -71,9 +71,11 @@ internal class AiCommitAllThreeSectionControl(
     override fun getAccessibleContext(): AccessibleContext {
         if (accessibleContext == null) {
             accessibleContext = object : AccessibleJComponent() {
-                override fun getAccessibleName(): String = super.getAccessibleName()?.takeIf { it.isNotBlank() } ?: "AI Commit All"
+                override fun getAccessibleName(): String = super.getAccessibleName()?.takeIf { it.isNotBlank() }
+                    ?: "AI Commit All"
 
-                override fun getAccessibleDescription(): String = super.getAccessibleDescription()?.takeIf { it.isNotBlank() }
+                override fun getAccessibleDescription(): String = super.getAccessibleDescription()
+                    ?.takeIf { it.isNotBlank() }
                     ?: accessibleDescription()
             }
         }
@@ -193,7 +195,8 @@ internal class AiCommitAllThreeSectionControl(
         )
     }
 
-    private fun controlFont(): Font = (font ?: UIManager.getFont("Button.font") ?: Font(Font.SANS_SERIF, Font.BOLD, JBUI.scale(12)))
+    private fun controlFont(): Font = (font ?: UIManager.getFont("Button.font")
+    ?: Font(Font.SANS_SERIF, Font.BOLD, JBUI.scale(12)))
         .deriveFont(Font.BOLD, JBUI.scale(12).toFloat())
 
     private fun paintDividers(
@@ -509,7 +512,12 @@ internal class AiCommitAllThreeSectionControl(
         }
     }
 
-    private fun controlBounds(): Rectangle = Rectangle(0, 0, width.takeIf { it > 0 } ?: preferredSize.width, height.takeIf { it > 0 } ?: preferredSize.height)
+    private fun controlBounds(): Rectangle = Rectangle(
+        0, 0,
+        width.takeIf { it > 0 }
+            ?: preferredSize.width,
+        height.takeIf { it > 0 } ?: preferredSize.height,
+    )
 
     private fun sectionBounds(bounds: Rectangle): Map<AiCommitAllControlSection, Rectangle> {
         val aiWidth = JBUI.scale(AI_SECTION_WIDTH)
@@ -552,7 +560,8 @@ internal class AiCommitAllThreeSectionControl(
         }
     }
 
-    private fun centerIconY(iconSize: Int): Int = ((height.takeIf { it > 0 } ?: preferredSize.height) - JBUI.scale(iconSize)) / 2
+    private fun centerIconY(iconSize: Int): Int = ((height.takeIf { it > 0 }
+        ?: preferredSize.height) - JBUI.scale(iconSize)) / 2
 
     private fun buttonArc(): Float = DarculaUIUtil.BUTTON_ARC.getFloat()
 
