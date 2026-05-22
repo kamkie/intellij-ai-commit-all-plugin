@@ -21,7 +21,9 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.progress.EmptyProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.vcs.commit.AbstractCommitWorkflowHandler
 import com.intellij.vcs.commit.CommitExecutorListener
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
@@ -38,6 +40,7 @@ internal class CommitWorkflowExecutionService(
     private val safeImmediatePushSupport: SafeImmediatePushSupport = FallbackSafeImmediatePushSupport,
     private val immediatePushExecutor: ImmediatePushExecutor = IntellijImmediatePushExecutor,
     private val commitResultRegistrar: CommitWorkflowResultRegistrar = IntellijCommitWorkflowResultRegistrar,
+    private val defaultCommitExecutionGate: DefaultCommitExecutionGate = IntellijDefaultCommitExecutionGate,
 ) {
     fun canExecuteCommit(workflowHandler: CommitWorkflowHandler?): Boolean = workflowHandler is CommitExecutorListener
 
@@ -50,14 +53,21 @@ internal class CommitWorkflowExecutionService(
             ?: return CommitWorkflowExecutionResult.UnsupportedExecutor
         val completion = CompletableFuture<Unit>()
         scheduler.schedule {
-            val registration = registerCompletion(workflowHandler, completion)
             try {
-                executorListener.executorCalled(null)
-                if (registration == null) {
-                    completion.complete(Unit)
+                defaultCommitExecutionGate.runWhenReady(workflowHandler) {
+                    val registration = registerCompletion(workflowHandler, completion)
+                    try {
+                        executorListener.executorCalled(null)
+                        if (registration == null) {
+                            completion.complete(Unit)
+                        }
+                    } catch (throwable: Throwable) {
+                        registration?.dispose()
+                        completion.completeExceptionally(throwable)
+                        throw throwable
+                    }
                 }
             } catch (throwable: Throwable) {
-                registration?.dispose()
                 completion.completeExceptionally(throwable)
                 throw throwable
             }
@@ -149,7 +159,15 @@ internal class CommitWorkflowExecutionService(
             ?: return false
 
         try {
-            executorListener.executorCalled(null)
+            defaultCommitExecutionGate.runWhenReady(workflowHandler) {
+                try {
+                    executorListener.executorCalled(null)
+                } catch (throwable: Throwable) {
+                    registration.dispose()
+                    completion.completeExceptionally(throwable)
+                    throw throwable
+                }
+            }
         } catch (throwable: Throwable) {
             registration.dispose()
             completion.completeExceptionally(throwable)
@@ -296,6 +314,13 @@ internal fun interface ImmediatePushExecutor {
     fun push(pushPlan: SafeImmediatePushPlan): CompletableFuture<Unit>
 }
 
+internal fun interface DefaultCommitExecutionGate {
+    fun runWhenReady(
+        workflowHandler: CommitWorkflowHandler,
+        action: () -> Unit,
+    )
+}
+
 private object IntellijCommitWorkflowExecutionScheduler : CommitWorkflowExecutionScheduler {
     override fun schedule(action: () -> Unit) {
         val application = ApplicationManager.getApplication()
@@ -310,6 +335,23 @@ private object IntellijCommitWorkflowExecutionScheduler : CommitWorkflowExecutio
 private object IntellijPostCommitPushScheduler : CommitWorkflowExecutionScheduler {
     override fun schedule(action: () -> Unit) {
         JobScheduler.getScheduler().execute(action)
+    }
+}
+
+private object IntellijDefaultCommitExecutionGate : DefaultCommitExecutionGate {
+    override fun runWhenReady(
+        workflowHandler: CommitWorkflowHandler,
+        action: () -> Unit,
+    ) {
+        val project = (workflowHandler as? AbstractCommitWorkflowHandler<*, *>)
+            ?.workflow
+            ?.project
+        if (project == null || project.isDisposed) {
+            action()
+            return
+        }
+
+        DumbService.getInstance(project).smartInvokeLater(action)
     }
 }
 

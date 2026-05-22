@@ -65,9 +65,13 @@ internal class CommitWorkflowExecutionServiceTest {
     }
 
     @Test
-    fun `starts default commit through workflow executor listener`() {
+    fun `starts default commit through workflow executor listener after readiness gate opens`() {
         val scheduler = CapturingScheduler()
-        val service = CommitWorkflowExecutionService(scheduler)
+        val defaultCommitExecutionGate = CapturingDefaultCommitExecutionGate()
+        val service = CommitWorkflowExecutionService(
+            scheduler = scheduler,
+            defaultCommitExecutionGate = defaultCommitExecutionGate,
+        )
         val workflowHandler = CapturingCommitWorkflowHandler()
 
         val result = service.executeCommit(workflowHandler)
@@ -77,6 +81,12 @@ internal class CommitWorkflowExecutionServiceTest {
         assertEquals(1, scheduler.scheduledActionCount)
 
         scheduler.runScheduledActions()
+
+        assertFalse(started.completion.isDone)
+        assertEquals(1, defaultCommitExecutionGate.readyActionCount)
+        assertEquals(0, workflowHandler.executorCallCount)
+
+        defaultCommitExecutionGate.runReadyActions()
 
         assertTrue(started.completion.isDone)
         assertEquals(1, workflowHandler.executorCallCount)
@@ -170,6 +180,7 @@ internal class CommitWorkflowExecutionServiceTest {
     fun `starts safe immediate push through default commit and post-commit push listener`() {
         val scheduler = CapturingScheduler()
         val postCommitPushScheduler = CapturingScheduler()
+        val defaultCommitExecutionGate = CapturingDefaultCommitExecutionGate()
         val pushPlan = CapturingSafeImmediatePushPlan()
         val immediatePushExecutor = CapturingImmediatePushExecutor()
         val registrar = CapturingCommitResultRegistrar()
@@ -182,6 +193,7 @@ internal class CommitWorkflowExecutionServiceTest {
             ),
             immediatePushExecutor = immediatePushExecutor,
             commitResultRegistrar = registrar,
+            defaultCommitExecutionGate = defaultCommitExecutionGate,
         )
         val workflowHandler = CapturingCommitWorkflowHandler(
             commitAndPushExecutor = TestCommitAndPushExecutor,
@@ -199,6 +211,15 @@ internal class CommitWorkflowExecutionServiceTest {
         scheduler.runScheduledActions()
 
         assertEquals(1, registrar.registerCallCount)
+        assertEquals(1, defaultCommitExecutionGate.readyActionCount)
+        assertEquals(0, workflowHandler.executorCallCount)
+        assertEquals(0, workflowHandler.executeCallCount)
+        assertEquals(0, pushStartedCount)
+        assertEquals(0, pushPlan.pushCallCount)
+        assertFalse(started.completion.isDone)
+
+        defaultCommitExecutionGate.runReadyActions()
+
         assertEquals(1, workflowHandler.executorCallCount)
         assertNull(workflowHandler.executor)
         assertEquals(0, workflowHandler.executeCallCount)
@@ -404,6 +425,24 @@ internal class CommitWorkflowExecutionServiceTest {
         }
 
         fun runScheduledActions() {
+            actions.forEach { action -> action() }
+        }
+    }
+
+    private class CapturingDefaultCommitExecutionGate : DefaultCommitExecutionGate {
+        private val actions = mutableListOf<() -> Unit>()
+
+        val readyActionCount: Int
+            get() = actions.size
+
+        override fun runWhenReady(
+            workflowHandler: CommitWorkflowHandler,
+            action: () -> Unit,
+        ) {
+            actions += action
+        }
+
+        fun runReadyActions() {
             actions.forEach { action -> action() }
         }
     }

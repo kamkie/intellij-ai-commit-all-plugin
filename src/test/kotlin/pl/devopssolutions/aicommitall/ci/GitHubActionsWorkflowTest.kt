@@ -379,6 +379,16 @@ internal class GitHubActionsWorkflowTest {
     }
 
     @Test
+    fun `release matrix UI workflow uploads Starter IDE logs`() {
+        val content = Files.readString(Path.of(".github", "workflows", "release-matrix-ui.yml"))
+
+        assertTrue(
+            content.contains("out/ide-tests/tests/**/log/**"),
+            "Release matrix UI workflow must upload JetBrains Starter IDE logs and screenshots.",
+        )
+    }
+
+    @Test
     fun `release workflow validates full release gate before publishing`() {
         val content = Files.readString(Path.of(".github", "workflows", "release.yml"))
 

@@ -60,4 +60,5 @@ jobs:
             build/reports/tests/releaseMatrixUiTest/**
             build/reports/releaseMatrixUiTest/**
             build/idea-sandbox/**/log/**
+            out/ide-tests/tests/**/log/**
           if-no-files-found: warn
