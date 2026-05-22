@@ -763,13 +763,10 @@ foreach ($proposal in $proposalFiles) {
         }
     }
 
-    $sectionIds = if ($isArchivedProposal)
+    $sectionIds = @([regex]::Matches($text, "(?m)^#### ($proposalIdPrefixPattern)\.") | ForEach-Object { $_.Groups[1].Value })
+    if ($isArchivedProposal)
     {
-        [regex]::Matches($text, "(?m)^### ($proposalIdPrefixPattern)\.") | ForEach-Object { $_.Groups[1].Value }
-    }
-    else
-    {
-        [regex]::Matches($text, "(?m)^#### ($proposalIdPrefixPattern)\.") | ForEach-Object { $_.Groups[1].Value }
+        $sectionIds += @([regex]::Matches($text, "(?m)^### ($proposalIdPrefixPattern)\.") | ForEach-Object { $_.Groups[1].Value })
     }
     $tableIds = [regex]::Matches($text, "(?m)^\|\s+($proposalIdPrefixPattern)\s+\|") | ForEach-Object { $_.Groups[1].Value }
     $tableRowsById = @{ }
@@ -826,6 +823,79 @@ foreach ($proposal in $proposalFiles) {
     }
 
     $findingTrackers = @()
+    $currentFindingBlockPattern = '(?ms)^####\s+(' + $proposalIdPrefixPattern + ')\..*?(?=^####\s+' + $proposalIdPrefixPattern + '\.|^###\s+|^##\s+|\z)'
+    foreach ($findingMatch in [regex]::Matches($text, $currentFindingBlockPattern))
+    {
+        $findingId = $findingMatch.Groups[1].Value
+        $findingBlock = $findingMatch.Value
+        $metadata = @{ }
+        foreach ($metadataRow in [regex]::Matches($findingBlock, '(?m)^\|\s*(Status|Decision|Decision at|Priority|Owner|Updated)\s*\|\s*(.*?)\s*\|$'))
+        {
+            $metadata[$metadataRow.Groups[1].Value] = $metadataRow.Groups[2].Value.Trim()
+        }
+
+        foreach ($requiredMetadataField in @('Status', 'Decision', 'Decision at', 'Priority', 'Owner', 'Updated'))
+        {
+            $hasRequiredMetadataField = $metadata.ContainsKey($requiredMetadataField)
+            if (-not $hasRequiredMetadataField)
+            {
+                Add-ValidationError ('{0} finding {1} metadata table is missing {2}' -f $relative, $findingId, $requiredMetadataField)
+            }
+        }
+        $status = if ( $metadata.ContainsKey('Status'))
+        {
+            $metadata['Status']
+        }
+        else
+        {
+            ''
+        }
+        $decision = if ( $metadata.ContainsKey('Decision'))
+        {
+            $metadata['Decision']
+        }
+        else
+        {
+            ''
+        }
+        $decisionAt = if ( $metadata.ContainsKey('Decision at'))
+        {
+            $metadata['Decision at']
+        }
+        else
+        {
+            ''
+        }
+        $priority = if ( $metadata.ContainsKey('Priority'))
+        {
+            $metadata['Priority']
+        }
+        else
+        {
+            ''
+        }
+        $updated = if ( $metadata.ContainsKey('Updated'))
+        {
+            $metadata['Updated']
+        }
+        else
+        {
+            ''
+        }
+
+        $findingTrackers += [pscustomobject]@{
+            Id = $findingId
+            Status = $status
+            Decision = $decision
+            DecisionAt = $decisionAt
+            Priority = $priority
+            Updated = $updated
+            AcceptedAt = ''
+            DecidedAt = ''
+            MetadataFormat = 'table'
+        }
+    }
+
     if ($isArchivedProposal)
     {
         $archivedFindingBlockPattern = '(?ms)^###\s+(' + $proposalIdPrefixPattern + ')\..*?```yaml\s*(.*?)\s*```'
@@ -897,80 +967,7 @@ foreach ($proposal in $proposalFiles) {
                 Updated = $updated
                 AcceptedAt = $acceptedAt
                 DecidedAt = $decidedAt
-            }
-        }
-    }
-    else
-    {
-        $activeFindingBlockPattern = '(?ms)^####\s+(' + $proposalIdPrefixPattern + ')\..*?(?=^####\s+' + $proposalIdPrefixPattern + '\.|^###\s+|^##\s+|\z)'
-        foreach ($findingMatch in [regex]::Matches($text, $activeFindingBlockPattern))
-        {
-            $findingId = $findingMatch.Groups[1].Value
-            $findingBlock = $findingMatch.Value
-            $metadata = @{ }
-            foreach ($metadataRow in [regex]::Matches($findingBlock, '(?m)^\|\s*(Status|Decision|Decision at|Priority|Owner|Updated)\s*\|\s*(.*?)\s*\|$'))
-            {
-                $metadata[$metadataRow.Groups[1].Value] = $metadataRow.Groups[2].Value.Trim()
-            }
-
-            foreach ($requiredMetadataField in @('Status', 'Decision', 'Decision at', 'Priority', 'Owner', 'Updated'))
-            {
-                $hasRequiredMetadataField = $metadata.ContainsKey($requiredMetadataField)
-                if (-not $hasRequiredMetadataField)
-                {
-                    Add-ValidationError ('{0} finding {1} metadata table is missing {2}' -f $relative, $findingId, $requiredMetadataField)
-                }
-            }
-            $status = if ( $metadata.ContainsKey('Status'))
-            {
-                $metadata['Status']
-            }
-            else
-            {
-                ''
-            }
-            $decision = if ( $metadata.ContainsKey('Decision'))
-            {
-                $metadata['Decision']
-            }
-            else
-            {
-                ''
-            }
-            $decisionAt = if ( $metadata.ContainsKey('Decision at'))
-            {
-                $metadata['Decision at']
-            }
-            else
-            {
-                ''
-            }
-            $priority = if ( $metadata.ContainsKey('Priority'))
-            {
-                $metadata['Priority']
-            }
-            else
-            {
-                ''
-            }
-            $updated = if ( $metadata.ContainsKey('Updated'))
-            {
-                $metadata['Updated']
-            }
-            else
-            {
-                ''
-            }
-
-            $findingTrackers += [pscustomobject]@{
-                Id = $findingId
-                Status = $status
-                Decision = $decision
-                DecisionAt = $decisionAt
-                Priority = $priority
-                Updated = $updated
-                AcceptedAt = ''
-                DecidedAt = ''
+                MetadataFormat = 'legacy-yaml'
             }
         }
     }
@@ -986,7 +983,7 @@ foreach ($proposal in $proposalFiles) {
         $acceptedAt = $findingTracker.AcceptedAt
         $decidedAt = $findingTracker.DecidedAt
 
-        if ($isArchivedProposal)
+        if ($isArchivedProposal -and $findingTracker.MetadataFormat -eq 'legacy-yaml')
         {
             if (-not [string]::IsNullOrWhiteSpace($acceptedAt) -and -not (Test-IsoTimestamp $acceptedAt))
             {

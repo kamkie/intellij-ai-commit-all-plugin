@@ -61,18 +61,16 @@ Compact overview only. The metadata table inside each finding remains the source
 
 ### New Features
 
-### F001. Add task packet dispatch contracts
+#### F001. Add task packet dispatch contracts
 
-```yaml
-status: done
-decision: accepted
-priority: 5
-owner:
-updated: 2026-05-21T20:56:11+02:00
-accepted_at: 2026-05-21T20:36:31+02:00
-decided_at:
-comment: Implemented through ADR 0071 and task-packet guidance updates.
-```
+| Field       | Value                     |
+|-------------|---------------------------|
+| Status      | done                      |
+| Decision    | accepted                  |
+| Decision at | 2026-05-21T20:36:31+02:00 |
+| Priority    | 5                         |
+| Owner       |                           |
+| Updated     | 2026-05-21T20:56:11+02:00 |
 
 ##### Context
 
@@ -99,18 +97,16 @@ Author an ADR that adopts task packet dispatch for approved multi-task plan exec
 - Artifact: ADR, then direct guidance and template edits.
 - Validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`.
 
-### F002. Define optional review and testing worker lanes
+#### F002. Define optional review and testing worker lanes
 
-```yaml
-status: done
-decision: accepted
-priority: 4
-owner:
-updated: 2026-05-21T20:56:11+02:00
-accepted_at: 2026-05-21T20:36:31+02:00
-decided_at:
-comment: Implemented through ADR 0071 and task-packet guidance updates.
-```
+| Field       | Value                     |
+|-------------|---------------------------|
+| Status      | done                      |
+| Decision    | accepted                  |
+| Decision at | 2026-05-21T20:36:31+02:00 |
+| Priority    | 4                         |
+| Owner       |                           |
+| Updated     | 2026-05-21T20:56:11+02:00 |
 
 ##### Context
 
@@ -137,18 +133,16 @@ Add role-lane guidance for approved multi-task plans: implementation workers rem
 - Artifact: ADR or direct guidance edit if the maintainer decides this is workflow clarification rather than a new durable rule.
 - Validation: documentation validation and review against `.agents/skills/plugin-review/SKILL.md` and `.agents/skills/plugin-test-tdd/SKILL.md`.
 
-### F003. Add compact orchestration records
+#### F003. Add compact orchestration records
 
-```yaml
-status: done
-decision: accepted
-priority: 5
-owner:
-updated: 2026-05-21T20:56:11+02:00
-accepted_at: 2026-05-21T20:36:31+02:00
-decided_at:
-comment: Implemented through ADR 0071 and compact task-result guidance updates.
-```
+| Field       | Value                     |
+|-------------|---------------------------|
+| Status      | done                      |
+| Decision    | accepted                  |
+| Decision at | 2026-05-21T20:36:31+02:00 |
+| Priority    | 5                         |
+| Owner       |                           |
+| Updated     | 2026-05-21T20:56:11+02:00 |
 
 ##### Context
 
@@ -177,18 +171,16 @@ Author an ADR that compares chat-only logs, untracked local run logs, committed 
 
 ### Errors And Mistakes
 
-### E001. Full-plan dispatch weakens task-shaped context
+#### E001. Full-plan dispatch weakens task-shaped context
 
-```yaml
-status: done
-decision: accepted
-priority: 3
-owner:
-updated: 2026-05-21T20:56:11+02:00
-accepted_at: 2026-05-21T20:36:31+02:00
-decided_at:
-comment: Implemented through ADR 0071 and worker dispatch guidance updates.
-```
+| Field       | Value                     |
+|-------------|---------------------------|
+| Status      | done                      |
+| Decision    | accepted                  |
+| Decision at | 2026-05-21T20:36:31+02:00 |
+| Priority    | 3                         |
+| Owner       |                           |
+| Updated     | 2026-05-21T20:56:11+02:00 |
 
 ##### Context
 
@@ -221,18 +213,16 @@ _No tracked findings._
 
 ### Simplification Opportunities
 
-### S001. Split long plans into parent plans and task packets
+#### S001. Split long plans into parent plans and task packets
 
-```yaml
-status: done
-decision: accepted
-priority: 4
-owner:
-updated: 2026-05-21T20:56:11+02:00
-accepted_at: 2026-05-21T20:36:31+02:00
-decided_at:
-comment: Implemented through ADR 0071 and long-plan task-packet guidance updates.
-```
+| Field       | Value                     |
+|-------------|---------------------------|
+| Status      | done                      |
+| Decision    | accepted                  |
+| Decision at | 2026-05-21T20:36:31+02:00 |
+| Priority    | 4                         |
+| Owner       |                           |
+| Updated     | 2026-05-21T20:56:11+02:00 |
 
 ##### Context
 
