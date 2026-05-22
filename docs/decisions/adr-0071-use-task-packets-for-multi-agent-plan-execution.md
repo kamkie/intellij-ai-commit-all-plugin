@@ -111,6 +111,6 @@ This option requires every worker-owned task packet to live outside the parent p
 
 ## More Information
 
-- Source proposal: `docs/proposals/PROP-multi-agent-context-packets-2026-05-21T00-06.md`.
+- Source proposal: `docs/proposals/archive/PROP-multi-agent-context-packets-2026-05-21T00-06.md`.
 - Related decisions: ADR 0023, ADR 0024, ADR 0026, ADR 0056, ADR 0058, ADR 0059, ADR 0060, and ADR 0061.
 - After acceptance, update the ADR index status and implementation tracker in `docs/decisions/README.md`, then implement the guidance and template edits in `.agents/references/planning.md`, `.agents/references/execution.md`, `.agents/plans/README.md`, and `.agents/plans/PLAN_TEMPLATE.md`.

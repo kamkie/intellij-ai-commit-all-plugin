@@ -41,7 +41,7 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 
 ## Creation Context
 
-- Why this proposal exists: long approved plans can overload the context window during implementation, especially when every worker receives the full plan, prior evidence, and chat-log history. The immediate example is `.agents/plans/PLAN-release-matrix-ui-automation.md`, which the maintainer reported triggered multiple context compactions while being executed without one fresh subagent per task.
+- Why this proposal exists: long approved plans can overload the context window during implementation, especially when every worker receives the full plan, prior evidence, and chat-log history. The immediate example is `.agents/plans/archive/PLAN-release-matrix-ui-automation.md`, which the maintainer reported triggered multiple context compactions while being executed without one fresh subagent per task.
 - How it was created: compared `.agents/references/planning.md`, `.agents/references/execution.md`, `.agents/plans/PLAN_TEMPLATE.md`, the active `PLAN-release-matrix-ui-automation` shape, and the batch-isolation rules in `D:\Projects\Jit\interview-feedback\AGENTS.md` and `D:\Projects\Jit\interview-feedback\specs\feedback-spec.md`.
 - Scope guardrails: this proposal preserves ADR-gated repository rule changes, one commit per plan task, disjoint write scopes for parallel work, and the existing requirement to stop on missing decisions or unsafe assumptions.
 
@@ -61,16 +61,18 @@ Compact overview only. The metadata table inside each finding remains the source
 
 ### New Features
 
-#### F001. Add task packet dispatch contracts
+### F001. Add task packet dispatch contracts
 
-| Field       | Value                     |
-|-------------|---------------------------|
-| Status      | done                      |
-| Decision    | accepted                  |
-| Decision at | 2026-05-21T20:36:31+02:00 |
-| Priority    | 5                         |
-| Owner       |                           |
-| Updated     | 2026-05-21T20:56:11+02:00 |
+```yaml
+status: done
+decision: accepted
+priority: 5
+owner:
+updated: 2026-05-21T20:56:11+02:00
+accepted_at: 2026-05-21T20:36:31+02:00
+decided_at:
+comment: Implemented through ADR 0071 and task-packet guidance updates.
+```
 
 ##### Context
 
@@ -97,16 +99,18 @@ Author an ADR that adopts task packet dispatch for approved multi-task plan exec
 - Artifact: ADR, then direct guidance and template edits.
 - Validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`.
 
-#### F002. Define optional review and testing worker lanes
+### F002. Define optional review and testing worker lanes
 
-| Field       | Value                     |
-|-------------|---------------------------|
-| Status      | done                      |
-| Decision    | accepted                  |
-| Decision at | 2026-05-21T20:36:31+02:00 |
-| Priority    | 4                         |
-| Owner       |                           |
-| Updated     | 2026-05-21T20:56:11+02:00 |
+```yaml
+status: done
+decision: accepted
+priority: 4
+owner:
+updated: 2026-05-21T20:56:11+02:00
+accepted_at: 2026-05-21T20:36:31+02:00
+decided_at:
+comment: Implemented through ADR 0071 and task-packet guidance updates.
+```
 
 ##### Context
 
@@ -133,16 +137,18 @@ Add role-lane guidance for approved multi-task plans: implementation workers rem
 - Artifact: ADR or direct guidance edit if the maintainer decides this is workflow clarification rather than a new durable rule.
 - Validation: documentation validation and review against `.agents/skills/plugin-review/SKILL.md` and `.agents/skills/plugin-test-tdd/SKILL.md`.
 
-#### F003. Add compact orchestration records
+### F003. Add compact orchestration records
 
-| Field       | Value                     |
-|-------------|---------------------------|
-| Status      | done                      |
-| Decision    | accepted                  |
-| Decision at | 2026-05-21T20:36:31+02:00 |
-| Priority    | 5                         |
-| Owner       |                           |
-| Updated     | 2026-05-21T20:56:11+02:00 |
+```yaml
+status: done
+decision: accepted
+priority: 5
+owner:
+updated: 2026-05-21T20:56:11+02:00
+accepted_at: 2026-05-21T20:36:31+02:00
+decided_at:
+comment: Implemented through ADR 0071 and compact task-result guidance updates.
+```
 
 ##### Context
 
@@ -171,16 +177,18 @@ Author an ADR that compares chat-only logs, untracked local run logs, committed 
 
 ### Errors And Mistakes
 
-#### E001. Full-plan dispatch weakens task-shaped context
+### E001. Full-plan dispatch weakens task-shaped context
 
-| Field       | Value                     |
-|-------------|---------------------------|
-| Status      | done                      |
-| Decision    | accepted                  |
-| Decision at | 2026-05-21T20:36:31+02:00 |
-| Priority    | 3                         |
-| Owner       |                           |
-| Updated     | 2026-05-21T20:56:11+02:00 |
+```yaml
+status: done
+decision: accepted
+priority: 3
+owner:
+updated: 2026-05-21T20:56:11+02:00
+accepted_at: 2026-05-21T20:36:31+02:00
+decided_at:
+comment: Implemented through ADR 0071 and worker dispatch guidance updates.
+```
 
 ##### Context
 
@@ -213,16 +221,18 @@ _No tracked findings._
 
 ### Simplification Opportunities
 
-#### S001. Split long plans into parent plans and task packets
+### S001. Split long plans into parent plans and task packets
 
-| Field       | Value                     |
-|-------------|---------------------------|
-| Status      | done                      |
-| Decision    | accepted                  |
-| Decision at | 2026-05-21T20:36:31+02:00 |
-| Priority    | 4                         |
-| Owner       |                           |
-| Updated     | 2026-05-21T20:56:11+02:00 |
+```yaml
+status: done
+decision: accepted
+priority: 4
+owner:
+updated: 2026-05-21T20:56:11+02:00
+accepted_at: 2026-05-21T20:36:31+02:00
+decided_at:
+comment: Implemented through ADR 0071 and long-plan task-packet guidance updates.
+```
 
 ##### Context
 
