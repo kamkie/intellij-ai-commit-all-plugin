@@ -16,7 +16,7 @@ Active proposals still have at least one non-terminal implementation status row 
 
 Completed proposals have no non-terminal implementation status rows and no untriaged findings in their `Progress Tracker`. Keep them listed here until they are moved to `archive/`.
 
-- `PROP-multi-agent-context-packets` - Multi-Agent Context Packet Workflow ([PROP-multi-agent-context-packets-2026-05-21T00-06.md](PROP-multi-agent-context-packets-2026-05-21T00-06.md)), completed as of 2026-05-21.
+- None.
 
 Index entries should include the proposal ID, title, file link, and current status date when applicable.
 

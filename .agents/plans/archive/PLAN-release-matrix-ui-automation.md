@@ -2,24 +2,26 @@
 
 Plan-ID: PLAN-release-matrix-ui-automation
 
-Status: In Progress
+Status: Closed
+
+Close-Reason: Archived
 
 Workers: 1
 
-Filename: `.agents/plans/PLAN-release-matrix-ui-automation.md`
+Filename: `.agents/plans/archive/PLAN-release-matrix-ui-automation.md`
 
 ## Readiness
 
-- Plan readiness: In progress after approval.
+- Plan readiness: Closed; archived after successful GitHub Actions release-matrix UI validation.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-20T23:07:23+02:00
 - Open questions: None. The maintainer answered the task-local questions in this draft.
-- Implementation progress: Tasks 1, 2, 3, 4, 5, and 6 completed.
+- Implementation progress: Tasks 1, 2, 3, 4, 5, and 6 completed; GitHub Actions `Release Matrix UI` run `26261011262` completed successfully.
 
 ## Status History
 
 - 2026-05-20T22:47:01+02:00: none -> Draft by Codex <codex@openai.com>; plan created to automate the remaining `T-VAL-024` release matrix checks.
-- 2026-05-20T23:07:23+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded from request to approve `.agents/plans/PLAN-release-matrix-ui-automation.md`.
+- 2026-05-20T23:07:23+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded from request to approve `.agents/plans/archive/PLAN-release-matrix-ui-automation.md`.
 - 2026-05-20T23:08:38+02:00: Approved -> In Progress by Codex <codex@openai.com>; Task 1 implementation started after approval.
 - 2026-05-20T23:23:51+02:00: Task 1 completed by Codex <codex@openai.com>; `releaseMatrixUiTest` launches IDEA 2026.1.2, installs the built plugin plus a test-only `com.intellij.ml.llm` substitute, and verifies `Vcs.LLMCommitMessageAction` is registered through Driver.
 - 2026-05-20T23:57:35+02:00: Task 2 completed by Codex <codex@openai.com>; deterministic Git fixtures and fake AI commit-message generation were added to the IDEA UI automation lane.
@@ -27,6 +29,7 @@ Filename: `.agents/plans/PLAN-release-matrix-ui-automation.md`
 - 2026-05-21T23:54:26+02:00: Task 4 completed by Codex <codex@openai.com>; staging-area, shortcut, local commit, safe immediate push, and outgoing-only push flows passed in the IDEA UI automation lane after harness reliability fixes.
 - 2026-05-22T00:24:21+02:00: Task 5 completed by Codex <codex@openai.com>; deterministic failure-state UI automation now covers missing dependency, missing action, unavailable signal, timeout, empty message, unchanged message, and user-edited stop paths with unchanged Git state evidence.
 - 2026-05-22T00:28:45+02:00: Task 6 completed by Codex <codex@openai.com>; a manually triggered release-matrix UI workflow and evidence records were added while residual live AI and cross-product checks remain manual.
+- 2026-05-22T02:47:46+02:00: In Progress -> Closed by Kamil Kiewisz <kamkie@outlook.com>; archived after successful GitHub Actions `Release Matrix UI` run `26261011262`.
 
 ## Goal
 
@@ -287,7 +290,7 @@ Write scope:
 - `docs/validation/manual-sandbox.md`
 - `docs/scenario-coverage.md`
 - `TASKS.md`
-- `.agents/plans/PLAN-release-matrix-ui-automation.md`
+- `.agents/plans/archive/PLAN-release-matrix-ui-automation.md`
 - `build.gradle.kts` only if workflow execution needs a small task wiring fix.
 
 Dependencies:
@@ -319,7 +322,7 @@ Result summary:
 
 - Status: completed
 - Worker: Codex <codex@openai.com>
-- Changed files or reviewed diff: `.github/workflows/release-matrix-ui.yml`; `docs/validation/manual-sandbox.md`; `docs/scenario-coverage.md`; `TASKS.md`; `.agents/plans/PLAN-release-matrix-ui-automation.md`
+- Changed files or reviewed diff: `.github/workflows/release-matrix-ui.yml`; `docs/validation/manual-sandbox.md`; `docs/scenario-coverage.md`; `TASKS.md`; `.agents/plans/archive/PLAN-release-matrix-ui-automation.md`
 - Validation evidence: `.\gradlew.bat compileIntegrationTestKotlin spotlessCheck`; `.\gradlew.bat spotlessCheck test`; `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"`; `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1`; `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\ai\validate-agent-artifacts.ps1`; `git diff --check`
 - Blockers: None.
 - Review risks: The GitHub Actions lane is manually triggered first and uses `xvfb-run` on `ubuntu-latest`; the first hosted-run result should be reviewed before making it a required pull-request gate.

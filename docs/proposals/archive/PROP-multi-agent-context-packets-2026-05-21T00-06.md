@@ -4,6 +4,7 @@ generated_at: 2026-05-21T00-06
 created_from: User request to combine multi-agent workflow comparison, context-window concerns, and role-agent recommendations into a review proposal.
 purpose: Propose context-light multi-agent plan execution using task packets, dedicated review and testing roles, and compact orchestration records.
 scope: Covers AI-agent planning and execution guidance, plan templates, worker dispatch, review and testing handoffs, and run-record options.
+archived_at: 2026-05-22T02:47:46+02:00
 ---
 
 # Multi-Agent Context Packet Workflow

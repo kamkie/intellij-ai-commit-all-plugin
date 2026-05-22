@@ -20,10 +20,11 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- `PLAN-release-matrix-ui-automation` - Release Matrix UI Automation ([PLAN-release-matrix-ui-automation.md](PLAN-release-matrix-ui-automation.md)).
+- None.
 
 ## Archived Plans
 
+- `PLAN-release-matrix-ui-automation` - Release Matrix UI Automation ([archive/PLAN-release-matrix-ui-automation.md](archive/PLAN-release-matrix-ui-automation.md)), archived as of 2026-05-22.
 - `PLAN-automate-manual-scenarios` - Automate Manual Scenarios ([archive/PLAN-automate-manual-scenarios.md](archive/PLAN-automate-manual-scenarios.md)), archived as of 2026-05-18.
 - `PLAN-unified-formatting-linting-toolchain` - Unified Formatting And Linting Toolchain ([archive/PLAN-unified-formatting-linting-toolchain.md](archive/PLAN-unified-formatting-linting-toolchain.md)), archived as of 2026-05-18.
 - `PLAN-confirm-staged-before-ai-generation` - Confirm Staged Before AI Generation ([archive/PLAN-confirm-staged-before-ai-generation.md](archive/PLAN-confirm-staged-before-ai-generation.md)), archived as of 2026-05-18.
