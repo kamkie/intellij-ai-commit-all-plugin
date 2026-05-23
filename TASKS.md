@@ -14,12 +14,11 @@ Notation:
 
 ### Documentation
 
-- [ ] T-DOC-017: create user-facing documentation (umbrella for T-DOC-018..T-DOC-023).
+- [ ] T-DOC-017: finish deferred user-facing documentation follow-ups after the ADR 0076 rebuild (umbrella for T-DOC-018..T-DOC-020 and T-DOC-023).
 - [ ] T-DOC-018: expand `config/intellij-platform/description.html` Marketplace description with feature summary, requirements, AI Assistant dependency, link to source, and license note. (`config/intellij-platform/description.html`)
 - [ ] T-DOC-019: keep `config/intellij-platform/change-notes.html` aligned with the `CHANGELOG.md` `Unreleased` and latest tagged release sections during release preparation. (`config/intellij-platform/change-notes.html`, `CHANGELOG.md`)
-- [ ] T-DOC-020: add screenshots or a short animation of the `AI | Commit | Push` control in light and dark themes, and link them from `README.md` and the Marketplace description. (`README.md`, `config/intellij-platform/description.html`, `docs/concepts/graphics/`)
-- [ ] T-DOC-022: add a Troubleshooting and FAQ section in `README.md` for missing or disabled AI Assistant, AI generation timeout, push fallback to the IDE dialog, and unresolved conflicts. (`README.md`)
-- [ ] T-DOC-023: add a macOS keymap row to the `README.md` shortcut table and confirm both keymaps match `plugin.xml`. (`README.md`, `src/main/resources/META-INF/plugin.xml`)
+- [ ] T-DOC-020: add reviewed screenshots or a short animation of the `AI | Commit | Push` control in light and dark themes, and link them from `docs/user-guide.md` and the Marketplace description. (`docs/user-guide.md`, `config/intellij-platform/description.html`, `docs/concepts/graphics/`)
+- [ ] T-DOC-023: confirm macOS keymap equivalents for the plugin commit and push shortcuts, then update the user guide shortcut table. (`docs/user-guide.md`, `src/main/resources/META-INF/plugin.xml`)
 
 ### Validation
 
