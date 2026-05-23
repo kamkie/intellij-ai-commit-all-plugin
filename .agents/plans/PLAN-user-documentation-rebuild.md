@@ -143,7 +143,7 @@ Result summary:
 - Changed files or reviewed diff: `.agents/references/documentation.md`, `TASKS.md`
 - Validation evidence: final `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\ai\validate-agent-artifacts.ps1`, and `git diff --check` passed.
 - Blockers: none.
-- Review risks: ownership mapping moved support policy to `docs/SUPPORT.md` while a root `SUPPORT.md` compatibility pointer remains.
+- Review risks: ownership mapping moved support policy to `docs/SUPPORT.md`; root `SUPPORT.md` has since been removed.
 - Handoff notes: documentation owner map now matches ADR 0076 naming and ownership rules; task rows were reconciled during final integration.
 
 ### Task Packet: T2-readme-user-guide

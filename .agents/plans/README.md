@@ -112,21 +112,23 @@ Every plan must also include an `## Execution Graph` section with a fenced Merma
 Approved multi-task plans must include task packets for worker-owned tasks. A task packet is the default worker dispatch contract and must include:
 
 - Task id and task label.
-- Worker lane: `implementation`, `testing`, or `review`.
+- Worker lane: `implementation`, `exploration`, `testing`, or `review`.
 - Required skills.
 - Goal.
 - Initial context budget.
 - Allowed inputs, including the exact plan summary, governing artifacts, source files, specs, ADRs, or validation output the worker may read.
 - Forbidden inputs, especially unrelated archived plans, unrelated prior worker chat, and implementation evidence from other packets.
-- Write scope, or `read-only` for review packets.
+- Write scope, or `read-only` for exploration and review packets.
 - Dependencies and sequence or wave constraints.
 - Validation or review checks.
 - Escalation triggers.
 - Stop conditions.
 - Expected output, including changed files or reviewed diff, validation evidence, blockers, review risks, and handoff notes.
 
-Use `Initial context budget` to name exact `Read first` and `Escalate to` artifacts. Do not seed packets with broad default guidance bundles when exact files, specs, ADRs, source paths, commands, or validation outputs are enough. Review packets must keep `Write scope: read-only`.
+Use `Initial context budget` to name exact `Read first` and `Escalate to` artifacts. Do not seed packets with broad default guidance bundles when exact files, specs, ADRs, source paths, commands, or validation outputs are enough. Exploration and review packets must keep `Write scope: read-only`.
 
 Use inline task packets for ordinary plans. Use child packet files only when the parent plan would become difficult to scan, such as plans with more than six worker-owned tasks, multiple parallel waves, or expected parent-plan length above roughly 200 lines after packeting. Child packet files must preserve task packet refs and stay linked from the parent plan.
 
 The parent plan remains the source of approval, readiness, dependencies, execution graph, packet index, and compact task result summaries. Task result summaries should record worker id or lane, changed files or reviewed diff, validation evidence, blockers, review risks, and handoff notes. Do not paste raw test output, raw worker transcripts, or bulky run logs into the plan.
+
+If delegation is unavailable, not permitted, or not worth the coordination cost, use local packet mode from `.agents/references/orchestration.md`: the active agent executes the assigned packet locally while preserving the packet's context, escalation, write-scope, validation, stop-condition, and result-summary boundaries. The result summary must state that no fresh worker was used and why.

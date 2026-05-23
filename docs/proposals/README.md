@@ -17,6 +17,7 @@ Active proposals still have at least one non-terminal implementation status row 
 Completed proposals have no non-terminal implementation status rows and no untriaged findings in their `Progress Tracker`. Keep them listed here until they are moved to `archive/`.
 
 - `PROP-agent-learning-memory` - [Agent Learning Memory Proposal](PROP-agent-learning-memory-2026-05-23T23-12.md) - completed on 2026-05-23.
+- `PROP-execution-loop-efficiency` - [Execution Loop Efficiency Proposal](PROP-execution-loop-efficiency-2026-05-23T23-41.md) - completed on 2026-05-23.
 - `PROP-validation-docs-separation` - [Validation Docs Separation Proposal](PROP-validation-docs-separation-2026-05-23T22-18.md) - completed on 2026-05-23.
 
 Index entries should include the proposal ref, title, file link, and current status date when applicable.

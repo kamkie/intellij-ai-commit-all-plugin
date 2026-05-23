@@ -1,17 +1,18 @@
 # Orchestration Guide
 
-Use this guide when an agent delegates work, coordinates approved-plan workers, or runs parallel sidecar work.
+Use this guide when an agent delegates work, coordinates approved-plan workers, runs parallel sidecar work, or needs compact orchestration preflight for context-heavy work.
 
 Direct execution loops live in `.agents/references/execution.md`. Plan creation, readiness, status, and task-packet shape live in `.agents/references/planning.md`.
 
 ## Roles
 
-The active agent is the orchestrator whenever work is delegated. The orchestrator owns the full outcome even when workers perform exploration, edits, validation, or review.
+The active agent is the orchestrator whenever work is delegated or packeted. The orchestrator owns the full outcome even when workers perform exploration, edits, validation, or review.
 
 The orchestrator owns:
 
 - Owning the critical path and keeping local work moving while sidecar work runs.
 - Confirming ADR gates, plan gates, answered questions, and required decisions before implementation starts.
+- Recording an orchestrator decision capsule before context-heavy, delegated, write-worker, or parallel-wave work.
 - Selecting worker lanes and dispatching only task-shaped context.
 - Checking current worktree state before write delegation so worker scope does not collide with existing edits.
 - Keeping worker write scopes explicit and disjoint when more than one worker may edit.
@@ -30,10 +31,11 @@ A worker owns only its assigned packet or brief. A worker must stop and report w
 Use these lanes for approved plans and one-off delegated work:
 
 - `implementation`: edits production, test, documentation, or workflow files inside the assigned write scope.
+- `exploration`: read-only fact finding for source maps, repository artifact lookup, validation-log triage, or bounded codebase questions. Exploration workers return evidence-backed facts, relevant paths, uncertainty, and recommended next read sets; they do not edit files, approve decisions, or replace review.
 - `testing`: owns tests, fixtures, validation investigation, or failure triage. Testing workers may edit files only when the packet or brief grants an explicit write scope.
 - `review`: read-only by default. Review workers receive the task packet or brief, diff or files under review, relevant spec or ADR, and validation output.
 
-Use a fresh worker context for each approved-plan task. Do not carry worker context from one plan task to the next.
+Use a fresh worker context for each approved-plan task when delegation is available and permitted. When delegation is unavailable, not permitted, or not worth the coordination cost, use local packet mode instead of abandoning packet boundaries.
 
 ## Approved-Plan Workers
 
@@ -56,7 +58,7 @@ Check context pressure before starting substantive exploration or edits. Use a f
 Choose the delegation shape based on estimated task size, current thread context load, parallel value, and integration cost:
 
 - Keep the work local for tiny edits, one-file fixes, obvious commands, urgent blocking steps, or ambiguous tasks where the next action depends on the answer.
-- Use read-only sidecars for focused codebase exploration, validation investigation, or review when they can run in parallel and reduce the main thread's context load.
+- Use read-only exploration, testing, or review sidecars when they can run in parallel and reduce the main thread's context load.
 - Use write workers for one-off implementation only when the task is bounded, the write scope is explicit and disjoint, and the orchestrator can cheaply review and integrate the result.
 - Avoid delegation when describing the brief, waiting for the result, or reconciling the output would cost more than doing the work directly.
 
@@ -66,18 +68,50 @@ The main agent remains the orchestrator. It owns final diff review, validation e
 
 One-off worker results are summarized in chat. They do not create plan-file result summaries unless the work is governed by an approved plan.
 
+## Decision Capsule
+
+Use a compact orchestrator decision capsule before context-heavy one-off work, delegated work, one-off write workers, approved parallel waves, or any task likely to trigger context compaction. Tiny commands, one-file edits, and obvious local fixes do not need a capsule.
+
+Keep the capsule in chat or the plan handoff. Do not create durable `.agents/runs/` logs for capsules.
+
+Use this shape:
+
+- Path: direct one-off, approved plan task, approved parallel wave, proposal, review, validation, or release.
+- Gates: ADR, plan approval, open questions, and stop conditions checked.
+- Context plan: read-first files or artifacts, escalation-only context, and context-pressure reason when relevant.
+- Delegation plan: local, local packet mode, read-only exploration/testing/review sidecar, write worker, or no delegation, with the reason.
+- Write scope: reserved files or directories, or `read-only`.
+- Validation plan: commands, review checks, manual checks, or skipped-check reason.
+- Current blocker status: none, or the blocker owner and stop condition.
+
+## Local Packet Mode
+
+Local packet mode is the fallback for an approved-plan task packet or one-off brief when a fresh worker is unavailable, not authorized, or not useful enough to justify delegation overhead.
+
+In local packet mode, the active agent remains the orchestrator and executes the assigned packet or brief in the current session. Preserve the same task boundary:
+
+- Read only the packet or brief's `Read first` context before escalating.
+- Use the named escalation triggers before loading broader context.
+- Stay inside the write scope.
+- Respect dependencies, sequence or wave constraints, validation or review checks, stop conditions, and expected output.
+- Return or record the same compact result evidence required from a worker.
+
+Local packet mode does not provide fresh-context isolation. Say in the handoff or result summary that no fresh worker was used, and state why: delegation was unavailable, not authorized, skipped by user instruction, or cheaper to execute locally.
+
+Ask for delegation permission only when local packet execution would create material context or coordination risk, such as a broad read set, likely context compaction, independent sidecar questions, risky write scope, or a review need that should be isolated from implementation context.
+
 ## Task Packets And Briefs
 
 Approved-plan task packets must include:
 
 - Task id and task label.
-- Worker lane: `implementation`, `testing`, or `review`.
+- Worker lane: `implementation`, `exploration`, `testing`, or `review`.
 - Required skills.
 - Goal.
 - Initial context budget.
 - Allowed inputs, including exact plan summary, governing artifacts, source files, specs, ADRs, or validation output the worker may read.
 - Forbidden inputs, especially unrelated archived plans, unrelated prior worker chat, and implementation evidence from other packets.
-- Write scope, or `read-only` for review packets.
+- Write scope, or `read-only` for exploration and review packets.
 - Dependencies and sequence or wave constraints.
 - Validation or review checks.
 - Escalation triggers.
@@ -87,7 +121,7 @@ Approved-plan task packets must include:
 For one-off delegated work, use this compact brief shape when the task is small enough that a full plan packet would add overhead:
 
 - Label.
-- Lane: `implementation`, `testing`, or `review`.
+- Lane: `implementation`, `exploration`, `testing`, or `review`.
 - Goal.
 - Read first: exact files, artifacts, diffs, commands, or validation output the worker may inspect.
 - Forbidden inputs: unrelated archives, prior worker chat, broad scans, or other context that should stay out of scope.
@@ -118,7 +152,7 @@ The orchestrator must log full structured worker events in chat for approved-pla
 - Log whenever the active worker count changes.
 - Include ISO 8601 timestamp, event type, worker id, plan id or one-off work label, plan task id when applicable, agent mode, active worker count, and active worker ids.
 
-Read-only one-off sidecars may use compact start and result summaries instead of full structured events when they have no write scope and no commit attribution. Compact summaries must still name the sidecar label, lane, active purpose, result, blockers, and review risks.
+Read-only one-off sidecars, including exploration sidecars, may use compact start and result summaries instead of full structured events when they have no write scope and no commit attribution. Compact summaries must still name the sidecar label, lane, active purpose, result, blockers, and review risks.
 
 ## Result Summaries
 

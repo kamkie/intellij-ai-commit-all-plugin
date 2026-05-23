@@ -32,7 +32,7 @@ This is the AI entry point for the repository. Keep task context small and read 
 - Repository prompts: `.agents/prompts/`
 - Commit message template: `.gitmessage`
 - Changelog: `CHANGELOG.md`
-- Support policy: `SUPPORT.md`
+- Support policy: `docs/SUPPORT.md`
 - Proposals: `docs/proposals/`
 - Decision records: `docs/decisions/`
 

@@ -8,6 +8,7 @@ Use this shared lifecycle for larger repository changes by maintainers and AI ag
 
 - Keep context task-shaped. Start from `AGENTS.md`, then load only the specific owner documents needed for the current stage.
 - Choose the path early: direct one-off, bug triage, design, proposal, ADR, plan, approved-plan execution, release, or closeout.
+- For context-heavy or delegated work, expect a compact orchestrator decision capsule that records route, gates, context plan, delegation plan, write scope, validation plan, and blockers.
 - Use direct one-off work when the change is narrow, the intended behavior is already decided, and no gate is triggered.
 - Stop for an ADR when work chooses or changes durable project direction, repository rules, compatibility policy, validation expectations, user-facing behavior, or maintenance policy.
 - Stop for a plan when work needs sequencing, task packets, disjoint write scopes, broader validation coordination, risky VCS/commit/push/AI/release/compatibility changes, or unresolved choices.
@@ -100,6 +101,7 @@ For direct one-off work:
 For delegated one-off work:
 
 - Use delegation when it reduces context pressure or enables focused review, validation, or exploration.
+- Use read-only exploration sidecars for source maps, artifact lookup, validation-log triage, or bounded codebase questions.
 - Keep read-only sidecars read-only.
 - Give write workers explicit disjoint write scopes and compact briefs.
 - Keep the main agent responsible for final integration, diff review, validation evidence, risk reporting, and commit decisions.
@@ -108,8 +110,9 @@ For approved-plan work:
 
 - Treat each task packet as the task boundary.
 - Use fresh worker context per task when the environment supports delegation.
+- Use local packet mode when delegation is unavailable, not permitted, or not worth the coordination cost: the active agent executes the assigned packet locally and reports that no fresh worker was used.
 - Follow packet-approved context, write scope, dependencies, validation, escalation triggers, and stop conditions.
-- Commit each completed plan task before starting the next task when commits are allowed and required by the approved plan.
+- Commit each completed plan task, or each task in the current approved wave, before starting the next dependent task or wave when commits are allowed and required by the approved plan.
 
 ## 7. Validate
 

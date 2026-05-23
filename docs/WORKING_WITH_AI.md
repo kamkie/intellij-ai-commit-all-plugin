@@ -37,6 +37,7 @@ When naming a prompt, name the file; do not paste the prompt contents.
 
 - `Do not delegate this work. Use only the current agent session.`
 - `Use read-only sidecars only.`
+- `Use read-only exploration sidecars for source-map or artifact lookup.`
 - `Use subagents/delegation as needed to avoid context compaction.`
 - `Do not commit.`
 - `Commit when the approved task is complete.`
@@ -187,6 +188,10 @@ Example:
 ```text
 Use read-only sidecars for exploration and review. Keep writes in <files or dirs>. Stop if scope expands.
 ```
+
+For context-heavy, delegated, write-worker, or parallel-wave work, the agent may report a compact decision capsule with the route, gates, read set, delegation plan, write scope, validation plan, and blockers.
+
+When delegation is unavailable, not permitted, or too costly for the task, expect local packet mode: the active agent keeps the same read-first, write-scope, escalation, validation, and stop-condition boundaries, then reports that no fresh worker was used.
 
 ### 7. Validate
 

@@ -42,6 +42,7 @@ Validation: <command/result>
 #   Project-Orchestrator is required on every orchestrated multi-agent commit.
 #   Project-Agent-Mode is required on every orchestrator and worker commit in multi-agent execution.
 #   Project-Agent-Mode values are: code, fast-code, setup, advanced-chat, run-verify, niche, chat.
+#   Project-Agent-Mode is repository attribution metadata; map provider-specific role names to the closest allowed value.
 #   Co-authored-by footer is required for AI-created commits.
 #   Keep all metadata footers contiguous; do not put blank lines between trailer lines.
 #   Use plan for whole-plan or plan/spec-only commits.

@@ -41,9 +41,7 @@ ADR gates?
 
 ## Decision Outcome
 
-Chosen option: "Use governed agent learning capture in existing owners", because
-it preserves the repository's current artifact ownership model while still
-giving agents a concrete path for validated reusable lessons.
+Chosen option: "Use governed agent learning capture in existing owners", because it preserves the repository's current artifact ownership model while still giving agents a concrete path for validated reusable lessons.
 
 If accepted:
 

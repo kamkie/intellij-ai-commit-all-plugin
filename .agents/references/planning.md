@@ -2,7 +2,7 @@
 
 Use this guide when a task needs an implementation plan before editing.
 
-This file owns plan creation, readiness, status rules, and task-packet shape. Use `.agents/references/orchestration.md` for orchestrator responsibilities, worker lanes, task packet dispatch, structured worker events, parallel synchronization, and result summaries. Use `.agents/references/execution.md` for the approved-plan task execution loop and commit rules.
+This file owns plan creation, readiness, status rules, and task-packet shape. Use `.agents/references/execution.md` for canonical route selection, the approved-plan task execution loop, and commit rules. Use `.agents/references/orchestration.md` for orchestrator responsibilities, worker lanes, task packet dispatch, structured worker events, parallel synchronization, decision capsules, and result summaries.
 
 ## When To Plan
 
@@ -18,13 +18,11 @@ Do not create a plan for small documentation cleanup unless the user asks for on
 
 Narrow implementation of already-decided behavior may use the direct one-off loop in `.agents/references/execution.md` when the intended outcome is already governed, the write set is small, and no ADR, missing-input, or coordination gate is triggered.
 
-## Routing Matrix
+## Routing
 
-| Path | Use When | Owner |
-|------|----------|-------|
-| Direct one-off | Existing ADRs, specs, owner docs, or task refs already decide the intended outcome, and implementation is narrow. | `.agents/references/execution.md` |
-| Plan | New intended behavior, multi-area work, risky VCS, commit, push, AI generation, release, compatibility, unresolved decisions, or task coordination. | This guide and `.agents/plans/` |
-| Proposal | Findings, duplication analysis, simplification options, or maintainer triage before implementation. | `docs/proposals/` |
+Canonical route selection lives in the routing matrix in `.agents/references/execution.md`.
+
+Use this guide after the route is `Plan`, or when checking whether a direct request has plan triggers. Plan triggers include new intended behavior, multi-area work, risky VCS, commit, push, AI generation, release, compatibility, unresolved decisions, task packets, disjoint write scopes, worker coordination, or broader validation.
 
 When a requested change needs a plan instead of an ADR, create or update the plan first and stop. When a requested change clearly needs both an ADR and a later plan, follow `docs/decisions/README.md` and create a companion draft plan with the proposed ADR. Do not start implementation until the required ADR is accepted and the user has reviewed and explicitly approved the plan.
 
@@ -87,7 +85,7 @@ A useful plan should include:
 - For multi-task plans, name tasks clearly enough to use in `Project-Plan-Task:` commit metadata.
 - Reference the `Plan-ID` ref in implementation handoffs, review notes, and commit metadata when work comes from a plan.
 - When plan tasks come from `TASKS.md`, reference the `T-AREA-NNN` task ref alongside the task name.
-- For multi-task plans, each task must be fully implemented, validated through `.agents/references/testing.md`, self-reviewed through `.agents/references/reviews.md`, and committed before the next task starts.
+- For multi-task plans, each task or approved parallel wave must be fully implemented, validated through `.agents/references/testing.md`, self-reviewed through `.agents/references/reviews.md`, and committed before the next dependent task or wave starts.
 - Leave release-wide review, broader manual checks and tests, documentation update passes, and release artifact preparation to the later release workflow unless the plan is specifically a release plan.
 - Use `.agents/references/orchestration.md` for delegated plan execution rules, including worker lanes, packet dispatch, parallel synchronization, worker events, result summaries, branch topology, and plan/changelog handoffs.
 
@@ -98,13 +96,13 @@ Use task packets as the default dispatch contract for approved multi-task plans.
 Each task packet must include:
 
 - Task id and task label.
-- Worker lane: `implementation`, `testing`, or `review`.
+- Worker lane: `implementation`, `exploration`, `testing`, or `review`.
 - Required skills.
 - Goal.
 - Initial context budget.
 - Allowed inputs, including the exact plan summary, governing artifacts, source files, specs, ADRs, or validation output the worker may read.
 - Forbidden inputs, especially unrelated archived plans, unrelated prior worker chat, and implementation evidence from other packets.
-- Write scope, or `read-only` for review packets.
+- Write scope, or `read-only` for exploration and review packets.
 - Dependencies and sequence or wave constraints.
 - Validation or review checks.
 - Escalation triggers.
@@ -114,6 +112,8 @@ Each task packet must include:
 Keep ordinary task packets inline in the parent plan. Use child packet files only when the parent plan would become difficult to scan, such as plans with more than six worker-owned tasks, multiple parallel waves, or expected parent-plan length above roughly 200 lines after packeting. Child packet files must preserve task packet refs and stay linked from the parent plan.
 
 Keep the parent plan focused on approval, readiness, dependencies, execution graph, packet index, and compact task result summaries. Do not paste raw test output, raw worker transcripts, or bulky run logs into the plan.
+
+When delegation is unavailable, not permitted, or not useful enough to justify coordination overhead, the active agent may execute the assigned task packet in local packet mode. Local packet mode preserves packet-approved context, escalation triggers, write scope, validation, stop conditions, and result-summary requirements; it must report that no fresh worker was used.
 
 ## Before Implementation
 

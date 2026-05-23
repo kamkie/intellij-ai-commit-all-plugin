@@ -2,7 +2,7 @@
 
 Use this guide for implementation work.
 
-This file owns the direct one-off execution loop, the approved-plan task loop, and AI-facing commit-message rules. Use `.agents/references/orchestration.md` for delegated worker responsibilities, worker lanes, task packet dispatch, structured worker events, parallel synchronization, and result summaries.
+This file owns route selection, the direct one-off execution loop, the approved-plan task loop, and AI-facing commit-message rules. Use `.agents/references/orchestration.md` for delegated worker responsibilities, worker lanes, task packet dispatch, structured worker events, parallel synchronization, decision capsules, and result summaries.
 
 The repository root `.gitmessage` is the authoritative commit-message template and example source.
 
@@ -29,13 +29,14 @@ If a request requires a new ADR or implementation plan, create or update the req
 1. Frame the behavior: name the user-facing behavior, command, action, or workflow being changed.
 2. Identify the owner artifact: find the source, descriptor, docs, task list, or reference guide that governs the behavior.
 3. Check gates: follow ADR and plan requirements before editing governed implementation, workflow guidance, backlog, validation rules, or related behavior.
-4. Load the smallest useful context: use `AGENTS.md` and the guidance map to choose only the needed owner documents.
-5. Check delegation triggers before heavy context loading or edits: use `.agents/references/orchestration.md` when the thread is already large, has recently compacted, or the work may trigger compaction; the active agent still owns final integration and reporting.
-6. Update docs or specs when behavior changes: keep `README.md`, `TASKS.md`, and agent guidance aligned with the implementation.
-7. Implement the smallest change: stay within the requested scope and existing project shape.
-8. Run targeted validation: choose checks from `.agents/references/testing.md` based on the diff.
-9. Self-review: use `.agents/references/reviews.md` to check for behavior, compatibility, and validation gaps.
-10. Report evidence: summarize changed files, validation run, and any remaining risk.
+4. Run context and delegation preflight before optional broad loading: estimate the likely read set, context-pressure risk, active tool or user delegation limits, and whether local work, local packet mode, read-only exploration, validation, review, or a write worker is appropriate.
+5. Record a compact orchestrator decision capsule from `.agents/references/orchestration.md` when the work is context-heavy, delegated, write-worker based, parallel, or likely to trigger compaction.
+6. Load the smallest useful context: use `AGENTS.md` and the guidance map to choose only the needed owner documents.
+7. Update docs or specs when behavior changes: keep `README.md`, `TASKS.md`, and agent guidance aligned with the implementation.
+8. Implement the smallest change: stay within the requested scope and existing project shape.
+9. Run targeted validation: choose checks from `.agents/references/testing.md` based on the diff.
+10. Self-review: use `.agents/references/reviews.md` to check for behavior, compatibility, and validation gaps.
+11. Report evidence: summarize changed files, validation run, and any remaining risk.
 
 Direct one-off worker results are summarized in chat. Do not create durable `.agents/runs/` logs.
 
@@ -67,7 +68,7 @@ Do not create ad hoc memory files or parallel memory trees for this repository. 
 
 Before implementation starts from an approved plan, confirm the plan has `Status: Approved`, `Approved by:`, and `Approved at:` metadata, and that every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.
 
-For approved multi-task plans, treat each named task as its own execution unit:
+For approved multi-task plans, treat each named task or approved parallel wave as its own execution unit:
 
 1. Use the assigned task packet as the task boundary.
 2. Load only packet-approved context unless an escalation trigger fires.
@@ -75,7 +76,7 @@ For approved multi-task plans, treat each named task as its own execution unit:
 4. Run task-appropriate validation from `.agents/references/testing.md`.
 5. Self-review the task using `.agents/references/reviews.md`.
 6. Return or record compact result evidence as required by the packet and `.agents/references/orchestration.md`.
-7. Commit the completed task before starting the next plan task when commits are allowed in the environment.
+7. Commit the completed task, or every completed task in the current approved wave, before starting the next dependent plan task or wave when commits are allowed in the environment.
 
 Use `Project-Source: plan-task`, `Project-Plan:`, and `Project-Plan-Task:` commit metadata for approved plan-task commits.
 
@@ -84,6 +85,8 @@ Do not batch multiple plan tasks into one commit unless the approved plan or a l
 Per-task completion does not replace the later release workflow. Release preparation is expected to run after implementation tasks and should cover the full cross-task review, broader manual checks and tests, documentation updates, and release artifact preparation.
 
 Delegated approved-plan execution, worker lanes, packet dispatch, parallel waves, plan result summaries, and plan/changelog handoff rules are defined in `.agents/references/orchestration.md`.
+
+When delegation is unavailable, not permitted, or not worth the coordination cost, use local packet mode from `.agents/references/orchestration.md`: the active agent executes the packet locally while preserving packet context, escalation, write-scope, validation, stop-condition, and result-summary boundaries.
 
 ## Task Completion Timing
 
@@ -133,6 +136,7 @@ For orchestrated multi-agent commits:
 - `Project-Orchestrator: <orchestrator-id>` is required on every commit produced under orchestrated multi-agent execution, whether authored by the orchestrator or by a worker.
 - `Project-Agent-Mode: <mode>` is required on every orchestrator and worker commit created in multi-agent execution.
 - Allowed `Project-Agent-Mode:` values are `code`, `fast-code`, `setup`, `advanced-chat`, `run-verify`, `niche`, and `chat`.
+- `Project-Agent-Mode` is repository attribution metadata; when a tool provider uses different role names, choose the closest allowed value instead of inventing a new trailer value.
 - Worker and orchestrator identifiers must stay in trailers and must not be added to the Conventional Commits subject line.
 
 ## Stop Conditions

@@ -56,6 +56,8 @@ Task id: T1-<task-label>
 
 Lane: implementation
 
+<!-- Use `implementation`, `exploration`, `testing`, or `review`. Exploration and review packets must use `Write scope: read-only`. -->
+
 Required skills:
 
 - `repository-documentation`, another exact repository skill, or `none`.
@@ -85,7 +87,7 @@ Forbidden inputs:
 
 Write scope:
 
-- Exact files or directories this task may edit, or `read-only` for review packets.
+- Exact files or directories this task may edit, or `read-only` for exploration and review packets.
 
 Dependencies:
 
@@ -126,9 +128,11 @@ Result summary:
 
 - `Workers: 1` for sequential execution, or `Workers: N (parallel, tasks: <task refs or labels>)` when the approved plan marks those tasks independent with disjoint write scopes.
 - For multi-task plans, use an orchestrator plus one fresh task worker per named task when agent delegation is available.
+- If delegation is unavailable, not permitted, or not worth the coordination cost, use local packet mode: the active agent executes the assigned packet locally while preserving packet-approved context, escalation triggers, write scope, validation, stop conditions, and result-summary requirements. Record that no fresh worker was used and why.
 - Follow `.agents/references/orchestration.md` for worker lanes, packet dispatch, parallel synchronization, structured worker events, result summaries, branch topology, and plan or changelog handoffs.
 - Dispatch the plan header or readiness summary, execution graph, assigned task packet, and explicitly named governing artifacts or source files. Do not dispatch the full approved plan by default.
 - Record any task that is safe to run in parallel only when it has a disjoint write scope.
+- Finish, validate, self-review, and commit every task in the current approved wave before starting the next dependent task or wave.
 - Use the current branch only unless a later accepted ADR authorizes per-worker git worktrees.
 
 ## Execution Graph
