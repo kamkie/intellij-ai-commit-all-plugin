@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-unchanged-prefilled-ai-message
 
-Status: Draft
+Status: Implemented
 
 Workers: 1
 
@@ -10,13 +10,18 @@ Filename: `.agents/plans/PLAN-unchanged-prefilled-ai-message.md`
 
 ## Readiness
 
-- Plan readiness: Draft companion plan for proposed ADR 0081; implementation is blocked until ADR 0081 is accepted and this plan is later explicitly approved.
-- Open questions: None; ADR acceptance and plan approval are pending.
-- Implementation progress: Not started.
+- Plan readiness: Implemented; ADR 0081 is accepted and T1 is complete.
+- Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Approved at: 2026-05-24T01:41:51+02:00
+- Open questions: None.
+- Implementation progress: T1-unchanged-prefilled-ai-message is implemented and validated with the recorded documentation-validation caveat.
 
 ## Status History
 
 - 2026-05-24T01:28:36+02:00: none -> Draft by OpenAI Codex <codex@openai.com>; companion plan created for proposed ADR 0081.
+- 2026-05-24T01:41:51+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded for ADR 0081 and this companion plan.
+- 2026-05-24T01:41:51+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; implementation started for ADR 0081.
+- 2026-05-24T01:56:16+02:00: In Progress -> Implemented by OpenAI Codex <codex@openai.com>; T1 implementation, validation, review, and tracker updates completed.
 
 ## Goal
 
@@ -28,17 +33,17 @@ Implement ADR 0081 so a non-empty prefilled commit message may remain unchanged 
 - Do not accept unchanged empty messages.
 - Do not bypass IDE commit checks, push safeguards, or user-edit stop behavior.
 - Do not add custom confirmation UI for unchanged prefilled messages.
-- Do not implement before ADR 0081 is accepted and this plan is explicitly approved.
+- Do not implement without ADR 0081 acceptance and explicit plan approval.
 
 ## Assumptions
 
-- ADR 0081 will define the accepted behavior before implementation starts.
+- ADR 0081 defines the accepted behavior.
 - The existing AI completion signal remains the authority for deciding whether AI generation reliably finished.
-- Documentation-only wording already in `docs/user-guide.md` remains current until the ADR is accepted and implemented.
+- `docs/user-guide.md` is aligned with the implemented clear-message-disabled behavior.
 
 ## Open Questions
 
-- None. If review changes ADR 0081's selected behavior, update the proposed ADR first and keep this plan in Draft.
+- None.
 
 ## Proposed Changes
 
@@ -141,13 +146,13 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: implemented
+- Worker: W1-retry/Feynman (`019e573c-af21-7211-8632-3dd152facdc4`)
+- Changed files or reviewed diff: `AiGenerationCompletion.kt`, `AiCommitMessagePreparation.kt`, focused AI tests, `docs/specification.md`, `docs/user-guide.md`, and `CHANGELOG.md`; orchestrator also updated ADR and plan trackers.
+- Validation evidence: worker red-first observer test failed before production symbols existed; orchestrator reran `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.ai.AiGenerationCompletionObserverTest" --tests "pl.devopssolutions.aicommitall.ai.AiCommitMessagePreparationTest"` and it passed with 16 tests; `.\gradlew.bat spotlessCheck`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\ai\validate-agent-artifacts.ps1`, and `git diff --check` passed.
+- Blockers: full `scripts\validate-docs.ps1` remains blocked by existing `.agents/prompts/compact-ai-guidance.md` markdownlint MD005/MD007 indentation errors, which this plan intentionally did not touch.
+- Review risks: broader workflow tests were not run because completion result handling still returns `AiGenerationCompletionResult.Completed` and workflow coordination did not change.
+- Handoff notes: unchanged non-empty prefilled messages are accepted only when the snapshot was captured with clearing disabled and the observer saw reliable running-to-stopped completion; unchanged empty, missing completion signal, timeout, and user-edit paths remain fail-closed.
 
 ## Execution Model
 
@@ -182,5 +187,5 @@ flowchart TD
 
 ## Handoff Notes
 
-- Do not implement until ADR 0081 is accepted and this plan is explicitly approved.
-- Keep `docs/user-guide.md` aligned with implemented behavior, not just design intent.
+- ADR 0081 is implemented; release preparation may perform broader manual workflow checks later.
+- Keep the recorded documentation-validation caveat visible until the unrelated `compact-ai-guidance.md` markdownlint issue is resolved.

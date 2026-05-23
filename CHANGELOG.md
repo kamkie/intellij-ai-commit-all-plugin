@@ -34,6 +34,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 - Removed the deprecated IntelliJ action invocation API from standard commit and push shortcut delegation.
 - Waited for IntelliJ smart mode before executing default Commit workflow calls so `Commit` and commit-producing `Push` runs do not stall during project indexing.
 - Avoided re-running `git add` on already-staged deleted or renamed paths in the Git staging-area workflow, fixing stale pathspec failures before AI message generation.
+- Allowed `Commit` and `Push` to continue when clearing is disabled and AI Assistant reliably completes without changing a non-empty prefilled commit message, while keeping missing completion evidence and empty results fail-closed.
 
 ## [v0.1.0-alpha.9] - 2026-05-19
 

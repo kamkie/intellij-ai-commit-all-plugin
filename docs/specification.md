@@ -1,6 +1,6 @@
 # Plugin Behavior Specification
 
-Last updated: 2026-05-23
+Last updated: 2026-05-24
 
 This document is the validation contract for the intended observable behavior of
 the `AI Commit All` IntelliJ plugin. It states what the plugin must do and where
@@ -120,12 +120,12 @@ The selection is the set of files acted on by a workflow run.
 
 ### 5.1 Completion Detection
 
-- REQ-AI-008: Completion detection MUST treat AI generation as complete only when the AI action signal reports stopped and the current commit message is non-empty and changed relative to the captured snapshot. Source: ADR 0012. Implements: T-WAIT-001..004. Validates: SCN-AI-*.
+- REQ-AI-008: Completion detection MUST treat AI generation as complete only when the AI action signal reports stopped and the current commit message is non-empty and either changed relative to the captured snapshot or, after the plugin observed the action run and then stop, unchanged from a non-empty prefilled snapshot that was intentionally preserved because `clearCommitMessageBeforeGeneration` was disabled. Source: ADR 0012, ADR 0081. Implements: T-WAIT-001..004. Validates: SCN-AI-*.
 - REQ-AI-009: Commit-message polling MUST run at the configured `completionCheckIntervalMillis` interval. Source: ADR 0012. Validates: SCN-SETTINGS-*.
 - REQ-AI-010: When the user edits or clears the commit message during generation, the workflow MUST stop without committing or pushing and MUST report `UserEditedMessage`. Source: ADR 0011. Implements: T-WAIT-007. Validates: SCN-AI-*, SCN-STAGE-MAN-014.
 - REQ-AI-011: When AI generation does not finish within `aiGenerationTimeoutMillis`, the workflow MUST stop without committing or pushing and MUST report `AiTimeout`. Source: ADR 0012. Implements: T-WAIT-006. Validates: SCN-AI-*, SCN-STAGE-MAN-012.
 - REQ-AI-012: When AI generation completes but the resulting message is empty, the workflow MUST stop and MUST report `EmptyMessage`. Source: ADR 0014. Validates: SCN-AI-*, SCN-STAGE-MAN-013.
-- REQ-AI-013: When AI generation completes but the message has not changed from the snapshot, the workflow MUST stop and MUST report `UnchangedMessage`. Source: ADR 0014. Validates: SCN-AI-*.
+- REQ-AI-013: When AI generation completes but the message has not changed from the snapshot, the workflow MUST stop and MUST report `UnchangedMessage` unless the unchanged message is a non-empty prefilled snapshot accepted under REQ-AI-008. Unchanged empty snapshots MUST remain unsuccessful. Source: ADR 0014, ADR 0081. Validates: SCN-AI-*.
 - REQ-AI-014: When the plugin cannot reliably determine whether AI Assistant generation is still running or has completed, the workflow MUST stop and MUST report `NoCompletionSignal`. This is distinct from `AiTimeout`, which is reported when the running-state signal remains readable but the timeout window elapses. Source: ADR 0012. Validates: SCN-AI-*.
 
 ## 6. Commit Section Behavior
@@ -168,7 +168,7 @@ Settings are application-scoped and exposed via `Settings | Tools | AI Commit Al
 |--------------------------------------|---------|---------|------------------|----------------------------------------------------------------------------------------|
 | `aiGenerationTimeoutMillis`          | Long    | `30000` | MUST be positive | Maximum wait time for AI generation before the workflow stops with `AiTimeout`.        |
 | `completionCheckIntervalMillis`      | Long    | `500`   | MUST be positive | Polling interval for AI completion detection.                                          |
-| `clearCommitMessageBeforeGeneration` | Boolean | `true`  | n/a              | When `true`, the commit message control and document are cleared before AI invocation. |
+| `clearCommitMessageBeforeGeneration` | Boolean | `true`  | n/a              | When `true`, the commit message control and document are cleared before AI invocation. When `false`, a non-empty prefilled message may remain unchanged after reliable AI completion. |
 | `useVcsShortcutsForAiCommitAll`      | Boolean | `true`  | n/a              | When `true`, the IDE commit and push shortcuts run the plugin workflows.               |
 
 - REQ-SET-001: Both timing values MUST be validated as positive on apply. Non-positive values MUST be rejected or normalized to defaults; the plugin MUST NOT persist non-positive values. Source: ADR 0012, ADR 0068. Validates: SCN-SETTINGS-*.
@@ -202,7 +202,7 @@ updating this specification.
 | `AiCompletionFailed`            | AI generation reported a failure condition during completion detection.        |
 | `AiTimeout`                     | AI generation did not complete within `aiGenerationTimeoutMillis`.             |
 | `EmptyMessage`                  | AI generation produced an empty commit message.                                |
-| `UnchangedMessage`              | AI generation produced a message identical to the captured snapshot.           |
+| `UnchangedMessage`              | AI generation produced a message identical to the captured snapshot and the unchanged prefilled-message acceptance path did not apply. |
 | `NoCompletionSignal`            | AI generation running-state could not be determined reliably.                  |
 | `UserEditedMessage`             | The user edited or cleared the message during AI generation.                   |
 | `CommitExecutionUnavailable`    | IDE commit executor is unavailable for the current workflow state.             |
@@ -253,6 +253,7 @@ behavior change.
 | ADR 0068 | REQ-SET-001, REQ-SET-004                                                                                             |
 | ADR 0069 | REQ-PUSH-006                                                                                                         |
 | ADR 0070 | REQ-ACT-004, REQ-INT-003                                                                                             |
+| ADR 0081 | REQ-AI-008, REQ-AI-013                                                                                               |
 
 ### 13.2 Non-ADR Sources
 

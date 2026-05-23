@@ -155,6 +155,10 @@ internal class AiGenerationCompletionObserver(
 
     private fun String.isUsableChangedMessage(snapshot: AiCommitMessageSnapshot): Boolean = isNotBlank() && this != snapshot.originalMessage
 
+    private fun String.isAcceptableUnchangedMessage(snapshot: AiCommitMessageSnapshot): Boolean = isNotBlank() &&
+        this == snapshot.originalMessage &&
+        snapshot.acceptUnchangedPrefilledMessage
+
     private fun isStableStoppedSignal(
         stoppedWithUnusableMessageAtMillis: Long?,
         options: AiGenerationCompletionOptions,
@@ -181,6 +185,12 @@ internal class AiGenerationCompletionObserver(
     ): AiGenerationCompletionResult = when {
         currentMessage.isBlank() -> AiGenerationCompletionResult.EmptyMessage
 
+        currentMessage.isAcceptableUnchangedMessage(snapshot) -> AiGenerationCompletionResult.Completed(
+            originalMessage = snapshot.originalMessage,
+            generatedMessage = currentMessage,
+            evidence = AiGenerationCompletionEvidence.ActionNoLongerRunningAndUnchangedPrefilledMessage,
+        )
+
         currentMessage == snapshot.originalMessage -> AiGenerationCompletionResult.UnchangedMessage(currentMessage)
 
         else -> AiGenerationCompletionResult.Completed(
@@ -193,9 +203,16 @@ internal class AiGenerationCompletionObserver(
 
 internal data class AiCommitMessageSnapshot(
     val originalMessage: String,
+    val acceptUnchangedPrefilledMessage: Boolean = false,
 ) {
     companion object {
-        fun capture(commitMessageUi: CommitMessageUi): AiCommitMessageSnapshot = AiCommitMessageSnapshot(commitMessageUi.text)
+        fun capture(
+            commitMessageUi: CommitMessageUi,
+            acceptUnchangedPrefilledMessage: Boolean = false,
+        ): AiCommitMessageSnapshot = AiCommitMessageSnapshot(
+            originalMessage = commitMessageUi.text,
+            acceptUnchangedPrefilledMessage = acceptUnchangedPrefilledMessage,
+        )
     }
 }
 
@@ -246,6 +263,7 @@ internal sealed interface AiGenerationCompletionResult {
 
 internal enum class AiGenerationCompletionEvidence {
     ActionNoLongerRunningAndMessageChanged,
+    ActionNoLongerRunningAndUnchangedPrefilledMessage,
 }
 
 internal fun interface AiCommitMessageReader {

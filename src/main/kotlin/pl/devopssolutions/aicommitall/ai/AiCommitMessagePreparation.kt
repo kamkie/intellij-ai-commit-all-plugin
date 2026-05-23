@@ -35,7 +35,10 @@ internal object AiCommitMessagePreparation {
             )
         }
 
-        return AiCommitMessageSnapshot.capture(commitMessageUi)
+        return AiCommitMessageSnapshot.capture(
+            commitMessageUi = commitMessageUi,
+            acceptUnchangedPrefilledMessage = !clearBeforeGeneration,
+        )
     }
 }
 

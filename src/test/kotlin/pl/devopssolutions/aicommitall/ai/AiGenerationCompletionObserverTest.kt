@@ -155,6 +155,29 @@ internal class AiGenerationCompletionObserverTest {
     }
 
     @Test
+    fun `times out when action never starts with unchanged prefilled message and unchanged acceptance is enabled`() {
+        val timeSource = MutableTimeSource()
+        val observer = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+        )
+
+        val result = observer.awaitCompletion(
+            snapshot = AiCommitMessageSnapshot(
+                originalMessage = "old message",
+                acceptUnchangedPrefilledMessage = true,
+            ),
+            messageReader = AiCommitMessageReader { "old message" },
+            runningSignal = ConstantRunningSignal(AiGenerationRunningState.NotRunning),
+            options = testOptions(timeout = Duration.ofMillis(1_000)),
+        )
+
+        val timeout = assertIs<AiGenerationCompletionResult.Timeout>(result)
+        assertEquals(Duration.ofMillis(1_000), timeout.timeout)
+        assertEquals("old message", timeout.latestMessage)
+    }
+
+    @Test
     fun `times out while action is still running`() {
         val timeSource = MutableTimeSource()
         val observer = AiGenerationCompletionObserver(
@@ -195,6 +218,35 @@ internal class AiGenerationCompletionObserverTest {
     }
 
     @Test
+    fun `completes when action stops with unchanged non-empty prefilled message and unchanged acceptance is enabled`() {
+        val timeSource = MutableTimeSource()
+        val result = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+            focusState = AiCompletionFocusState.Focused,
+        ).awaitCompletion(
+            snapshot = AiCommitMessageSnapshot(
+                originalMessage = "old message",
+                acceptUnchangedPrefilledMessage = true,
+            ),
+            messageReader = AiCommitMessageReader { "old message" },
+            runningSignal = SequenceRunningSignal(
+                AiGenerationRunningState.Running,
+                AiGenerationRunningState.NotRunning,
+            ),
+            options = testOptions(),
+        )
+
+        val completed = assertIs<AiGenerationCompletionResult.Completed>(result)
+        assertEquals("old message", completed.originalMessage)
+        assertEquals("old message", completed.generatedMessage)
+        assertEquals(
+            AiGenerationCompletionEvidence.ActionNoLongerRunningAndUnchangedPrefilledMessage,
+            completed.evidence,
+        )
+    }
+
+    @Test
     fun `fails closed when action stops with empty message`() {
         val timeSource = MutableTimeSource()
         val result = AiGenerationCompletionObserver(
@@ -203,6 +255,29 @@ internal class AiGenerationCompletionObserverTest {
             focusState = AiCompletionFocusState.Focused,
         ).awaitCompletion(
             snapshot = AiCommitMessageSnapshot("old message"),
+            messageReader = AiCommitMessageReader { "" },
+            runningSignal = SequenceRunningSignal(
+                AiGenerationRunningState.Running,
+                AiGenerationRunningState.NotRunning,
+            ),
+            options = testOptions(),
+        )
+
+        assertEquals(AiGenerationCompletionResult.EmptyMessage, result)
+    }
+
+    @Test
+    fun `fails closed when action stops with unchanged empty prefilled message and unchanged acceptance is enabled`() {
+        val timeSource = MutableTimeSource()
+        val result = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+            focusState = AiCompletionFocusState.Focused,
+        ).awaitCompletion(
+            snapshot = AiCommitMessageSnapshot(
+                originalMessage = "",
+                acceptUnchangedPrefilledMessage = true,
+            ),
             messageReader = AiCommitMessageReader { "" },
             runningSignal = SequenceRunningSignal(
                 AiGenerationRunningState.Running,

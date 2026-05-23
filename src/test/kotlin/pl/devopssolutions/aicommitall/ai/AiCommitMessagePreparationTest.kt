@@ -27,6 +27,8 @@ import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.vcs.commit.CommitMessageUi
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 internal class AiCommitMessagePreparationTest {
     @Test
@@ -40,6 +42,7 @@ internal class AiCommitMessagePreparationTest {
 
         assertEquals("", commitMessageUi.text)
         assertEquals("", snapshot.originalMessage)
+        assertFalse(snapshot.acceptUnchangedPrefilledMessage)
     }
 
     @Test
@@ -62,6 +65,7 @@ internal class AiCommitMessagePreparationTest {
         assertEquals("", parentCommitMessageControl.message)
         assertEquals("", parentCommitMessageDocument.text)
         assertEquals("", snapshot.originalMessage)
+        assertFalse(snapshot.acceptUnchangedPrefilledMessage)
     }
 
     @Test
@@ -83,6 +87,7 @@ internal class AiCommitMessagePreparationTest {
         assertEquals("parent stale message", parentCommitMessageControl.message)
         assertEquals("document stale message", parentCommitMessageDocument.text)
         assertEquals("stale message", snapshot.originalMessage)
+        assertTrue(snapshot.acceptUnchangedPrefilledMessage)
     }
 
     private class TestCommitMessageControl(initialMessage: String) : CommitMessageI {

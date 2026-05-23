@@ -50,7 +50,9 @@ What happens:
 
 No commit or push is attempted by the `AI` section.
 
-The workflow treats AI generation as unsuccessful when generation times out, the result is empty, AI Assistant cannot be invoked, or you edit the commit message while generation is running. It also stops when generation appears to finish but the message is unchanged from the captured snapshot; this guards against silent AI-generation failures where no new text was written. With the default clear-message setting the snapshot starts empty, so the unchanged-message guard mainly matters when clearing is disabled and a prefilled message is left untouched.
+The workflow treats AI generation as unsuccessful when generation times out, the result is empty, AI Assistant cannot be invoked, or you edit the commit message while generation is running. It also stops when completion cannot be observed reliably.
+
+With the default clear-message setting, the snapshot starts empty and AI Assistant must produce a non-empty message. When you disable clearing, you can intentionally ask AI Assistant to revise existing text. If AI Assistant runs to reliable completion and leaves that non-empty prefilled message unchanged, the workflow may continue; unchanged empty text, missing completion evidence, and user edits still stop the workflow.
 
 ## Commit
 
@@ -117,7 +119,7 @@ Open `Settings | Tools | AI Commit All`.
 |-----------------------------------------------------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | AI generation timeout                               | `30000` ms | Maximum wait before the workflow stops with an AI timeout.                                                                                                                              |
 | Completion check interval                           | `500` ms   | Polling interval used while waiting for AI generation to finish.                                                                                                                        |
-| Clear commit message before AI generation           | enabled    | Clears stale message text before invoking JetBrains AI Assistant, so the captured snapshot starts empty. Disable only when you intentionally want AI Assistant to revise existing text. |
+| Clear commit message before AI generation           | enabled    | Clears stale message text before invoking JetBrains AI Assistant, so the captured snapshot starts empty. Disable only when you intentionally want AI Assistant to revise existing text; after reliable completion, AI Assistant may leave a non-empty prefilled message unchanged. |
 | Use AI Commit All for IDE commit and push shortcuts | enabled    | Routes the IDE commit and push shortcuts to the plugin when the workflow is available.                                                                                                  |
 
 Both timing values must be positive. Setting changes apply to later workflow runs; shortcut takeover changes apply to later shortcut activations without requiring an IDE restart.
