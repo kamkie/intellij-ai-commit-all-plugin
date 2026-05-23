@@ -28,12 +28,67 @@ Validation expected: .\gradlew.bat detekt and targeted tests if code changes.
 
 For very small requests, a task ID, filename, prompt name, or concrete bug report is enough. The agent should use `AGENTS.md` lookup rules to find the owning artifact.
 
+## Common Request Patterns
+
+Use these patterns to set the amount of coordination you want. Delegation is optional, not required. If you want one agent only, say: `Do not delegate this work. Use only the current agent session.` Environment and tool limits still apply; if subagents, shell access, network access, browser tools, or validation tools are unavailable, the agent should state the limit and use the safest supported path.
+
+For direct one-off work, keep the request narrow and name the expected proof:
+
+```text
+Task: Make a direct one-off change to <task ID, file, bug, or behavior>.
+Goal:
+Scope:
+Constraints: Do not delegate. <or> Delegation is allowed if useful.
+Validation expected:
+```
+
+Use direct one-off work for small documentation updates, focused bug fixes, or narrow cleanup that does not need a new ADR or implementation plan. If the agent discovers that an ADR, plan, or missing decision is required, it should stop at that gate instead of implementing.
+
+For delegated one-off work, make the main agent's orchestration role and write boundaries explicit:
+
+```text
+Task: Complete <goal>; delegation is allowed if useful and the environment supports it.
+Orchestrator: The main agent owns final diff review, validation evidence, risks, and handoff.
+Worker scopes: Read-only sidecars for <research/review/validation>; write workers only for <disjoint files or directories>.
+Constraints:
+Validation expected:
+```
+
+Use this when focused sidecar exploration, validation, review, or disjoint edits can help. Delegation does not bypass ADR gates, plan gates, validation requirements, or the main agent's final review.
+
+For approved plan execution, name the approved plan and the specific task packet:
+
+```text
+Task: Execute <PLAN-slug> task <task ID or packet label>.
+Plan status: Approved.
+Required skills:
+Initial context:
+Escalation triggers:
+Write scope:
+Validation expected:
+Expected output: changed files, validation evidence, blockers, review risks, handoff notes.
+```
+
+Implementation from a plan should start only after the plan has explicit approval recorded in the plan metadata and status history. Task workers should use the packet's context budget first and escalate only when the packet allows it or when a blocker requires broader review.
+
+For review-only sidecar delegation, keep the request read-only:
+
+```text
+Task: Run a review-only sidecar for <diff, files, plan task, or behavior>.
+Mode: Read-only; do not edit files, stage changes, commit, or push.
+Inputs allowed:
+Review focus:
+Expected output: findings, missing validation, compatibility risks, and residual concerns.
+```
+
+Use this when you want a second pass on a diff, design, validation result, or plan task. The main agent should reconcile sidecar findings and report which risks remain.
+
 ## Choose The Request Type
 
 - Design: ask for early exploration before deciding whether an idea needs a proposal, ADR, plan, task, documentation change, or implementation.
 - Planning: ask for an implementation plan when work spans multiple behavior areas, files, or unresolved technical choices.
-- Implementation: name the behavior or task ID, the target files if known, constraints, and validation expected.
-- Review: ask for bugs, regressions, missing validation, compatibility risk, or architecture concerns.
+- Implementation: name whether the work is direct one-off, delegated one-off, or approved-plan execution; include the behavior or task ID, target files if known, constraints, and validation expected.
+- Review: ask for bugs, regressions, missing validation, compatibility risk, or architecture concerns; state whether review-only sidecar delegation is allowed or prohibited.
 - Documentation: state whether the change affects plugin users, contributors, repository workflow, or AI-agent guidance.
 - Proposal: ask for a proposal when you want findings, duplication, simplification, or improvement options collected for later triage.
 - Release: ask only after implementation is integrated and validation evidence is ready.
@@ -64,6 +119,8 @@ State any constraint that would change the implementation or validation path:
 - Three-section `AI | Commit | Push` behavior or styling constraints.
 - Plugin ID, package, vendor, license, Marketplace, signing, or CI constraints.
 - Manual sandbox validation scope, especially AI Assistant, Git staging area, commit-only, commit-and-push, and push behavior.
+- Delegation preference: allow optional delegation, require read-only sidecars only, define disjoint write scopes for workers, or prohibit delegation with `Do not delegate this work`.
+- Environment or tool limits: no subagents, no network, no browser tools, read-only filesystem, unavailable validation tools, locked files, or commands that must not be run.
 
 ## Expected Stops
 
@@ -75,6 +132,8 @@ The agent should stop instead of implementing when the requested work needs:
 - Maintainer triage of findings or options: create a proposal instead of implementing.
 
 Implementation from a plan should start only after you explicitly approve that plan.
+
+Delegation cannot bypass these stops. A delegated one-off request or review-only sidecar request should still stop at the ADR, plan, missing-input, or proposal gate when that gate applies.
 
 ## Validation To Ask For
 

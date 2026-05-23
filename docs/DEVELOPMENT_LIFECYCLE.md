@@ -1,6 +1,6 @@
 # Development Lifecycle
 
-Use this lifecycle for changes that are larger than a direct documentation edit.
+Use this lifecycle for changes that are larger than a direct documentation edit. Direct one-off work can use the same gates with a shorter loop. Delegation is optional when the environment supports it; current no-delegation instructions and tool limits take precedence.
 
 ## 1. Frame The Work
 
@@ -17,9 +17,9 @@ After creating or updating a required plan, stop for user review. Implementation
 
 Use `docs/proposals/` before planning when the task is to collect findings, duplications, simplifications, or improvement options for maintainer triage without immediate implementation.
 
-Small docs-only changes do not need a plan.
+Small docs-only changes do not need a plan. Direct one-off work does not need a plan only when it stays narrow and no ADR, missing decision, or multi-step coordination gate is triggered. Delegating a one-off task does not by itself require a plan.
 
-Use `.agents/references/planning.md` for required plan shape, readiness, approval, status history, worker metadata, execution graph, and delegation rules. Use `.agents/references/execution.md` for per-task implementation and commit rules.
+Use `.agents/references/planning.md` for required plan shape, readiness, approval, status history, worker metadata, execution graph, and task-packet shape. Use `.agents/references/orchestration.md` for delegation and worker coordination rules. Use `.agents/references/execution.md` for per-task implementation and commit rules.
 
 The later release workflow takes over after implementation tasks and owns whole-release review, broader manual checks and tests, documentation update passes, and release artifact preparation.
 
@@ -28,6 +28,9 @@ The later release workflow takes over after implementation tasks and owns whole-
 - Keep the change scoped to the requested behavior.
 - Prefer existing IntelliJ Platform, Gradle, and Kotlin conventions.
 - Update docs before or alongside behavior changes.
+- For direct one-off work, use the smallest owner context that can safely complete the request after ADR and plan gates are cleared.
+- For delegated one-off work, the main agent remains responsible for the final diff, validation evidence, review risks, and handoff. Write workers need explicit disjoint write scopes; review sidecars are read-only by default.
+- For approved plan execution, implement only after explicit approval is recorded. Fresh task workers should follow the packet context budget, validation expectations, escalation triggers, and write scope.
 - Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; avoid unrelated operations work outside that scope.
 - If a new question, missing decision, or unsafe assumption appears during planned implementation, follow the stop-and-update rules in `.agents/references/planning.md`.
 
@@ -50,6 +53,9 @@ Focus on:
 - IntelliJ API compatibility.
 - Missing validation evidence.
 - Documentation that implies unsupported or unimplemented behavior.
+- Delegated work that lacks final orchestrator review, has unclear write scopes, ignores a no-delegation instruction, or exceeds the available environment and tool limits.
+
+Review-only sidecar delegation may be requested when the environment supports it. Keep that sidecar read-only, give it the files or diff to inspect, and reconcile its findings before handoff.
 
 ## 6. Handoff
 
@@ -59,6 +65,7 @@ Report:
 - Validation run.
 - Validation not run and why.
 - Remaining open questions or risks.
+- For delegated work, compact worker results, blockers, review risks, and handoff notes.
 
 ## 7. Release Preparation
 

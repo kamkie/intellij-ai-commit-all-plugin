@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-ai-execution-orchestration-optimization.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-23T17:07:16+02:00
 - Open questions: None.
-- Implementation progress: T1-reference-owner-split and T2-plan-artifacts complete; T4-human-docs pending commit.
+- Implementation progress: T1-reference-owner-split, T2-plan-artifacts, and T4-human-docs complete; T3-validator ready.
 
 ## Status History
 
@@ -325,13 +325,13 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: completed
+- Worker: W4, implementation lane
+- Changed files or reviewed diff: Updated `docs/WORKING_WITH_AI.md` and `docs/DEVELOPMENT_LIFECYCLE.md`.
+- Validation evidence: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1` passed; `git diff --check` passed.
+- Blockers: None.
+- Review risks: Low; documentation-only human guidance change with no plugin runtime behavior.
+- Handoff notes: Human-facing guidance now describes direct one-off, delegated one-off, approved-plan execution, and review-only sidecar request shapes while preserving approval gates and no-delegation constraints.
 
 ## Execution Model
 
