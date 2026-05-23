@@ -10,12 +10,16 @@ The active agent is the orchestrator whenever work is delegated. The orchestrato
 
 The orchestrator owns:
 
+- Owning the critical path and keeping local work moving while sidecar work runs.
 - Confirming ADR gates, plan gates, answered questions, and required decisions before implementation starts.
 - Selecting worker lanes and dispatching only task-shaped context.
+- Checking current worktree state before write delegation so worker scope does not collide with existing edits.
 - Keeping worker write scopes explicit and disjoint when more than one worker may edit.
+- Reserving write scopes before dispatch and changing them only through an explicit orchestrator decision.
 - Logging structured worker events in the chat transcript.
 - Waiting for active workers to finish or fail before advancing dependent work.
 - Reviewing worker output, diffs, validation evidence, self-review evidence, blockers, and commit metadata.
+- Reconciling worker claims against the final diff, validation output, and governing artifact before handoff.
 - Integrating results into the final response and deciding whether commits are allowed or required.
 - Updating governing plan state and `CHANGELOG.md` when required before dispatching the next dependent plan task.
 
@@ -80,7 +84,19 @@ Approved-plan task packets must include:
 - Stop conditions.
 - Expected output, including changed files or reviewed diff, validation evidence, blockers, review risks, and handoff notes.
 
-For one-off delegated work, use the same shape as a short worker brief when useful. Keep the context narrower than an approved-plan packet when the task is small.
+For one-off delegated work, use this compact brief shape when the task is small enough that a full plan packet would add overhead:
+
+- Label.
+- Lane: `implementation`, `testing`, or `review`.
+- Goal.
+- Read first: exact files, artifacts, diffs, commands, or validation output the worker may inspect.
+- Forbidden inputs: unrelated archives, prior worker chat, broad scans, or other context that should stay out of scope.
+- Write scope, or `read-only`.
+- Escalate if: conditions that allow broader context or require orchestrator input.
+- Stop if: missing decisions, unsafe assumptions, scope conflicts, validation blockers, or write-scope collisions.
+- Output: changed files or reviewed diff, validation or review evidence, blockers, review risks, and handoff notes.
+
+Keep one-off briefs narrower than approved-plan packets. Do not include full plans, broad archives, or general guidance bundles unless the brief names a concrete trigger.
 
 ## Parallel Synchronization
 
@@ -96,11 +112,13 @@ Use the current branch for orchestrated multi-agent execution. Do not use per-wo
 
 The chat transcript is the event log destination. Do not create durable `.agents/runs/` logs unless a later accepted ADR defines ownership, retention, cleanup, and commit rules.
 
-The orchestrator must log structured worker events in chat:
+The orchestrator must log full structured worker events in chat for approved-plan workers and one-off write workers:
 
 - Log `start`, `stop`, or `fail` for each worker.
 - Log whenever the active worker count changes.
 - Include ISO 8601 timestamp, event type, worker id, plan id or one-off work label, plan task id when applicable, agent mode, active worker count, and active worker ids.
+
+Read-only one-off sidecars may use compact start and result summaries instead of full structured events when they have no write scope and no commit attribution. Compact summaries must still name the sidecar label, lane, active purpose, result, blockers, and review risks.
 
 ## Result Summaries
 

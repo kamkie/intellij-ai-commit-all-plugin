@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-execution-context-discipline.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-23T18:12:39+02:00
 - Open questions: None.
-- Implementation progress: T1-routing-guidance completed; T2-orchestration-briefs pending.
+- Implementation progress: T1-routing-guidance and T2-orchestration-briefs completed; T3-plan-packets-and-validation pending.
 
 ## Status History
 
@@ -206,13 +206,13 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: completed
+- Worker: O1, implementation lane
+- Changed files or reviewed diff: Updated `.agents/references/orchestration.md` with operational orchestrator responsibilities, compact one-off worker briefs, and tiered worker-event logging.
+- Validation evidence: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` passed; `git diff --check` passed.
+- Blockers: None.
+- Review risks: Low; structured events remain required for approved-plan workers and one-off write workers.
+- Handoff notes: Read-only one-off sidecars may now use compact summaries when no write scope or commit attribution is involved.
 
 ### Task Packet: T3-plan-packets-and-validation
 
