@@ -80,7 +80,7 @@ A useful plan should include:
 - Do not duplicate the full backlog from `TASKS.md`.
 - Move unresolved user decisions to `docs/decisions/OPEN_QUESTIONS.md`.
 - Before implementation starts from an `Approved` plan, every plan question and required project decision must be answered, explicitly decided, or recorded as a documented assumption that the current user request allows.
-- Before implementation starts from an `Approved` plan, sub-agent workers must be available and authorized by the active tool contract. If they are not, approved-plan execution is blocked.
+- Before implementation starts from an `Approved` plan, confirm worker availability using `.agents/references/orchestration.md`; unavailable or forbidden workers block execution.
 - Follow `docs/decisions/README.md` for ADR requirements before recording project decisions or repository rule changes in a plan.
 - Update or delete stale plans when implementation makes them obsolete.
 - For multi-task plans, name tasks clearly enough to use in `Project-Plan-Task:` commit metadata.
@@ -114,7 +114,7 @@ Keep ordinary task packets inline in the parent plan. Use child packet files onl
 
 Keep the parent plan focused on approval, readiness, dependencies, execution graph, packet index, and compact task result summaries. Do not paste raw test output, raw worker transcripts, or bulky run logs into the plan.
 
-Local packet mode is not an approved-plan execution fallback. Approved-plan tasks must run in sub-agent workers as defined in `.agents/references/orchestration.md`.
+Approved-plan task execution uses sub-agent workers as defined in `.agents/references/orchestration.md`.
 
 ## Before Implementation
 
@@ -125,7 +125,7 @@ Before editing from a plan:
 - Confirm `Approved at:` records the approval timestamp.
 - Confirm every required ADR is accepted, including any ADR that produced a companion draft plan.
 - Confirm every plan question and required decision is answered, decided, or explicitly assumed under the current request.
-- Confirm sub-agent workers are available and authorized by the active tool contract; otherwise stop before implementation and report the blocker.
+- Confirm approved-plan worker availability under `.agents/references/orchestration.md`.
 - Update the plan status to `In Progress` when implementation starts and keep `## Readiness` current.
 - Append the matching `Approved -> In Progress` entry to `## Status History` with the status-history actor selected by action source.
 - Identify files likely to change.

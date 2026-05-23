@@ -66,9 +66,7 @@ Do not create ad hoc memory files or parallel memory trees for this repository. 
 
 ## Approved-Plan Task Loop
 
-Before implementation starts from an approved plan, confirm the plan has `Status: Approved`, `Approved by:`, and `Approved at:` metadata, and that every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.
-
-Approved-plan task execution requires sub-agent workers under ADR 0080. If sub-agents are unavailable, unauthorized by the active tool contract, or explicitly forbidden for approved-plan execution, stop before implementation, report the blocker, and do not execute the plan task locally.
+Before implementation starts from an approved plan, confirm plan readiness in `.agents/references/planning.md` and worker availability in `.agents/references/orchestration.md`.
 
 For approved multi-task plans, treat each named task or approved parallel wave as its own execution unit:
 
@@ -112,7 +110,7 @@ After moving a `TASKS.md` task to `TASKS_ARCHIVE.md`, rerun documentation valida
 - Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; do not add unrelated release or operations files outside that scope.
 - Follow `docs/decisions/README.md` for ADR requirements before changing governed implementation, workflow guidance, backlog, validation rules, or related behavior.
 - If a requested change needs a plan, follow `.agents/references/planning.md` and stop until approval. If it clearly needs both an ADR and a later plan, follow `docs/decisions/README.md` for the companion draft plan flow.
-- When an agent updates plan status during autonomous, orchestrated, or delegated implementation, record the status-history actor as the responsible agent identity in `Name <email>` form. Preserve `Approved by:` as the human approval identity unless the user explicitly changes it.
+- Use `.agents/references/planning.md` status-history actor rules when updating plan status during autonomous, orchestrated, or delegated work.
 
 ## Commit Rules
 

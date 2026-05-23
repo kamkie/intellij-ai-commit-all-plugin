@@ -38,7 +38,7 @@ Before writing the plan:
 - call out compatibility risk, rollback or migration concerns, resolved-version proof, and validation needed to keep the repository release-ready
 - say explicitly whether the requested upgrades should stay one batch or split into smaller plans
 
-The plan must preserve normal repository plan requirements, including status metadata, workers metadata, and `## Execution Graph`.
+Follow repository plan requirements from `.agents/references/planning.md`; keep this prompt focused on toolchain inventory, risk, batch shape, and validation.
 
 ## Non-Goals
 

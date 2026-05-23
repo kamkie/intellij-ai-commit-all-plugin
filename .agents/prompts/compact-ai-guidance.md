@@ -21,24 +21,17 @@ Target selection:
     - `.agents/prompts/*.md`
     - `.agents/skills/*/SKILL.md`
     - `docs/DEVELOPMENT_LIFECYCLE.md`
-  - `docs/WORKING_WITH_AI.md`
-- Do not inspect archive content unless the user names a specific archived artifact.
+  - `docs/WORKING_WITH_AI.md` for this broad guidance pass only
+- Do not inspect or compact archive content unless the user names a specific archived artifact.
 
 ## Compacting Rules
 
-- Preserve the current rule before shortening it. When rules conflict, identify the governing owner before editing.
-- Keep each rule in one best owner:
-    - `AGENTS.md` for the entry point, guidance map, priority order, and high-level working rules.
-    - `.agents/references/` for durable AI workflow guidance.
-    - `.agents/prompts/` for narrow session recipes.
-    - `.agents/skills/` for reusable task workflows with startup instructions.
-    - `docs/WORKING_WITH_AI.md` for human request guidance, not AI execution rules.
-    - `docs/DEVELOPMENT_LIFECYCLE.md` for lifecycle summary and contributor-facing development flow.
+- Preserve the current rule before shortening it. When rules conflict, use the guidance map and documentation owner rules to identify the governing owner before editing.
+- Keep each rule in one best owner.
 - Move misplaced guidance to its owner. Leave a short cross-reference only when normal reading order would otherwise lose needed context.
 - Remove duplicate rules, overlapping examples, dated decision history, "previously/now" migration prose, and verbose examples that do not clarify current behavior.
 - Repair stale filenames, outdated artifact references, and broken Markdown links or anchors.
 - Remove AI-facing execution instructions from human-facing docs; keep human-facing request examples and concise pointers to the owning AI guidance when useful.
-- Do not compact archive content unless the user explicitly names it.
 - If ownership or current policy is unclear, leave the item unchanged and flag it in the result.
 
 ## Output
@@ -58,6 +51,5 @@ Summarize:
 ## Non-Goals
 
 - Do not change repository policy, validation requirements, task status, ADR status, or implementation behavior.
-- Do not compact archive content unless the user names a specific archived artifact.
 - Do not compact non-AI repository guidance unless needed to fix a concrete reference from the AI guidance scope.
 - Do not bulk-load all repository guidance for unrelated tasks; a no-target invocation of this prompt is the broad AI-guidance compaction request.

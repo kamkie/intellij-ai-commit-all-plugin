@@ -23,17 +23,13 @@ description: Flaky-test triage workflow for this IntelliJ plugin repository. Use
 
 ## Diagnosis
 
-- Check shared mutable state, leaked disposables, unclosed projects, reused temp directories, global services, static caches, and system properties.
-- Check local Git repository tests for real remotes, branch name assumptions, staging mode assumptions, line-ending differences, path separator assumptions, and leftover repository state.
-- Check IntelliJ Platform tests for fixture lifecycle, write-action boundaries, EDT usage, background task completion, dumb-mode state, indexing assumptions, and missing waits for platform events.
-- Check async code for sleeps, uncontrolled timers, race-prone callbacks, missing cancellation checks, and assertions that run before observable state is stable.
-- Check CI-only failures for JDK version, Gradle cache state, filesystem case sensitivity, network access, locale, time zone, and parallelism.
+- Compare the pass/fail pattern against the flake categories in `.agents/references/testing.md`.
+- Focus on flake-specific deltas: leaked state, leftover local Git or fixture state, platform event timing, background work, and CI or environment differences.
+- Treat sleeps, real remotes, global caches, order-sensitive tests, and unbounded async assertions as evidence to investigate before changing assertions.
 
 ## Fix
 
-- Prefer deterministic setup and cleanup over retries.
-- Isolate temp directories, repository state, services, clocks, and background work per test.
-- Replace sleeps with controlled callbacks, latches, polling with bounded timeout helpers, or IntelliJ Platform test utilities.
+- Fix the root cause with deterministic setup, cleanup, and synchronization rather than retries.
 - Add regression coverage that proves the fixed invariant when the root cause is a product or test-helper bug.
 - Keep any retry or quarantine as a temporary, documented mitigation with a linked follow-up task.
 

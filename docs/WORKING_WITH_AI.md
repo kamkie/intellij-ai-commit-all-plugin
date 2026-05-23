@@ -61,179 +61,44 @@ Name refs or files when they are relevant:
 
 State constraints that would change implementation, validation, or coordination:
 
-- Target IntelliJ Platform version, currently the 2026.1 line.
-- Target JetBrains IDEs, currently IDEs with the VCS Commit tool window.
+- Target IntelliJ Platform version or IDE support scope when it matters; otherwise rely on the repository support policy and build configuration.
 - Git-only behavior and multiple Git root expectations.
 - JetBrains AI Assistant dependency and whether proprietary APIs may be used directly. The default is no.
 - Three-section `AI | Commit | Push` behavior or styling constraints.
 - Plugin ID, package, vendor, license, Marketplace, signing, or CI constraints.
 - Manual sandbox validation scope, especially AI Assistant, Git staging area, commit-only, commit-and-push, and push behavior.
 - Delegation and context preference for direct one-off work: optional delegation, read-only sidecars only, disjoint write scopes, no delegation, or `Use subagents/delegation as needed to avoid context compaction.`
-- Environment or tool limits: no subagents, no network, no browser tools, read-only filesystem, unavailable validation tools, locked files, or commands that must not be run. Approved-plan execution requires sub-agents; if sub-agents are unavailable or forbidden for plan execution, the agent should stop and report that blocker.
+- Environment or tool limits: no subagents, no network, no browser tools, read-only filesystem, unavailable validation tools, locked files, or commands that must not be run.
 
 ## Development Flow
 
-For larger work, use these stages to name where you are in the lifecycle.
+Use these stages to name where the request sits in the lifecycle. Process gates live in `docs/DEVELOPMENT_LIFECYCLE.md`; this section only gives compact request shapes.
 
-### 1. Orient
+| Stage     | Request shape                                                                                                                          | Prompt or owner                                                                      |
+|-----------|----------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| Orient    | `Summarize repository state. Include worktree status, active plans, open questions, and next actions. Do not edit.`                    | `repository-state-snapshot.md`                                                       |
+| Design    | `Run a design-only pass for <UI/concept/draft>. Do not implement production plugin UI.`                                                | `design-draft-session.md`                                                            |
+| Propose   | `Create a proposal for <problem>. I want findings and options for triage, not implementation.`                                         | `repository-quality-audit.md`, `proposal-consolidation.md`, `compact-ai-guidance.md` |
+| Decide    | `Draft an ADR for <decision>. Stop after the ADR unless a companion draft plan is clearly required.`                                   | `adr-impact-check.md`, `docs/decisions/README.md`                                    |
+| Plan      | `Create or update PLAN-<slug> for <goal>. Do not implement until I approve the plan.`                                                  | `.agents/references/planning.md`                                                     |
+| Implement | `Implement <ref or behavior>. Scope: <scope>. Constraints: <constraints>. Validation expected: <checks>.`                              | `.agents/references/execution.md`                                                    |
+| Validate  | `Run validation for <risk or artifact>. Report commands, results, skipped checks, and remaining risk.`                                 | `.agents/references/testing.md`                                                      |
+| Review    | `Review <diff/files/ref> for <risk>. Findings first; do not edit.`                                                                     | `change-closeout.md`, `plugin-compatibility-sweep.md`, `ci-failure-triage.md`        |
+| Commit    | `Commit the completed work after validation.`                                                                                          | `.gitmessage`                                                                        |
+| Release   | `Check release readiness for <version or boundary>. Include changelog, support, package, signing, CI, tag, and Marketplace readiness.` | `release-readiness.md`                                                               |
 
-Understand the current repository state before choosing work.
+Useful transitions:
 
-```text
-Summarize the current repository state. Include worktree status, active plans, open questions, notable tasks, and the next 1-3 recommended actions. Do not edit files.
-```
+- `Design pass is done. Turn the selected option into the next required ADR, plan, or implementation request.`
+- `I accept finding <id>. Turn it into the next required ADR, plan, or direct task.`
+- `I accept adr-NNNN.`
+- `I approve PLAN-<slug>; execute it.`
 
-Use `repository-state-snapshot.md` for this.
-
-### 2. Design
-
-Explore visual drafts, UI variants, icons, graphics, or interactions before implementation.
-
-```text
-Run a design-only pass for <UI/concept/draft>. Compare variants, note visual risks, and do not implement production plugin UI.
-```
-
-Transition:
-
-```text
-Design pass is done. Turn the selected option into the next required ADR, plan, or implementation request.
-```
-
-Use `design-draft-session.md` for this.
-
-### 3. Propose
-
-Collect findings, duplicates, simplification options, or tradeoffs before committing to a direction.
-
-```text
-Create a proposal for <problem>. I want findings and options for triage, not implementation.
-```
-
-Transition:
-
-```text
-I accept finding <id>. Turn it into the next required ADR, plan, or direct task.
-```
-
-Useful prompts: `repository-quality-audit.md`, `proposal-consolidation.md`, `compact-ai-guidance.md`.
-
-### 4. Decide
-
-Record durable decisions about project direction, workflow rules, compatibility, validation, user-facing behavior, or maintenance policy.
-
-```text
-Draft an ADR for <decision>. Stop after the ADR unless a companion draft plan is clearly required.
-```
-
-Approval:
-
-```text
-I accept adr-NNNN.
-```
-
-Transition:
-
-```text
-Turn accepted adr-NNNN into a draft implementation plan.
-```
-
-Use `adr-impact-check.md` for this.
-
-### 5. Plan
-
-Plan work that needs sequencing, task packets, disjoint write scopes, broader validation, or explicit approval before implementation.
-
-```text
-Create or update PLAN-<slug> for <goal>. Do not implement until I approve the plan.
-```
-
-Approval:
-
-```text
-I approve PLAN-<slug>; execute it.
-```
-
-Approved-plan execution runs task work in sub-agents. If sub-agents are not
-available or are forbidden for that request, expect the agent to stop before
-implementation and report the blocker.
-
-For small, already-decided behavior, ask for direct work instead:
+For small, already-decided behavior, ask for direct work:
 
 ```text
 Implement <ref or behavior>. Keep it direct if existing ADRs, specs, owner docs, or exact task refs already decide the behavior.
 ```
-
-### 6. Implement
-
-Ask for implementation when the desired outcome is clear and gates are already satisfied.
-
-```text
-Implement <ref or behavior>.
-Scope:
-Constraints:
-Validation expected:
-```
-
-For delegated one-off work, name only the boundaries that matter: goal, read-first context, forbidden inputs if any, write scope, escalation or stop conditions, and expected output.
-
-### 7. Validate
-
-Match validation to the risk.
-
-Useful request phrases:
-
-- `Run docs validation and whitespace checks.`
-- `Run focused tests for the changed behavior.`
-- `Run formatting or lint checks for Kotlin or Gradle changes.`
-- `Run plugin packaging or descriptor validation.`
-- `Run compatibility or sandbox checks for IDE, commit, push, AI Assistant, or UI workflow changes.`
-
-Request:
-
-```text
-Run validation for <risk or artifact>. Report commands, results, skipped checks, and remaining risk.
-```
-
-If validation is skipped, ask for the concrete reason.
-
-### 8. Review
-
-Ask for findings before edits, or a second pass after implementation.
-
-```text
-Review <diff/files/ref> for <risk>. Findings first; do not edit.
-```
-
-Review focuses:
-
-- Bugs, regressions, missing validation, compatibility risk, or architecture concerns.
-- Commit selection, AI generation, commit execution, push behavior, staging mode, or multi-root risk.
-- Documentation that implies unsupported behavior.
-- Read-only sidecar review for a second pass without edits.
-
-Useful prompts: `repository-quality-audit.md`, `plugin-compatibility-sweep.md`, `ci-failure-triage.md`.
-
-Use `change-closeout.md` for a final handoff check before committing or stopping.
-
-### 9. Commit
-
-Ask for a commit explicitly when you want one. Approved plan execution may already require per-task commits.
-
-```text
-Commit the completed work after validation.
-```
-
-Expect a Conventional Commit message with the metadata trailer block defined in [.gitmessage](../.gitmessage). For approved plans, expect plan status and validation evidence to be current before each task commit.
-
-### 10. Release
-
-Use release requests after implementation is integrated and validation evidence is ready.
-
-```text
-Check release readiness for <version or boundary>. Include changelog, support, package, signing, CI, tag, and Marketplace readiness.
-```
-
-Use `release-readiness.md` for this.
 
 ## Privacy And Logs
 
@@ -244,8 +109,5 @@ Use `release-readiness.md` for this.
 
 ## Avoid
 
-- Do not paste `WORKING_WITH_AI.md` into ordinary work requests.
 - Do not ask to load every guidance file unless the request is a broad guidance audit.
 - Do not paste large logs or generated output when a file path or short excerpt is enough.
-- Do not ask for “review only” and “fix it” in the same sentence unless edits are intended.
-- Do not ask for commits unless you want commits, except when executing an approved plan that already requires them.

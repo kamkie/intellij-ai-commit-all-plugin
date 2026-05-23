@@ -34,6 +34,6 @@ If the user asks for implementation and the report is sufficiently scoped, proce
 ## Non-Goals
 
 - Do not infer product decisions or support promises from one bug report.
-- Do not inspect local IDE logs unless the user has explicitly approved the relevant log folder or provided sanitized excerpts.
+- Route log-focused work through `ide-log-triage.md`; do not inspect local IDE logs outside its permission rules.
 - Do not broaden a narrow bug report into unrelated cleanup.
 - Do not create tasks, ADRs, or plans unless repository rules or the user request require them.

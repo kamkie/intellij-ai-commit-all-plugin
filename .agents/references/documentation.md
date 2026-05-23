@@ -43,30 +43,24 @@ Use this guide when adding or updating repository documentation.
 - Registers, templates, ADRs, proposals, and active artifact naming rules keep their existing required formats.
 - Assets and concept files use lowercase kebab-case, with numeric prefixes allowed for ordered variants.
 - Prefer concrete commands and artifact names over generic process language.
-- Do not load every AI instruction file automatically. Start from `AGENTS.md`, use the guidance map, and load only the owner documents needed for the current documentation change unless the task is a broad guidance audit or cross-document consistency review.
+- For documentation changes, load only the owning guide unless the request is a broad guidance audit, cross-document consistency check, or validation failure that requires more context.
 - Do not read `docs/WORKING_WITH_AI.md` as part of normal AI-agent workflow. It is for humans preparing requests, and should be updated only when rules, request shapes, or human-facing expectations for AI work change.
-- Route artifact refs by filename prefix before broad search: `adr-NNNN` to `docs/decisions/`, `PLAN-<slug>` to `.agents/plans/` then `.agents/plans/archive/`, `PROP-<slug>` to `docs/proposals/` then `docs/proposals/archive/`, and `T-<AREA>-NNN` to `TASKS.md` then `TASKS_ARCHIVE.md`.
+- Use `AGENTS.md` artifact lookup rules before broad search.
 - Give open questions `Q-<AREA>-NNN` refs in `docs/decisions/OPEN_QUESTIONS.md`, for example `Q-UX-001`.
 - Give every `TASKS.md` and `TASKS_ARCHIVE.md` item a `T-AREA-NNN` task ref, keep the ref stable when wording or ordering changes, and do not renumber existing task refs.
 - Do not duplicate Markdown headings within `TASKS.md` or within `TASKS_ARCHIVE.md`; merge task rows under the existing matching heading, and preserve date, release, plan, or domain context as text inside that section.
 - Give every plan a `Plan-ID` ref in the form `PLAN-<short-kebab-slug>`, include it in active and archived filenames, keep it stable when title, filename, status, or wording changes, and avoid strictly number-based plan refs.
 - Give every plan `Workers:` metadata and an `## Execution Graph` section with a fenced Mermaid graph.
-- Keep `.agents/prompts/` for narrow, reusable prompt recipes that are more concrete than `.agents/references/` guidance and not substantial enough to become `.agents/skills/`.
-- Load repository prompts in two stages: identify the prompt from `.agents/prompts/README.md` by exact title, filename, or catalog entry, then load only the matching prompt and its declared read set.
-- Keep each prompt's read set small, state expected output, and name explicit non-goals.
+- Keep prompt catalog, loading, read-set, output, and non-goal rules in `.agents/prompts/README.md` and the prompt files.
 - Keep `.agents/skills/*/SKILL.md` front matter name in sync with the directory name, and include a `## Start` section for the first read set or startup workflow.
 - Run `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1` for governed documentation changes.
 - Run `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` when adding or changing repository references, skills, prompts, plans, or concrete `.agents/...` links.
 - Do not use `.agents/prompts/` for active backlog items, implementation sequencing, durable policy, or executable workflow accelerators; use `TASKS.md`, `.agents/plans/`, `.agents/references/`, or `.agents/skills/` respectively.
-- Give every proposal a `proposal_id` ref in the form `PROP-<short-kebab-slug>`, include it in active and archived filenames, keep it stable when title, filename, status, wording, or archive location changes, and do not reuse retired proposal refs.
-- Use three-digit proposal finding refs such as `F001`, `E001`, `D001`, and `S001` for active proposal findings; archived proposals may keep historical refs unless materially updated.
-- Keep new proposal finding decisions empty until maintainer triage. When a finding decision becomes non-empty, set the finding metadata table's `Decision at` field to an ISO 8601 timestamp with timezone offset.
+- Keep proposal IDs, finding refs, progress trackers, decision timestamps, and archive mechanics in `docs/proposals/README.md` and templates.
 - Mark blocked `TASKS.md` items with `depends on: Q-<AREA>-NNN`, and tasks that answer questions with `resolves: Q-<AREA>-NNN`.
 - Follow `docs/decisions/README.md` for ADR requirements, project decisions, and repository rule changes.
 - Update documentation before or alongside behavior changes that affect users, validation, supported IDEs, or AI agent workflow.
-- Update `CHANGELOG.md` only for notable public plugin-facing changes: plugin source or runtime behavior, public plugin documentation, compatibility, support, security or privacy behavior, or CI and release pipeline behavior that affects the plugin artifact or publication.
-- Do not update `CHANGELOG.md` for AI-agent documentation, `.agents/` skills or references, plans, proposals, ADR maintenance, scenario registers, test-case inventories, manual validation logs, or internal repository workflow changes unless they also change public plugin behavior, public docs, support promises, or release artifacts.
-- In orchestrated plan execution and release preparation, `CHANGELOG.md` maintenance belongs to the orchestrator; task workers may suggest entries but do not own final changelog edits.
+- Use `.agents/references/releases.md` for changelog ownership, public-plugin-facing eligibility, and orchestrated or release maintenance boundaries.
 - Update `docs/SUPPORT.md` when supported IDE versions, supported VCS scope, plugin dependency requirements, Marketplace availability, or support channels change.
 - Use `docs/proposals/` for analysis documents that list findings, duplications, simplifications, or improvement options for maintainer triage.
 - Keep proposals advisory until accepted through ADRs, plans, or tasks.

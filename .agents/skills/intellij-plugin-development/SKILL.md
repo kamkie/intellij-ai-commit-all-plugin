@@ -19,10 +19,7 @@ description: IntelliJ Platform plugin development workflow for this repository. 
 - Keep action classes small. Put workflow state, VCS preparation, and UI state in focused collaborators.
 - Preserve standard IntelliJ, Git, VCS, push, and AI Assistant errors. Add plugin-owned text only for paths without a platform-owned message.
 - Avoid compile-time dependencies on proprietary JetBrains AI Assistant classes unless an accepted ADR approves that direction.
-- Keep services light: do not do heavy work in constructors, and acquire dependent services where they are needed.
-- Keep EDT work short. Move VFS, PSI, index, Git, and IO-heavy work to background paths unless the platform API explicitly requires EDT.
-- Use read/write actions and `AnAction.getActionUpdateThread()` deliberately when touching platform data from actions.
-- Mark actions `DumbAwareAction` only when their behavior does not require indexes.
+- Apply code-style guidance for service lifetime, EDT/background work, action threading, and DumbAware boundaries.
 - Isolate compatibility-sensitive IntelliJ APIs behind narrow functions or classes and document the target IDE assumption in the governing ADR, task, or plan.
 
 ## Validation

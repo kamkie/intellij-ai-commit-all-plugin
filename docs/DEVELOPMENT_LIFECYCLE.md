@@ -81,7 +81,7 @@ Create or update a plan in `.agents/plans/` when work:
 - Depends on unresolved user input or technical choices.
 - Needs sequencing, task packets, disjoint write scopes, worker coordination, or broader validation.
 
-A plan must remain unimplemented until explicit user approval is recorded. Before execution starts, confirm `Status: Approved`, `Approved by:`, `Approved at:`, status history, answered questions, required ADR acceptance, `Workers:` metadata, task packets when needed, and `## Execution Graph`.
+A plan must remain unimplemented until explicit user approval is recorded. Before execution starts, confirm the readiness fields required by planning guidance, including approval, ADR prerequisites, worker metadata, task packets, and execution graph.
 
 Small documentation cleanup and narrow implementation of already-decided behavior can stay on the direct one-off path when no gate is triggered.
 
@@ -109,8 +109,6 @@ Common validation levels:
 - Commit, push, AI Assistant, staging, changelist, or multi-root changes: targeted tests plus manual sandbox coverage when automation is insufficient.
 - Release changes: release checklist, changelog, support, package, signing, CI, tag, and Marketplace readiness checks.
 
-For AI-assisted validation triage prompts, see `docs/WORKING_WITH_AI.md`.
-
 ## 8. Review And Close Out
 
 Review before handoff, before task completion, and before commit.
@@ -121,8 +119,6 @@ Check for:
 - Commit selection, AI generation, commit execution, push behavior, staging, changelist, and multi-root risks.
 - Documentation that implies unsupported or unimplemented behavior.
 - Drift between implementation, specs, README, support docs, tasks, plans, ADRs, and workflow guidance.
-
-For AI-assisted closeout prompts, see `docs/WORKING_WITH_AI.md`.
 
 ## 9. Commit
 
@@ -141,7 +137,7 @@ Use `.gitmessage` for commit-message rules and metadata trailers.
 
 Release preparation starts after implementation is complete and integrated, or when the user explicitly requests release work.
 
-Use `docs/validation/release-checklist.md` for release validation sequencing. For AI-assisted release readiness prompts, see `docs/WORKING_WITH_AI.md`.
+Use `docs/validation/release-checklist.md` for release validation sequencing.
 
 The release pass owns:
 

@@ -31,6 +31,6 @@ Prefer the existing manual scenario list in `.agents/references/testing.md` for 
 ## Non-Goals
 
 - Do not replace automated regression tests with manual validation when practical automation exists.
-- Do not inspect local IDE logs unless the user has explicitly approved the relevant log folder or provided sanitized excerpts.
+- Route log-focused work through `ide-log-triage.md`; do not inspect local IDE logs outside its permission rules.
 - Do not run Marketplace signing, publishing, or real remote pushes from this prompt.
 - Do not update `CHANGELOG.md` unless a separate release or public behavior request requires it.

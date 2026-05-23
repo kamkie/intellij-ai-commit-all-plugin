@@ -36,6 +36,7 @@ Rules:
 | Prompt                                                      | Use When                                                                                                                                                     |
 |-------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [ADR Impact Check](adr-impact-check.md)                     | A requested change may affect repository decisions, workflow rules, validation policy, compatibility, plans, tasks, or owner docs.                           |
+| [Archive Completed Work](archive-completed-work.md)         | Completed task work needs archive readiness checked or moved mechanically from `TASKS.md` to `TASKS_ARCHIVE.md`.                                             |
 | [Backlog Triage](backlog-triage.md)                         | `TASKS.md`, `TASKS_ARCHIVE.md`, and open questions need stale, duplicate, blocked, or misplaced work reviewed.                                               |
 | [Bug Report Triage](bug-report-triage.md)                   | A reported plugin problem, screenshot, log path, repro note, or validation failure needs ownership, repro status, and next-path classification.              |
 | [Change Closeout](change-closeout.md)                       | A completed ordinary change needs handoff or commit readiness checked for scope, docs, validation, review risk, and required follow-up.                      |

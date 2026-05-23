@@ -35,13 +35,11 @@ Use these lanes for approved plans and one-off delegated work:
 - `testing`: owns tests, fixtures, validation investigation, or failure triage. Testing workers may edit files only when the packet or brief grants an explicit write scope.
 - `review`: read-only by default. Review workers receive the task packet or brief, diff or files under review, relevant spec or ADR, and validation output.
 
-Use a fresh sub-agent worker context for each approved-plan task. If sub-agents are unavailable, unauthorized by the active tool contract, or explicitly forbidden for approved-plan execution, stop before implementation and report the blocker. Local packet mode is not an approved-plan execution fallback.
-
 ## Approved-Plan Workers
 
-For a multi-task plan with `Status: Approved`, use one orchestrator and one fresh sub-agent task worker per plan task. The repository has standing maintainer approval for this delegation, so do not request separate per-task permission or treat presumed lack of approval as a blocker.
+For a multi-task plan with `Status: Approved`, use one orchestrator and one fresh sub-agent task worker per plan task. Standing maintainer approval applies; do not request separate per-task permission.
 
-Before changing implementation files for an approved plan, confirm sub-agent workers are available and authorized by the active tool contract. If they are not, refuse to execute the plan task, report the blocker, and leave implementation unstarted.
+Before changing implementation files for an approved plan, confirm sub-agent workers are available and authorized by the active tool contract. If they are unavailable, unauthorized, or explicitly forbidden, stop before implementation and report the blocker. Local packet mode is not an approved-plan execution fallback.
 
 Task packets are the dispatch contract. Dispatch the plan header or readiness summary, execution graph, assigned task packet, and explicitly named governing artifacts or source files. Do not dispatch the full approved plan by default.
 
@@ -51,9 +49,7 @@ Task workers return compact result summaries by default. The orchestrator update
 
 ## One-Off Delegation
 
-For direct one-off work, sub-agent delegation is allowed by default when the active environment and tool contract support it. The repository has standing maintainer approval for sub-agent delegation, so presumed lack of approval is not a reason to keep work local.
-
-Do not request separate user opt-in before using sidecar agents or workers unless the current request, tool limits, active tool contract, or higher-priority instructions require it. Respect an explicit no-delegation instruction in a direct one-off request.
+For direct one-off work, sub-agent delegation is allowed by default when the active environment and tool contract support it. Standing maintainer approval applies, but respect explicit no-delegation requests, tool limits, active tool contracts, and higher-priority instructions.
 
 Check context pressure before starting substantive exploration or edits. Use a fresh worker or read-only sidecar when the current thread is already large, has recently compacted, or the task is likely to read enough files, plans, ADRs, logs, or validation output to trigger compaction. Do not keep that work in the main thread merely because it is a one-off request.
 
@@ -159,8 +155,4 @@ For direct one-off work, summarize worker results in the final chat response unl
 
 ## Changelog Boundaries
 
-In orchestrated plan execution and release preparation, `CHANGELOG.md` maintenance belongs to the orchestrator. Task workers may suggest entries but do not own final changelog edits unless their packet explicitly grants that scope.
-
-Update `CHANGELOG.md` only for notable public plugin-facing changes: plugin source or runtime behavior, public plugin documentation, compatibility, support, security or privacy behavior, or CI and release pipeline behavior that affects the plugin artifact or publication.
-
-Omit internal AI-agent docs, skills, plans, proposals, ADR maintenance, workflow governance, scenario registers, test-case inventories, manual validation logs, and test-only changes unless they also change public plugin behavior, public docs, support promises, or release artifacts.
+In orchestrated plan execution and release preparation, the orchestrator owns changelog decisions; task workers may suggest entries only. Use `.agents/references/releases.md` for changelog eligibility and release workflow boundaries.

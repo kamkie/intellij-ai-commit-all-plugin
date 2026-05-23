@@ -7,8 +7,8 @@ Use validation that matches the change. Documentation-only changes do not requir
 Use the repository Gradle wrapper in validation examples: `.\gradlew.bat <task>` for PowerShell on Windows. `./gradlew <task>` is the equivalent for Unix-like shells and CI scripts.
 
 - `.\gradlew.bat spotlessCheck` for Kotlin and Gradle Kotlin DSL formatting and Kotlin source license-header enforcement.
-- `npx --yes markdownlint-cli2@0.22.1` for Markdown linting.
 - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1` for Markdown linting, documentation structure, links, refs, ADR numbering and index, and proposal tracker checks.
+- `npx --yes markdownlint-cli2@0.22.1` only when isolating Markdown lint failures outside the full docs validation script.
 - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` for repository agent-artifact checks when `.agents/references/`, `.agents/skills/`, `.agents/prompts/`, or `.agents/plans/` changed.
 - `.\gradlew.bat jacocoTestReport` for the JaCoCo XML coverage report uploaded to Codecov by CI.
 - `.\gradlew.bat test` for JUnit XML test result reports under `build/test-results/test/`, uploaded to Codecov by CI.
