@@ -1,6 +1,6 @@
 # Development Lifecycle
 
-Use this lifecycle for larger repository changes. Small direct requests can use the same gates with a shorter loop.
+Use this shared lifecycle for larger repository changes by maintainers and AI agents. Small direct requests can use the same gates with a shorter loop.
 
 `docs/WORKING_WITH_AI.md` gives humans request examples and prompt shortcuts. It is not part of the normal agent read path. AI-facing execution mechanics live in `.agents/references/execution.md`, `.agents/references/planning.md`, and `.agents/references/orchestration.md`.
 
