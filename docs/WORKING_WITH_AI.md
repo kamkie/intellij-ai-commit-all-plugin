@@ -25,7 +25,8 @@ Prefer naming what must be true after the work over naming every file the agent 
 Use the smallest mode that fits the request:
 
 - Direct one-off: narrow docs, focused bugs, cleanup, or simple commands. The agent should implement directly after clearing ADR, plan, proposal, and missing-input gates.
-- Delegated one-off: use this when the task is context-heavy, the current thread is already large or recently compacted, or parallel exploration, review, or validation would reduce risk. Read-only sidecars fit most cases; write workers need explicit, disjoint scopes.
+- Direct one-off for decided behavior: use this for narrow implementation when an accepted ADR, specification, owner document, or exact task ref already defines the intended outcome.
+- Delegated one-off: use this when the task is context-heavy, the current thread is already large or recently compacted, or parallel exploration, review, or validation would reduce risk. Read-only sidecars fit most cases; write workers need explicit, disjoint scopes and a compact brief.
 - Approved plan execution: name the `PLAN-<slug>` and task packet. Implementation starts only after plan approval is recorded and every required ADR is accepted.
 - Review-only sidecar: ask for a read-only second pass over a diff, file set, plan task, validation output, or behavior.
 - Proposal: use when you want findings, duplication, simplification, or improvement options for maintainer triage before committing to implementation.
@@ -33,7 +34,7 @@ Use the smallest mode that fits the request:
 
 Say `Do not delegate this work. Use only the current agent session.` when you want one agent only. Delegation never bypasses ADR gates, plan gates, validation, or final orchestrator review.
 
-Say `Use subagents/delegation as needed to avoid context compaction.` when the current thread is large, recently compacted, or the task is likely to require broad exploration.
+Say `Use subagents/delegation as needed to avoid context compaction.` when the current thread is large, recently compacted, or the task is likely to require broad exploration. For write delegation, name the intended file or directory ownership when you know it.
 
 ## Gates
 
@@ -41,7 +42,7 @@ Expect the agent to stop instead of implementing when the request needs:
 
 - A new or superseding repository decision. The ADR flow lives in `docs/decisions/README.md`.
 - A companion implementation plan. When both an ADR and later plan are clearly required, the agent may draft the proposed ADR and companion draft plan together, then stop.
-- A plan without a required ADR. The agent should create or update the plan first, then wait for explicit approval.
+- A plan without a required ADR. The agent should create or update the plan first, then wait for explicit approval. Small implementation of already-decided behavior can stay direct when no risky workflow or coordination gate applies.
 - Missing maintainer input. The agent should record or point to `docs/decisions/OPEN_QUESTIONS.md`.
 - Proposal triage. The agent should create or update a proposal instead of implementing findings.
 
@@ -73,6 +74,7 @@ State constraints that would change implementation, validation, or coordination:
 - Manual sandbox validation scope, especially AI Assistant, Git staging area, commit-only, commit-and-push, and push behavior.
 - Delegation preference: optional delegation, read-only sidecars only, disjoint write scopes, or no delegation.
 - Context protection: say `Use subagents/delegation as needed to avoid context compaction.`
+- One-off worker boundary: name the goal, read-first files, forbidden inputs, write scope, escalation triggers, stop conditions, and expected output when you want delegated implementation.
 - Environment or tool limits: no subagents, no network, no browser tools, read-only filesystem, unavailable validation tools, locked files, or commands that must not be run.
 
 ## Validation To Ask For
@@ -96,7 +98,7 @@ For review, ask for the risk you care about:
 - Bugs, regressions, missing validation, compatibility risk, or architecture concerns.
 - Commit selection, AI generation, commit execution, push behavior, staging mode, or multi-root risk.
 - Documentation that implies unsupported behavior.
-- Read-only sidecar review when you want a second pass without edits.
+- Read-only sidecar review when you want a second pass without edits. Read-only sidecars may return compact findings; write workers and approved-plan workers need fuller validation and handoff evidence.
 
 Review findings should lead the answer. Summaries and change explanations are secondary.
 

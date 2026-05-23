@@ -21,7 +21,7 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- `PLAN-execution-context-discipline` - Execution Context Discipline ([PLAN-execution-context-discipline.md](PLAN-execution-context-discipline.md)), in progress as of 2026-05-23.
+- `PLAN-execution-context-discipline` - Execution Context Discipline ([PLAN-execution-context-discipline.md](PLAN-execution-context-discipline.md)), implemented as of 2026-05-23.
 - `PLAN-ai-execution-orchestration-optimization` - AI Execution Orchestration Optimization ([PLAN-ai-execution-orchestration-optimization.md](PLAN-ai-execution-orchestration-optimization.md)), implemented as of 2026-05-23.
 
 ## Archived Plans

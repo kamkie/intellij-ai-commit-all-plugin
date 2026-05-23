@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-execution-context-discipline
 
-Status: In Progress
+Status: Implemented
 
 Workers: 1
 
@@ -10,17 +10,18 @@ Filename: `.agents/plans/PLAN-execution-context-discipline.md`
 
 ## Readiness
 
-- Plan readiness: Approved and in progress.
+- Plan readiness: Implemented.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-23T18:12:39+02:00
 - Open questions: None.
-- Implementation progress: T1-routing-guidance, T2-orchestration-briefs, and T3-plan-packets-and-validation completed; T4-human-docs-and-final-evidence pending.
+- Implementation progress: All planned tasks complete; ADR 0075 implementation evidence updated.
 
 ## Status History
 
 - 2026-05-23T18:07:42+02:00: none -> Draft by OpenAI Codex <codex@openai.com>; companion plan created for proposed ADR 0075.
 - 2026-05-23T18:12:39+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
 - 2026-05-23T18:12:39+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; T1-routing-guidance started after ADR 0075 acceptance.
+- 2026-05-23T18:18:56+02:00: In Progress -> Implemented by OpenAI Codex <codex@openai.com>; all planned tasks completed and final evidence updated.
 
 ## Goal
 
@@ -333,6 +334,7 @@ Write scope:
 - `docs/WORKING_WITH_AI.md`
 - `docs/DEVELOPMENT_LIFECYCLE.md`
 - `docs/decisions/README.md`
+- `.agents/plans/README.md`
 - `.agents/plans/PLAN-execution-context-discipline.md`
 
 Dependencies:
@@ -365,13 +367,13 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: completed
+- Worker: O1, implementation lane
+- Changed files or reviewed diff: Updated `docs/WORKING_WITH_AI.md`, `docs/DEVELOPMENT_LIFECYCLE.md`, `docs/decisions/README.md`, `.agents/plans/README.md`, and this plan.
+- Validation evidence: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` passed; `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1` passed with escalated npm access; `git diff --check` passed.
+- Blockers: None.
+- Review risks: Low; human-facing guidance preserves gates and keeps delegation optional.
+- Handoff notes: ADR 0075 implementation evidence is current; no changelog update because this is internal AI workflow guidance.
 
 ## Execution Model
 
@@ -413,5 +415,5 @@ flowchart TD
 
 ## Handoff Notes
 
-- This plan is intentionally blocked until proposed ADR 0075 is accepted and the plan is explicitly approved.
+- Implemented on 2026-05-23.
 - Do not update `CHANGELOG.md`; this is internal AI workflow guidance only.
