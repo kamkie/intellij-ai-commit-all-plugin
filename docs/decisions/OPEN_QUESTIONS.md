@@ -11,7 +11,7 @@ _No open questions._
 ## Editing Rules
 
 - Use one row per unresolved question in `## Active Questions`.
-- Assign IDs in `Q-<AREA>-NNN` form, for example `Q-UX-001`.
+- Assign refs in `Q-<AREA>-NNN` form, for example `Q-UX-001`.
 - When active questions exist, use this table shape:
 
 | ID | Question | Blocks | Needed For | Updated |

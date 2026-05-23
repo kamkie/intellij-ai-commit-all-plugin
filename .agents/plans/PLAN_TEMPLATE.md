@@ -43,16 +43,16 @@ List work that is intentionally out of scope.
 
 - List files, modules, or docs expected to change.
 - Keep this at the level of implementation steps, not backlog history.
-- Reference related `TASKS.md` items by stable `T-AREA-NNN` task ID when applicable.
+- Reference related `TASKS.md` items by `T-AREA-NNN` task ref when applicable.
 - For multi-task plans, use named tasks suitable for `Project-Plan-Task:` commit metadata.
 
 ## Task Packets
 
 Use task packets for approved multi-task plans. For a single-task plan with no delegated task workers, write `No separate task packets.`
 
-### Task Packet: T1-<stable-task-label>
+### Task Packet: T1-<task-label>
 
-Task id: T1-<stable-task-label>
+Task id: T1-<task-label>
 
 Lane: implementation
 
@@ -124,7 +124,7 @@ Result summary:
 
 ## Execution Model
 
-- `Workers: 1` for sequential execution, or `Workers: N (parallel, tasks: <task ids or labels>)` when the approved plan marks those tasks independent with disjoint write scopes.
+- `Workers: 1` for sequential execution, or `Workers: N (parallel, tasks: <task refs or labels>)` when the approved plan marks those tasks independent with disjoint write scopes.
 - For multi-task plans, use an orchestrator plus one fresh task worker per named task when agent delegation is available.
 - Follow `.agents/references/orchestration.md` for worker lanes, packet dispatch, parallel synchronization, structured worker events, result summaries, branch topology, and plan or changelog handoffs.
 - Dispatch the plan header or readiness summary, execution graph, assigned task packet, and explicitly named governing artifacts or source files. Do not dispatch the full approved plan by default.
@@ -136,7 +136,7 @@ Result summary:
 ```mermaid
 flowchart TD
     O1["O1[code]<br/>orchestrator"]
-    W1["W1[code]<br/>Task 1: <stable task label>"]
+    W1["W1[code]<br/>Task 1: <task label>"]
     O1 --> W1
 ```
 

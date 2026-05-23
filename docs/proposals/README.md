@@ -18,7 +18,7 @@ Completed proposals have no non-terminal implementation status rows and no untri
 
 - None.
 
-Index entries should include the proposal ID, title, file link, and current status date when applicable.
+Index entries should include the proposal ref, title, file link, and current status date when applicable.
 
 ### Proposal Implementation Summary
 
@@ -60,15 +60,15 @@ Use this filename shape:
 
 Rules:
 
-- Start every active and archived proposal filename with its stable `proposal_id`.
+- Start every active and archived proposal filename with its `proposal_id` ref.
 - Use ASCII and hyphen-separated words; keep the required `PROP-` prefix uppercase.
 - Use local creation time with no seconds and no timezone.
-- Keep the proposal ID short and descriptive, for example `PROP-repository-analysis`, `PROP-workflow-duplication-review`, or `PROP-docs-cleanup`.
-- Do not overwrite an older proposal with the same proposal ID or topic. Create a new timestamped file and link to older context when needed.
+- Keep the proposal ref short and descriptive, for example `PROP-repository-analysis`, `PROP-workflow-duplication-review`, or `PROP-docs-cleanup`.
+- Do not overwrite an older proposal with the same proposal ref or topic. Create a new timestamped file and link to older context when needed.
 
-## Proposal IDs
+## Proposal Refs
 
-Every proposal must have a stable `proposal_id` in its front matter and filename.
+Every proposal must have a `proposal_id` ref in its front matter and filename.
 
 Use the format `PROP-<short-kebab-slug>`, for example:
 
@@ -79,13 +79,13 @@ Use the format `PROP-<short-kebab-slug>`, for example:
 Rules:
 
 - Use an uppercase `PROP-` prefix and a lowercase ASCII kebab-case slug.
-- Keep the ID readable enough to identify the proposal without relying on title, filename, or index position.
-- Keep the ID stable when the title, filename, status, wording, or archive location changes.
+- Keep the ref readable enough to identify the proposal without relying on title, filename, or index position.
+- Keep the ref stable when the title, filename, status, wording, or archive location changes.
 - Preserve the `proposal_id` as the filename prefix for active and archived proposal files.
-- When a proposal is split, keep the original ID for the closest surviving proposal and assign new meaningful IDs to new proposals.
-- Do not reuse a retired proposal ID for unrelated work.
+- When a proposal is split, keep the original ref for the closest surviving proposal and assign new meaningful refs to new proposals.
+- Do not reuse a retired proposal ref for unrelated work.
 
-Use proposal IDs in README index entries, handoffs, reviews, ADRs, tasks, or commit references that refer to proposal work.
+Use proposal refs in README index entries, handoffs, reviews, ADRs, tasks, or commit references that refer to proposal work.
 
 ## Required Front Matter
 
@@ -95,7 +95,7 @@ Every proposal must start with:
 ---
 proposal_id: PROP-<short-kebab-slug>
 generated_at: <YYYY-MM-DDTHH-MM>
-created_from: <user request, task ID, review, audit, design pass, or other trigger>
+created_from: <user request, task ref, review, audit, design pass, or other trigger>
 purpose: <one sentence describing what this document proposes>
 scope: <one sentence describing what part of the repository is covered>
 ---
@@ -126,9 +126,9 @@ Use this order:
 
 Use one `#` H1 only. Use `####` headings for individual tracked findings.
 
-## Finding IDs
+## Finding Refs
 
-Tracked findings must use stable three-digit IDs:
+Tracked findings must use three-digit refs:
 
 - `F001`, `F002`, and so on for new features or larger new capabilities.
 - `E001`, `E002`, and so on for errors, mistakes, or rule violations.
@@ -137,13 +137,13 @@ Tracked findings must use stable three-digit IDs:
 
 Number findings sequentially per letter, starting at `1`, in the order they appear.
 
-Each ID must appear in:
+Each ref must appear in:
 
 - The finding heading, for example `#### E001. Missing support policy`.
 - The `Progress Tracker` table.
 - Any cross-reference inside the proposal.
 
-Do not reuse an ID for a different finding after publication.
+Do not reuse a ref for a different finding after publication.
 
 New proposal findings must start with an empty `Decision` field in both the progress tracker and the per-finding metadata table. Only maintainer triage may set a decision.
 
@@ -158,7 +158,7 @@ Every proposal with tracked findings must contain one compact table under `## Pr
 Rules:
 
 - The table lists every `F*`, `E*`, `D*`, and `S*` finding in document order.
-- The table must not include IDs without matching sections.
+- The table must not include refs without matching sections.
 - `### Smaller / Stylistic Items` bullets are not tracked in this table.
 - The per-finding metadata table is the source of truth; mirror `Status`, `Decision`, and `Priority` into the progress tracker after edits.
 
@@ -257,7 +257,7 @@ Use the same priority in the progress tracker and the per-finding metadata table
 7. Add accepted findings with non-terminal implementation status to the Proposal Implementation Summary with an evidence path.
 8. Remove accepted findings with terminal implementation status from the Proposal Implementation Summary.
 9. When no non-terminal implementation statuses and no untriaged findings remain, move the proposal from `Active Proposals` to `Completed Proposals` in this README and append the completion date.
-10. Move fully retired proposals to `archive/` only when their proposal ID, finding IDs, and filename can be preserved.
+10. Move fully retired proposals to `archive/` only when their proposal ref, finding refs, and filename can be preserved.
 
 ## Template
 

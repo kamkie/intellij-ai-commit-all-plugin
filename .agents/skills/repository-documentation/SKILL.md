@@ -14,7 +14,7 @@ description: Repository documentation workflow for this IntelliJ plugin. Use whe
 
 ## Editing
 
-- Follow `.agents/references/documentation.md` for owner mapping, ADR and plan gates, stable IDs, proposal decision handling, changelog boundaries, and proportionality rules.
+- Follow `.agents/references/documentation.md` for owner mapping, ADR and plan gates, refs, proposal decision handling, changelog boundaries, and proportionality rules.
 - Keep docs proportional and repository-specific. Do not copy generic Spring, REST, OpenAPI, deployment, operations, benchmark, frontend, or unrelated guidance from external repositories.
 
 ## Validation

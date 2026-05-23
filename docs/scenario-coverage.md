@@ -9,8 +9,8 @@ This public project document tracks validation scenarios across the plugin. Use 
 - Count each row in the scenario registry as one scenario.
 - Count a scenario as `Automated` when a repository test executes the primary assertion, even when the current result is red.
 - Count a scenario as `Manual` when the primary assertion still needs human-operated sandbox IDE evidence, live JetBrains AI Assistant behavior, platform commit checks, shortcut routing, push UI/runtime behavior, or product-specific IDE behavior that is not covered by an automated repository test.
-- Keep scenario IDs stable after publishing them. Add new IDs for new behavior instead of renumbering existing rows.
-- Treat `*-AUT-*` and `*-MAN-*` ID suffixes as historical after publication. When automation replaces a manual row, keep the ID and update the Execution, Status, and Evidence target columns.
+- Keep scenario refs stable after publishing them. Add new refs for new behavior instead of renumbering existing rows.
+- Treat `*-AUT-*` and `*-MAN-*` ref suffixes as historical after publication. When automation replaces a manual row, keep the ref and update the Execution, Status, and Evidence target columns.
 - Update the coverage counts whenever rows are added, removed, or moved between automated and manual execution.
 
 ## Project Coverage Counts
@@ -393,7 +393,7 @@ Use IntelliJ IDEA `IIU` first. Repeat representative happy-path and failure-path
 
 ## Remaining Automation Candidates
 
-Prefer automation for cases that can be isolated from live JetBrains product state. The deterministic IDEA release-matrix rows covered by `ReleaseMatrixUiHarnessTest` are now marked `Automated` in the registry, even when their stable IDs retain the historical `*-MAN-*` suffix.
+Prefer automation for cases that can be isolated from live JetBrains product state. The deterministic IDEA release-matrix rows covered by `ReleaseMatrixUiHarnessTest` are now marked `Automated` in the registry, even when their refs retain the historical `*-MAN-*` suffix.
 
 - `SCN-STAGE-MAN-001` through `SCN-STAGE-MAN-003`: keep manual. The remaining primary evidence is live Commit tool window staging across every supported file state plus real AI Assistant workflow start, commit, and push behavior.
 - `SCN-STAGE-MAN-004` through `SCN-STAGE-MAN-007`: keep manual but pair with automated counterparts `SCN-STAGE-AUT-021` through `SCN-STAGE-AUT-024`, because repository tests now cover Git state preservation while sandbox checks still own real staged-list rendering.

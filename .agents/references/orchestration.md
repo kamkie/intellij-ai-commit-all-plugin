@@ -64,7 +64,7 @@ One-off worker results are summarized in chat. They do not create plan-file resu
 
 Approved-plan task packets must include:
 
-- Task id and stable task label.
+- Task id and task label.
 - Worker lane: `implementation`, `testing`, or `review`.
 - Required skills.
 - Goal.

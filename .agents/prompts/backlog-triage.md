@@ -19,13 +19,13 @@ Load related ADRs, proposals, plans, or source files only when a task, archived 
 Produce a report in the current response unless the user asks for edits.
 Group findings as:
 
-- active tasks that appear completed, obsolete, duplicated, blocked, underspecified, or missing stable IDs
+- active tasks that appear completed, obsolete, duplicated, blocked, underspecified, or missing refs
 - archive entries that should stay archived, need correction, or conflict with active tasks
 - open questions that are answered, stale, missing blockers, or missing owner evidence
 - tasks that should link to ADRs, proposals, plans, validation evidence, or open questions
 - suggested edits with the exact owning artifact and validation command
 
-If the user asks to edit, keep changes mechanical and owner-specific: preserve task IDs, do not renumber historical entries, and do not invent product decisions.
+If the user asks to edit, keep changes mechanical and owner-specific: preserve task refs, do not renumber historical entries, and do not invent product decisions.
 
 ## Non-Goals
 

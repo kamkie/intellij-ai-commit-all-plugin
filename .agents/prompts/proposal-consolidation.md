@@ -1,7 +1,7 @@
 # Proposal Consolidation
 
-Review or edit proposal documents so the active proposal set has a clear source of truth, stable IDs, consistent trackers, and accurate supersession notes.
-Use this when proposals are duplicated, partially superseded, missing stable IDs, or need maintainer decisions reflected after explicit user triage.
+Review or edit proposal documents so the active proposal set has a clear source of truth, refs, consistent trackers, and accurate supersession notes.
+Use this when proposals are duplicated, partially superseded, missing refs, or need maintainer decisions reflected after explicit user triage.
 
 ## Read First
 
@@ -11,7 +11,7 @@ Use this when proposals are duplicated, partially superseded, missing stable IDs
 - `docs/proposals/PROPOSAL_TEMPLATE.md`
 - `.agents/prompts/README.md`
 - this prompt
-- the specific proposal files, proposal IDs, or finding IDs named by the user
+- the specific proposal files, proposal refs, or finding refs named by the user
 
 Load ADRs, plans, tasks, archives, source files, or old proposals only when a named proposal or finding references them.
 
@@ -23,7 +23,7 @@ Report:
 
 - active proposal source of truth for the requested topic
 - duplicate, stale, or superseded proposal content
-- stable proposal ID, filename, front matter, and index issues
+- proposal ref, filename, front matter, and index issues
 - progress tracker consistency with per-finding metadata
 - accepted findings whose non-terminal implementation status needs README summary evidence
 - proposed edits by exact artifact
@@ -31,7 +31,7 @@ Report:
 
 When editing:
 
-- preserve proposal IDs and finding IDs
+- preserve proposal refs and finding refs
 - keep `Decision` and `Decision at` empty unless the user explicitly supplies a decision
 - update `Decision at` only when setting a non-empty decision
 - update `docs/proposals/README.md` when index or implementation summary status changes

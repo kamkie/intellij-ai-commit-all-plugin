@@ -4,7 +4,7 @@ This directory stores fully retired proposal documents.
 
 Move a proposal here only after it is implemented, superseded, or otherwise retired. Add archived entries to the index below.
 
-Preserve proposal IDs, proposal filenames, and finding IDs when archiving. Archived proposal filenames must start with the stable `PROP-<short-kebab-slug>` ID.
+Preserve proposal refs, proposal filenames, and finding refs when archiving. Archived proposal filenames must start with the `PROP-<short-kebab-slug>` ref.
 
 ## Index
 

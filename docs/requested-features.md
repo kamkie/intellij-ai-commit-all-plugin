@@ -10,7 +10,7 @@ Included: ADRs where the user explicitly requested or chose a feature, behavior,
 
 Excluded:
 
-- Repository workflow and governance ADRs (ADR template, commit-message format, plan/proposal IDs, orchestrator workflow, formatting toolchain, etc.). They describe how the project is run, not what the plugin does.
+- Repository workflow and governance ADRs (ADR template, commit-message format, plan/proposal refs, orchestrator workflow, formatting toolchain, etc.). They describe how the project is run, not what the plugin does.
 - Emerged implementation behaviors that exist in the code and validation suite but were not separately requested. Spec REQs covering `VcsFrozen`, `EmptySelection`, and `UnchangedMessage` stops fall in this category — they are platform-level preconditions or implementation safety nets rather than explicit feature asks.
 
 ## Legend
@@ -93,8 +93,8 @@ The following backlog items refine or document already-accepted features rather 
 
 ## What This Document Does Not Cover
 
-- Repository workflow and ADR-process decisions (commit-message template, plan/proposal IDs, orchestrator rules, formatting toolchain). They are valid maintainer decisions but do not describe plugin features.
+- Repository workflow and ADR-process decisions (commit-message template, plan/proposal refs, orchestrator rules, formatting toolchain). They are valid maintainer decisions but do not describe plugin features.
 - Emerged implementation behaviors that exist in code and the spec but were not separately requested. Examples currently include `REQ-SEL-009` (`VcsFrozen`), `REQ-SEL-011` (`EmptySelection`), and `REQ-AI-013` (`UnchangedMessage`) — the first two are IntelliJ Platform preconditions, and the third is an implementation safety net for "AI Assistant completed without producing new output".
-- Internal task IDs and validation scenario IDs. These live in [TASKS.md](../TASKS.md), [TASKS_ARCHIVE.md](../TASKS_ARCHIVE.md), and [docs/scenario-coverage.md](scenario-coverage.md).
+- Internal task refs and validation scenario refs. These live in [TASKS.md](../TASKS.md), [TASKS_ARCHIVE.md](../TASKS_ARCHIVE.md), and [docs/scenario-coverage.md](scenario-coverage.md).
 
 For the registry of all ADRs including governance and supersession history, see [docs/decisions/README.md](decisions/README.md).

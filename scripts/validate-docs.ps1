@@ -123,7 +123,7 @@ if (Test-Path -LiteralPath $tasksPath) {
         ForEach-Object { $_.Groups[1].Value }
     $duplicates = $taskIds | Group-Object | Where-Object { $_.Count -gt 1 }
     foreach ($duplicate in $duplicates) {
-        Add-ValidationError "TASKS.md contains duplicate task ID $($duplicate.Name)"
+        Add-ValidationError "TASKS.md contains duplicate task ref $($duplicate.Name)"
     }
 }
 
@@ -266,7 +266,7 @@ foreach ($plan in $planFiles) {
     $planIdMatch = [regex]::Match($text, '(?m)^Plan-ID:\s+(PLAN-[A-Za-z0-9][A-Za-z0-9-]*)\s*$')
 
     if (-not $planIdMatch.Success) {
-        Add-ValidationError "$relative is missing a stable Plan-ID"
+        Add-ValidationError "$relative is missing a Plan-ID ref"
     } else {
         $planId = $planIdMatch.Groups[1].Value
         if (-not $plan.Name.StartsWith($planId, [System.StringComparison]::Ordinal)) {
@@ -313,7 +313,7 @@ foreach ($plan in $planFiles) {
         $hasParallelWorkers = $workersValue -match '^[2-9]\d* \(parallel, tasks: [^)]+\)$'
         if (-not $hasSequentialWorkers -and -not $hasParallelWorkers)
         {
-            Add-ValidationError "$relative has malformed Workers metadata '$workersValue'; use 'Workers: 1' or 'Workers: N (parallel, tasks: <task ids or labels>)'"
+            Add-ValidationError "$relative has malformed Workers metadata '$workersValue'; use 'Workers: 1' or 'Workers: N (parallel, tasks: <task refs or labels>)'"
         }
     }
 

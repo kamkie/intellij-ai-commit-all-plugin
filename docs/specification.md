@@ -14,11 +14,11 @@ This document is the requirement-validation reference for the `AI Commit All` In
 
 ## Document Conventions
 
-- Each requirement has a stable `REQ-<AREA>-NNN` ID. Keep IDs stable when wording or status changes. Do not renumber existing IDs.
+- Each requirement has a `REQ-<AREA>-NNN` ref. Keep refs stable when wording or status changes. Do not renumber existing refs.
 - The keywords `MUST`, `MUST NOT`, `SHOULD`, `SHOULD NOT`, and `MAY` follow RFC 2119 / RFC 8174.
 - `Source:` lists the originating ADR (or approved plan when no ADR applies).
-- `Validates:` lists scenario IDs from [scenario-coverage.md](scenario-coverage.md) that exercise the requirement.
-- `Implements:` lists the primary task ID from [TASKS_ARCHIVE.md](../TASKS_ARCHIVE.md) when one applies.
+- `Validates:` lists scenario refs from [scenario-coverage.md](scenario-coverage.md) that exercise the requirement.
+- `Implements:` lists the primary task ref from [TASKS_ARCHIVE.md](../TASKS_ARCHIVE.md) when one applies.
 
 ## References
 
@@ -204,7 +204,7 @@ The complete set of workflow stop reasons is fixed. Implementations MUST report 
 
 Each ADR has at least one requirement; each requirement has at least one validating scenario or manual sandbox row. New behavior MUST extend this document by adding a new `REQ-` row before, or together with, the implementation change that adds the behavior.
 
-| ADR      | Requirement IDs                                                                                                      |
+| ADR      | Requirement Refs                                                                                                     |
 |----------|----------------------------------------------------------------------------------------------------------------------|
 | ADR 0003 | REQ-SEL-001, REQ-SEL-002, REQ-SEL-003                                                                                |
 | ADR 0008 | REQ-ID-004, REQ-COMPAT-001                                                                                           |
@@ -225,8 +225,8 @@ Each ADR has at least one requirement; each requirement has at least one validat
 
 ## 15. Editing Rules
 
-- Add new requirements with the next free `REQ-<AREA>-NNN` ID in the relevant section. Do not reuse retired IDs.
+- Add new requirements with the next free `REQ-<AREA>-NNN` ref in the relevant section. Do not reuse retired refs.
 - When behavior changes, update the requirement wording in place and add a new `Source:` ADR reference rather than removing the old one if both still apply.
-- When a requirement is retired, keep the ID, mark its text with `RETIRED:` prefix, and record the retiring ADR or plan.
-- Update `Validates:` lines when scenario IDs are added in [scenario-coverage.md](scenario-coverage.md).
+- When a requirement is retired, keep the ref, mark its text with `RETIRED:` prefix, and record the retiring ADR or plan.
+- Update `Validates:` lines when scenario refs are added in [scenario-coverage.md](scenario-coverage.md).
 - Keep the traceability table in Section 14 in sync when adding requirements or ADRs.

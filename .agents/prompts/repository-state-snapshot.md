@@ -25,7 +25,7 @@ Produce a repository-state report with:
 
 - permission boundary and whether the report includes uncommitted changes
 - current branch, worktree status, and notable untracked or modified files
-- active tasks, recently archived tasks, stale or blocked tasks, and task IDs needing attention
+- active tasks, recently archived tasks, stale or blocked tasks, and task refs needing attention
 - open questions and whether active tasks are blocked by them
 - ADR, proposal, and plan status, including missing index or archive work
 - prompt, skill, or guidance status only when relevant to the current request

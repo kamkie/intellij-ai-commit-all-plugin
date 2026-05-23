@@ -247,7 +247,7 @@ Validation:
 
 Stop conditions:
 
-- Validator changes would require a new stable artifact format not covered by `adr-0073`.
+- Validator changes would require a new ref format not covered by `adr-0073`.
 
 Expected output:
 

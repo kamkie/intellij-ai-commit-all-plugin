@@ -2,7 +2,7 @@
 
 Completed tasks move here from [TASKS.md](TASKS.md) only after the work is finished, validated, and self-reviewed.
 
-Preserve stable `T-AREA-NNN` task IDs, wording, grouping, and evidence links when moving entries unless a small clarity fix is needed.
+Preserve `T-AREA-NNN` task refs, wording, grouping, and evidence links when moving entries unless a small clarity fix is needed.
 
 Archived as of 2026-05-20 workflow coverage and JaCoCo gate.
 
@@ -165,9 +165,9 @@ Archived as of orchestrated `AI Commit All` workflow implementation.
 - [x] T-DOC-009: Add root `CHANGELOG.md` for notable unreleased and released changes. (ADR 0029)
 - [x] T-DOC-010: Add root `SUPPORT.md` for support status and issue-reporting expectations. (ADR 0029)
 - [x] T-DOC-011: Add rule to avoid automatically loading every AI instruction file. (ADR 0031)
-- [x] T-DOC-012: Add stable non-number-only plan IDs. (ADR 0032)
+- [x] T-DOC-012: Add non-number-only plan refs. (ADR 0032)
 - [x] T-DOC-013: Add `docs/proposals/` with proposal rules, template, and archive marker. (ADR 0033)
-- [x] T-DOC-014: Add stable proposal IDs. (ADR 0034)
+- [x] T-DOC-014: Add proposal refs. (ADR 0034)
 - [x] T-DOC-015: Archive completed plans, proposals, and tasks.
 
 ### Publishing, Signing, Marketplace, And CI

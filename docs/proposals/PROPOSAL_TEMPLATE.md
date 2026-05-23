@@ -1,7 +1,7 @@
 ---
 proposal_id: PROP-<short-kebab-slug>
 generated_at: YYYY-MM-DDTHH-MM
-created_from: User request, task ID, review, audit, design pass, or other trigger.
+created_from: User request, task ref, review, audit, design pass, or other trigger.
 purpose: One sentence describing what this document proposes.
 scope: One sentence describing what part of the repository is covered.
 ---

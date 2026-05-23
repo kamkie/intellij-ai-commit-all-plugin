@@ -26,7 +26,7 @@ Rules:
 - bound outputs by naming the expected report, summary, plan, or artifact location
 - keep durable policy in `.agents/references/`, not prompts
 - keep implementation sequencing in `.agents/plans/`, not prompts
-- keep active backlog and stable task IDs in `TASKS.md` and `TASKS_ARCHIVE.md`, not prompts
+- keep active backlog and task refs in `TASKS.md` and `TASKS_ARCHIVE.md`, not prompts
 - keep executable or strongly repeatable workflows in `.agents/skills/`, not prompts
 - do not add metadata preambles; keep catalog metadata here
 - update this README when adding, renaming, moving, or removing prompts
@@ -44,7 +44,7 @@ Rules:
 | [IDE Log Triage](ide-log-triage.md)                         | IntelliJ IDE logs need analysis after the user grants permission for a log folder or provides sanitized excerpts.                                            |
 | [Manual Sandbox Validation](manual-sandbox-validation.md)   | Plugin behavior needs manual IntelliJ sandbox scenario planning or reporting beyond automated tests.                                                         |
 | [Plugin Compatibility Sweep](plugin-compatibility-sweep.md) | IntelliJ Platform, Gradle IntelliJ Plugin, Kotlin, JDK, plugin descriptor, dependency, verifier, or supported IDE compatibility risk needs review.           |
-| [Proposal Consolidation](proposal-consolidation.md)         | Proposal documents need duplicate, supersession, stable-ID, progress-tracker, decision, or implementation-summary consistency reviewed or updated.           |
+| [Proposal Consolidation](proposal-consolidation.md)         | Proposal documents need duplicate, supersession, ref, progress-tracker, decision, or implementation-summary consistency reviewed or updated.                 |
 | [Repository Quality Audit](repository-quality-audit.md)     | A broad repository audit should identify errors, mistakes, duplication, simplification opportunities, validation gaps, or proposal-worthy findings.          |
 | [Repository State Snapshot](repository-state-snapshot.md)   | Worktree, tasks, open questions, ADRs, proposals, plans, and next-task readiness need a concise cross-artifact status report.                                |
 | [Release Readiness](release-readiness.md)                   | A plugin release boundary needs blockers, required validations, changelog/support status, packaging, signing, CI, tag, or Marketplace readiness checked.     |

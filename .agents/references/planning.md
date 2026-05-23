@@ -21,7 +21,7 @@ When a requested change needs a plan instead of an ADR, create or update the pla
 
 Store active plans in `.agents/plans/`.
 
-Use `.agents/plans/PLAN_TEMPLATE.md` as the starting shape. Name plan files with the stable `Plan-ID` as the filename prefix, for example:
+Use `.agents/plans/PLAN_TEMPLATE.md` as the starting shape. Name plan files with the `Plan-ID` ref as the filename prefix, for example:
 
 ```text
 .agents/plans/PLAN-scaffold-plugin-project.md
@@ -32,9 +32,9 @@ Use `.agents/plans/PLAN_TEMPLATE.md` as the starting shape. Name plan files with
 
 A useful plan should include:
 
-- Stable `Plan-ID` in the form `PLAN-<short-kebab-slug>`, not a strictly number-based ID.
+- `Plan-ID` ref in the form `PLAN-<short-kebab-slug>`, not a strictly number-based ref.
 - Compact `Status`: `Draft`, `Approved`, `In Progress`, `Blocked`, `Implemented`, or `Closed`.
-- `Workers:` metadata. Use `Workers: 1` for sequential plans and `Workers: N (parallel, tasks: <task ids or labels>)` only for approved independent tasks with disjoint write scopes.
+- `Workers:` metadata. Use `Workers: 1` for sequential plans and `Workers: N (parallel, tasks: <task refs or labels>)` only for approved independent tasks with disjoint write scopes.
 - `Readiness` section that summarizes plan readiness, approval identity and timestamp when approved, open questions, and implementation progress.
 - `Status History` section that records every status transition with timestamp, from-status, to-status, actor identity and action source, and short reason.
 - Goal.
@@ -50,8 +50,8 @@ A useful plan should include:
 ## Planning Rules
 
 - Keep plans short enough to maintain.
-- Give every plan a stable, human-readable `Plan-ID` such as `PLAN-scaffold-plugin-project`; avoid strictly number-based IDs such as `PLAN-0001`.
-- Include the stable `Plan-ID` in the plan filename for active and archived plans.
+- Give every plan a human-readable `Plan-ID` ref such as `PLAN-scaffold-plugin-project`; avoid strictly number-based refs such as `PLAN-0001`.
+- Include the `Plan-ID` ref in the plan filename for active and archived plans.
 - Include `Workers:` metadata near the plan status.
 - Keep `Plan-ID` stable when plan title, filename, status, or wording changes.
 - Include `## Execution Graph` in every plan. Sequential plans may use a compact graph; parallel plans must show waves that match `Workers:` and ADR 0026 disjoint write scopes.
@@ -74,8 +74,8 @@ A useful plan should include:
 - Follow `docs/decisions/README.md` for ADR requirements before recording project decisions or repository rule changes in a plan.
 - Update or delete stale plans when implementation makes them obsolete.
 - For multi-task plans, name tasks clearly enough to use in `Project-Plan-Task:` commit metadata.
-- Reference the stable `Plan-ID` in implementation handoffs, review notes, and commit metadata when work comes from a plan.
-- When plan tasks come from `TASKS.md`, reference the stable `T-AREA-NNN` task ID alongside the task name.
+- Reference the `Plan-ID` ref in implementation handoffs, review notes, and commit metadata when work comes from a plan.
+- When plan tasks come from `TASKS.md`, reference the `T-AREA-NNN` task ref alongside the task name.
 - For multi-task plans, each task must be fully implemented, validated through `.agents/references/testing.md`, self-reviewed through `.agents/references/reviews.md`, and committed before the next task starts.
 - Leave release-wide review, broader manual checks and tests, documentation update passes, and release artifact preparation to the later release workflow unless the plan is specifically a release plan.
 - Use `.agents/references/orchestration.md` for delegated plan execution rules, including worker lanes, packet dispatch, parallel synchronization, worker events, result summaries, branch topology, and plan/changelog handoffs.
@@ -86,7 +86,7 @@ Use task packets as the default dispatch contract for approved multi-task plans.
 
 Each task packet must include:
 
-- Task id and stable task label.
+- Task id and task label.
 - Worker lane: `implementation`, `testing`, or `review`.
 - Required skills.
 - Goal.
@@ -100,7 +100,7 @@ Each task packet must include:
 - Stop conditions.
 - Expected output, including changed files or reviewed diff, validation evidence, blockers, review risks, and handoff notes.
 
-Keep ordinary task packets inline in the parent plan. Use child packet files only when the parent plan would become difficult to scan, such as plans with more than six worker-owned tasks, multiple parallel waves, or expected parent-plan length above roughly 200 lines after packeting. Child packet files must preserve stable task packet ids and stay linked from the parent plan.
+Keep ordinary task packets inline in the parent plan. Use child packet files only when the parent plan would become difficult to scan, such as plans with more than six worker-owned tasks, multiple parallel waves, or expected parent-plan length above roughly 200 lines after packeting. Child packet files must preserve task packet refs and stay linked from the parent plan.
 
 Keep the parent plan focused on approval, readiness, dependencies, execution graph, packet index, and compact task result summaries. Do not paste raw test output, raw worker transcripts, or bulky run logs into the plan.
 
