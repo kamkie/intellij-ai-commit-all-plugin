@@ -71,5 +71,6 @@ Open `Settings | Tools | AI Commit All`.
 - [Scenario Coverage](docs/scenario-coverage.md)
 - [Manual Validation](docs/validation/manual-sandbox.md)
 - [Contributing](CONTRIBUTING.md)
+- [Working With AI](docs/WORKING_WITH_AI.md) - guidance for humans preparing AI-assisted repository work requests.
 - [Changelog](CHANGELOG.md)
 - [Security](SECURITY.md)
