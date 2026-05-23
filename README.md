@@ -1,6 +1,13 @@
 # AI Commit All
 
-AI Commit All is an IntelliJ Platform plugin that adds an `AI | Commit | Push` control to the Commit tool window. It uses JetBrains AI Assistant to draft the commit message, then can commit or commit-and-push eligible Git changes.
+[![CI](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/workflows/ci.yml)
+[![Plugin Verifier](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/workflows/plugin-verifier.yml/badge.svg)](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/workflows/plugin-verifier.yml)
+[![CodeQL](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/workflows/codeql.yml/badge.svg)](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/workflows/codeql.yml)
+[![Security](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/workflows/security.yml/badge.svg)](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/workflows/security.yml)
+[![Codecov](https://codecov.io/gh/kamkie/intellij-ai-commit-all-plugin/branch/main/graph/badge.svg)](https://codecov.io/gh/kamkie/intellij-ai-commit-all-plugin)
+[![License](https://img.shields.io/github/license/kamkie/intellij-ai-commit-all-plugin)](LICENSE)
+
+**AI Commit All** (`pl.devopssolutions.aicommitall`) is an IntelliJ Platform plugin that adds an `AI | Commit | Push` control to the Commit tool window. It uses JetBrains AI Assistant to draft the commit message, then can commit or commit-and-push eligible Git changes.
 
 ## Status
 
