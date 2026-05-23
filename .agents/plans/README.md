@@ -21,11 +21,12 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- `PLAN-execution-context-discipline` - Execution Context Discipline ([PLAN-execution-context-discipline.md](PLAN-execution-context-discipline.md)), implemented as of 2026-05-23.
-- `PLAN-ai-execution-orchestration-optimization` - AI Execution Orchestration Optimization ([PLAN-ai-execution-orchestration-optimization.md](PLAN-ai-execution-orchestration-optimization.md)), implemented as of 2026-05-23.
+None.
 
 ## Archived Plans
 
+- `PLAN-execution-context-discipline` - Execution Context Discipline ([archive/PLAN-execution-context-discipline.md](archive/PLAN-execution-context-discipline.md)), archived as of 2026-05-23.
+- `PLAN-ai-execution-orchestration-optimization` - AI Execution Orchestration Optimization ([archive/PLAN-ai-execution-orchestration-optimization.md](archive/PLAN-ai-execution-orchestration-optimization.md)), archived as of 2026-05-23.
 - `PLAN-release-matrix-ui-automation` - Release Matrix UI Automation ([archive/PLAN-release-matrix-ui-automation.md](archive/PLAN-release-matrix-ui-automation.md)), archived as of 2026-05-22.
 - `PLAN-automate-manual-scenarios` - Automate Manual Scenarios ([archive/PLAN-automate-manual-scenarios.md](archive/PLAN-automate-manual-scenarios.md)), archived as of 2026-05-18.
 - `PLAN-unified-formatting-linting-toolchain` - Unified Formatting And Linting Toolchain ([archive/PLAN-unified-formatting-linting-toolchain.md](archive/PLAN-unified-formatting-linting-toolchain.md)), archived as of 2026-05-18.

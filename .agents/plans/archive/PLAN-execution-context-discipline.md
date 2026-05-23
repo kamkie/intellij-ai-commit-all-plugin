@@ -2,19 +2,21 @@
 
 Plan-ID: PLAN-execution-context-discipline
 
-Status: Implemented
+Status: Closed
+
+Close-Reason: Archived
 
 Workers: 1
 
-Filename: `.agents/plans/PLAN-execution-context-discipline.md`
+Filename: `.agents/plans/archive/PLAN-execution-context-discipline.md`
 
 ## Readiness
 
-- Plan readiness: Implemented.
+- Plan readiness: Closed.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-23T18:12:39+02:00
 - Open questions: None.
-- Implementation progress: All planned tasks complete; ADR 0075 implementation evidence updated.
+- Implementation progress: Complete; ADR 0075 implementation evidence updated and plan archived.
 
 ## Status History
 
@@ -22,6 +24,7 @@ Filename: `.agents/plans/PLAN-execution-context-discipline.md`
 - 2026-05-23T18:12:39+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
 - 2026-05-23T18:12:39+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; T1-routing-guidance started after ADR 0075 acceptance.
 - 2026-05-23T18:18:56+02:00: In Progress -> Implemented by OpenAI Codex <codex@openai.com>; all planned tasks completed and final evidence updated.
+- 2026-05-23T20:36:28+02:00: Implemented -> Closed by Kamil Kiewisz <kamkie@outlook.com>; completed plan archived by user request.
 
 ## Goal
 
@@ -335,7 +338,7 @@ Write scope:
 - `docs/DEVELOPMENT_LIFECYCLE.md`
 - `docs/decisions/README.md`
 - `.agents/plans/README.md`
-- `.agents/plans/PLAN-execution-context-discipline.md`
+- `.agents/plans/archive/PLAN-execution-context-discipline.md`
 
 Dependencies:
 
