@@ -8,6 +8,7 @@ Use this guide when asking an AI agent to help with this repository. It is for h
 - Prefer stable refs when you have them: `T-<AREA>-NNN`, `adr-NNNN`, `PLAN-<slug>`, `PROP-<slug>`, a prompt filename, or a concrete file path.
 - State the boundary: design-only, analysis-only, planning-only, implementation, validation, review, commit, or release.
 - State constraints that matter: no delegation, read-only review, no commits, exact write scope, no network, specific validation, or manual sandbox scope.
+- When behavior matters, include what must be true when the work is done.
 - Give approval explicitly when crossing a gate: accepting an ADR, approving a plan, or asking for plan execution.
 - Avoid broad context requests such as “read all docs” unless the task is a broad audit.
 - Do not mix “review only” with “fix it” unless edits are intended.
@@ -23,6 +24,8 @@ Validation expected:
 ```
 
 For bug reports, include what happened, what you expected, the action that triggered it, relevant refs or file/log paths, and any validation already run.
+
+For screenshots or concept images, include the file path, what state it shows, and what feedback you want.
 
 ## Common Controls
 
@@ -70,77 +73,77 @@ Most work fits one of these stages. Name the stage when it matters.
 
 ### 1. Orient
 
-Use this when you need to understand the current repository state before choosing work.
+Understand the current repository state before choosing work.
 
 ```text
 Summarize the current repository state. Include worktree status, active plans, open questions, notable tasks, and the next 1-3 recommended actions. Do not edit files.
 ```
 
-Useful prompt recipe: `repository-state-snapshot.md`.
+Prompt: `repository-state-snapshot.md`.
 
 ### 2. Design
 
-Use design-only requests for visual exploration, UI concept variants, icons, graphics, or interaction alternatives before implementation.
+Explore visual drafts, UI variants, icons, graphics, or interactions before implementation.
 
 ```text
 Run a design-only pass for <UI/concept/draft>. Compare variants, note visual risks, and do not implement production plugin UI.
 ```
 
-Transition phrase:
+Transition:
 
 ```text
 Design pass is done. Turn the selected option into the next required ADR, plan, or implementation request.
 ```
 
-Useful prompt recipe: `design-draft-session.md`.
+Prompt: `design-draft-session.md`.
 
 ### 3. Propose
 
-Use proposals when you want findings, duplicates, simplification options, or tradeoffs for maintainer triage before committing to a direction.
+Collect findings, duplicates, simplification options, or tradeoffs before committing to a direction.
 
 ```text
 Create a proposal for <problem>. I want findings and options for triage, not implementation.
 ```
 
-Transition phrase:
+Transition:
 
 ```text
 I accept finding <id>. Turn it into the next required ADR, plan, or direct task.
 ```
 
-Useful prompt recipes: `repository-quality-audit.md`, `proposal-consolidation.md`, `compact-ai-guidance.md`.
+Prompts: `repository-quality-audit.md`, `proposal-consolidation.md`, `compact-ai-guidance.md`.
 
 ### 4. Decide
 
-Use ADR requests when the repository needs a durable decision: project direction, workflow rules, compatibility, validation expectations, user-facing behavior, or maintenance policy.
+Record durable decisions about project direction, workflow rules, compatibility, validation, user-facing behavior, or maintenance policy.
 
 ```text
 Draft an ADR for <decision>. Stop after the ADR unless a companion draft plan is clearly required.
 ```
 
-Approval phrase:
+Approval:
 
 ```text
 I accept adr-NNNN.
 ```
 
-Transition phrase:
+Transition:
 
 ```text
 Turn accepted adr-NNNN into a draft implementation plan.
 ```
 
-Useful prompt recipe: `adr-impact-check.md`.
+Prompt: `adr-impact-check.md`.
 
 ### 5. Plan
 
-Use planning requests when implementation needs sequencing, task packets, disjoint write scopes, broader validation, or explicit approval before work starts.
+Plan work that needs sequencing, task packets, disjoint write scopes, broader validation, or explicit approval before implementation.
 
 ```text
 Create or update PLAN-<slug> for <goal>. Do not implement until I approve the plan.
 ```
 
-Approval phrase:
+Approval:
 
 ```text
 I approve PLAN-<slug>; execute it.
@@ -154,7 +157,7 @@ Implement <ref or behavior>. Keep it direct if existing ADRs, specs, owner docs,
 
 ### 6. Implement
 
-Use implementation requests when the desired outcome is clear and gates are already satisfied.
+Ask for implementation when the desired outcome is clear and gates are already satisfied.
 
 ```text
 Implement <ref or behavior>.
@@ -183,7 +186,7 @@ Use read-only sidecars for exploration and review. Keep writes in <files or dirs
 
 ### 7. Validate
 
-Ask for validation that matches the risk.
+Match validation to the risk.
 
 - Documentation or AI-guidance changes: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1` and `git diff --check`.
 - Repository refs, skills, prompts, or plans: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\ai\validate-agent-artifacts.ps1`.
@@ -193,7 +196,7 @@ Ask for validation that matches the risk.
 - Compatibility-sensitive changes: plugin verifier and targeted sandbox checks.
 - Runtime commit, push, AI Assistant, or UI workflow changes: targeted automated tests plus manual sandbox evidence where the live IDE owns the behavior.
 
-Request shape:
+Request:
 
 ```text
 Run validation for <risk or artifact>. Report commands, results, skipped checks, and remaining risk.
@@ -203,20 +206,20 @@ If validation is skipped, ask for the concrete reason.
 
 ### 8. Review
 
-Use review requests when you want findings before edits, or a second pass after implementation.
+Ask for findings before edits, or a second pass after implementation.
 
 ```text
 Review <diff/files/ref> for <risk>. Findings first; do not edit.
 ```
 
-Useful review focuses:
+Review focuses:
 
 - Bugs, regressions, missing validation, compatibility risk, or architecture concerns.
 - Commit selection, AI generation, commit execution, push behavior, staging mode, or multi-root risk.
 - Documentation that implies unsupported behavior.
 - Read-only sidecar review for a second pass without edits.
 
-Useful prompt recipes: `repository-quality-audit.md`, `plugin-compatibility-sweep.md`, `ci-failure-triage.md`.
+Prompts: `repository-quality-audit.md`, `plugin-compatibility-sweep.md`, `ci-failure-triage.md`.
 
 ### 9. Commit
 
@@ -236,7 +239,7 @@ Use release requests after implementation is integrated and validation evidence 
 Check release readiness for <version or boundary>. Include changelog, support, package, signing, CI, tag, and Marketplace readiness.
 ```
 
-Useful prompt recipe: `release-readiness.md`.
+Prompt: `release-readiness.md`.
 
 ## Privacy And Logs
 
@@ -245,7 +248,7 @@ Useful prompt recipe: `release-readiness.md`.
 - For logs, provide the smallest relevant excerpt when possible and say whether it is sanitized.
 - For long logs or IDE log folders, provide the path and the specific behavior or time window to inspect.
 
-## What Not To Include
+## Avoid
 
 - Do not paste `WORKING_WITH_AI.md` into ordinary work requests.
 - Do not ask to load every guidance file unless the request is a broad guidance audit.
