@@ -21,6 +21,7 @@ This is the AI entry point for the repository. Keep task context small and read 
 - Missing user input: `docs/decisions/OPEN_QUESTIONS.md`
 - Execution loop: `.agents/references/execution.md`
 - Planning: `.agents/references/planning.md`
+- Orchestration and delegation: `.agents/references/orchestration.md`
 - Code style: `.agents/references/code-style.md`
 - Validation: `.agents/references/testing.md`
 - Review priorities: `.agents/references/reviews.md`
