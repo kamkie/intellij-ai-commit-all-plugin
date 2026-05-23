@@ -158,6 +158,147 @@ function Test-PlanCatalogLinks
     }
 }
 
+function Get-TaskPacketFieldBody
+{
+    param(
+        [string] $PacketText,
+        [string] $Field,
+        [string[]] $KnownFields
+    )
+
+    $fieldPattern = [regex]::Escape($Field)
+    $knownFieldPattern = ($KnownFields | ForEach-Object { [regex]::Escape($_) }) -join '|'
+    $fieldMatch = [regex]::Match($PacketText, "(?ms)^$fieldPattern`:\s*(.*?)(?=^(?:$knownFieldPattern)`:\s*|\z)")
+    if (-not $fieldMatch.Success)
+    {
+        return $null
+    }
+
+    return $fieldMatch.Groups[1].Value.Trim()
+}
+
+function Test-RequiredTaskPacketField
+{
+    param(
+        [string] $PacketText,
+        [string] $RelativePath,
+        [string] $PacketName,
+        [string] $Field,
+        [string[]] $KnownFields
+    )
+
+    $fieldBody = Get-TaskPacketFieldBody -PacketText $PacketText -Field $Field -KnownFields $KnownFields
+    if ($null -eq $fieldBody)
+    {
+        Add-ValidationError "$RelativePath task packet '$PacketName' is missing $Field"
+        return $null
+    }
+
+    if ([string]::IsNullOrWhiteSpace($fieldBody))
+    {
+        Add-ValidationError "$RelativePath task packet '$PacketName' has empty $Field"
+    }
+
+    return $fieldBody
+}
+
+function Test-AgentPlanTaskPackets
+{
+    param(
+        [string] $Text,
+        [string] $RelativePath,
+        [string] $WorkersValue
+    )
+
+    $taskPacketSectionMatch = [regex]::Match($Text, '(?ms)^## Task Packets\s*(.*?)(?=^## |\z)')
+    $taskPacketSection = if ($taskPacketSectionMatch.Success)
+    {
+        $taskPacketSectionMatch.Groups[1].Value
+    }
+    else
+    {
+        ''
+    }
+
+    $taskPacketMatches = [regex]::Matches($taskPacketSection, '(?ms)^###\s+Task Packet:\s+(.+?)\s*\r?\n(.*?)(?=^###\s+Task Packet:|\z)')
+    $hasTaskPackets = $taskPacketMatches.Count -gt 0
+    $workersIndicateMultiTask = $false
+    if (-not [string]::IsNullOrWhiteSpace($WorkersValue))
+    {
+        $workersCountMatch = [regex]::Match($WorkersValue, '^\s*(\d+)')
+        if ($workersCountMatch.Success -and [int]$workersCountMatch.Groups[1].Value -gt 1)
+        {
+            $workersIndicateMultiTask = $true
+        }
+    }
+
+    if (-not $hasTaskPackets -and -not $workersIndicateMultiTask)
+    {
+        return
+    }
+
+    if (-not $taskPacketSectionMatch.Success)
+    {
+        Add-ValidationError "$RelativePath is an approved multi-task plan but is missing ## Task Packets"
+        return
+    }
+
+    if (-not $hasTaskPackets)
+    {
+        Add-ValidationError "$RelativePath is an approved multi-task plan but is missing task packet entries"
+        return
+    }
+
+    $knownTaskPacketFields = @(
+        'Task id',
+        'Lane',
+        'Required skills',
+        'Goal',
+        'Initial context budget',
+        'Allowed inputs',
+        'Forbidden inputs',
+        'Write scope',
+        'Dependencies',
+        'Validation',
+        'Escalation triggers',
+        'Stop conditions',
+        'Expected output',
+        'Result summary'
+    )
+
+    foreach ($taskPacketMatch in $taskPacketMatches)
+    {
+        $packetName = $taskPacketMatch.Groups[1].Value.Trim()
+        $packetText = $taskPacketMatch.Groups[2].Value
+        foreach ($field in @('Required skills', 'Initial context budget', 'Escalation triggers', 'Validation'))
+        {
+            Test-RequiredTaskPacketField `
+                -PacketText $packetText `
+                -RelativePath $RelativePath `
+                -PacketName $packetName `
+                -Field $field `
+                -KnownFields $knownTaskPacketFields | Out-Null
+        }
+
+        $resultSummaryBody = Test-RequiredTaskPacketField `
+            -PacketText $packetText `
+            -RelativePath $RelativePath `
+            -PacketName $packetName `
+            -Field 'Result summary' `
+            -KnownFields $knownTaskPacketFields
+        if ($null -ne $resultSummaryBody)
+        {
+            foreach ($summaryField in @('Validation evidence', 'Review risks'))
+            {
+                if ($resultSummaryBody -notmatch "(?im)^\s*(?:-\s+)?$([regex]::Escape($summaryField)):\s*")
+                {
+                    Add-ValidationError "$RelativePath task packet '$packetName' Result summary is missing $summaryField"
+                }
+            }
+        }
+    }
+}
+
 function Test-AgentPlans
 {
     $plansRoot = Join-Path $repoRoot '.agents/plans'
@@ -170,6 +311,7 @@ function Test-AgentPlans
 
     $allowedPlanStatuses = @('Draft', 'Approved', 'In Progress', 'Blocked', 'Implemented', 'Closed')
     $statusesRequiringApproval = @('Approved', 'In Progress', 'Blocked', 'Implemented', 'Closed')
+    $statusesRequiringTaskPacketValidation = @('Approved', 'In Progress', 'Blocked', 'Implemented')
     $planFiles = Get-ChildItem -LiteralPath $plansRoot -Recurse -File -Filter '*.md' |
         Where-Object { $_.Name -notin @('README.md', 'PLAN_TEMPLATE.md') } |
         Sort-Object FullName
@@ -200,9 +342,15 @@ function Test-AgentPlans
             }
         }
 
-        if ([regex]::Matches($text, '(?m)^Workers:\s+(.+?)\s*$').Count -ne 1)
+        $workersValue = $null
+        $workersMatches = [regex]::Matches($text, '(?m)^Workers:\s+(.+?)\s*$')
+        if ($workersMatches.Count -ne 1)
         {
             Add-ValidationError "$relative must contain exactly one Workers metadata line"
+        }
+        else
+        {
+            $workersValue = $workersMatches[0].Groups[1].Value.Trim()
         }
 
         $filenameMatch = [regex]::Match($text, '(?m)^Filename:\s+(.+?)\s*$')
@@ -265,6 +413,11 @@ function Test-AgentPlans
             {
                 Add-ValidationError "$relative has Status '$status' but is missing Approved at in ## Readiness"
             }
+        }
+
+        if ($null -ne $status -and $statusesRequiringTaskPacketValidation -contains $status)
+        {
+            Test-AgentPlanTaskPackets -Text $text -RelativePath $relative -WorkersValue $workersValue
         }
     }
 }
