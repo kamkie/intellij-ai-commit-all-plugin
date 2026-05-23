@@ -25,7 +25,7 @@ Prefer naming what must be true after the work over naming every file the agent 
 Use the smallest mode that fits the request:
 
 - Direct one-off: narrow docs, focused bugs, cleanup, or simple commands. The agent should implement directly after clearing ADR, plan, proposal, and missing-input gates.
-- Delegated one-off: useful when the task is context-heavy, the current thread is already large, or parallel exploration, review, or validation would reduce risk. Read-only sidecars fit most cases; write workers need explicit, disjoint scopes.
+- Delegated one-off: use this when the task is context-heavy, the current thread is already large or recently compacted, or parallel exploration, review, or validation would reduce risk. Read-only sidecars fit most cases; write workers need explicit, disjoint scopes.
 - Approved plan execution: name the `PLAN-<slug>` and task packet. Implementation starts only after plan approval is recorded and every required ADR is accepted.
 - Review-only sidecar: ask for a read-only second pass over a diff, file set, plan task, validation output, or behavior.
 - Proposal: use when you want findings, duplication, simplification, or improvement options for maintainer triage before committing to implementation.
@@ -70,6 +70,7 @@ State constraints that would change implementation, validation, or coordination:
 - Plugin ID, package, vendor, license, Marketplace, signing, or CI constraints.
 - Manual sandbox validation scope, especially AI Assistant, Git staging area, commit-only, commit-and-push, and push behavior.
 - Delegation preference: optional delegation, read-only sidecars only, disjoint write scopes, or no delegation.
+- Context protection: say `Use a fresh delegated worker before broad exploration or edits if this thread is large or the task may trigger compaction.`
 - Environment or tool limits: no subagents, no network, no browser tools, read-only filesystem, unavailable validation tools, locked files, or commands that must not be run.
 
 ## Validation To Ask For

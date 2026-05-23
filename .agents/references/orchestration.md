@@ -47,7 +47,9 @@ For direct one-off work, subagent delegation is allowed by default when the acti
 
 Do not request separate user opt-in before using sidecar agents or workers unless the current request, tool limits, or higher-priority instructions require it. Respect an explicit no-delegation instruction in the current request.
 
-Choose delegation based on estimated task size, current thread context load, parallel value, and integration cost:
+Check context pressure before starting substantive exploration or edits. Use a fresh worker or read-only sidecar when the current thread is already large, has recently compacted, or the task is likely to read enough files, plans, ADRs, logs, or validation output to trigger compaction. Do not keep that work in the main thread merely because it is a one-off request.
+
+Choose the delegation shape based on estimated task size, current thread context load, parallel value, and integration cost:
 
 - Keep the work local for tiny edits, one-file fixes, obvious commands, urgent blocking steps, or ambiguous tasks where the next action depends on the answer.
 - Use read-only sidecars for focused codebase exploration, validation investigation, or review when they can run in parallel and reduce the main thread's context load.

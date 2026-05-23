@@ -20,7 +20,7 @@ If a request requires a new ADR or implementation plan, create or update the req
 2. Identify the owner artifact: find the source, descriptor, docs, task list, or reference guide that governs the behavior.
 3. Check gates: follow ADR and plan requirements before editing governed implementation, workflow guidance, backlog, validation rules, or related behavior.
 4. Load the smallest useful context: use `AGENTS.md` and the guidance map to choose only the needed owner documents.
-5. Delegate only when useful: optional sidecar or worker delegation follows `.agents/references/orchestration.md`; the active agent still owns final integration and reporting.
+5. Check delegation triggers before heavy context loading or edits: use `.agents/references/orchestration.md` when the thread is already large, has recently compacted, or the work may trigger compaction; the active agent still owns final integration and reporting.
 6. Update docs or specs when behavior changes: keep `README.md`, `TASKS.md`, and agent guidance aligned with the implementation.
 7. Implement the smallest change: stay within the requested scope and existing project shape.
 8. Run targeted validation: choose checks from `.agents/references/testing.md` based on the diff.

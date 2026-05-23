@@ -30,7 +30,7 @@ The later release workflow takes over after implementation tasks and owns whole-
 - Keep the change scoped to the requested behavior.
 - Prefer existing IntelliJ Platform, Gradle, and Kotlin conventions.
 - Update docs before or alongside behavior changes.
-- For direct one-off work, use the smallest owner context that can safely complete the request after ADR and plan gates are cleared.
+- For direct one-off work, use the smallest owner context that can safely complete the request after ADR and plan gates are cleared. If the current thread is already large or the request is likely to trigger compaction, use a fresh delegated worker or read-only sidecar before loading broad context.
 - For delegated one-off work, the main agent remains responsible for the final diff, validation evidence, review risks, and handoff. Write workers need explicit disjoint write scopes; review sidecars are read-only by default.
 - For approved plan execution, implement only after explicit approval is recorded. Fresh task workers should follow the packet context budget, validation expectations, escalation triggers, and write scope.
 - Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; avoid unrelated operations work outside that scope.
