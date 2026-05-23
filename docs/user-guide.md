@@ -44,13 +44,13 @@ What happens:
 
 1. The plugin collects every eligible non-ignored Git path.
 2. If the Git staging-area workflow is active, the plugin stages the eligible paths first.
-3. The plugin captures the current commit message as a snapshot.
+3. The plugin applies the clear-message setting, then captures the current commit message as a snapshot.
 4. JetBrains AI Assistant generates a commit message.
 5. The workflow stops after the message is generated.
 
 No commit or push is attempted by the `AI` section.
 
-The workflow stops without committing when generation times out, the generated message is empty, the message is unchanged from the snapshot, AI Assistant cannot be invoked, or you edit the commit message while generation is running.
+The workflow treats AI generation as unsuccessful when generation times out, the result is empty, AI Assistant cannot be invoked, or you edit the commit message while generation is running. It also stops when generation appears to finish but the message is unchanged from the captured snapshot; this guards against silent AI-generation failures where no new text was written. With the default clear-message setting the snapshot starts empty, so the unchanged-message guard mainly matters when clearing is disabled and a prefilled message is left untouched.
 
 ## Commit
 
@@ -94,7 +94,7 @@ Practical effects:
 
 When the IDE's Git staging-area commit workflow is active, AI Commit All stages every eligible non-ignored path before invoking JetBrains AI Assistant. This keeps the generated commit message aligned with the content that the IDE commit workflow will commit.
 
-Already staged paths remain staged when additional eligible unstaged paths are added. The plugin confirms staging before AI generation; if the IDE VCS state is frozen or another background VCS operation is running, the workflow stops before staging mutation.
+Already staged paths remain staged when additional eligible unstaged paths are added. If IntelliJ is still refreshing or mutating VCS state, such as during a branch switch, update, commit, push, staging, rollback, merge, or rebase, the workflow stops before changing staged files. Wait for the IDE operation to finish, then try again.
 
 ## Shortcuts
 
@@ -113,12 +113,12 @@ If a plugin workflow is already running, the shortcut actions are disabled for t
 
 Open `Settings | Tools | AI Commit All`.
 
-| Setting | Default | Effect |
-|---------|---------|--------|
-| AI generation timeout | `30000` ms | Maximum wait before the workflow stops with an AI timeout. |
-| Completion check interval | `500` ms | Polling interval used while waiting for AI generation to finish. |
-| Clear commit message before AI generation | enabled | Clears stale message text before invoking JetBrains AI Assistant. |
-| Use AI Commit All for IDE commit and push shortcuts | enabled | Routes the IDE commit and push shortcuts to the plugin when the workflow is available. |
+| Setting                                             | Default    | Effect                                                                                                                                                                                  |
+|-----------------------------------------------------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| AI generation timeout                               | `30000` ms | Maximum wait before the workflow stops with an AI timeout.                                                                                                                              |
+| Completion check interval                           | `500` ms   | Polling interval used while waiting for AI generation to finish.                                                                                                                        |
+| Clear commit message before AI generation           | enabled    | Clears stale message text before invoking JetBrains AI Assistant, so the captured snapshot starts empty. Disable only when you intentionally want AI Assistant to revise existing text. |
+| Use AI Commit All for IDE commit and push shortcuts | enabled    | Routes the IDE commit and push shortcuts to the plugin when the workflow is available.                                                                                                  |
 
 Both timing values must be positive. Setting changes apply to later workflow runs; shortcut takeover changes apply to later shortcut activations without requiring an IDE restart.
 
@@ -134,7 +134,7 @@ At user level, that means every affected Git repository must have:
 - An unambiguous target that matches the tracked upstream.
 - No force-push requirement, new-branch push, or special-ref target.
 
-For commit-and-push, the local branch must match the tracked upstream before the plugin creates the commit. For outgoing-only push, the branch may already be ahead because the outgoing commits are the work being pushed.
+You can still commit when your branch is already ahead of its tracked upstream. The match check only controls whether `Push` can skip the IDE Push Commits dialog after creating a new commit. For commit-and-push, the plugin uses immediate push only when the branch matched its tracked upstream before the new commit; otherwise it falls back to the IDE commit-and-push flow. For outgoing-only push, the branch may already be ahead because the outgoing commits are the work being pushed.
 
 The plugin does not add its own confirmation dialog for the safe immediate-push path. Unsafe commit-and-push states fall back to the IDE dialog. Unsafe outgoing-only push states stop instead of opening the dialog.
 
