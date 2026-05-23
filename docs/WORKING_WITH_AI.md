@@ -189,10 +189,6 @@ Example:
 Use read-only sidecars for exploration and review. Keep writes in <files or dirs>. Stop if scope expands.
 ```
 
-For context-heavy, delegated, write-worker, or parallel-wave work, the agent may report a compact decision capsule with the route, gates, read set, delegation plan, write scope, validation plan, and blockers.
-
-When delegation is unavailable, not permitted, or too costly for the task, expect local packet mode: the active agent keeps the same read-first, write-scope, escalation, validation, and stop-condition boundaries, then reports that no fresh worker was used.
-
 ### 7. Validate
 
 Match validation to the risk.
