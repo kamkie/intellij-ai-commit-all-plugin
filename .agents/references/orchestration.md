@@ -47,9 +47,9 @@ Task workers return compact result summaries by default. The orchestrator update
 
 ## One-Off Delegation
 
-For direct one-off work, subagent delegation is allowed by default when the active environment supports it.
+For direct one-off work, subagent delegation is allowed by default when the active environment and tool contract support it.
 
-Do not request separate user opt-in before using sidecar agents or workers unless the current request, tool limits, or higher-priority instructions require it. Respect an explicit no-delegation instruction in the current request.
+Do not request separate user opt-in before using sidecar agents or workers unless the current request, tool limits, active tool contract, or higher-priority instructions require it. If the active tool contract requires explicit delegation permission, either ask for that permission or keep the work local. Respect an explicit no-delegation instruction in the current request.
 
 Check context pressure before starting substantive exploration or edits. Use a fresh worker or read-only sidecar when the current thread is already large, has recently compacted, or the task is likely to read enough files, plans, ADRs, logs, or validation output to trigger compaction. Do not keep that work in the main thread merely because it is a one-off request.
 

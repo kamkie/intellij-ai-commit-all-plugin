@@ -57,7 +57,7 @@ When instructions overlap, apply this project-specific order:
 ## Working Rules
 
 - Use the smallest task-shaped context that can safely answer the request.
-- Before broad exploration or edits, check thread size and compaction risk. When supported and not forbidden by higher-priority instructions or a current no-delegation request, use delegated workers or read-only sidecars to avoid context compaction; otherwise keep context narrow and warn if compaction risk is high.
+- Before broad exploration or edits, check thread size and compaction risk. When the active environment and tool contract support delegation, and no higher-priority instruction or current no-delegation request forbids it, use delegated workers or read-only sidecars to avoid context compaction; otherwise keep context narrow and warn if compaction risk is high.
 - Identify the behavior and governing artifact before editing.
 - Do not load every AI instruction file automatically; start from this file and then read only the specific mapped guidance needed for the current task.
 - Do not read `docs/WORKING_WITH_AI.md` during normal agent workflow; it owns human-facing guidance for asking AI to work here.
