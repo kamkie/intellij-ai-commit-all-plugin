@@ -202,6 +202,80 @@ function Test-RequiredTaskPacketField
     return $fieldBody
 }
 
+function Test-TaskPacketPlaceholderText
+{
+    param(
+        [string] $PacketText,
+        [string] $RelativePath,
+        [string] $PacketName
+    )
+
+    $placeholderPatterns = @(
+        '<task-label>',
+        'List required repository skills',
+        'State the exact task outcome',
+        'Read only this packet',
+        'List exact source files',
+        'List predecessor task packets',
+        'List task-specific commands',
+        'List the conditions',
+        'List missing decisions',
+        'Changed files or reviewed diff\.',
+        'Suggested changelog entry only when public plugin behavior changes'
+    )
+
+    foreach ($placeholderPattern in $placeholderPatterns)
+    {
+        if ($PacketText -match $placeholderPattern)
+        {
+            Add-ValidationError "$RelativePath task packet '$PacketName' contains template placeholder text '$placeholderPattern'"
+        }
+    }
+}
+
+function Test-TaskPacketReviewWriteScope
+{
+    param(
+        [string] $LaneBody,
+        [string] $WriteScopeBody,
+        [string] $RelativePath,
+        [string] $PacketName
+    )
+
+    if ($LaneBody -match '(?im)^\s*(?:-\s*)?review\s*$' -and
+        $WriteScopeBody -notmatch '(?im)^\s*(?:-\s*)?`?read-only`?\s*$')
+    {
+        Add-ValidationError "$RelativePath task packet '$PacketName' has Lane: review but Write scope is not read-only"
+    }
+}
+
+function Test-TaskPacketConcreteContext
+{
+    param(
+        [string] $InitialContextBudgetBody,
+        [string] $AllowedInputsBody,
+        [string] $EscalationTriggersBody,
+        [string] $RelativePath,
+        [string] $PacketName
+    )
+
+    $contextText = "$InitialContextBudgetBody`n$AllowedInputsBody"
+    $hasConcreteArtifact = $contextText -match '`[^`]+\.(md|kt|kts|xml|ps1|yml|yaml|json|properties|txt|gradle)`' -or
+        $contextText -match '(?im)(^|\s)(AGENTS\.md|TASKS\.md|CHANGELOG\.md|README\.md|SUPPORT\.md)(\s|$)' -or
+        $contextText -match '(?im)(^|\s)(\.agents/|docs/|src/|scripts/|build\.gradle\.kts)'
+    $hasEscalationCondition = $EscalationTriggersBody -match '(?im)^\s*-\s+(Load|Stop|Ask|Escalate|Report|Use|Run|Review|Check|Open)\b'
+
+    if (-not $hasConcreteArtifact)
+    {
+        Add-ValidationError "$RelativePath task packet '$PacketName' context budget must name at least one concrete file, artifact, source path, or validation output"
+    }
+
+    if (-not $hasEscalationCondition)
+    {
+        Add-ValidationError "$RelativePath task packet '$PacketName' Escalation triggers must name concrete trigger conditions"
+    }
+}
+
 function Test-AgentPlanTaskPackets
 {
     param(
@@ -270,14 +344,38 @@ function Test-AgentPlanTaskPackets
     {
         $packetName = $taskPacketMatch.Groups[1].Value.Trim()
         $packetText = $taskPacketMatch.Groups[2].Value
-        foreach ($field in @('Required skills', 'Initial context budget', 'Escalation triggers', 'Validation'))
+        Test-TaskPacketPlaceholderText -PacketText $packetText -RelativePath $RelativePath -PacketName $packetName
+
+        $fieldBodies = @{ }
+        foreach ($field in @('Required skills', 'Initial context budget', 'Allowed inputs', 'Write scope', 'Escalation triggers', 'Validation', 'Lane'))
         {
-            Test-RequiredTaskPacketField `
+            $fieldBodies[$field] = Test-RequiredTaskPacketField `
                 -PacketText $packetText `
                 -RelativePath $RelativePath `
                 -PacketName $packetName `
                 -Field $field `
-                -KnownFields $knownTaskPacketFields | Out-Null
+                -KnownFields $knownTaskPacketFields
+        }
+
+        if ($null -ne $fieldBodies['Lane'] -and $null -ne $fieldBodies['Write scope'])
+        {
+            Test-TaskPacketReviewWriteScope `
+                -LaneBody $fieldBodies['Lane'] `
+                -WriteScopeBody $fieldBodies['Write scope'] `
+                -RelativePath $RelativePath `
+                -PacketName $packetName
+        }
+
+        if ($null -ne $fieldBodies['Initial context budget'] -and
+            $null -ne $fieldBodies['Allowed inputs'] -and
+            $null -ne $fieldBodies['Escalation triggers'])
+        {
+            Test-TaskPacketConcreteContext `
+                -InitialContextBudgetBody $fieldBodies['Initial context budget'] `
+                -AllowedInputsBody $fieldBodies['Allowed inputs'] `
+                -EscalationTriggersBody $fieldBodies['Escalation triggers'] `
+                -RelativePath $RelativePath `
+                -PacketName $packetName
         }
 
         $resultSummaryBody = Test-RequiredTaskPacketField `

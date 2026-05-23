@@ -58,7 +58,7 @@ Lane: implementation
 
 Required skills:
 
-- List required repository skills, or `none`.
+- `repository-documentation`, another exact repository skill, or `none`.
 
 Goal:
 
@@ -66,16 +66,16 @@ Goal:
 
 Initial context budget:
 
-- Read only this packet's initial context unless an escalation trigger fires.
+- Read first:
+    - Plan header, readiness summary, execution graph, and this task packet.
+    - Exact owner artifacts and source files required for this task, for example `AGENTS.md` or `src/main/kotlin/...`.
+- Escalate to:
+    - Exact owner guides, source files, logs, validation output, or docs allowed only when an escalation trigger fires.
 
 Allowed inputs:
 
-- `AGENTS.md`
-- `.agents/references/orchestration.md`
-- `.agents/references/execution.md`
-- `.agents/references/testing.md`
-- Plan header, readiness summary, execution graph, and this task packet.
-- List exact source files, specs, ADRs, or validation output needed by this task.
+- Files and artifacts named in `Read first`.
+- Files and artifacts named in `Escalate to` only after an escalation trigger fires.
 
 Forbidden inputs:
 
@@ -85,7 +85,7 @@ Forbidden inputs:
 
 Write scope:
 
-- List exact files or directories this task may edit, or write `read-only` for review packets.
+- Exact files or directories this task may edit, or `read-only` for review packets.
 
 Dependencies:
 
@@ -97,7 +97,7 @@ Validation:
 
 Escalation triggers:
 
-- List the conditions that allow the worker to load additional context, such as a missing decision, source conflict, validation blocker, or need to align with another owner guide.
+- Conditions that allow the worker to load additional named context, such as a missing decision, source conflict, validation blocker, or need to align with another owner guide.
 
 Stop conditions:
 

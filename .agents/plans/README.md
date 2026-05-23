@@ -124,6 +124,8 @@ Approved multi-task plans must include task packets for worker-owned tasks. A ta
 - Stop conditions.
 - Expected output, including changed files or reviewed diff, validation evidence, blockers, review risks, and handoff notes.
 
+Use `Initial context budget` to name exact `Read first` and `Escalate to` artifacts. Do not seed packets with broad default guidance bundles when exact files, specs, ADRs, source paths, commands, or validation outputs are enough. Review packets must keep `Write scope: read-only`.
+
 Use inline task packets for ordinary plans. Use child packet files only when the parent plan would become difficult to scan, such as plans with more than six worker-owned tasks, multiple parallel waves, or expected parent-plan length above roughly 200 lines after packeting. Child packet files must preserve task packet refs and stay linked from the parent plan.
 
 The parent plan remains the source of approval, readiness, dependencies, execution graph, packet index, and compact task result summaries. Task result summaries should record worker id or lane, changed files or reviewed diff, validation evidence, blockers, review risks, and handoff notes. Do not paste raw test output, raw worker transcripts, or bulky run logs into the plan.
