@@ -65,7 +65,9 @@ When instructions overlap, apply this project-specific order:
 - Follow `docs/decisions/README.md` for ADR requirements, project decisions, and repository rule changes.
 - When a requested change requires creating an ADR, create the ADR and stop. If the request clearly also requires a later implementation plan, create the proposed ADR and companion draft plan in the same step, then stop. Continue only after the user reviews and explicitly accepts the ADR; implementation from the plan still requires explicit plan approval.
 - When work needs an implementation plan, create or update the plan first and stop. Start implementation only after the user reviews and explicitly approves the plan.
+- For plugin behavior changes, use `docs/specification.md` as the requirements owner; add or update `REQ-` rows and traceability before or alongside implementation.
 - Update specs or docs before or alongside behavior changes when behavior changes.
 - Run validation that matches the diff and risk.
 - Review for bugs, missing validation, and API or IDE compatibility risk before handing off.
+- Before handoff, confirm the requested change is complete; specs, docs, tasks, plans, changelog, and support updates are done or explicitly not applicable; validation evidence is current; skipped checks have reasons; and self-review is done.
 - Commit completed work only when the user asks for commits or the task scope explicitly requires it; when committing, follow `.gitmessage` and `.agents/references/execution.md`.
