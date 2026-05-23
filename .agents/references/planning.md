@@ -8,12 +8,23 @@ This file owns plan creation, readiness, status rules, and task-packet shape. Us
 
 Create or update a plan when:
 
-- The work changes plugin behavior.
+- The work introduces new intended plugin behavior or changes behavior not already decided by an accepted ADR, specification, owner document, or exact task ref.
 - The work touches multiple areas, such as Gradle, plugin descriptor, Kotlin code, and docs.
 - A user decision from `docs/decisions/OPEN_QUESTIONS.md` blocks implementation.
 - The change may affect commit selection, AI message generation, commit execution, or push behavior.
+- The change needs explicit sequencing, task packets, disjoint write scopes, or broader validation coordination.
 
 Do not create a plan for small documentation cleanup unless the user asks for one.
+
+Narrow implementation of already-decided behavior may use the direct one-off loop in `.agents/references/execution.md` when the intended outcome is already governed, the write set is small, and no ADR, missing-input, or coordination gate is triggered.
+
+## Routing Matrix
+
+| Path | Use When | Owner |
+|------|----------|-------|
+| Direct one-off | Existing ADRs, specs, owner docs, or task refs already decide the intended outcome, and implementation is narrow. | `.agents/references/execution.md` |
+| Plan | New intended behavior, multi-area work, risky VCS, commit, push, AI generation, release, compatibility, unresolved decisions, or task coordination. | This guide and `.agents/plans/` |
+| Proposal | Findings, duplication analysis, simplification options, or maintainer triage before implementation. | `docs/proposals/` |
 
 When a requested change needs a plan instead of an ADR, create or update the plan first and stop. When a requested change clearly needs both an ADR and a later plan, follow `docs/decisions/README.md` and create a companion draft plan with the proposed ADR. Do not start implementation until the required ADR is accepted and the user has reviewed and explicitly approved the plan.
 

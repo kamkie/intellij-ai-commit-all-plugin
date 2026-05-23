@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-execution-context-discipline
 
-Status: Draft
+Status: In Progress
 
 Workers: 1
 
@@ -10,13 +10,17 @@ Filename: `.agents/plans/PLAN-execution-context-discipline.md`
 
 ## Readiness
 
-- Plan readiness: Draft companion plan for proposed `adr-0075`; implementation is blocked until ADR acceptance and later explicit plan approval.
+- Plan readiness: Approved and in progress.
+- Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Approved at: 2026-05-23T18:12:39+02:00
 - Open questions: None.
-- Implementation progress: Not started.
+- Implementation progress: T1-routing-guidance completed; T2-orchestration-briefs pending.
 
 ## Status History
 
 - 2026-05-23T18:07:42+02:00: none -> Draft by OpenAI Codex <codex@openai.com>; companion plan created for proposed ADR 0075.
+- 2026-05-23T18:12:39+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
+- 2026-05-23T18:12:39+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; T1-routing-guidance started after ADR 0075 acceptance.
 
 ## Goal
 
@@ -127,13 +131,13 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: completed
+- Worker: O1, implementation lane
+- Changed files or reviewed diff: Accepted ADR 0075, approved and started this plan, aligned `AGENTS.md`, `.agents/references/execution.md`, `.agents/references/planning.md`, and `docs/DEVELOPMENT_LIFECYCLE.md` routing guidance.
+- Validation evidence: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` passed; `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1` passed with escalated npm access; `git diff --check` passed.
+- Blockers: None.
+- Review risks: Low; documentation-only routing update, with gates preserved.
+- Handoff notes: Direct one-off routing now explicitly covers narrow implementation of already-decided behavior.
 
 ### Task Packet: T2-orchestration-briefs
 

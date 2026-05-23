@@ -11,7 +11,7 @@ Use this lifecycle for changes that are larger than a direct documentation edit.
 
 ## 2. Plan When Needed
 
-Create a plan in `.agents/plans/` when the work spans multiple files, changes behavior, or depends on unresolved technical choices.
+Create a plan in `.agents/plans/` when the work introduces new intended behavior, spans multiple areas, affects risky VCS, commit, push, AI generation, release, or compatibility behavior, depends on unresolved technical choices, or needs explicit task coordination.
 
 When the same request clearly requires both an ADR and a later plan, draft the proposed ADR and companion draft plan together, then stop. The companion plan stays `Status: Draft` and blocked until ADR acceptance and later explicit plan approval.
 
@@ -19,7 +19,7 @@ After creating or updating a required plan, stop for user review. Implementation
 
 Use `docs/proposals/` before planning when the task is to collect findings, duplications, simplifications, or improvement options for maintainer triage without immediate implementation.
 
-Small docs-only changes do not need a plan. Direct one-off work does not need a plan only when it stays narrow and no ADR, missing decision, or multi-step coordination gate is triggered. Delegating a one-off task does not by itself require a plan.
+Small docs-only changes do not need a plan. Direct one-off work does not need a plan when it stays narrow, the intended outcome is already decided by an accepted ADR, specification, owner document, or exact task ref, and no ADR, missing decision, risky workflow, or multi-step coordination gate is triggered. Delegating a one-off task does not by itself require a plan.
 
 Use `.agents/references/planning.md` for required plan shape, readiness, approval, status history, worker metadata, execution graph, and task-packet shape. Use `.agents/references/orchestration.md` for delegation and worker coordination rules. Use `.agents/references/execution.md` for per-task implementation and commit rules.
 
