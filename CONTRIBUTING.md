@@ -9,7 +9,7 @@ This repository is an unreleased IntelliJ Platform plugin project. Keep contribu
 - Read [docs/SUPPORT.md](docs/SUPPORT.md) before filing bugs or support requests.
 - Use [docs/DEVELOPMENT_LIFECYCLE.md](docs/DEVELOPMENT_LIFECYCLE.md) for changes that affect behavior, repository workflow, release automation, or multiple files.
 - Check [TASKS.md](TASKS.md), [docs/decisions/](docs/decisions/), and [docs/proposals/](docs/proposals/) for existing tasks, accepted decisions, and active proposals.
-- If you plan to use AI agents to help with your contribution, read [docs/WORKING_WITH_AI.md](docs/WORKING_WITH_AI.md) for how to frame requests, what context to load, and the repository's expectations for agent-driven work.
+- If you plan to use AI assistance, read [docs/WORKING_WITH_AI.md](docs/WORKING_WITH_AI.md) for request examples and useful prompt names.
 - Do not include secrets, tokens, private repository contents, proprietary commit messages, or unsanitized logs.
 
 ## Prerequisites
@@ -61,7 +61,7 @@ Run the IntelliJ Plugin Verifier locally with the default verifier target from `
 .\gradlew.bat verifyPlugin -PpluginVerifierIdeVersions="IU-2026.1.1,PY-2026.1.1,WS-2026.1.1"
 ```
 
-For documentation-only changes, run documentation validation and `git diff --check`. For plugin code changes, include targeted tests and build checks. For release, signing, publishing, or supported-scope changes, also review [docs/validation/release-checklist.md](docs/validation/release-checklist.md) and [.agents/references/releases.md](.agents/references/releases.md).
+For documentation-only changes, run documentation validation and `git diff --check`. For plugin code changes, include targeted tests and build checks. For release, signing, publishing, or supported-scope changes, also review [docs/validation/release-checklist.md](docs/validation/release-checklist.md).
 
 ## Pull Requests
 

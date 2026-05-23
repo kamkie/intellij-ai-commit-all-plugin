@@ -1,14 +1,12 @@
 # Development Lifecycle
 
-Use this shared lifecycle for larger repository changes by maintainers and AI agents. Small direct requests can use the same gates with a shorter loop.
+Use this shared lifecycle for larger repository changes. Small direct requests can use the same gates with a shorter loop.
 
-`docs/WORKING_WITH_AI.md` gives humans request examples and prompt shortcuts. It is not part of the normal agent read path. AI-facing execution mechanics live in `.agents/references/execution.md`, `.agents/references/planning.md`, and `.agents/references/orchestration.md`.
+`docs/WORKING_WITH_AI.md` gives humans request examples. AI execution mechanics live in `.agents/references/execution.md`, `.agents/references/planning.md`, `.agents/references/orchestration.md`, `.agents/references/testing.md`, and `.agents/references/releases.md`.
 
 ## Core Rules
 
-- Keep context task-shaped. Start from `AGENTS.md`, then load only the specific owner documents needed for the current stage.
 - Choose the path early: direct one-off, bug triage, design, proposal, ADR, plan, approved-plan execution, release, or closeout.
-- For context-heavy or delegated work, expect a compact orchestrator decision capsule that records route, gates, context plan, delegation plan, write scope, validation plan, and blockers.
 - Use direct one-off work when the change is narrow, the intended behavior is already decided, and no gate is triggered.
 - Stop for an ADR when work chooses or changes durable project direction, repository rules, compatibility policy, validation expectations, user-facing behavior, or maintenance policy.
 - Stop for a plan when work needs sequencing, task packets, disjoint write scopes, broader validation coordination, risky VCS/commit/push/AI/release/compatibility changes, or unresolved choices.
@@ -42,7 +40,7 @@ Check only what is needed:
 - Owner docs for the artifact or behavior being changed.
 - Relevant prompt or skill only when the request names it or the stage calls for it.
 
-Use `repository-state-snapshot.md` for a broad status report. Do not use orientation as a reason to load every guidance file.
+Use `repository-state-snapshot.md` for a broad AI-assisted status report. Do not use orientation as a reason to load every guidance file.
 
 ## 3. Explore Before Deciding
 
@@ -91,32 +89,17 @@ Small documentation cleanup and narrow implementation of already-decided behavio
 
 Implement only after ADR and plan gates are clear.
 
-For direct one-off work:
-
 - Use the owner artifact and smallest relevant read set.
 - Keep the change scoped to the requested behavior.
 - Update specs, README, support docs, tasks, or AI guidance before or alongside behavior changes when those artifacts are affected.
 - Escalate to ADR, plan, open question, or proposal when a new decision, missing input, or unsafe assumption appears.
-
-For delegated one-off work:
-
-- Use delegation when it reduces context pressure or enables focused review, validation, or exploration.
-- Use read-only exploration sidecars for source maps, artifact lookup, validation-log triage, or bounded codebase questions.
-- Keep read-only sidecars read-only.
-- Give write workers explicit disjoint write scopes and compact briefs.
-- Keep the main agent responsible for final integration, diff review, validation evidence, risk reporting, and commit decisions.
-
-For approved-plan work:
-
 - Treat each task packet as the task boundary.
-- Use fresh worker context per task when the environment supports delegation.
-- Use local packet mode when delegation is unavailable, not permitted, or not worth the coordination cost: the active agent executes the assigned packet locally and reports that no fresh worker was used.
 - Follow packet-approved context, write scope, dependencies, validation, escalation triggers, and stop conditions.
 - Commit each completed plan task, or each task in the current approved wave, before starting the next dependent task or wave when commits are allowed and required by the approved plan.
 
 ## 7. Validate
 
-Choose validation from `.agents/references/testing.md` based on the diff and risk.
+Choose validation based on the diff and risk.
 
 Common validation levels:
 
@@ -124,9 +107,9 @@ Common validation levels:
 - Kotlin or Gradle changes: formatting, focused tests, and relevant build tasks.
 - Plugin behavior changes: focused tests plus packaging, descriptor, compatibility, or sandbox checks as risk requires.
 - Commit, push, AI Assistant, staging, changelist, or multi-root changes: targeted tests plus manual sandbox coverage when automation is insufficient.
-- Release changes: release-readiness validation from `.agents/references/releases.md`.
+- Release changes: release checklist, changelog, support, package, signing, CI, tag, and Marketplace readiness checks.
 
-Use `ci-failure-triage.md`, `ide-log-triage.md`, or `manual-sandbox-validation.md` when validation failures, logs, or manual scenarios need focused triage.
+For AI-assisted validation triage prompts, see `docs/WORKING_WITH_AI.md`.
 
 ## 8. Review And Close Out
 
@@ -137,10 +120,9 @@ Check for:
 - Bugs, regressions, compatibility issues, missing tests, and missing validation.
 - Commit selection, AI generation, commit execution, push behavior, staging, changelist, and multi-root risks.
 - Documentation that implies unsupported or unimplemented behavior.
-- Drift between implementation, specs, README, support docs, tasks, plans, ADRs, prompts, skills, and reference guidance.
-- Delegated work with unclear write scope, missing worker evidence, or unreconciled review findings.
+- Drift between implementation, specs, README, support docs, tasks, plans, ADRs, and workflow guidance.
 
-Use `change-closeout.md` when a completed ordinary change needs handoff or commit readiness checked without running the release-readiness flow.
+For AI-assisted closeout prompts, see `docs/WORKING_WITH_AI.md`.
 
 ## 9. Commit
 
@@ -153,13 +135,13 @@ Before committing:
 - Confirm task, plan, ADR, docs, prompt, skill, changelog, or support updates are complete or explicitly not applicable.
 - Preserve unrelated user changes.
 
-Use `.gitmessage` and `.agents/references/execution.md` for commit-message rules, validation trailers, project metadata, and multi-agent attribution.
+Use `.gitmessage` for commit-message rules and metadata trailers.
 
 ## 10. Release
 
 Release preparation starts after implementation is complete and integrated, or when the user explicitly requests release work.
 
-Use `.agents/references/releases.md` and `release-readiness.md` for release sequencing.
+Use `docs/validation/release-checklist.md` for release validation sequencing. For AI-assisted release readiness prompts, see `docs/WORKING_WITH_AI.md`.
 
 The release pass owns:
 

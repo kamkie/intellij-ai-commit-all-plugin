@@ -102,21 +102,7 @@ Ask for delegation permission only when local packet execution would create mate
 
 ## Task Packets And Briefs
 
-Approved-plan task packets must include:
-
-- Task id and task label.
-- Worker lane: `implementation`, `exploration`, `testing`, or `review`.
-- Required skills.
-- Goal.
-- Initial context budget.
-- Allowed inputs, including exact plan summary, governing artifacts, source files, specs, ADRs, or validation output the worker may read.
-- Forbidden inputs, especially unrelated archived plans, unrelated prior worker chat, and implementation evidence from other packets.
-- Write scope, or `read-only` for exploration and review packets.
-- Dependencies and sequence or wave constraints.
-- Validation or review checks.
-- Escalation triggers.
-- Stop conditions.
-- Expected output, including changed files or reviewed diff, validation evidence, blockers, review risks, and handoff notes.
+Approved-plan task packet fields are owned by `.agents/references/planning.md`. The orchestrator checks the packet before dispatch and adds only execution-specific context such as active worker id, current worktree constraints, or validation output.
 
 For one-off delegated work, use this compact brief shape when the task is small enough that a full plan packet would add overhead:
 

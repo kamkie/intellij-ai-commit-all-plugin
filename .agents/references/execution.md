@@ -86,7 +86,7 @@ Per-task completion does not replace the later release workflow. Release prepara
 
 Delegated approved-plan execution, worker lanes, packet dispatch, parallel waves, plan result summaries, and plan/changelog handoff rules are defined in `.agents/references/orchestration.md`.
 
-When delegation is unavailable, not permitted, or not worth the coordination cost, use local packet mode from `.agents/references/orchestration.md`: the active agent executes the packet locally while preserving packet context, escalation, write-scope, validation, stop-condition, and result-summary boundaries.
+When delegation is unavailable, not permitted, or not worth the coordination cost, use local packet mode from `.agents/references/orchestration.md`.
 
 ## Task Completion Timing
 
@@ -104,13 +104,13 @@ After moving a `TASKS.md` task to `TASKS_ARCHIVE.md`, rerun documentation valida
 
 - Read only the context needed for the current task.
 - Do not bulk-load every AI instruction file automatically; use `AGENTS.md` and the guidance map to choose the smallest governing read set.
-- Classify artifact references by filename prefix before searching: `adr-NNNN` in `docs/decisions/`, `PLAN-<slug>` in `.agents/plans/` then `.agents/plans/archive/`, `PROP-<slug>` in `docs/proposals/` then `docs/proposals/archive/`, and `T-<AREA>-NNN` in `TASKS.md` then `TASKS_ARCHIVE.md`. Prefer exact filename lookup before scoped ref search, and fall back to repository-wide search only when scoped lookup fails or the reference is ambiguous.
+- Use the artifact lookup rules in `AGENTS.md`; fall back to repository-wide search only when scoped lookup fails or the reference is ambiguous.
 - Broaden the read set only when targeted discovery shows another owner document is needed, the user asks for a broad audit, or validation requires cross-document consistency checks.
 - For direct one-off work, do not load approved-plan orchestration details unless delegation, context pressure, or a coordination trigger makes `.agents/references/orchestration.md` relevant.
 - Prefer existing IntelliJ Platform and Gradle plugin conventions over custom infrastructure.
 - Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; do not add unrelated release or operations files outside that scope.
 - Follow `docs/decisions/README.md` for ADR requirements before changing governed implementation, workflow guidance, backlog, validation rules, or related behavior.
-- If a requested change needs a plan instead of an ADR, create or update the plan first and stop. If it clearly needs both an ADR and a later plan, follow `docs/decisions/README.md` for the companion draft plan flow. Do not start implementation until the ADR is accepted when required and the user has reviewed and explicitly approved the plan.
+- If a requested change needs a plan, follow `.agents/references/planning.md` and stop until approval. If it clearly needs both an ADR and a later plan, follow `docs/decisions/README.md` for the companion draft plan flow.
 - When an agent updates plan status during autonomous, orchestrated, or delegated implementation, record the status-history actor as the responsible agent identity in `Name <email>` form. Preserve `Approved by:` as the human approval identity unless the user explicitly changes it.
 
 ## Commit Rules

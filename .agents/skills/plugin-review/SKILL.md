@@ -17,13 +17,7 @@ description: PR-style and architecture-aware review workflow for this IntelliJ p
 
 - Map the changed or affected behavior boundary before listing findings.
 - Prioritize confirmed correctness, security, behavior regression, compatibility, and missing-validation risks over style issues.
-- Use this plugin-specific risk order:
-    1. Incorrect commit selection or unintended commit.
-    2. AI Assistant invocation failures.
-    3. Committing before AI generation is complete.
-    4. Push behavior mismatch.
-    5. IntelliJ API compatibility or internal API risk.
-    6. Missing sandbox validation.
+- Use the plugin-specific risk order from `.agents/references/reviews.md`.
 - Check architecture only where it affects real change risk: ownership boundaries, dependency direction, API compatibility, failure isolation, and complexity added for local problems.
 - Distinguish evidence from hypotheses. Mark low-confidence concerns as assumptions or questions.
 

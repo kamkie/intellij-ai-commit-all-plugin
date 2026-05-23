@@ -17,11 +17,12 @@ Compact standing AI instruction files without changing the current policy.
     - `.agents/prompts/*.md`
     - `.agents/skills/*/SKILL.md`
     - `docs/DEVELOPMENT_LIFECYCLE.md`
+  - `docs/WORKING_WITH_AI.md`
 
 ## Output
 
 Look for duplicate or overlapping rules, guidance in the wrong owner file, non-current references, broken anchors, verbose examples, and prose that does not describe current guidance.
-Keep current rules, move guidance to the single best owner, replace duplicates with short cross-references, and do not touch archive content.
+Keep current rules, move guidance to the single best owner, replace duplicates with short cross-references, keep human-facing docs focused on request examples instead of AI-facing execution rules, and do not touch archive content.
 If ownership is unclear, flag the item instead of deleting it.
 
 Summarize changed files, guidance moved, references fixed, and flagged-but-unchanged items.

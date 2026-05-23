@@ -68,8 +68,7 @@ State constraints that would change implementation, validation, or coordination:
 - Three-section `AI | Commit | Push` behavior or styling constraints.
 - Plugin ID, package, vendor, license, Marketplace, signing, or CI constraints.
 - Manual sandbox validation scope, especially AI Assistant, Git staging area, commit-only, commit-and-push, and push behavior.
-- Delegation preference: optional delegation, read-only sidecars only, disjoint write scopes, or no delegation.
-- Context protection: `Use subagents/delegation as needed to avoid context compaction.`
+- Delegation and context preference: optional delegation, read-only sidecars only, disjoint write scopes, no delegation, or `Use subagents/delegation as needed to avoid context compaction.`
 - Environment or tool limits: no subagents, no network, no browser tools, read-only filesystem, unavailable validation tools, locked files, or commands that must not be run.
 
 ## Development Flow
@@ -171,23 +170,7 @@ Constraints:
 Validation expected:
 ```
 
-For delegated one-off work, name only the boundaries that matter:
-
-```text
-Goal:
-Read first:
-Forbidden inputs:
-Write scope:
-Escalate if:
-Stop if:
-Expected output:
-```
-
-Example:
-
-```text
-Use read-only sidecars for exploration and review. Keep writes in <files or dirs>. Stop if scope expands.
-```
+For delegated one-off work, name only the boundaries that matter: goal, read-first context, forbidden inputs if any, write scope, escalation or stop conditions, and expected output.
 
 ### 7. Validate
 

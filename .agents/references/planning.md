@@ -113,7 +113,7 @@ Keep ordinary task packets inline in the parent plan. Use child packet files onl
 
 Keep the parent plan focused on approval, readiness, dependencies, execution graph, packet index, and compact task result summaries. Do not paste raw test output, raw worker transcripts, or bulky run logs into the plan.
 
-When delegation is unavailable, not permitted, or not useful enough to justify coordination overhead, the active agent may execute the assigned task packet in local packet mode. Local packet mode preserves packet-approved context, escalation triggers, write scope, validation, stop conditions, and result-summary requirements; it must report that no fresh worker was used.
+When delegation is unavailable, not permitted, or not useful enough to justify coordination overhead, use local packet mode as defined in `.agents/references/orchestration.md`.
 
 ## Before Implementation
 
