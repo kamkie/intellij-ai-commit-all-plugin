@@ -1,76 +1,168 @@
 # Development Lifecycle
 
-Use this lifecycle for changes that are larger than a direct documentation edit. Direct one-off work can use the same gates with a shorter loop. Delegation is optional when the environment supports it; current no-delegation instructions and tool limits take precedence.
+Use this lifecycle for larger repository changes. Small direct requests can use the same gates with a shorter loop.
 
-## 1. Frame The Work
+`docs/WORKING_WITH_AI.md` gives humans request examples and prompt shortcuts. It is not part of the normal agent read path. AI-facing execution mechanics live in `.agents/references/execution.md`, `.agents/references/planning.md`, and `.agents/references/orchestration.md`.
 
-- Identify the user-facing behavior, repository artifact, or workflow being changed.
-- Check `docs/decisions/OPEN_QUESTIONS.md` for decisions that block the work.
-- Use `TASKS.md` for backlog scope, not as proof that a decision has been made.
-- Follow `docs/decisions/README.md` for ADR requirements, project decisions, and repository rule changes.
+## Core Rules
 
-## 2. Plan When Needed
+- Keep context task-shaped. Start from `AGENTS.md`, then load only the specific owner documents needed for the current stage.
+- Choose the path early: direct one-off, bug triage, design, proposal, ADR, plan, approved-plan execution, release, or closeout.
+- Use direct one-off work when the change is narrow, the intended behavior is already decided, and no gate is triggered.
+- Stop for an ADR when work chooses or changes durable project direction, repository rules, compatibility policy, validation expectations, user-facing behavior, or maintenance policy.
+- Stop for a plan when work needs sequencing, task packets, disjoint write scopes, broader validation coordination, risky VCS/commit/push/AI/release/compatibility changes, or unresolved choices.
+- Use proposals for findings, duplication analysis, simplification options, and maintainer triage before choosing a direction.
+- Match validation to the risk and report skipped checks with a concrete reason.
+- Commit only when the user asks or an approved plan requires it.
 
-Create a plan in `.agents/plans/` when the work introduces new intended behavior, spans multiple areas, affects risky VCS, commit, push, AI generation, release, or compatibility behavior, depends on unresolved technical choices, or needs explicit task coordination.
+## 1. Intake
 
-When the same request clearly requires both an ADR and a later plan, draft the proposed ADR and companion draft plan together, then stop. The companion plan stays `Status: Draft` and blocked until ADR acceptance and later explicit plan approval.
+Clarify what kind of work is being requested before loading broad context.
 
-After creating or updating a required plan, stop for user review. Implementation may start only after explicit user approval, `Status: Approved`, `Approved by:`, `Approved at:`, and a matching status-history entry are recorded.
+Identify:
 
-Use `docs/proposals/` before planning when the task is to collect findings, duplications, simplifications, or improvement options for maintainer triage without immediate implementation.
+- The outcome or behavior being changed.
+- Stable refs, such as `T-<AREA>-NNN`, `adr-NNNN`, `PLAN-<slug>`, `PROP-<slug>`, a prompt filename, or a concrete file path.
+- The intended boundary: analysis, design, proposal, ADR, plan, implementation, validation, review, commit, or release.
+- Constraints that affect execution, such as no delegation, read-only review, no commits, no network, specific validation, manual sandbox scope, or exact write scope.
 
-Small docs-only changes do not need a plan. Direct one-off work does not need a plan when it stays narrow, the intended outcome is already decided by an accepted ADR, specification, owner document, or exact task ref, and no ADR, missing decision, risky workflow, or multi-step coordination gate is triggered. Delegating a one-off task does not by itself require a plan.
+For bug reports, first classify observed behavior, expected behavior, triggering action, affected workflow, missing information, and likely owner area. Use `bug-report-triage.md` when a report needs classification before a fix.
 
-Use `.agents/references/planning.md` for required plan shape, readiness, approval, status history, worker metadata, execution graph, and task-packet shape. Use `.agents/references/orchestration.md` for delegation and worker coordination rules. Use `.agents/references/execution.md` for per-task implementation and commit rules.
+For screenshots, concept images, or UI drafts, record what state is shown and what feedback is wanted before turning the result into an ADR, plan, or implementation request.
 
-The later release workflow takes over after implementation tasks and owns whole-release review, broader manual checks and tests, documentation update passes, and release artifact preparation.
+## 2. Orient
 
-## 3. Implement
+Use orientation when the next safe action is unclear, the worktree may be dirty, or active artifacts may affect the work.
 
+Check only what is needed:
+
+- Worktree status and existing user edits.
+- Active task, ADR, proposal, plan, or open-question refs named by the request.
+- Owner docs for the artifact or behavior being changed.
+- Relevant prompt or skill only when the request names it or the stage calls for it.
+
+Use `repository-state-snapshot.md` for a broad status report. Do not use orientation as a reason to load every guidance file.
+
+## 3. Explore Before Deciding
+
+Use the lightest pre-implementation artifact that fits the uncertainty.
+
+Use design when visual direction, UI state coverage, icons, graphics, or interaction variants need review before production implementation. `design-draft-session.md` owns bounded design-only sessions.
+
+Use proposals when the right answer is not yet selected and the maintainer needs findings, options, duplicate analysis, simplification opportunities, or tradeoffs. Keep proposal findings advisory until accepted through an ADR, plan, task, or direct request.
+
+Use backlog triage when `TASKS.md`, `TASKS_ARCHIVE.md`, or open questions need stale, blocked, duplicate, or misplaced work reviewed.
+
+Use compatibility, CI, IDE-log, manual-sandbox, or toolchain prompts when the question is narrow enough for those prompt recipes and not substantial enough to become a skill or plan.
+
+## 4. Decide
+
+Record durable decisions before implementation changes governed behavior.
+
+Follow `docs/decisions/README.md` when a change affects project direction, repository rules, compatibility, validation expectations, user-facing behavior, or maintenance policy.
+
+When an ADR is required:
+
+- Draft the ADR and stop.
+- If the same request clearly requires a later implementation plan, draft the proposed ADR and companion draft plan together, then stop.
+- Keep companion plans `Status: Draft` until the ADR is accepted and the plan is separately approved.
+- Continue only after the user explicitly accepts the ADR.
+
+Use `adr-impact-check.md` when it is unclear whether a request needs an ADR, plan, task update, open question, or documentation update.
+
+## 5. Plan
+
+Plan before implementation when the work is too broad or risky for direct one-off execution.
+
+Create or update a plan in `.agents/plans/` when work:
+
+- Introduces new intended plugin behavior or changes behavior not already decided.
+- Touches multiple areas, such as Gradle, plugin metadata, Kotlin code, tests, and docs.
+- Affects commit selection, AI message generation, commit execution, push behavior, release, or compatibility.
+- Depends on unresolved user input or technical choices.
+- Needs sequencing, task packets, disjoint write scopes, worker coordination, or broader validation.
+
+A plan must remain unimplemented until explicit user approval is recorded. Before execution starts, confirm `Status: Approved`, `Approved by:`, `Approved at:`, status history, answered questions, required ADR acceptance, `Workers:` metadata, task packets when needed, and `## Execution Graph`.
+
+Small documentation cleanup and narrow implementation of already-decided behavior can stay on the direct one-off path when no gate is triggered.
+
+## 6. Implement
+
+Implement only after ADR and plan gates are clear.
+
+For direct one-off work:
+
+- Use the owner artifact and smallest relevant read set.
 - Keep the change scoped to the requested behavior.
-- Prefer existing IntelliJ Platform, Gradle, and Kotlin conventions.
-- Update docs before or alongside behavior changes.
-- For direct one-off work, use the smallest owner context that can safely complete the request after ADR and plan gates are cleared. If the current thread is already large or the request is likely to trigger compaction, use a fresh delegated worker or read-only sidecar before loading broad context.
-- For delegated one-off work, the main agent remains responsible for the final diff, validation evidence, review risks, and handoff. Write workers need explicit disjoint write scopes and compact briefs; review sidecars are read-only by default and may return compact summaries.
-- For approved plan execution, implement only after explicit approval is recorded. Fresh task workers should follow the packet context budget, validation expectations, escalation triggers, and write scope.
-- Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; avoid unrelated operations work outside that scope.
-- If a new question, missing decision, or unsafe assumption appears during planned implementation, follow the stop-and-update rules in `.agents/references/planning.md`.
+- Update specs, README, support docs, tasks, or AI guidance before or alongside behavior changes when those artifacts are affected.
+- Escalate to ADR, plan, open question, or proposal when a new decision, missing input, or unsafe assumption appears.
 
-## 4. Validate
+For delegated one-off work:
 
-Choose validation from `.agents/references/testing.md`.
+- Use delegation when it reduces context pressure or enables focused review, validation, or exploration.
+- Keep read-only sidecars read-only.
+- Give write workers explicit disjoint write scopes and compact briefs.
+- Keep the main agent responsible for final integration, diff review, validation evidence, risk reporting, and commit decisions.
 
-For documentation-only changes, verify content, links, paths, and consistency with the repository's current state.
+For approved-plan work:
 
-For code changes, prefer targeted build and sandbox checks before broader compatibility checks.
+- Treat each task packet as the task boundary.
+- Use fresh worker context per task when the environment supports delegation.
+- Follow packet-approved context, write scope, dependencies, validation, escalation triggers, and stop conditions.
+- Commit each completed plan task before starting the next task when commits are allowed and required by the approved plan.
 
-## 5. Review
+## 7. Validate
 
-Use `.agents/references/reviews.md` before handing off.
+Choose validation from `.agents/references/testing.md` based on the diff and risk.
 
-Focus on:
+Common validation levels:
 
-- Unintended commit or push behavior.
-- AI Assistant integration failure paths.
-- IntelliJ API compatibility.
-- Missing validation evidence.
+- Documentation-only changes: docs validation, agent-artifact validation when `.agents/` artifacts changed, link/path/ref checks, and `git diff --check`.
+- Kotlin or Gradle changes: formatting, focused tests, and relevant build tasks.
+- Plugin behavior changes: focused tests plus packaging, descriptor, compatibility, or sandbox checks as risk requires.
+- Commit, push, AI Assistant, staging, changelist, or multi-root changes: targeted tests plus manual sandbox coverage when automation is insufficient.
+- Release changes: release-readiness validation from `.agents/references/releases.md`.
+
+Use `ci-failure-triage.md`, `ide-log-triage.md`, or `manual-sandbox-validation.md` when validation failures, logs, or manual scenarios need focused triage.
+
+## 8. Review And Close Out
+
+Review before handoff, before task completion, and before commit.
+
+Check for:
+
+- Bugs, regressions, compatibility issues, missing tests, and missing validation.
+- Commit selection, AI generation, commit execution, push behavior, staging, changelist, and multi-root risks.
 - Documentation that implies unsupported or unimplemented behavior.
-- Delegated work that lacks final orchestrator review, has unclear write scopes, ignores a no-delegation instruction, or exceeds the available environment and tool limits.
+- Drift between implementation, specs, README, support docs, tasks, plans, ADRs, prompts, skills, and reference guidance.
+- Delegated work with unclear write scope, missing worker evidence, or unreconciled review findings.
 
-Review-only sidecar delegation may be requested when the environment supports it. Keep that sidecar read-only, give it the files or diff to inspect, and reconcile its findings before handoff.
+Use `change-closeout.md` when a completed ordinary change needs handoff or commit readiness checked without running the release-readiness flow.
 
-## 6. Handoff
+## 9. Commit
 
-Report:
+Commit only when the user asks or an approved plan requires it.
 
-- Files changed.
-- Validation run.
-- Validation not run and why.
-- Remaining open questions or risks.
-- For delegated work, compact worker results, blockers, review risks, and handoff notes.
+Before committing:
 
-## 7. Release Preparation
+- Confirm the diff matches the requested scope.
+- Confirm validation and review evidence are current.
+- Confirm task, plan, ADR, docs, prompt, skill, changelog, or support updates are complete or explicitly not applicable.
+- Preserve unrelated user changes.
 
-Release preparation starts after implementation work is complete and integrated on `main`, or when the user explicitly requests release work.
+Use `.gitmessage` and `.agents/references/execution.md` for commit-message rules, validation trailers, project metadata, and multi-agent attribution.
 
-Use `.agents/references/releases.md` for release sequencing. The release orchestrator owns `CHANGELOG.md` updates, checks whether `SUPPORT.md` still matches the supported scope, runs the broader release validation, and prepares release artifacts.
+## 10. Release
+
+Release preparation starts after implementation is complete and integrated, or when the user explicitly requests release work.
+
+Use `.agents/references/releases.md` and `release-readiness.md` for release sequencing.
+
+The release pass owns:
+
+- Changelog readiness for public plugin-facing changes.
+- Support policy alignment.
+- Packaging, signing, CI, tags, Marketplace readiness, and compatibility checks.
+- Release blockers from tasks, open questions, ADR implementation gaps, proposal implementation gaps, validation failures, or known risks.
+
+Do not publish, sign, tag, or push a release unless the user explicitly asks and required prerequisites are satisfied.

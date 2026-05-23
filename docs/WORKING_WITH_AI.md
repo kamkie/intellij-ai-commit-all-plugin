@@ -25,13 +25,15 @@ Validation expected:
 
 For bug reports, include what happened, what you expected, the action that triggered it, relevant refs or file/log paths, and any validation already run.
 
-Prompt: `bug-report-triage.md`.
+Use `bug-report-triage.md` when you want classification before a fix.
 
 For screenshots or concept images, include the file path, what state it shows, and what feedback you want.
 
 ## Common Controls
 
 Use these short phrases to steer the session:
+
+When naming a prompt, name the file; do not paste the prompt contents.
 
 - `Do not delegate this work. Use only the current agent session.`
 - `Use read-only sidecars only.`
@@ -71,7 +73,7 @@ State constraints that would change implementation, validation, or coordination:
 
 ## Development Flow
 
-Most work fits one of these stages. Name the stage when it matters.
+For larger work, use these stages to name where you are in the lifecycle.
 
 ### 1. Orient
 
@@ -81,7 +83,7 @@ Understand the current repository state before choosing work.
 Summarize the current repository state. Include worktree status, active plans, open questions, notable tasks, and the next 1-3 recommended actions. Do not edit files.
 ```
 
-Prompt: `repository-state-snapshot.md`.
+Use `repository-state-snapshot.md` for this.
 
 ### 2. Design
 
@@ -97,7 +99,7 @@ Transition:
 Design pass is done. Turn the selected option into the next required ADR, plan, or implementation request.
 ```
 
-Prompt: `design-draft-session.md`.
+Use `design-draft-session.md` for this.
 
 ### 3. Propose
 
@@ -113,7 +115,7 @@ Transition:
 I accept finding <id>. Turn it into the next required ADR, plan, or direct task.
 ```
 
-Prompts: `repository-quality-audit.md`, `proposal-consolidation.md`, `compact-ai-guidance.md`.
+Useful prompts: `repository-quality-audit.md`, `proposal-consolidation.md`, `compact-ai-guidance.md`.
 
 ### 4. Decide
 
@@ -135,7 +137,7 @@ Transition:
 Turn accepted adr-NNNN into a draft implementation plan.
 ```
 
-Prompt: `adr-impact-check.md`.
+Use `adr-impact-check.md` for this.
 
 ### 5. Plan
 
@@ -168,7 +170,7 @@ Constraints:
 Validation expected:
 ```
 
-For delegated one-off writes, use a compact human brief:
+For delegated one-off work, name only the boundaries that matter:
 
 ```text
 Goal:
@@ -221,16 +223,16 @@ Review focuses:
 - Documentation that implies unsupported behavior.
 - Read-only sidecar review for a second pass without edits.
 
-Prompts: `repository-quality-audit.md`, `plugin-compatibility-sweep.md`, `ci-failure-triage.md`.
+Useful prompts: `repository-quality-audit.md`, `plugin-compatibility-sweep.md`, `ci-failure-triage.md`.
 
-For a final handoff check before committing or stopping, use `change-closeout.md`.
+Use `change-closeout.md` for a final handoff check before committing or stopping.
 
 ### 9. Commit
 
 Ask for a commit explicitly when you want one. Approved plan execution may already require per-task commits.
 
 ```text
-Commit the completed work.
+Commit the completed work after validation.
 ```
 
 Expect a Conventional Commit message with the metadata trailer block defined in [.gitmessage](../.gitmessage). For approved plans, expect plan status and validation evidence to be current before each task commit.
@@ -243,7 +245,7 @@ Use release requests after implementation is integrated and validation evidence 
 Check release readiness for <version or boundary>. Include changelog, support, package, signing, CI, tag, and Marketplace readiness.
 ```
 
-Prompt: `release-readiness.md`.
+Use `release-readiness.md` for this.
 
 ## Privacy And Logs
 
