@@ -30,7 +30,7 @@ For very small requests, a task ID, filename, prompt name, or concrete bug repor
 
 ## Common Request Patterns
 
-Use these patterns to set the amount of coordination you want. Delegation is optional, not required. If you want one agent only, say: `Do not delegate this work. Use only the current agent session.` Environment and tool limits still apply; if subagents, shell access, network access, browser tools, or validation tools are unavailable, the agent should state the limit and use the safest supported path.
+Use these patterns to set the amount of coordination you want. Delegation is optional, not required. If you want one agent only, say: `Do not delegate this work. Use only the current agent session.` You can also ask the agent to use subagents when estimated task size, current thread context, parallel review, or validation work makes that useful. Environment and tool limits still apply; if subagents, shell access, network access, browser tools, or validation tools are unavailable, the agent should state the limit and use the safest supported path.
 
 For direct one-off work, keep the request narrow and name the expected proof:
 
@@ -54,7 +54,7 @@ Constraints:
 Validation expected:
 ```
 
-Use this when focused sidecar exploration, validation, review, or disjoint edits can help. Delegation does not bypass ADR gates, plan gates, validation requirements, or the main agent's final review.
+Use this when focused sidecar exploration, validation, review, or disjoint edits can help, especially when the task is context-heavy or the main thread is already carrying substantial context. Delegation does not bypass ADR gates, plan gates, validation requirements, or the main agent's final review.
 
 For approved plan execution, name the approved plan and the specific task packet:
 
