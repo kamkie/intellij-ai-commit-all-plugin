@@ -36,6 +36,32 @@ Use these short phrases to steer the session:
 - `Proceed as a direct one-off unless a gate triggers.`
 - `Stop and ask if this needs a new ADR or plan.`
 
+## Refs To Name
+
+Name refs or files when they are relevant:
+
+- `T-<AREA>-NNN` for backlog tasks in `TASKS.md` or `TASKS_ARCHIVE.md`.
+- `adr-NNNN` for decisions in `docs/decisions/`.
+- `PLAN-<slug>` for implementation plans in `.agents/plans/`.
+- `PROP-<slug>` for proposals in `docs/proposals/`.
+- Prompt filenames such as `backlog-triage.md` for reusable repository prompt recipes.
+- Concrete files when the request is intentionally narrow.
+
+## Constraints To State
+
+State constraints that would change implementation, validation, or coordination:
+
+- Target IntelliJ Platform version, currently the 2026.1 line.
+- Target JetBrains IDEs, currently IDEs with the VCS Commit tool window.
+- Git-only behavior and multiple Git root expectations.
+- JetBrains AI Assistant dependency and whether proprietary APIs may be used directly. The default is no.
+- Three-section `AI | Commit | Push` behavior or styling constraints.
+- Plugin ID, package, vendor, license, Marketplace, signing, or CI constraints.
+- Manual sandbox validation scope, especially AI Assistant, Git staging area, commit-only, commit-and-push, and push behavior.
+- Delegation preference: optional delegation, read-only sidecars only, disjoint write scopes, or no delegation.
+- Context protection: `Use subagents/delegation as needed to avoid context compaction.`
+- Environment or tool limits: no subagents, no network, no browser tools, read-only filesystem, unavailable validation tools, locked files, or commands that must not be run.
+
 ## Development Flow
 
 Most work fits one of these stages. Name the stage when it matters.
@@ -209,32 +235,6 @@ Check release readiness for <version or boundary>. Include changelog, support, p
 ```
 
 Useful prompt recipe: `release-readiness.md`.
-
-## Refs To Name
-
-Name refs or files when they are relevant:
-
-- `T-<AREA>-NNN` for backlog tasks in `TASKS.md` or `TASKS_ARCHIVE.md`.
-- `adr-NNNN` for decisions in `docs/decisions/`.
-- `PLAN-<slug>` for implementation plans in `.agents/plans/`.
-- `PROP-<slug>` for proposals in `docs/proposals/`.
-- Prompt filenames such as `backlog-triage.md` for reusable repository prompt recipes.
-- Concrete files when the request is intentionally narrow.
-
-## Constraints To State
-
-State constraints that would change implementation, validation, or coordination:
-
-- Target IntelliJ Platform version, currently the 2026.1 line.
-- Target JetBrains IDEs, currently IDEs with the VCS Commit tool window.
-- Git-only behavior and multiple Git root expectations.
-- JetBrains AI Assistant dependency and whether proprietary APIs may be used directly. The default is no.
-- Three-section `AI | Commit | Push` behavior or styling constraints.
-- Plugin ID, package, vendor, license, Marketplace, signing, or CI constraints.
-- Manual sandbox validation scope, especially AI Assistant, Git staging area, commit-only, commit-and-push, and push behavior.
-- Delegation preference: optional delegation, read-only sidecars only, disjoint write scopes, or no delegation.
-- Context protection: `Use subagents/delegation as needed to avoid context compaction.`
-- Environment or tool limits: no subagents, no network, no browser tools, read-only filesystem, unavailable validation tools, locked files, or commands that must not be run.
 
 ## What Not To Include
 
