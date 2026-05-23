@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-ai-execution-orchestration-optimization
 
-Status: Draft
+Status: Approved
 
 Workers: 2 (parallel, tasks: T2-plan-artifacts, T4-human-docs)
 
@@ -10,13 +10,16 @@ Filename: `.agents/plans/PLAN-ai-execution-orchestration-optimization.md`
 
 ## Readiness
 
-- Plan readiness: Ready for maintainer review; implementation blocked until explicit plan approval.
+- Plan readiness: Approved for implementation.
+- Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Approved at: 2026-05-23T17:07:16+02:00
 - Open questions: None.
 - Implementation progress: Not started.
 
 ## Status History
 
 - 2026-05-23T16:58:06+02:00: none -> Draft by OpenAI Codex <codex@openai.com>; plan created after ADR 0073 acceptance.
+- 2026-05-23T17:07:16+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
 
 ## Goal
 

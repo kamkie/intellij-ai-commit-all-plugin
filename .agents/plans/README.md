@@ -20,7 +20,7 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- `PLAN-ai-execution-orchestration-optimization` - AI Execution Orchestration Optimization ([PLAN-ai-execution-orchestration-optimization.md](PLAN-ai-execution-orchestration-optimization.md)), draft as of 2026-05-23.
+- `PLAN-ai-execution-orchestration-optimization` - AI Execution Orchestration Optimization ([PLAN-ai-execution-orchestration-optimization.md](PLAN-ai-execution-orchestration-optimization.md)), approved as of 2026-05-23.
 
 ## Archived Plans
 
