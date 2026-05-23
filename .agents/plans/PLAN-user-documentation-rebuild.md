@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-user-documentation-rebuild
 
-Status: Draft
+Status: Approved
 
 Workers: 3 (parallel, tasks: T2-readme-user-guide, T3-troubleshooting-support, T4-specification-and-retirement)
 
@@ -10,13 +10,16 @@ Filename: `.agents/plans/PLAN-user-documentation-rebuild.md`
 
 ## Readiness
 
-- Plan readiness: Draft; implementation is blocked until `adr-0076-separate-user-docs-intent-specification-and-validation.md` is accepted and this plan is explicitly approved.
-- Open questions: None currently; approval must confirm the ADR and this plan.
+- Plan readiness: Approved; implementation may start in a separate execution pass.
+- Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Approved at: 2026-05-23T21:12:25+02:00
+- Open questions: None.
 - Implementation progress: Not started.
 
 ## Status History
 
 - 2026-05-23T20:52:54+02:00: none -> Draft by OpenAI Codex <codex@openai.com>; companion plan created for proposed ADR 0076.
+- 2026-05-23T21:12:25+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded for ADR 0076 and this companion plan.
 
 ## Goal
 
