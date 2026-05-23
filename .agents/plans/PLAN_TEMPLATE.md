@@ -127,8 +127,8 @@ Result summary:
 ## Execution Model
 
 - `Workers: 1` for sequential execution, or `Workers: N (parallel, tasks: <task refs or labels>)` when the approved plan marks those tasks independent with disjoint write scopes.
-- For multi-task plans, use an orchestrator plus one fresh task worker per named task when agent delegation is available.
-- If delegation is unavailable, not permitted, or not worth the coordination cost, use local packet mode: the active agent executes the assigned packet locally while preserving packet-approved context, escalation triggers, write scope, validation, stop conditions, and result-summary requirements. Record that no fresh worker was used and why.
+- For multi-task plans, use an orchestrator plus one fresh sub-agent task worker per named task.
+- If sub-agents are unavailable, unauthorized by the active tool contract, or explicitly forbidden for approved-plan execution, stop before implementation and report the blocker instead of running the task locally.
 - Follow `.agents/references/orchestration.md` for worker lanes, packet dispatch, parallel synchronization, structured worker events, result summaries, branch topology, and plan or changelog handoffs.
 - Dispatch the plan header or readiness summary, execution graph, assigned task packet, and explicitly named governing artifacts or source files. Do not dispatch the full approved plan by default.
 - Record any task that is safe to run in parallel only when it has a disjoint write scope.

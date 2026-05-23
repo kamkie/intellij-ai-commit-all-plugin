@@ -103,7 +103,7 @@ Parallel plans use:
 Workers: N (parallel, tasks: <task refs or labels>)
 ```
 
-`N` is the maximum intended active worker count. Parallel worker counts are valid only when the plan also marks the referenced tasks independent and assigns disjoint write scopes under ADR 0026 and the orchestration rules in `.agents/references/orchestration.md`.
+`N` is the maximum intended active worker count. Parallel worker counts are valid only when the plan also marks the referenced tasks independent and assigns disjoint write scopes under ADR 0080 and the orchestration rules in `.agents/references/orchestration.md`.
 
 Every plan must also include an `## Execution Graph` section with a fenced Mermaid graph. Use `O<n>` labels for orchestrator nodes and `W<n>` labels for worker nodes. Each worker node must include its planned agent mode: `code`, `fast-code`, `setup`, `advanced-chat`, `run-verify`, `niche`, or `chat`. The graph must encode task assignment by plan task id or task label, and it must show sequence, wave, or handoff ordering. Parallel waves in the graph must match `Workers:` and the disjoint write scopes described in the plan.
 
@@ -131,4 +131,4 @@ Use inline task packets for ordinary plans. Use child packet files only when the
 
 The parent plan remains the source of approval, readiness, dependencies, execution graph, packet index, and compact task result summaries. Task result summaries should record worker id or lane, changed files or reviewed diff, validation evidence, blockers, review risks, and handoff notes. Do not paste raw test output, raw worker transcripts, or bulky run logs into the plan.
 
-If delegation is unavailable, not permitted, or not worth the coordination cost, use local packet mode from `.agents/references/orchestration.md`: the active agent executes the assigned packet locally while preserving the packet's context, escalation, write-scope, validation, stop-condition, and result-summary boundaries. The result summary must state that no fresh worker was used and why.
+Approved-plan task execution requires sub-agent workers under ADR 0080. If sub-agents are unavailable, unauthorized by the active tool contract, or explicitly forbidden for approved-plan execution, stop before implementation and report the blocker instead of running the task locally.

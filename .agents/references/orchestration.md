@@ -35,11 +35,13 @@ Use these lanes for approved plans and one-off delegated work:
 - `testing`: owns tests, fixtures, validation investigation, or failure triage. Testing workers may edit files only when the packet or brief grants an explicit write scope.
 - `review`: read-only by default. Review workers receive the task packet or brief, diff or files under review, relevant spec or ADR, and validation output.
 
-Use a fresh worker context for each approved-plan task when delegation is available and permitted. When delegation is unavailable, not permitted, or not worth the coordination cost, use local packet mode instead of abandoning packet boundaries.
+Use a fresh sub-agent worker context for each approved-plan task. If sub-agents are unavailable, unauthorized by the active tool contract, or explicitly forbidden for approved-plan execution, stop before implementation and report the blocker. Local packet mode is not an approved-plan execution fallback.
 
 ## Approved-Plan Workers
 
-For a multi-task plan with `Status: Approved`, use one orchestrator and one fresh task worker per plan task when the environment supports delegation.
+For a multi-task plan with `Status: Approved`, use one orchestrator and one fresh sub-agent task worker per plan task. The repository has standing maintainer approval for this delegation, so do not request separate per-task permission or treat presumed lack of approval as a blocker.
+
+Before changing implementation files for an approved plan, confirm sub-agent workers are available and authorized by the active tool contract. If they are not, refuse to execute the plan task, report the blocker, and leave implementation unstarted.
 
 Task packets are the dispatch contract. Dispatch the plan header or readiness summary, execution graph, assigned task packet, and explicitly named governing artifacts or source files. Do not dispatch the full approved plan by default.
 
@@ -49,9 +51,9 @@ Task workers return compact result summaries by default. The orchestrator update
 
 ## One-Off Delegation
 
-For direct one-off work, subagent delegation is allowed by default when the active environment and tool contract support it.
+For direct one-off work, sub-agent delegation is allowed by default when the active environment and tool contract support it. The repository has standing maintainer approval for sub-agent delegation, so presumed lack of approval is not a reason to keep work local.
 
-Do not request separate user opt-in before using sidecar agents or workers unless the current request, tool limits, active tool contract, or higher-priority instructions require it. If the active tool contract requires explicit delegation permission, either ask for that permission or keep the work local. Respect an explicit no-delegation instruction in the current request.
+Do not request separate user opt-in before using sidecar agents or workers unless the current request, tool limits, active tool contract, or higher-priority instructions require it. Respect an explicit no-delegation instruction in a direct one-off request.
 
 Check context pressure before starting substantive exploration or edits. Use a fresh worker or read-only sidecar when the current thread is already large, has recently compacted, or the task is likely to read enough files, plans, ADRs, logs, or validation output to trigger compaction. Do not keep that work in the main thread merely because it is a one-off request.
 
@@ -79,16 +81,16 @@ Use this shape:
 - Path: direct one-off, approved plan task, approved parallel wave, proposal, review, validation, or release.
 - Gates: ADR, plan approval, open questions, and stop conditions checked.
 - Context plan: read-first files or artifacts, escalation-only context, and context-pressure reason when relevant.
-- Delegation plan: local, local packet mode, read-only exploration/testing/review sidecar, write worker, or no delegation, with the reason.
+- Delegation plan: local, local packet mode for direct one-off work only, read-only exploration/testing/review sidecar, write worker, approved-plan sub-agent worker, or no delegation, with the reason.
 - Write scope: reserved files or directories, or `read-only`.
 - Validation plan: commands, review checks, manual checks, or skipped-check reason.
 - Current blocker status: none, or the blocker owner and stop condition.
 
 ## Local Packet Mode
 
-Local packet mode is the fallback for an approved-plan task packet or one-off brief when a fresh worker is unavailable, not authorized, or not useful enough to justify delegation overhead.
+Local packet mode is the fallback for a direct one-off brief when a fresh worker is unavailable, not authorized, or not useful enough to justify delegation overhead. It is not allowed for approved-plan task execution.
 
-In local packet mode, the active agent remains the orchestrator and executes the assigned packet or brief in the current session. Preserve the same task boundary:
+In local packet mode, the active agent remains the orchestrator and executes the assigned brief in the current session. Preserve the same task boundary:
 
 - Read only the packet or brief's `Read first` context before escalating.
 - Use the named escalation triggers before loading broader context.
@@ -96,7 +98,7 @@ In local packet mode, the active agent remains the orchestrator and executes the
 - Respect dependencies, sequence or wave constraints, validation or review checks, stop conditions, and expected output.
 - Return or record the same compact result evidence required from a worker.
 
-Local packet mode does not provide fresh-context isolation. Say in the handoff or result summary that no fresh worker was used, and state why: delegation was unavailable, not authorized, skipped by user instruction, or cheaper to execute locally.
+Local packet mode does not provide fresh-context isolation. For direct one-off work, say in the handoff or result summary that no fresh worker was used, and state why: delegation was unavailable, not authorized by the active tool contract, blocked by the current request, or cheaper to execute locally.
 
 Ask for delegation permission only when local packet execution would create material context or coordination risk, such as a broad read set, likely context compaction, independent sidecar questions, risky write scope, or a review need that should be isolated from implementation context.
 

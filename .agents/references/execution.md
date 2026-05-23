@@ -68,15 +68,18 @@ Do not create ad hoc memory files or parallel memory trees for this repository. 
 
 Before implementation starts from an approved plan, confirm the plan has `Status: Approved`, `Approved by:`, and `Approved at:` metadata, and that every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.
 
+Approved-plan task execution requires sub-agent workers under ADR 0080. If sub-agents are unavailable, unauthorized by the active tool contract, or explicitly forbidden for approved-plan execution, stop before implementation, report the blocker, and do not execute the plan task locally.
+
 For approved multi-task plans, treat each named task or approved parallel wave as its own execution unit:
 
 1. Use the assigned task packet as the task boundary.
-2. Load only packet-approved context unless an escalation trigger fires.
-3. Implement the task according to the direct execution loop where applicable.
-4. Run task-appropriate validation from `.agents/references/testing.md`.
-5. Self-review the task using `.agents/references/reviews.md`.
-6. Return or record compact result evidence as required by the packet and `.agents/references/orchestration.md`.
-7. Commit the completed task, or every completed task in the current approved wave, before starting the next dependent plan task or wave when commits are allowed in the environment.
+2. Dispatch the task to a fresh sub-agent worker using `.agents/references/orchestration.md`.
+3. Load only packet-approved context unless an escalation trigger fires.
+4. Implement the task according to the direct execution loop where applicable.
+5. Run task-appropriate validation from `.agents/references/testing.md`.
+6. Self-review the task using `.agents/references/reviews.md`.
+7. Return or record compact result evidence as required by the packet and `.agents/references/orchestration.md`.
+8. Commit the completed task, or every completed task in the current approved wave, before starting the next dependent plan task or wave when commits are allowed in the environment.
 
 Use `Project-Source: plan-task`, `Project-Plan:`, and `Project-Plan-Task:` commit metadata for approved plan-task commits.
 
@@ -85,8 +88,6 @@ Do not batch multiple plan tasks into one commit unless the approved plan or a l
 Per-task completion does not replace the later release workflow. Release preparation is expected to run after implementation tasks and should cover the full cross-task review, broader manual checks and tests, documentation updates, and release artifact preparation.
 
 Delegated approved-plan execution, worker lanes, packet dispatch, parallel waves, plan result summaries, and plan/changelog handoff rules are defined in `.agents/references/orchestration.md`.
-
-When delegation is unavailable, not permitted, or not worth the coordination cost, use local packet mode from `.agents/references/orchestration.md`.
 
 ## Task Completion Timing
 

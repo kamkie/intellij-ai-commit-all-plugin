@@ -58,7 +58,7 @@ When instructions overlap, apply this project-specific order:
 ## Working Rules
 
 - Use the smallest task-shaped context that can safely answer the request.
-- Before broad exploration or edits, check thread size and compaction risk. When the active environment and tool contract support delegation, and no higher-priority instruction or current no-delegation request forbids it, use delegated workers or read-only sidecars to avoid context compaction; otherwise keep context narrow and warn if compaction risk is high.
+- Before broad exploration or edits, check thread size and compaction risk. This repository has standing maintainer approval for sub-agent delegation; do not treat presumed lack of delegation approval as a reason to keep work local. When the active environment and tool contract support delegation, and no higher-priority instruction or current no-delegation request forbids it, use delegated workers or read-only sidecars to avoid context compaction; otherwise keep context narrow and warn if compaction risk is high.
 - Identify the behavior and governing artifact before editing.
 - Never bulk-load AI guidance by default. Start from this file, then read only the mapped owner docs needed for the current task; broaden only for explicit broad audits, cross-document consistency checks, or validation failures that require it.
 - For reusable operational lessons, follow `.agents/references/execution.md` Learning Capture before adding persistent guidance.
@@ -66,6 +66,7 @@ When instructions overlap, apply this project-specific order:
 - Follow `docs/decisions/README.md` for ADR requirements, project decisions, and repository rule changes.
 - When a requested change requires creating an ADR, create the ADR and stop. If the request clearly also requires a later implementation plan, create the proposed ADR and companion draft plan in the same step, then stop. Continue only after the user reviews and explicitly accepts the ADR; implementation from the plan still requires explicit plan approval.
 - When work needs an implementation plan, create or update the plan first and stop. Start implementation only after the user reviews and explicitly approves the plan.
+- Execute approved plan tasks in sub-agents. If sub-agents are unavailable, unauthorized by the active tool contract, or explicitly forbidden for approved-plan execution, stop before implementation and report the blocker instead of running the plan task locally.
 - For plugin behavior changes, use `docs/specification.md` as the requirements owner; add or update `REQ-` rows and traceability before or alongside implementation.
 - Update specs or docs before or alongside behavior changes when behavior changes.
 - Run validation that matches the diff and risk.

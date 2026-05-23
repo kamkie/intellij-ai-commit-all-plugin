@@ -23,7 +23,7 @@ Identify:
 - The outcome or behavior being changed.
 - Stable refs, such as `T-<AREA>-NNN`, `adr-NNNN`, `PLAN-<slug>`, `PROP-<slug>`, a prompt filename, or a concrete file path.
 - The intended boundary: analysis, design, proposal, ADR, plan, implementation, validation, review, commit, or release.
-- Constraints that affect execution, such as no delegation, read-only review, no commits, no network, specific validation, manual sandbox scope, or exact write scope.
+- Constraints that affect execution, such as direct one-off no-delegation, read-only review, no commits, no network, specific validation, manual sandbox scope, exact write scope, or unavailable sub-agents for approved-plan execution.
 
 For bug reports, first classify observed behavior, expected behavior, triggering action, affected workflow, missing information, and likely owner area. Use `bug-report-triage.md` when a report needs classification before a fix.
 

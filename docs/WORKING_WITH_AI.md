@@ -7,7 +7,7 @@ Use this guide when asking an AI agent to help with this repository. It is for h
 - Ask for the outcome you want, not a list of every file to inspect.
 - Prefer stable refs when you have them: `T-<AREA>-NNN`, `adr-NNNN`, `PLAN-<slug>`, `PROP-<slug>`, a prompt filename, or a concrete file path.
 - State the boundary: design-only, analysis-only, planning-only, implementation, validation, review, commit, or release.
-- State constraints that matter: no delegation, read-only review, no commits, exact write scope, no network, specific validation, or manual sandbox scope.
+- State constraints that matter: direct one-off no delegation, read-only review, no commits, exact write scope, no network, unavailable sub-agents, specific validation, or manual sandbox scope.
 - When behavior matters, include what must be true when the work is done.
 - Give approval explicitly when crossing a gate: accepting an ADR, approving a plan, or asking for plan execution.
 - Avoid broad context requests such as “read all docs” unless the task is a broad audit.
@@ -35,8 +35,8 @@ Use these short phrases to steer the session:
 
 When naming a prompt, name the file; do not paste the prompt contents.
 
-- `Do not delegate this work. Use only the current agent session.`
-- `Use read-only sidecars only.`
+- `Do not delegate this direct one-off work. Use only the current agent session.`
+- `Use read-only sidecars only for this direct one-off work.`
 - `Use read-only exploration sidecars for source-map or artifact lookup.`
 - `Use subagents/delegation as needed to avoid context compaction.`
 - `Do not commit.`
@@ -68,8 +68,8 @@ State constraints that would change implementation, validation, or coordination:
 - Three-section `AI | Commit | Push` behavior or styling constraints.
 - Plugin ID, package, vendor, license, Marketplace, signing, or CI constraints.
 - Manual sandbox validation scope, especially AI Assistant, Git staging area, commit-only, commit-and-push, and push behavior.
-- Delegation and context preference: optional delegation, read-only sidecars only, disjoint write scopes, no delegation, or `Use subagents/delegation as needed to avoid context compaction.`
-- Environment or tool limits: no subagents, no network, no browser tools, read-only filesystem, unavailable validation tools, locked files, or commands that must not be run.
+- Delegation and context preference for direct one-off work: optional delegation, read-only sidecars only, disjoint write scopes, no delegation, or `Use subagents/delegation as needed to avoid context compaction.`
+- Environment or tool limits: no subagents, no network, no browser tools, read-only filesystem, unavailable validation tools, locked files, or commands that must not be run. Approved-plan execution requires sub-agents; if sub-agents are unavailable or forbidden for plan execution, the agent should stop and report that blocker.
 
 ## Development Flow
 
@@ -152,6 +152,10 @@ Approval:
 ```text
 I approve PLAN-<slug>; execute it.
 ```
+
+Approved-plan execution runs task work in sub-agents. If sub-agents are not
+available or are forbidden for that request, expect the agent to stop before
+implementation and report the blocker.
 
 For small, already-decided behavior, ask for direct work instead:
 

@@ -63,7 +63,7 @@ A useful plan should include:
 - Include the `Plan-ID` ref in the plan filename for active and archived plans.
 - Include `Workers:` metadata near the plan status.
 - Keep `Plan-ID` stable when plan title, filename, status, or wording changes.
-- Include `## Execution Graph` in every plan. Sequential plans may use a compact graph; parallel plans must show waves that match `Workers:` and ADR 0026 disjoint write scopes.
+- Include `## Execution Graph` in every plan. Sequential plans may use a compact graph; parallel plans must show waves that match `Workers:` and ADR 0080 disjoint write scopes.
 - For approved multi-task plans, include `## Task Packets` with a packet for each worker-owned task, or link to child packet files when the long-plan split rule applies.
 - Use only canonical plan statuses from `.agents/plans/README.md`; `Closed` plans must include a `Close-Reason`.
 - Treat `Approved` as an explicit user approval state, not an agent-assumed readiness label.
@@ -80,6 +80,7 @@ A useful plan should include:
 - Do not duplicate the full backlog from `TASKS.md`.
 - Move unresolved user decisions to `docs/decisions/OPEN_QUESTIONS.md`.
 - Before implementation starts from an `Approved` plan, every plan question and required project decision must be answered, explicitly decided, or recorded as a documented assumption that the current user request allows.
+- Before implementation starts from an `Approved` plan, sub-agent workers must be available and authorized by the active tool contract. If they are not, approved-plan execution is blocked.
 - Follow `docs/decisions/README.md` for ADR requirements before recording project decisions or repository rule changes in a plan.
 - Update or delete stale plans when implementation makes them obsolete.
 - For multi-task plans, name tasks clearly enough to use in `Project-Plan-Task:` commit metadata.
@@ -113,7 +114,7 @@ Keep ordinary task packets inline in the parent plan. Use child packet files onl
 
 Keep the parent plan focused on approval, readiness, dependencies, execution graph, packet index, and compact task result summaries. Do not paste raw test output, raw worker transcripts, or bulky run logs into the plan.
 
-When delegation is unavailable, not permitted, or not useful enough to justify coordination overhead, use local packet mode as defined in `.agents/references/orchestration.md`.
+Local packet mode is not an approved-plan execution fallback. Approved-plan tasks must run in sub-agent workers as defined in `.agents/references/orchestration.md`.
 
 ## Before Implementation
 
@@ -124,6 +125,7 @@ Before editing from a plan:
 - Confirm `Approved at:` records the approval timestamp.
 - Confirm every required ADR is accepted, including any ADR that produced a companion draft plan.
 - Confirm every plan question and required decision is answered, decided, or explicitly assumed under the current request.
+- Confirm sub-agent workers are available and authorized by the active tool contract; otherwise stop before implementation and report the blocker.
 - Update the plan status to `In Progress` when implementation starts and keep `## Readiness` current.
 - Append the matching `Approved -> In Progress` entry to `## Status History` with the status-history actor selected by action source.
 - Identify files likely to change.

@@ -259,7 +259,7 @@ Reorder the direct one-off loop so route, gate, context-pressure, and delegation
 | Decision at | 2026-05-23T23:53:57+02:00 |
 | Priority    | 2                         |
 | Owner       |                           |
-| Updated     | 2026-05-23T23:53:57+02:00 |
+| Updated     | 2026-05-24T00:33:31+02:00 |
 
 ##### Context
 
@@ -280,11 +280,14 @@ Document local packet mode: the active agent remains the orchestrator but execut
 
 ##### Review Notes
 
-- none
+- Superseded for approved-plan task execution by ADR 0080; local packet mode now
+  applies only to direct one-off work.
 
 ##### Follow-Up
 
-- Artifact: Implemented as a fallback clarification in `.agents/references/orchestration.md`, `.agents/references/execution.md`, `.agents/references/planning.md`, `.agents/plans/README.md`, `.agents/plans/PLAN_TEMPLATE.md`, `docs/DEVELOPMENT_LIFECYCLE.md`, and `docs/WORKING_WITH_AI.md`.
+- Artifact: Originally implemented as a fallback clarification; ADR 0080 later
+  narrowed local packet mode to direct one-off work and requires sub-agent
+  workers for approved-plan task execution.
 - Validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, and `git diff --check`.
 
 ### Smaller / Stylistic Items
@@ -296,7 +299,7 @@ Document local packet mode: the active agent remains the orchestrator but execut
 ## Suggested Priority Order
 
 1. `S001` - done; context/delegation preflight now happens before optional broad context loading.
-2. `S002` - done; local packet mode now keeps packet discipline even without available or authorized subagents.
+2. `S002` - done; superseded for approved-plan task execution by ADR 0080, with local packet mode retained only for direct one-off work.
 3. `E001` - done; parallel-wave capability is reconciled with sequential task wording.
 4. `F001` - done; read-only exploration is now a worker lane.
 5. `F002` - done; the orchestrator decision capsule is documented for context-heavy or delegated work.

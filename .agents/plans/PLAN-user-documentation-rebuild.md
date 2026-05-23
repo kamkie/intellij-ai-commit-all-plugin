@@ -495,7 +495,7 @@ Result summary:
 ## Execution Model
 
 - Use a sequential setup task, then parallel documentation rewrite tasks with disjoint primary ownership, then a final integration task.
-- Use a fresh task worker per task when delegation is available.
+- Use a fresh task worker per task; after ADR 0080, approved-plan task execution requires sub-agent workers.
 - The orchestrator owns final link reconciliation, validation evidence, task status updates, and handoff.
 - Work stays on the current branch.
 
