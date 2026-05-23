@@ -39,6 +39,42 @@ If a request requires a new ADR or implementation plan, create or update the req
 
 Direct one-off worker results are summarized in chat. Do not create durable `.agents/runs/` logs.
 
+## Learning Capture
+
+Treat learning capture as an intake check, not a mandatory persistent write
+after every task. After task completion, validation failure, repeated retry, CI
+failure, or user correction, check whether the work produced reusable
+repository knowledge.
+
+Persist a lesson only when all of these are true:
+
+- The behavior was observed directly or reproduced.
+- The fix or workflow was validated.
+- The lesson is reusable beyond the current task.
+- The lesson contains no secrets, credentials, personal data, raw logs,
+  transient outage details, speculative explanation, one-off typo notes, or
+  temporary debugging noise.
+- The likely owner artifact has been checked for duplicates or overlapping
+  guidance.
+
+Choose the owner before editing:
+
+- Use `.agents/references/` for durable AI-agent workflow guidance.
+- Use `.agents/skills/` for reusable task-specific executable workflows.
+- Use `.agents/prompts/` for narrow reusable prompt recipes.
+- Use `.agents/plans/` or `TASKS.md` for active implementation sequencing.
+- Use `docs/proposals/` for advisory findings that need maintainer triage.
+- Use `docs/decisions/` for repository rule changes and accepted decisions.
+- Use handoff notes, validation reports, `TASKS.md`, or no persistent artifact
+  for temporary debugging observations unless they become reusable
+  troubleshooting guidance.
+
+Do not create `.ai/` memory files for this repository. If a lesson changes
+repository rules, create the ADR or proposal required by `AGENTS.md` and
+`docs/decisions/README.md`, then stop at the applicable gate. If a lesson is
+task-local, mention it briefly in the handoff instead of creating persistent
+documentation.
+
 ## Approved-Plan Task Loop
 
 Before implementation starts from an approved plan, confirm the plan has `Status: Approved`, `Approved by:`, and `Approved at:` metadata, and that every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.
