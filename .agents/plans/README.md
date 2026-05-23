@@ -14,7 +14,7 @@ This directory holds task-specific implementation plans for work that is too lar
 - For approved multi-task plans, define task packets for worker-owned tasks. Use inline packets by default.
 - Include an `## Execution Graph` section with a fenced Mermaid graph. Label orchestrators as `O<n>` and workers as `W<n>`, include planned worker modes, and encode task assignment and ordering.
 - Link unresolved user input back to `docs/decisions/OPEN_QUESTIONS.md`, and move accepted project decisions or repository rule changes to `docs/decisions/`.
-- Follow `.agents/references/planning.md` and `.agents/references/execution.md` for plan readiness, per-task commits, and orchestrator or task-worker execution.
+- Follow `.agents/references/planning.md` for plan readiness and task-packet shape, `.agents/references/orchestration.md` for worker orchestration, packet dispatch, parallel synchronization, worker events, and result summaries, and `.agents/references/execution.md` for approved-plan task execution and per-task commits.
 - Creating or updating a plan is not approval to implement. Implementation may start only after explicit user review and approval, recorded in `Approved by:` when the plan becomes approved.
 - Move closed plans to `archive/` only after the plan no longer needs active execution or release-preparation updates. Preserve the `Plan-ID`, filename, and close reason.
 
@@ -100,7 +100,7 @@ Parallel plans use:
 Workers: N (parallel, tasks: <task ids or labels>)
 ```
 
-`N` is the maximum intended active worker count. Parallel worker counts are valid only when the plan also marks the referenced tasks independent and assigns disjoint write scopes under ADR 0026.
+`N` is the maximum intended active worker count. Parallel worker counts are valid only when the plan also marks the referenced tasks independent and assigns disjoint write scopes under ADR 0026 and the orchestration rules in `.agents/references/orchestration.md`.
 
 Every plan must also include an `## Execution Graph` section with a fenced Mermaid graph. Use `O<n>` labels for orchestrator nodes and `W<n>` labels for worker nodes. Each worker node must include its planned agent mode: `code`, `fast-code`, `setup`, `advanced-chat`, `run-verify`, `niche`, or `chat`. The graph must encode task assignment by plan task id or stable task label, and it must show sequence, wave, or handoff ordering. Parallel waves in the graph must match `Workers:` and the disjoint write scopes described in the plan.
 
@@ -110,13 +110,17 @@ Approved multi-task plans must include task packets for worker-owned tasks. A ta
 
 - Task id and stable task label.
 - Worker lane: `implementation`, `testing`, or `review`.
+- Required skills.
 - Goal.
-- Allowed inputs and forbidden inputs.
+- Initial context budget.
+- Allowed inputs, including the exact plan summary, governing artifacts, source files, specs, ADRs, or validation output the worker may read.
+- Forbidden inputs, especially unrelated archived plans, unrelated prior worker chat, and implementation evidence from other packets.
 - Write scope, or `read-only` for review packets.
 - Dependencies and sequence or wave constraints.
 - Validation or review checks.
+- Escalation triggers.
 - Stop conditions.
-- Expected output.
+- Expected output, including changed files or reviewed diff, validation evidence, blockers, review risks, and handoff notes.
 
 Use inline task packets for ordinary plans. Use child packet files only when the parent plan would become difficult to scan, such as plans with more than six worker-owned tasks, multiple parallel waves, or expected parent-plan length above roughly 200 lines after packeting. Child packet files must preserve stable task packet ids and stay linked from the parent plan.
 

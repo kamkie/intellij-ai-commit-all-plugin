@@ -56,13 +56,22 @@ Task id: T1-<stable-task-label>
 
 Lane: implementation
 
+Required skills:
+
+- List required repository skills, or `none`.
+
 Goal:
 
 - State the exact task outcome.
 
+Initial context budget:
+
+- Read only this packet's initial context unless an escalation trigger fires.
+
 Allowed inputs:
 
 - `AGENTS.md`
+- `.agents/references/orchestration.md`
 - `.agents/references/execution.md`
 - `.agents/references/testing.md`
 - Plan header, readiness summary, execution graph, and this task packet.
@@ -84,7 +93,11 @@ Dependencies:
 
 Validation:
 
-- List task-specific commands, review checks, or manual checks.
+- List task-specific commands, review checks, manual checks, and self-review expectations.
+
+Escalation triggers:
+
+- List the conditions that allow the worker to load additional context, such as a missing decision, source conflict, validation blocker, or need to align with another owner guide.
 
 Stop conditions:
 
@@ -94,7 +107,9 @@ Expected output:
 
 - Changed files or reviewed diff.
 - Validation evidence.
-- Blockers or handoff notes.
+- Blockers.
+- Review risks.
+- Handoff notes.
 - Suggested changelog entry only when public plugin behavior changes.
 
 Result summary:
@@ -111,6 +126,7 @@ Result summary:
 
 - `Workers: 1` for sequential execution, or `Workers: N (parallel, tasks: <task ids or labels>)` when the approved plan marks those tasks independent with disjoint write scopes.
 - For multi-task plans, use an orchestrator plus one fresh task worker per named task when agent delegation is available.
+- Follow `.agents/references/orchestration.md` for worker lanes, packet dispatch, parallel synchronization, structured worker events, result summaries, branch topology, and plan or changelog handoffs.
 - Dispatch the plan header or readiness summary, execution graph, assigned task packet, and explicitly named governing artifacts or source files. Do not dispatch the full approved plan by default.
 - Record any task that is safe to run in parallel only when it has a disjoint write scope.
 - Use the current branch only unless a later accepted ADR authorizes per-worker git worktrees.
