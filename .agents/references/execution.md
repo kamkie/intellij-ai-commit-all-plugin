@@ -1,18 +1,55 @@
 # Execution Guide
 
-Use this loop for implementation work.
+Use this guide for implementation work.
 
-This file also owns AI-facing commit-message rules. The repository root `.gitmessage` is the authoritative commit-message template and example source.
+This file owns the direct one-off execution loop, the approved-plan task loop, and AI-facing commit-message rules. Use `.agents/references/orchestration.md` for delegated worker responsibilities, worker lanes, task packet dispatch, structured worker events, parallel synchronization, and result summaries.
 
-## Loop
+The repository root `.gitmessage` is the authoritative commit-message template and example source.
+
+## Choose The Path
+
+Use the direct one-off loop for ad hoc user requests, `TASKS.md` items, narrow documentation edits, and small implementation tasks that do not require a plan.
+
+Use the approved-plan task loop when working from an approved plan or a post-approval plan status.
+
+If a request requires a new ADR or implementation plan, create or update that artifact first and stop for the required acceptance or approval before implementation starts.
+
+## Direct One-Off Loop
 
 1. Frame the behavior: name the user-facing behavior, command, action, or workflow being changed.
-2. Identify the owner artifact: find the source, descriptor, docs, or task list that governs the behavior.
-3. Update docs or specs when behavior changes: keep `README.md`, `TASKS.md`, and agent guidance aligned with the implementation.
-4. Implement the smallest change: stay within the requested scope and existing project shape.
-5. Run targeted validation: choose checks from `.agents/references/testing.md` based on the diff.
-6. Self-review: use `.agents/references/reviews.md` to check for behavior, compatibility, and validation gaps.
-7. Report evidence: summarize changed files, validation run, and any remaining risk.
+2. Identify the owner artifact: find the source, descriptor, docs, task list, or reference guide that governs the behavior.
+3. Check gates: follow ADR and plan requirements before editing governed implementation, workflow guidance, backlog, validation rules, or related behavior.
+4. Load the smallest useful context: use `AGENTS.md` and the guidance map to choose only the needed owner documents.
+5. Delegate only when useful: optional sidecar or worker delegation follows `.agents/references/orchestration.md`; the active agent still owns final integration and reporting.
+6. Update docs or specs when behavior changes: keep `README.md`, `TASKS.md`, and agent guidance aligned with the implementation.
+7. Implement the smallest change: stay within the requested scope and existing project shape.
+8. Run targeted validation: choose checks from `.agents/references/testing.md` based on the diff.
+9. Self-review: use `.agents/references/reviews.md` to check for behavior, compatibility, and validation gaps.
+10. Report evidence: summarize changed files, validation run, and any remaining risk.
+
+Direct one-off worker results are summarized in chat. Do not create durable `.agents/runs/` logs.
+
+## Approved-Plan Task Loop
+
+Before implementation starts from an approved plan, confirm the plan has `Status: Approved`, `Approved by:`, and `Approved at:` metadata, and that every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.
+
+For approved multi-task plans, treat each named task as its own execution unit:
+
+1. Use the assigned task packet as the task boundary.
+2. Load only packet-approved context unless an escalation trigger fires.
+3. Implement the task according to the direct execution loop where applicable.
+4. Run task-appropriate validation from `.agents/references/testing.md`.
+5. Self-review the task using `.agents/references/reviews.md`.
+6. Return or record compact result evidence as required by the packet and `.agents/references/orchestration.md`.
+7. Commit the completed task before starting the next plan task when commits are allowed in the environment.
+
+Use `Project-Source: plan-task`, `Project-Plan:`, and `Project-Plan-Task:` commit metadata for approved plan-task commits.
+
+Do not batch multiple plan tasks into one commit unless the approved plan or a later user request explicitly says those tasks are inseparable.
+
+Per-task completion does not replace the later release workflow. Release preparation is expected to run after implementation tasks and should cover the full cross-task review, broader manual checks and tests, documentation updates, and release artifact preparation.
+
+Delegated approved-plan execution, worker lanes, packet dispatch, parallel waves, plan result summaries, and plan/changelog handoff rules are defined in `.agents/references/orchestration.md`.
 
 ## Task Completion Timing
 
@@ -26,70 +63,6 @@ Move a task to the completed archive only after:
 
 After moving a `TASKS.md` task to `TASKS_ARCHIVE.md`, rerun documentation validation and `git diff --check` so the final task-state edit is also verified before handoff or commit.
 
-## Multi-Task Plans
-
-When working from a plan with `Status: Approved` that contains multiple implementation tasks, treat each named task as its own execution unit:
-
-- Fully implement the task according to this execution loop.
-- Run task-appropriate validation from `.agents/references/testing.md`.
-- Self-review the task using `.agents/references/reviews.md`.
-- Commit the completed task before starting the next plan task.
-
-Use `Project-Source: plan-task`, `Project-Plan:`, and `Project-Plan-Task:` commit metadata for these commits.
-
-Do not batch multiple plan tasks into one commit unless the approved plan or a later user request explicitly says those tasks are inseparable.
-
-Per-task completion does not replace the later release workflow. Release preparation is expected to run after implementation tasks and should cover the full cross-task review, broader manual checks and tests, documentation updates, and release artifact preparation.
-
-## Orchestrator And Task Workers
-
-When a multi-task plan with `Status: Approved` is executed with delegated agents, use one orchestrator and one fresh task worker per plan task.
-
-The orchestrator owns:
-
-- Confirming all plan questions and required decisions are answered before implementation starts.
-- Selecting the next named plan task.
-- Maintaining task packets and giving each worker only the packet-shaped context needed for that task.
-- Handling new questions or missing decisions by stopping implementation and updating the owning document.
-- Recording compact task result summaries in the plan.
-- Reviewing worker output, validation evidence, self-review evidence, and commit metadata.
-- Starting the next task only after the current task is committed.
-
-The task worker owns only its assigned task:
-
-- Implement the task according to this execution loop.
-- Run task-appropriate validation from `.agents/references/testing.md`.
-- Self-review using `.agents/references/reviews.md`.
-- Update the governing plan file for the assigned task in the same commit as the task work. If that is unsafe or inappropriate, explicitly hand the plan-file update back to the orchestrator within the same execution step.
-- Commit the completed task when the task scope requires it, or return the exact commit-ready diff and evidence when the environment prevents worker commits.
-- Stop immediately and report if a new question, missing decision, unsafe assumption, or scope conflict appears.
-
-Use task packets as the dispatch contract for approved multi-task plans. Dispatch the plan header or readiness summary, execution graph, assigned task packet, and explicitly named governing artifacts or source files. Do not dispatch the full approved plan by default. A worker may load the full plan only when the packet allows it or when a blocker requires broader plan review; the worker must report that escalation in the handoff.
-
-Use an implementation worker lane by default. Add optional testing and review lanes only when task risk, validation design, or failure triage justifies the extra handoff:
-
-- Implementation workers own production or documentation edits inside the packet write scope.
-- Testing workers own tests, fixtures, validation investigation, or failure triage. They may edit tests only when the packet gives an explicit write scope.
-- Review workers are read-only by default and receive the task packet, diff, relevant spec or ADR, and validation output.
-
-Use a fresh task worker context for each plan task. Do not carry worker context from one plan task to the next.
-
-Run only one task worker at a time unless the approved plan explicitly marks tasks as independent, gives them disjoint write scopes, declares a parallel `Workers:` value, and shows the parallel wave in `## Execution Graph`.
-
-Use the current branch for orchestrated multi-agent execution. Do not use per-worker git worktrees unless a later accepted ADR explicitly authorizes worktrees and defines merge-back, validation, failed-worker handoff, and conflict-resolution rules.
-
-For a parallel worker wave, the orchestrator must wait for every worker in the current execution step to report success or failure before moving to the next step. The orchestrator must verify each worker's committed result or commit-ready diff before advancing.
-
-The orchestrator must log structured worker events in the chat transcript:
-
-- Log `start`, `stop`, or `fail` for each worker.
-- Log whenever the active worker count changes.
-- Include ISO 8601 timestamp, event type, worker id, plan id, plan task id, agent mode, active worker count, and active worker ids.
-
-The chat transcript is the event log destination. Do not create `.agents/runs/` logs unless a later accepted ADR defines ownership, retention, cleanup, and commit rules. Keep the durable repository record as a compact task result summary in the governing plan: worker id or lane, changed files or reviewed diff, validation evidence, blockers, review risks, and handoff notes. Do not paste raw test output, raw worker transcripts, or bulky run logs into the plan.
-
-Before dispatching the next dependent task, the orchestrator must ensure the plan file reflects the completed, failed, blocked, or otherwise current task state. If a task produces a public plugin-facing change, the orchestrator updates the next unreleased `CHANGELOG.md` section before dispatching the next task. Public plugin-facing changes include plugin source or runtime behavior, public plugin documentation, compatibility, support, security or privacy behavior, and CI, signing, publishing, or release workflow changes that affect the plugin artifact or publication. Omit internal AI-agent docs, skills, plans, proposals, ADR maintenance, workflow governance, scenario-coverage registers, test-case inventories, manual validation logs, and test-only changes unless they also change public plugin behavior, public docs, support promises, or release artifacts.
-
 ## Context Rules
 
 - Read only the context needed for the current task.
@@ -100,7 +73,6 @@ Before dispatching the next dependent task, the orchestrator must ensure the pla
 - Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; do not add unrelated release or operations files outside that scope.
 - Follow `docs/decisions/README.md` for ADR requirements before changing governed implementation, workflow guidance, backlog, validation rules, or related behavior.
 - If a requested change needs a plan, create or update the plan first and stop. Do not start implementation until the user has reviewed and explicitly approved the plan.
-- Before implementing from an `Approved` plan, confirm the approval was explicit, `Approved by:` records the approver, and every plan question and required decision is answered, decided, or explicitly documented as an allowed assumption.
 - When an agent updates plan status during autonomous, orchestrated, or delegated implementation, record the status-history actor as the responsible agent identity in `Name <email>` form. Preserve `Approved by:` as the human approval identity unless the user explicitly changes it.
 
 ## Commit Rules

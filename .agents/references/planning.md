@@ -2,6 +2,8 @@
 
 Use this guide when a task needs an implementation plan before editing.
 
+This file owns plan creation, readiness, status rules, and task-packet shape. Use `.agents/references/orchestration.md` for orchestrator responsibilities, worker lanes, task packet dispatch, structured worker events, parallel synchronization, and result summaries. Use `.agents/references/execution.md` for the approved-plan task execution loop and commit rules.
+
 ## When To Plan
 
 Create or update a plan when:
@@ -75,11 +77,7 @@ A useful plan should include:
 - When plan tasks come from `TASKS.md`, reference the stable `T-AREA-NNN` task ID alongside the task name.
 - For multi-task plans, each task must be fully implemented, validated through `.agents/references/testing.md`, self-reviewed through `.agents/references/reviews.md`, and committed before the next task starts.
 - Leave release-wide review, broader manual checks and tests, documentation update passes, and release artifact preparation to the later release workflow unless the plan is specifically a release plan.
-- For multi-task plan execution, use an orchestrator plus one fresh task worker per plan task when the environment supports agent delegation.
-- The orchestrator owns plan state, task sequencing, question handling, validation evidence, review evidence, changelog maintenance, and commit verification.
-- Each task worker gets only the task-shaped context needed for its assigned plan task, not accumulated context from previous tasks.
-- Do not run task workers in parallel unless the `Approved` plan explicitly identifies independent tasks with disjoint write scopes, declares a parallel `Workers:` value, and shows the parallel wave in `## Execution Graph`.
-- Use the current branch for orchestrated multi-agent execution. Per-worker git worktrees require a future accepted ADR before use.
+- Use `.agents/references/orchestration.md` for delegated plan execution rules, including worker lanes, packet dispatch, parallel synchronization, worker events, result summaries, branch topology, and plan/changelog handoffs.
 
 ## Task Packets
 
@@ -89,16 +87,17 @@ Each task packet must include:
 
 - Task id and stable task label.
 - Worker lane: `implementation`, `testing`, or `review`.
+- Required skills.
 - Goal.
+- Initial context budget.
 - Allowed inputs, including the exact plan summary, governing artifacts, source files, specs, ADRs, or validation output the worker may read.
 - Forbidden inputs, especially unrelated archived plans, unrelated prior worker chat, and implementation evidence from other packets.
 - Write scope, or `read-only` for review packets.
 - Dependencies and sequence or wave constraints.
 - Validation or review checks.
+- Escalation triggers.
 - Stop conditions.
 - Expected output, including changed files or reviewed diff, validation evidence, blockers, review risks, and handoff notes.
-
-By default, dispatch the plan header, readiness summary, execution graph, assigned task packet, and explicitly named governing artifacts or source files. Do not dispatch the full approved plan by default. A worker may load the full plan only when the packet allows it or when a blocker requires broader plan review; the worker must report that escalation in the handoff.
 
 Keep ordinary task packets inline in the parent plan. Use child packet files only when the parent plan would become difficult to scan, such as plans with more than six worker-owned tasks, multiple parallel waves, or expected parent-plan length above roughly 200 lines after packeting. Child packet files must preserve stable task packet ids and stay linked from the parent plan.
 
@@ -106,7 +105,7 @@ Keep the parent plan focused on approval, readiness, dependencies, execution gra
 
 ## Before Implementation
 
-Before editing code from a plan:
+Before editing from a plan:
 
 - Confirm the plan has `Status: Approved` from explicit user approval.
 - Confirm `Approved by:` records the approver.
@@ -128,19 +127,3 @@ If a new question, missing decision, or unsafe assumption appears while implemen
 - Update the appropriate document before continuing: the active plan for task-local questions, `docs/decisions/OPEN_QUESTIONS.md` for missing user input, `docs/decisions/` for project decisions or repository rule changes, and `TASKS.md` when backlog scope or dependencies change.
 - Ask the user for the decision when the answer cannot be safely inferred from the current request and governing documents.
 - Resume only after the question is answered, decided, or explicitly documented as an allowed assumption.
-
-## Orchestrated Execution
-
-When using delegated agents for an `Approved` multi-task plan:
-
-- Keep one orchestrator responsible for the whole plan.
-- Start one fresh task worker for the current task packet.
-- Give the worker the plan header or readiness summary, assigned task packet, and explicitly named governing artifacts or source files.
-- Have the worker stop and report immediately if the task reveals a new question, missing decision, unsafe assumption, or scope conflict.
-- Have the worker report suggested `CHANGELOG.md` entries only for public plugin-facing task outcomes, but keep final changelog edits with the orchestrator.
-- Have the worker update the governing plan file for the assigned task in the same task commit. If the worker cannot or should not update the plan file, the worker must explicitly hand that responsibility to the orchestrator in the same execution step.
-- When plan-file responsibility is handed off, have the orchestrator update the plan file before dispatching the next dependent task.
-- Have the orchestrator record a compact task result summary in the plan instead of raw logs or full worker transcripts.
-- Have the orchestrator update the owning document and obtain the missing decision before resuming.
-- Have the orchestrator review worker output, confirm validation and self-review evidence, maintain `CHANGELOG.md` for notable public plugin-facing changes, and verify the task commit before starting the next task.
-- Have the orchestrator update the plan status to `Implemented` when all planned changes are complete and validated, using the responsible agent identity for the autonomous status-history entry.
