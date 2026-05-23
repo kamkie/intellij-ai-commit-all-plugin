@@ -141,4 +141,4 @@ In orchestrated plan execution and release preparation, `CHANGELOG.md` maintenan
 
 Update `CHANGELOG.md` only for notable public plugin-facing changes: plugin source or runtime behavior, public plugin documentation, compatibility, support, security or privacy behavior, or CI and release pipeline behavior that affects the plugin artifact or publication.
 
-Omit internal AI-agent docs, skills, plans, proposals, ADR maintenance, workflow governance, scenario-coverage registers, test-case inventories, manual validation logs, and test-only changes unless they also change public plugin behavior, public docs, support promises, or release artifacts.
+Omit internal AI-agent docs, skills, plans, proposals, ADR maintenance, workflow governance, scenario registers, test-case inventories, manual validation logs, and test-only changes unless they also change public plugin behavior, public docs, support promises, or release artifacts.

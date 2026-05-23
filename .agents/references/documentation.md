@@ -8,7 +8,10 @@ Use this guide when adding or updating repository documentation.
 - `docs/user-guide.md`: task-oriented user manual for `AI`, `Commit`, `Push`, shortcuts, settings, changelist and staging-area behavior, and user-level safe push behavior.
 - `docs/troubleshooting.md`: user-facing troubleshooting and FAQ owner for AI Assistant availability, AI timeout, hidden or disabled controls, push fallback, outgoing-only push stops, conflicts, background VCS operations, and report evidence.
 - `docs/specification.md`: validation contract for intended observable plugin behavior, requirement refs, ADR sources, and validation links. Keep implementation classes, test-helper mechanics, and current code structure out unless they are observable compatibility policy.
-- `docs/validation/` and `docs/scenario-coverage.md`: validation evidence owners. Record how behavior was checked, not product explanation.
+- `docs/validation/README.md`: validation documentation map and ownership rules.
+- `docs/validation/scenario-register.md`: stable scenario refs, counts, execution mode, status, and evidence targets.
+- `docs/validation/release-checklist.md`: reusable release-readiness gates, manual procedures, required inputs, and evidence recording shape.
+- `docs/validation/reports/`: dated local, release-candidate, and release validation evidence reports. Record how behavior was checked, not product explanation.
 - `TASKS.md`: active backlog, implementation decisions still pending, and validation tasks.
 - `TASKS_ARCHIVE.md`: completed task history after work is finished, validated, and self-reviewed.
 - `docs/decisions/OPEN_QUESTIONS.md`: missing user input and unresolved product or implementation choices.
@@ -33,7 +36,7 @@ Use this guide when adding or updating repository documentation.
 - Keep docs proportional to the repo's current size.
 - Do not copy Spring, REST, OpenAPI, release, deployment, operations, benchmark, or frontend guidance from other repositories.
 - Keep implementation-status wording aligned with `README.md` and `TASKS.md`.
-- Product and user documentation under `docs/` uses lowercase kebab-case, for example `docs/user-guide.md`, `docs/troubleshooting.md`, `docs/specification.md`, `docs/scenario-coverage.md`, and `docs/validation/manual-sandbox.md`.
+- Product and user documentation under `docs/` uses lowercase kebab-case, for example `docs/user-guide.md`, `docs/troubleshooting.md`, `docs/specification.md`, `docs/validation/scenario-register.md`, and `docs/validation/release-checklist.md`.
 - Directory index files use `README.md`.
 - GitHub-recognized community health files keep canonical uppercase names even under `docs/`, for example `docs/SUPPORT.md`.
 - Human and process governance documents keep their existing uppercase phrase names, for example `docs/WORKING_WITH_AI.md` and `docs/DEVELOPMENT_LIFECYCLE.md`.
@@ -61,7 +64,7 @@ Use this guide when adding or updating repository documentation.
 - Follow `docs/decisions/README.md` for ADR requirements, project decisions, and repository rule changes.
 - Update documentation before or alongside behavior changes that affect users, validation, supported IDEs, or AI agent workflow.
 - Update `CHANGELOG.md` only for notable public plugin-facing changes: plugin source or runtime behavior, public plugin documentation, compatibility, support, security or privacy behavior, or CI and release pipeline behavior that affects the plugin artifact or publication.
-- Do not update `CHANGELOG.md` for AI-agent documentation, `.agents/` skills or references, plans, proposals, ADR maintenance, scenario-coverage or test-case inventories, manual validation logs, or internal repository workflow changes unless they also change public plugin behavior, public docs, support promises, or release artifacts.
+- Do not update `CHANGELOG.md` for AI-agent documentation, `.agents/` skills or references, plans, proposals, ADR maintenance, scenario registers, test-case inventories, manual validation logs, or internal repository workflow changes unless they also change public plugin behavior, public docs, support promises, or release artifacts.
 - In orchestrated plan execution and release preparation, `CHANGELOG.md` maintenance belongs to the orchestrator; task workers may suggest entries but do not own final changelog edits.
 - Update `docs/SUPPORT.md` when supported IDE versions, supported VCS scope, plugin dependency requirements, Marketplace availability, or support channels change.
 - Use `docs/proposals/` for analysis documents that list findings, duplications, simplifications, or improvement options for maintainer triage.

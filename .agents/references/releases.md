@@ -23,7 +23,7 @@ Task workers may propose changelog entries in their handoff evidence, but they s
 
 After every worker handoff for a task that produces a public plugin-facing change, the orchestrator updates the next unreleased `CHANGELOG.md` section before dispatching the next task. Public plugin-facing changes include plugin source or runtime behavior, public plugin documentation such as `README.md`, `docs/SUPPORT.md`, Marketplace text, compatibility or support scope, security or privacy behavior, and CI, signing, publishing, or release workflow changes that affect the plugin artifact or publication.
 
-Omit internal repository activity from `CHANGELOG.md`, including AI-agent documentation, skills, plans, proposals, ADR maintenance, internal workflow rules, scenario-coverage registers, test-case inventories, manual validation logs, and test-only changes unless they also change public plugin behavior, public docs, support promises, or release artifacts.
+Omit internal repository activity from `CHANGELOG.md`, including AI-agent documentation, skills, plans, proposals, ADR maintenance, internal workflow rules, scenario registers, test-case inventories, manual validation logs, and test-only changes unless they also change public plugin behavior, public docs, support promises, or release artifacts.
 
 The changelog edit should ride along in the same task commit when feasible and when it does not break the one-commit-per-task boundary. If a separate orchestrator commit is needed, it must be created before the next task starts and must use the multi-agent attribution trailers required by `.gitmessage` when those trailers apply.
 
@@ -42,7 +42,7 @@ During release preparation:
 - Use Keep a Changelog categories when useful: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, and `Security`.
 - Do not record unreleased work as released.
 - Do not copy routine task execution notes into the changelog unless they matter to plugin users, public documentation readers, release operators, compatibility, support, security, privacy, or the published plugin artifact.
-- Do not add entries for AI-agent documentation, repository workflow governance, ADR/proposal/plan maintenance, scenario-coverage tracking, validation inventories, or test-case documentation by themselves.
+- Do not add entries for AI-agent documentation, repository workflow governance, ADR/proposal/plan maintenance, scenario-register tracking, validation inventories, or test-case documentation by themselves.
 
 ## Release Preconditions
 

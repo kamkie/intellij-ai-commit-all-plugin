@@ -31,14 +31,17 @@ manual sandbox checks, and future documentation.
   contract.
 - `Implements:` lists the primary task ref from `TASKS_ARCHIVE.md` when one
   applies.
-- `Validates:` lists scenario refs from [scenario-coverage.md](scenario-coverage.md),
-  manual sandbox refs from [validation/manual-sandbox.md](validation/manual-sandbox.md),
+- `Validates:` lists scenario refs from
+  [validation/scenario-register.md](validation/scenario-register.md),
+  release checklist refs from
+  [validation/release-checklist.md](validation/release-checklist.md),
   or descriptor validation where no scenario row owns the assertion.
 
 ## Validation References
 
-- Scenario registry: [scenario-coverage.md](scenario-coverage.md).
-- Manual sandbox matrix: [validation/manual-sandbox.md](validation/manual-sandbox.md).
+- Scenario registry: [validation/scenario-register.md](validation/scenario-register.md).
+- Release validation checklist:
+  [validation/release-checklist.md](validation/release-checklist.md).
 - Behavior decisions: `docs/decisions/adr-NNNN-*.md`.
 - Completed implementation tasks: `TASKS_ARCHIVE.md`.
 
@@ -96,8 +99,8 @@ The selection is the set of files acted on by a workflow run.
 - REQ-SEL-001: Selection MUST include every modified, added, deleted, moved, renamed, and unversioned non-ignored Git path that the IDE exposes as committable across all changelists and all Git roots. Source: ADR 0003. Implements: T-FILES-001, T-FILES-002, T-FILES-006, T-FILES-007. Validates: SCN-SELECT-*, T-VAL-005..010 (manual).
 - REQ-SEL-002: Resolved-conflict paths MUST be included when the IDE exposes them as committable. Source: ADR 0003. Implements: T-FILES-003. Validates: SCN-SELECT-*.
 - REQ-SEL-003: Ignored files MUST NOT be included. Source: ADR 0003. Validates: T-VAL-011 (manual), SCN-STAGE-AUT-015.
-- REQ-SEL-004: When the Git staging area workflow is active, the workflow MUST stage every eligible non-ignored path before invoking AI generation so the IDE commit operation commits the intended content. Source: ADR 0020. Validates: SCN-STAGE-AUT-001..024.
-- REQ-SEL-005: Already-staged paths MUST remain staged when additional unstaged paths are selected for staging. Source: ADR 0020. Validates: SCN-STAGE-AUT-016..017, SCN-STAGE-AUT-021..022.
+- REQ-SEL-004: When the Git staging area workflow is active, the workflow MUST stage every eligible unstaged non-ignored path before invoking AI generation and MUST confirm that every intended path is staged so the IDE commit operation commits the intended content. Source: ADR 0020. Validates: SCN-STAGE-AUT-001..026.
+- REQ-SEL-005: Already-staged paths MUST remain staged when additional unstaged paths are selected for staging, and already-staged deleted or renamed paths MUST NOT be re-added as stale pathspecs after they are staged. Source: ADR 0020. Validates: SCN-STAGE-AUT-016..017, SCN-STAGE-AUT-021..022, SCN-STAGE-AUT-025..026.
 - REQ-SEL-006: Multi-root and nested-module paths MUST be grouped per Git root and MUST NOT be merged or lost across roots. Source: ADR 0009. Validates: SCN-STAGE-AUT-004..005.
 - REQ-SEL-007: Equivalent path spellings that differ only by slash direction MUST be treated as the same path so the selection is not duplicated. Source: PLAN-include-all-git-files. Validates: SCN-STAGE-AUT-006.
 - REQ-SEL-008: The workflow MUST NOT invoke AI generation until staging state confirms that every expected path is staged; if confirmation cannot be reached within the bounded staging-confirmation window, the workflow MUST fail closed. Source: PLAN-confirm-staged-before-ai-generation. Validates: SCN-STAGE-AUT-007..014, SCN-STAGE-AUT-020.
@@ -275,5 +278,5 @@ behavior change.
 - When a requirement is retired, keep the ref, mark its text with `RETIRED:`,
   and record the retiring ADR or plan.
 - Update `Validates:` lines when scenario refs are added in
-  [scenario-coverage.md](scenario-coverage.md).
+  [validation/scenario-register.md](validation/scenario-register.md).
 - Keep Section 13 in sync when adding requirements or source artifacts.

@@ -188,5 +188,6 @@ that changed while AI generation was in flight.
 ### Where are the current validation details?
 
 The behavior contract is in [Plugin Behavior Specification](specification.md).
-Manual and release-matrix validation status is in
-[Manual Sandbox Validation](validation/manual-sandbox.md).
+Maintainer validation artifacts are listed in [Validation](validation/README.md),
+with reusable release checks in
+[Release Validation Checklist](validation/release-checklist.md).

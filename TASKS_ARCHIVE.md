@@ -245,6 +245,7 @@ Archived as of `v0.1.0-alpha.1` release preparation.
 - [x] T-BUG-013: in commit dialog `Ctrl + Shift + K` should be the same as clicking the push section of a button.
 - [x] T-BUG-014: github actions builds are failing.
 - [x] T-BUG-015: the push button should just do the push, do not open the push window even on protected branches.
+- [x] T-BUG-016: Git staging-area workflow re-adds already-staged deleted or renamed paths and fails with stale pathspec errors before AI message generation. (Validation: red targeted staging tests failed before separating paths to stage from expected staged paths; green targeted staging tests, `.\gradlew.bat spotlessCheck`, `.\gradlew.bat test`, `.\gradlew.bat buildPlugin`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, and `git diff --check`)
 
 ### Ideas
 

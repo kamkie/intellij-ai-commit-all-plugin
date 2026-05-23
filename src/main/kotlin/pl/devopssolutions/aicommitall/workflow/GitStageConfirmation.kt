@@ -38,26 +38,33 @@ internal class GitStageConfirmation(
     private val retryDelay: Duration = Duration.ofMillis(250),
     private val sleeper: GitStageConfirmationSleeper = ThreadGitStageConfirmationSleeper,
 ) {
-    fun confirm(pathsByRoot: Map<VirtualFile, List<FilePath>>): GitStageTracker.State? {
-        val expectedPaths = pathsByRoot.values
-            .flatten()
+    fun confirm(
+        pathsByRoot: Map<VirtualFile, List<FilePath>>,
+        expectedPaths: Collection<FilePath> = pathsByRoot.values.flatten(),
+    ): GitStageTracker.State? {
+        val distinctExpectedPaths = expectedPaths
             .distinctBy { path -> path.normalizedPath() }
-        if (attempts <= 0 || expectedPaths.isEmpty()) {
+        val pathsToStageByRoot = pathsByRoot
+            .mapValues { (_, paths) ->
+                paths.distinctBy { path -> path.normalizedPath() }
+            }
+            .filterValues { paths -> paths.isNotEmpty() }
+        if (attempts <= 0 || distinctExpectedPaths.isEmpty()) {
             return null
         }
 
         repeat(attempts) { attempt ->
             val refreshedState = runCatching {
-                pathsByRoot.forEach { (root, paths) ->
+                pathsToStageByRoot.forEach { (root, paths) ->
                     operations.stagePaths(root, paths)
                 }
-                operations.reloadExternalFiles(expectedPaths)
-                operations.markPathsDirty(expectedPaths)
+                operations.reloadExternalFiles(distinctExpectedPaths)
+                operations.markPathsDirty(distinctExpectedPaths)
                 operations.waitForStatusRefresh()
                 operations.refreshTrackerState()
             }.getOrNull()
 
-            if (refreshedState != null && GitStageSelectionItems.containsAllStagedPaths(refreshedState, expectedPaths)) {
+            if (refreshedState != null && GitStageSelectionItems.containsAllStagedPaths(refreshedState, distinctExpectedPaths)) {
                 return refreshedState
             }
 

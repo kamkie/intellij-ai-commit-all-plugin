@@ -22,7 +22,7 @@ it does not repeat the troubleshooting FAQ.
   IDEA, PyCharm, and WebStorm `2026.1.1`.
 - Current VCS scope: Git only, including multiple Git roots.
 - JetBrains AI Assistant is declared as a required plugin dependency.
-- Manual sandbox validation remains required before release-readiness claims for
+- Release validation checklist execution remains required before release-readiness claims for
   final control rendering, staging-area modes, shortcut takeover, AI Assistant
   unavailable states, and full commit/push UI behavior.
 - Marketplace signing and publishing are configured through gated automation.
@@ -32,8 +32,8 @@ it does not repeat the troubleshooting FAQ.
   publishing.
 
 See [README](../README.md) for the current supported scope decisions and
-[Manual Sandbox Validation](validation/manual-sandbox.md) for current manual
-coverage status.
+[Release Validation Checklist](validation/release-checklist.md) for current
+manual validation expectations.
 
 ## Supported Prerelease Scope
 

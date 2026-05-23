@@ -40,6 +40,14 @@ internal object GitStageSelectionItems {
         }
         .filterValues { paths -> paths.isNotEmpty() }
 
+    fun pathsToStageByRoot(state: GitStageTracker.State): Map<VirtualFile, List<FilePath>> = state.rootStates
+        .mapValues { (_, rootState) ->
+            rootState.statuses.values
+                .mapNotNull { status -> status.pathToStage() }
+                .distinctBy { path -> path.normalizedPath() }
+        }
+        .filterValues { paths -> paths.isNotEmpty() }
+
     fun containsAllStagedPaths(
         state: GitStageTracker.State,
         expectedPaths: Collection<FilePath>,
@@ -67,11 +75,19 @@ internal object GitStageSelectionItems {
         path
     }
 
+    private fun GitFileStatus.pathToStage(): FilePath? = if (isIgnored() || isNotChanged() || isConflicted() || isAlreadyFullyStaged()) {
+        null
+    } else {
+        path
+    }
+
     private fun GitFileStatus.stagedPath(): FilePath? = if (isIgnored() || isNotChanged() || isConflicted() || index == ' ' || index == '?') {
         null
     } else {
         path
     }
+
+    private fun GitFileStatus.isAlreadyFullyStaged(): Boolean = index != ' ' && index != '?' && workTree == ' '
 
     private fun FilePath.normalizedPath(): String = path.replace('\\', '/')
 }

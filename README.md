@@ -68,8 +68,7 @@ Open `Settings | Tools | AI Commit All`.
 - [Troubleshooting](docs/troubleshooting.md)
 - [Support](docs/SUPPORT.md)
 - [Specification](docs/specification.md)
-- [Scenario Coverage](docs/scenario-coverage.md)
-- [Manual Validation](docs/validation/manual-sandbox.md)
+- [Validation](docs/validation/README.md) - maintainer validation map, scenario register, and release checklist.
 - [Contributing](CONTRIBUTING.md)
 - [Working With AI](docs/WORKING_WITH_AI.md) - guidance for humans preparing AI-assisted repository work requests.
 - [Changelog](CHANGELOG.md)

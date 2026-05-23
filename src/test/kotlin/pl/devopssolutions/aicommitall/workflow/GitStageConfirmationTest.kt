@@ -136,6 +136,30 @@ internal class GitStageConfirmationTest {
     }
 
     @Test
+    fun `confirms already staged paths without re-staging them`() {
+        val root = LightVirtualFile("repo")
+        val stagedDeletion = TestFilePath("/repo/delete-me.txt")
+        val confirmed = stageState(root, gitStatus('D', ' ', stagedDeletion))
+        val operations = CapturingOperations(confirmed)
+
+        val result = confirmation(operations, attempts = 1)
+            .confirm(
+                pathsByRoot = emptyMap(),
+                expectedPaths = listOf(stagedDeletion),
+            )
+
+        assertSame(confirmed, result)
+        assertEquals(0, operations.stageCallCount)
+        assertEquals(
+            listOf(
+                "reload:/repo/delete-me.txt",
+                "refresh",
+            ),
+            operations.events,
+        )
+    }
+
+    @Test
     fun `waits between failed confirmation attempts for delayed staging tracker updates`() {
         val root = LightVirtualFile("repo")
         val modified = TestFilePath("/repo/modified.txt")

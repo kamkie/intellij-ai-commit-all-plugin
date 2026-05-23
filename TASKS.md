@@ -22,7 +22,7 @@ Notation:
 
 ### Validation
 
-- [ ] T-VAL-024: execute and record the current manual sandbox release matrix before Marketplace publication, covering final control rendering, staging-area modes, shortcut takeover, AI Assistant unavailable states, and full commit/push UI behavior; IDEA deterministic UI automation is present, while live AI Assistant, PyCharm/WebStorm, and platform error observations remain manual. (`docs/validation/manual-sandbox.md`, `docs/scenario-coverage.md`, `.agents/plans/archive/PLAN-release-matrix-ui-automation.md`)
+- [ ] T-VAL-024: execute and record the current manual release validation matrix before Marketplace publication, covering final control rendering, staging-area modes, shortcut takeover, AI Assistant unavailable states, and full commit/push UI behavior; IDEA deterministic UI automation is present, while live AI Assistant, PyCharm/WebStorm, and platform error observations remain manual. (`docs/validation/release-checklist.md`, `docs/validation/scenario-register.md`, `.agents/plans/archive/PLAN-release-matrix-ui-automation.md`)
 
 ### Detekt Plugin
 

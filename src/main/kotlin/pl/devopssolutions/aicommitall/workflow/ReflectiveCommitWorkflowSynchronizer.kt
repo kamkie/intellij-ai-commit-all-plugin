@@ -69,17 +69,19 @@ internal object ReflectiveCommitWorkflowSynchronizer {
             val tracker = GitStageTracker.getInstance(project)
             tracker.updateTrackerState()
             val currentState = tracker.state
-            val pathsByRoot = GitStageSelectionItems.committablePathsByRoot(currentState)
-            if (pathsByRoot.isEmpty()) {
+            val expectedPathsByRoot = GitStageSelectionItems.committablePathsByRoot(currentState)
+            if (expectedPathsByRoot.isEmpty()) {
                 return@runCatching false
             }
+            val pathsToStageByRoot = GitStageSelectionItems.pathsToStageByRoot(currentState)
 
             val refreshedState = confirmStagedState(
                 project = project,
                 tracker = tracker,
-                pathsByRoot = pathsByRoot,
+                pathsByRoot = pathsToStageByRoot,
+                expectedPaths = expectedPathsByRoot.values.flatten(),
             ) ?: return@runCatching false
-            val includedRoots = pathsByRoot.keys
+            val includedRoots = expectedPathsByRoot.keys
             CommitWorkflowUiThreadAccess.run {
                 gitStageHandler.state = refreshedState
                 gitStageHandler.ui.setTrackerState(refreshedState)
@@ -93,10 +95,14 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         project: Project,
         tracker: GitStageTracker,
         pathsByRoot: Map<VirtualFile, List<FilePath>>,
+        expectedPaths: Collection<FilePath>,
     ): GitStageTracker.State? = GitStageConfirmation(
         attempts = GIT_STAGE_CONFIRMATION_ATTEMPTS,
         operations = IntellijGitStageConfirmationOperations(project, tracker),
-    ).confirm(pathsByRoot)
+    ).confirm(
+        pathsByRoot = pathsByRoot,
+        expectedPaths = expectedPaths,
+    )
 
     private fun Class<*>.findMethod(name: String, vararg parameterTypes: Class<*>): Method? = methods.firstOrNull { method ->
         method.name == name &&

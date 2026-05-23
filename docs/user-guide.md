@@ -154,5 +154,3 @@ The plugin does not add its own confirmation dialog for the safe immediate-push 
 - [Troubleshooting](troubleshooting.md) - FAQ and problem-path guidance.
 - [Support](SUPPORT.md) - support scope and issue-reporting expectations.
 - [Specification](specification.md) - observable behavior requirements and traceability.
-- [Scenario Coverage](scenario-coverage.md) - automated and manual scenario registry.
-- [Manual Validation](validation/manual-sandbox.md) - sandbox validation evidence.

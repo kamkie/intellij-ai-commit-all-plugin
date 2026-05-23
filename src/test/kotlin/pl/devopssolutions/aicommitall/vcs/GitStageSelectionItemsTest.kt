@@ -118,6 +118,43 @@ internal class GitStageSelectionItemsTest {
     }
 
     @Test
+    fun `paths to stage skip already staged deletion rename and modification`() {
+        val root = LightVirtualFile("repo")
+        val stagedDeletion = TestFilePath("/repo/delete-me.txt")
+        val renameSource = TestFilePath("/repo/rename-source.txt")
+        val renameTarget = TestFilePath("/repo/rename-target.txt")
+        val stagedModification = TestFilePath("/repo/staged-modified.txt")
+        val partiallyStaged = TestFilePath("/repo/partially-staged.txt")
+        val unstagedDeletion = TestFilePath("/repo/unstaged-delete.txt")
+        val untracked = TestFilePath("/repo/untracked.txt")
+        val state = GitStageTracker.State(
+            mapOf(
+                root to GitStageTracker.RootState(
+                    root,
+                    true,
+                    mapOf(
+                        stagedDeletion to gitStatus('D', ' ', stagedDeletion),
+                        renameTarget to gitStatus('R', ' ', renameTarget, renameSource),
+                        stagedModification to gitStatus('M', ' ', stagedModification),
+                        partiallyStaged to gitStatus('M', 'M', partiallyStaged),
+                        unstagedDeletion to gitStatus(' ', 'D', unstagedDeletion),
+                        untracked to gitStatus('?', '?', untracked),
+                    ),
+                ),
+            ),
+        )
+
+        val result = GitStageSelectionItems.pathsToStageByRoot(state)
+
+        assertEquals(
+            mapOf<VirtualFile, List<FilePath>>(
+                root to listOf(partiallyStaged, unstagedDeletion, untracked),
+            ),
+            result,
+        )
+    }
+
+    @Test
     fun `groups nested Gradle module and IntelliJ product paths by git root`() {
         val firstRoot = LightVirtualFile("repo-a")
         val secondRoot = LightVirtualFile("repo-b")
@@ -247,7 +284,8 @@ internal class GitStageSelectionItemsTest {
         index: Char,
         workTree: Char,
         path: FilePath,
-    ): GitFileStatus = GitFileStatus(index, workTree, path, null)
+        origPath: FilePath? = null,
+    ): GitFileStatus = GitFileStatus(index, workTree, path, origPath)
 
     private class TestFilePath(private val rawPath: String) : FilePath {
         override fun getVirtualFile(): VirtualFile? = null

@@ -6,7 +6,7 @@ The format is based on Keep a Changelog. Release tags should use semantic versio
 
 This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.9` is the current implementation prerelease candidate prepared from this repository.
 
-This changelog records plugin source and runtime behavior changes, public plugin documentation changes, compatibility and support changes, and CI or release pipeline changes that affect the plugin artifact or publication. Internal AI-agent documentation, repository workflow notes, plans, proposals, ADR maintenance, scenario-coverage tracking, and test-case inventory changes are intentionally omitted unless they also change public plugin behavior or release artifacts.
+This changelog records plugin source and runtime behavior changes, public plugin documentation changes, compatibility and support changes, and CI or release pipeline changes that affect the plugin artifact or publication. Internal AI-agent documentation, repository workflow notes, plans, proposals, ADR maintenance, scenario-register tracking, and test-case inventory changes are intentionally omitted unless they also change public plugin behavior or release artifacts.
 
 ## [Unreleased]
 
@@ -19,8 +19,9 @@ This changelog records plugin source and runtime behavior changes, public plugin
 ### Changed
 
 - Enabled Gradle configuration cache and made coverage verification cache-compatible for faster local and CI Gradle configuration.
-- Updated README validation, prerelease status, CI, and manual-sandbox scope notes to match the current build and workflow configuration.
+- Updated README validation, prerelease status, CI, and manual validation scope notes to match the current build and workflow configuration.
 - Rebuilt public plugin documentation around a concise README, dedicated user guide, troubleshooting FAQ, support policy in `docs/SUPPORT.md`, and a validation-focused behavior specification.
+- Reworked validation documentation into a validation index, scenario register, release checklist, and dated validation report structure.
 - Expanded the manual release workflow gate to require the requested annotated release tag on `main` and run documentation validation, formatting, Detekt, tests, coverage verification, plugin packaging, and the supported IDE Plugin Verifier matrix before Marketplace signing and publication.
 - Validated repository agent artifacts in CI alongside documentation validation.
 - Included JetBrains Starter IDE logs and screenshots in Release Matrix UI workflow evidence artifacts.
@@ -32,6 +33,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 - Prevented outgoing-only `Push` from opening the IDE Push dialog when there are no files to commit, while allowing normal tracked-branch outgoing commits to use safe immediate push.
 - Removed the deprecated IntelliJ action invocation API from standard commit and push shortcut delegation.
 - Waited for IntelliJ smart mode before executing default Commit workflow calls so `Commit` and commit-producing `Push` runs do not stall during project indexing.
+- Avoided re-running `git add` on already-staged deleted or renamed paths in the Git staging-area workflow, fixing stale pathspec failures before AI message generation.
 
 ## [v0.1.0-alpha.9] - 2026-05-19
 

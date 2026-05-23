@@ -76,6 +76,6 @@ Use `.agents/skills/triage-flaky-test/SKILL.md` when a test alternates between p
 When handing off, state:
 
 - Commands run.
-- Manual sandbox scenarios tested, if any.
+- Manual release-validation scenarios tested, if any.
 - Checks not run and why.
 - Residual IDE compatibility risk.
