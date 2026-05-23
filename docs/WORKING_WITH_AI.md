@@ -22,6 +22,8 @@ Constraints:
 Validation expected:
 ```
 
+For bug reports, include what happened, what you expected, the action that triggered it, relevant refs or file/log paths, and any validation already run.
+
 ## Common Controls
 
 Use these short phrases to steer the session:
@@ -235,6 +237,13 @@ Check release readiness for <version or boundary>. Include changelog, support, p
 ```
 
 Useful prompt recipe: `release-readiness.md`.
+
+## Privacy And Logs
+
+- Do not paste tokens, passwords, private keys, signing certificates, Marketplace secrets, IDE auth state, or private remote URLs.
+- Prefer local file paths, sanitized excerpts, or a short description of where the data came from.
+- For logs, provide the smallest relevant excerpt when possible and say whether it is sanitized.
+- For long logs or IDE log folders, provide the path and the specific behavior or time window to inspect.
 
 ## What Not To Include
 
