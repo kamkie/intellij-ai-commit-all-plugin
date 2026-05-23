@@ -4,8 +4,9 @@ This repository is an unreleased IntelliJ Platform plugin project. Keep contribu
 
 ## Before You Start
 
-- Read [README.md](README.md) for setup, usage, build commands, and current limitations.
-- Read [SUPPORT.md](SUPPORT.md) before filing bugs or support requests.
+- Read [README.md](README.md) for the concise product overview and user entry points.
+- Read [docs/user-guide.md](docs/user-guide.md) for user workflow behavior.
+- Read [docs/SUPPORT.md](docs/SUPPORT.md) before filing bugs or support requests.
 - Use [docs/DEVELOPMENT_LIFECYCLE.md](docs/DEVELOPMENT_LIFECYCLE.md) for changes that affect behavior, repository workflow, release automation, or multiple files.
 - Check [TASKS.md](TASKS.md), [docs/decisions/](docs/decisions/), and [docs/proposals/](docs/proposals/) for existing tasks, accepted decisions, and active proposals.
 - If you plan to use AI agents to help with your contribution, read [docs/WORKING_WITH_AI.md](docs/WORKING_WITH_AI.md) for how to frame requests, what context to load, and the repository's expectations for agent-driven work.
@@ -16,6 +17,23 @@ This repository is an unreleased IntelliJ Platform plugin project. Keep contribu
 - JDK 21.
 - Node.js with `npx` for Markdown linting in documentation validation.
 - Git for local repository validation and development fixtures.
+
+## Local Setup
+
+Build the plugin ZIP for local installation:
+
+```powershell
+.\gradlew.bat buildPlugin
+```
+
+Install `build/distributions/ai-commit-all-<version>.zip` from
+`Settings | Plugins | Install Plugin from Disk...` in a supported JetBrains IDE.
+
+For day-to-day plugin development, run a sandbox IDE:
+
+```powershell
+.\gradlew.bat runIde
+```
 
 ## Local Validation
 

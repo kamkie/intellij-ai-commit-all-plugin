@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-user-documentation-rebuild
 
-Status: Approved
+Status: Implemented
 
 Workers: 3 (parallel, tasks: T2-readme-user-guide, T3-troubleshooting-support, T4-specification-and-retirement)
 
@@ -14,12 +14,14 @@ Filename: `.agents/plans/PLAN-user-documentation-rebuild.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-23T21:12:25+02:00
 - Open questions: None.
-- Implementation progress: Not started.
+- Implementation progress: Implemented.
 
 ## Status History
 
 - 2026-05-23T20:52:54+02:00: none -> Draft by OpenAI Codex <codex@openai.com>; companion plan created for proposed ADR 0076.
 - 2026-05-23T21:12:25+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded for ADR 0076 and this companion plan.
+- 2026-05-23T21:18:46+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; implementation started for ADR 0076 documentation rebuild.
+- 2026-05-23T21:43:09+02:00: In Progress -> Implemented by OpenAI Codex <codex@openai.com>; ADR 0076 documentation ownership rebuild implemented and validated.
 
 ## Goal
 
@@ -136,13 +138,13 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: completed
+- Worker: OpenAI Codex orchestrator
+- Changed files or reviewed diff: `.agents/references/documentation.md`, `TASKS.md`
+- Validation evidence: final `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\ai\validate-agent-artifacts.ps1`, and `git diff --check` passed.
+- Blockers: none.
+- Review risks: ownership mapping moved support policy to `docs/SUPPORT.md` while a root `SUPPORT.md` compatibility pointer remains.
+- Handoff notes: documentation owner map now matches ADR 0076 naming and ownership rules; task rows were reconciled during final integration.
 
 ### Task Packet: T2-readme-user-guide
 
@@ -220,13 +222,13 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: completed
+- Worker: worker Sartre
+- Changed files or reviewed diff: `README.md`, `docs/user-guide.md`
+- Validation evidence: worker reported `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1` and `git diff --check`; final orchestrator validation repeated docs, agent-artifact, and whitespace checks.
+- Blockers: none.
+- Review risks: macOS shortcut wording remains keymap-specific because `plugin.xml` only declares default Windows/Linux keymap bindings.
+- Handoff notes: README is a concise landing page; `docs/user-guide.md` owns the full task-oriented user workflow.
 
 ### Task Packet: T3-troubleshooting-support
 
@@ -304,13 +306,13 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: completed
+- Worker: worker Beauvoir
+- Changed files or reviewed diff: `docs/troubleshooting.md`, `docs/SUPPORT.md`, `SUPPORT.md`
+- Validation evidence: worker reported `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1` and scoped `git diff --check`; final orchestrator validation repeated docs, agent-artifact, and whitespace checks.
+- Blockers: none.
+- Review risks: support promises were preserved; future support-scope changes must update `docs/SUPPORT.md`.
+- Handoff notes: troubleshooting owns FAQ/problem paths; support policy owns scope, reporting, privacy, and out-of-scope cases.
 
 ### Task Packet: T4-specification-and-retirement
 
@@ -390,13 +392,13 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: completed
+- Worker: worker Noether
+- Changed files or reviewed diff: `docs/specification.md`, deleted `docs/requested-features.md`
+- Validation evidence: worker reported `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1` and scoped `git diff --check`; final orchestrator validation repeated docs, agent-artifact, and whitespace checks.
+- Blockers: none.
+- Review risks: historical ADRs still mention the retired requested-feature inventory as part of their accepted context; active user and contributor docs no longer link to it.
+- Handoff notes: specification now owns observable behavior requirements and traceability without duplicating user-guide or implementation mechanics.
 
 ### Task Packet: T5-contributor-and-final-integration
 
@@ -482,13 +484,13 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: completed
+- Worker: OpenAI Codex orchestrator
+- Changed files or reviewed diff: `CONTRIBUTING.md`, `README.md`, `docs/user-guide.md`, `docs/troubleshooting.md`, `docs/specification.md`, `docs/SUPPORT.md`, `.agents/references/documentation.md`, `.agents/references/releases.md`, `.agents/prompts/release-readiness.md`, `.agents/skills/repository-documentation/SKILL.md`, `.agents/skills/platform-docs-research/SKILL.md`, `.github/ISSUE_TEMPLATE/config.yml`, `SECURITY.md`, `TASKS.md`, `TASKS_ARCHIVE.md`, `CHANGELOG.md`, `docs/decisions/README.md`
+- Validation evidence: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\ai\validate-agent-artifacts.ps1`, and `git diff --check` passed.
+- Blockers: none.
+- Review risks: `T-DOC-018`, `T-DOC-019`, `T-DOC-020`, and `T-DOC-023` remain open or deferred follow-ups; no Marketplace publication or final screenshot claim was added.
+- Handoff notes: active links were reconciled to `docs/SUPPORT.md`; `docs/requested-features.md` is retired; ADR implementation tracker and changelog were updated.
 
 ## Execution Model
 

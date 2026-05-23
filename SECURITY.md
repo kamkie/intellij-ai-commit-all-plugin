@@ -4,7 +4,7 @@ This project is a pre-release IntelliJ Platform plugin repository. No Marketplac
 
 ## Supported Scope
 
-Security support follows the current repository support status in [SUPPORT.md](SUPPORT.md). Until the first Marketplace release, security handling is best-effort for the current `main` branch and current prerelease candidate only.
+Security support follows the current repository support status in [docs/SUPPORT.md](docs/SUPPORT.md). Until the first Marketplace release, security handling is best-effort for the current `main` branch and current prerelease candidate only.
 
 ## Reporting A Vulnerability
 

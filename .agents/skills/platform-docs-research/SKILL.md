@@ -10,7 +10,7 @@ description: Documentation-backed platform and API research for this IntelliJ pl
 - Read `AGENTS.md` if it is not already loaded.
 - Identify the exact behavior, API, option, or compatibility question.
 - State the target version or product scope before researching. Use "current as of today" only after checking current primary documentation.
-- Check local governing artifacts first when the question affects repository policy: ADRs, approved plans, `README.md`, `SUPPORT.md`, and `.agents/references/`.
+- Check local governing artifacts first when the question affects repository policy: ADRs, approved plans, `README.md`, `docs/SUPPORT.md`, and `.agents/references/`.
 - Use primary sources first: JetBrains IntelliJ Platform SDK docs, Gradle IntelliJ Platform Plugin docs, Kotlin docs, JUnit docs, OpenAI docs, official release notes, or source/API references.
 - Treat source code as documentation of actual behavior and the final authority. When prose docs and source code disagree, the source code is right for what the system currently does.
 - For OpenAI product or API questions, use the `openai-docs` skill and official OpenAI sources only unless the user explicitly asks otherwise.

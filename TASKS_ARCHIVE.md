@@ -4,6 +4,12 @@ Completed tasks move here from [TASKS.md](TASKS.md) only after the work is finis
 
 Preserve `T-AREA-NNN` task refs, wording, grouping, and evidence links when moving entries unless a small clarity fix is needed.
 
+Archived as of 2026-05-23 user documentation rebuild.
+
+### Documentation
+
+- [x] T-DOC-022: add troubleshooting and FAQ guidance for missing or disabled AI Assistant, AI generation timeout, hidden or disabled controls, push fallback to the IDE dialog, outgoing-only push stops, unresolved conflicts, and background VCS operations. (`docs/troubleshooting.md`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check`)
+
 Archived as of 2026-05-20 workflow coverage and JaCoCo gate.
 
 ### Testing

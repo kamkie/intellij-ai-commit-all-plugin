@@ -9,7 +9,7 @@ Check whether the repository is ready for a plugin release or identify the block
 - `.agents/references/testing.md`
 - `.agents/references/documentation.md`
 - `CHANGELOG.md`
-- `SUPPORT.md`
+- `docs/SUPPORT.md`
 - `.agents/prompts/README.md`
 - this prompt
 

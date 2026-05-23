@@ -1,6 +1,6 @@
 ---
 name: repository-documentation
-description: Repository documentation workflow for this IntelliJ plugin. Use when adding, updating, reviewing, or triaging README.md, SUPPORT.md, TASKS.md, CHANGELOG.md, docs/decisions/, docs/proposals/, docs/WORKING_WITH_AI.md, docs/DEVELOPMENT_LIFECYCLE.md, .agents/references/, .agents/plans/, .agents/prompts/, .agents/skills/, AGENTS.md, or other governed contributor and AI-agent documentation.
+description: Repository documentation workflow for this IntelliJ plugin. Use when adding, updating, reviewing, or triaging README.md, docs/SUPPORT.md, TASKS.md, CHANGELOG.md, docs/decisions/, docs/proposals/, docs/WORKING_WITH_AI.md, docs/DEVELOPMENT_LIFECYCLE.md, .agents/references/, .agents/plans/, .agents/prompts/, .agents/skills/, AGENTS.md, or other governed contributor and AI-agent documentation.
 ---
 
 # Repository Documentation

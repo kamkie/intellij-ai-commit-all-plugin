@@ -13,7 +13,7 @@ Stay in `.agents/references/planning.md` and `.agents/references/execution.md` w
 - Use annotated tags for intentional releases.
 - Keep `CHANGELOG.md` aligned with released versions.
 - Treat `CHANGELOG.md` as public release notes for plugin-facing changes, not as an internal repository activity log.
-- Keep `SUPPORT.md` aligned when supported IDE versions, plugin dependency requirements, Marketplace availability, or support channels change.
+- Keep `docs/SUPPORT.md` aligned when supported IDE versions, plugin dependency requirements, Marketplace availability, or support channels change.
 
 ## Changelog Ownership
 
@@ -21,7 +21,7 @@ The orchestrator owns `CHANGELOG.md` maintenance for orchestrated plan execution
 
 Task workers may propose changelog entries in their handoff evidence, but they should not decide final wording, category, placement, or whether an entry is notable. The orchestrator decides that while reviewing each task and before starting the next task.
 
-After every worker handoff for a task that produces a public plugin-facing change, the orchestrator updates the next unreleased `CHANGELOG.md` section before dispatching the next task. Public plugin-facing changes include plugin source or runtime behavior, public plugin documentation such as `README.md`, `SUPPORT.md`, Marketplace text, compatibility or support scope, security or privacy behavior, and CI, signing, publishing, or release workflow changes that affect the plugin artifact or publication.
+After every worker handoff for a task that produces a public plugin-facing change, the orchestrator updates the next unreleased `CHANGELOG.md` section before dispatching the next task. Public plugin-facing changes include plugin source or runtime behavior, public plugin documentation such as `README.md`, `docs/SUPPORT.md`, Marketplace text, compatibility or support scope, security or privacy behavior, and CI, signing, publishing, or release workflow changes that affect the plugin artifact or publication.
 
 Omit internal repository activity from `CHANGELOG.md`, including AI-agent documentation, skills, plans, proposals, ADR maintenance, internal workflow rules, scenario-coverage registers, test-case inventories, manual validation logs, and test-only changes unless they also change public plugin behavior, public docs, support promises, or release artifacts.
 

@@ -20,6 +20,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 - Enabled Gradle configuration cache and made coverage verification cache-compatible for faster local and CI Gradle configuration.
 - Updated README validation, prerelease status, CI, and manual-sandbox scope notes to match the current build and workflow configuration.
+- Rebuilt public plugin documentation around a concise README, dedicated user guide, troubleshooting FAQ, support policy in `docs/SUPPORT.md`, and a validation-focused behavior specification.
 - Expanded the manual release workflow gate to require the requested annotated release tag on `main` and run documentation validation, formatting, Detekt, tests, coverage verification, plugin packaging, and the supported IDE Plugin Verifier matrix before Marketplace signing and publication.
 - Validated repository agent artifacts in CI alongside documentation validation.
 - Included JetBrains Starter IDE logs and screenshots in Release Matrix UI workflow evidence artifacts.
