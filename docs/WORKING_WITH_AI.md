@@ -33,6 +33,8 @@ Use the smallest mode that fits the request:
 
 Say `Do not delegate this work. Use only the current agent session.` when you want one agent only. Delegation never bypasses ADR gates, plan gates, validation, or final orchestrator review.
 
+Say `Use subagents/delegation as needed to avoid context compaction.` when the current thread is large, recently compacted, or the task is likely to require broad exploration.
+
 ## Gates
 
 Expect the agent to stop instead of implementing when the request needs:
@@ -70,7 +72,7 @@ State constraints that would change implementation, validation, or coordination:
 - Plugin ID, package, vendor, license, Marketplace, signing, or CI constraints.
 - Manual sandbox validation scope, especially AI Assistant, Git staging area, commit-only, commit-and-push, and push behavior.
 - Delegation preference: optional delegation, read-only sidecars only, disjoint write scopes, or no delegation.
-- Context protection: say `Use a fresh delegated worker before broad exploration or edits if this thread is large or the task may trigger compaction.`
+- Context protection: say `Use subagents/delegation as needed to avoid context compaction.`
 - Environment or tool limits: no subagents, no network, no browser tools, read-only filesystem, unavailable validation tools, locked files, or commands that must not be run.
 
 ## Validation To Ask For
