@@ -45,6 +45,7 @@ Use this guide when adding or updating repository documentation.
 - Route artifact refs by filename prefix before broad search: `adr-NNNN` to `docs/decisions/`, `PLAN-<slug>` to `.agents/plans/` then `.agents/plans/archive/`, `PROP-<slug>` to `docs/proposals/` then `docs/proposals/archive/`, and `T-<AREA>-NNN` to `TASKS.md` then `TASKS_ARCHIVE.md`.
 - Give open questions `Q-<AREA>-NNN` refs in `docs/decisions/OPEN_QUESTIONS.md`, for example `Q-UX-001`.
 - Give every `TASKS.md` and `TASKS_ARCHIVE.md` item a `T-AREA-NNN` task ref, keep the ref stable when wording or ordering changes, and do not renumber existing task refs.
+- Do not duplicate Markdown headings within `TASKS.md` or within `TASKS_ARCHIVE.md`; merge task rows under the existing matching heading, and preserve date, release, plan, or domain context as text inside that section.
 - Give every plan a `Plan-ID` ref in the form `PLAN-<short-kebab-slug>`, include it in active and archived filenames, keep it stable when title, filename, status, or wording changes, and avoid strictly number-based plan refs.
 - Give every plan `Workers:` metadata and an `## Execution Graph` section with a fenced Mermaid graph.
 - Keep `.agents/prompts/` for narrow, reusable prompt recipes that are more concrete than `.agents/references/` guidance and not substantial enough to become `.agents/skills/`.

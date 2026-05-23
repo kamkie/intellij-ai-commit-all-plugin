@@ -4,15 +4,41 @@ Completed tasks move here from [TASKS.md](TASKS.md) only after the work is finis
 
 Preserve `T-AREA-NNN` task refs, wording, grouping, and evidence links when moving entries unless a small clarity fix is needed.
 
-Archived as of 2026-05-23 user documentation rebuild.
-
 ### Documentation
+
+Archived as of 2026-05-23 user documentation rebuild.
 
 - [x] T-DOC-022: add troubleshooting and FAQ guidance for missing or disabled AI Assistant, AI generation timeout, hidden or disabled controls, push fallback to the IDE dialog, outgoing-only push stops, unresolved conflicts, and background VCS operations. (`docs/troubleshooting.md`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check`)
 
-Archived as of 2026-05-20 workflow coverage and JaCoCo gate.
+Archived as of 2026-05-20 backlog triage.
+
+- [x] T-DOC-021: add a Settings reference table in `README.md` covering timeout, completion-check interval, clear-message default, and shortcut takeover. (`README.md`)
+
+Archived as of 2026-05-20 README refresh.
+
+- [x] T-DOC-016: update README. (`README.md`, `CHANGELOG.md`; validation: `scripts\validate-docs.ps1`)
+
+Archived as of orchestrated `AI Commit All` workflow implementation.
+
+- [x] T-DOC-001: Update `README.md` with setup and usage instructions. (Plan `PLAN-user-documentation`, Task 1)
+- [x] T-DOC-002: Document supported IDE versions. (ADR 0008)
+- [x] T-DOC-003: Document AI Assistant dependency and limitations. (Plan `PLAN-user-documentation`, Task 1)
+- [x] T-DOC-004: Document how to run the sandbox IDE. (Plan `PLAN-user-documentation`, Task 1)
+- [x] T-DOC-005: Document known unsupported cases. (Plan `PLAN-user-documentation`, Task 1)
+- [x] T-DOC-006: Document license in `README.md`. (ADR 0018)
+- [x] T-DOC-007: Document source code location for users and contributors once Marketplace metadata exists. (Plan `PLAN-user-documentation`, Task 2)
+- [x] T-DOC-008: Document the contributor-facing release and publication process after release automation is configured. (Plan `PLAN-user-documentation`, Task 2)
+- [x] T-DOC-009: Add root `CHANGELOG.md` for notable unreleased and released changes. (ADR 0029)
+- [x] T-DOC-010: Add root `SUPPORT.md` for support status and issue-reporting expectations. (ADR 0029)
+- [x] T-DOC-011: Add rule to avoid automatically loading every AI instruction file. (ADR 0031)
+- [x] T-DOC-012: Add non-number-only plan refs. (ADR 0032)
+- [x] T-DOC-013: Add `docs/proposals/` with proposal rules, template, and archive marker. (ADR 0033)
+- [x] T-DOC-014: Add proposal refs. (ADR 0034)
+- [x] T-DOC-015: Archive completed plans, proposals, and tasks.
 
 ### Testing
+
+Archived as of 2026-05-20 workflow coverage and JaCoCo gate.
 
 - [x] T-TEST-003: increase test coverage (umbrella completed by T-TEST-004 through T-TEST-009). Current JaCoCo line coverage is 68.2% overall; weakest packages are `aicommitall` root (0%), `vcs` (54.7%), `workflow` (56.9%), and `notifications` (68.4%). (validation: `.\gradlew.bat test jacocoTestReport`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
 - [x] T-TEST-007: increase coverage in the `workflow` package, targeting `AiCommitAllWorkflowCoordinator`, `CommitWorkflowExecutionService`, and `CommitMessageUserEditSignal` running, timeout, and user-edit branches. (`src/test/kotlin/.../workflow/AiCommitAllWorkflowCoordinatorTest.kt`, `src/test/kotlin/.../workflow/CommitWorkflowExecutionServiceTest.kt`, `src/test/kotlin/.../ai/CommitMessageUserEditSignalTest.kt`; validation: red `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowCoordinatorTest" --tests "pl.devopssolutions.aicommitall.ai.CommitMessageUserEditSignalTest" --tests "pl.devopssolutions.aicommitall.workflow.CommitWorkflowExecutionServiceTest"` failed on missing `AiCommitAllWorkflowStarter`; green same command, `.\gradlew.bat test jacocoTestReport`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
@@ -20,37 +46,24 @@ Archived as of 2026-05-20 workflow coverage and JaCoCo gate.
 
 Archived as of 2026-05-20 VCS coverage.
 
-### Testing
-
 - [x] T-TEST-006: increase coverage in the `vcs` package, targeting `ReflectiveCommitWorkflowSynchronizer`, `SafeImmediatePushService`, `GitOutgoingCommitsService`, and `GitStageConfirmation` happy and fallback branches. (`src/test/kotlin/.../vcs/SafeImmediatePushServiceTest.kt`, `src/test/kotlin/.../vcs/GitOutgoingCommitsServiceTest.kt`, `src/test/kotlin/.../workflow/ReflectiveCommitWorkflowSynchronizerTest.kt`; validation: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.vcs.SafeImmediatePushServiceTest"`, `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.vcs.GitOutgoingCommitsServiceTest"`, `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.workflow.ReflectiveCommitWorkflowSynchronizerTest"`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
 
 Archived as of 2026-05-20 notification service coverage.
-
-### Testing
 
 - [x] T-TEST-005: add tests for `AiCommitAllNotificationService` notification routing and group registration so the `notifications` package leaves 0% coverage. (`src/test/kotlin/.../notifications/AiCommitAllNotificationServiceTest.kt`; validation: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.notifications.AiCommitAllNotificationServiceTest"`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
 
 Archived as of 2026-05-20 settings configurable coverage.
 
-### Testing
-
 - [x] T-TEST-004: add unit tests for `AiCommitAllConfigurable` covering `createComponent`, `isModified`, `apply`, and `reset` for every setting field, including invalid input paths. (`src/test/kotlin/.../settings/AiCommitAllConfigurableTest.kt`; validation: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.settings.AiCommitAllConfigurableTest"`, `.\gradlew.bat test`, `.\gradlew.bat jacocoTestReport`)
 
 Archived as of 2026-05-20 backlog triage.
 
-### Documentation
-
-- [x] T-DOC-021: add a Settings reference table in `README.md` covering timeout, completion-check interval, clear-message default, and shortcut takeover. (`README.md`)
-
-### Testing
-
 - [x] T-TEST-008: add branch-coverage tests for `AiGenerationCompletionObserver` for empty message, unchanged message, focus-loss, and user-edit-during-generation paths. (`src/test/kotlin/.../ai/AiGenerationCompletionObserverTest.kt`)
 
-Archived as of 2026-05-20 README refresh.
+Archived as of 2026-05-18 backlog cleanup.
 
-### Documentation
-
-- [x] T-DOC-016: update README. (`README.md`, `CHANGELOG.md`; validation: `scripts\validate-docs.ps1`)
+- [x] T-TEST-001: we need many more test cases for the three-section AI commit push control.
+- [x] T-TEST-002: we need to automate the test cases for the three-section AI commit push control as much as possible.
 
 Archived as of 2026-05-18 backlog cleanup.
 
@@ -67,11 +80,6 @@ Archived as of 2026-05-18 backlog cleanup.
 
 - [x] T-UI-002: move button to the right of the `Commit and Push...` button.
 - [x] T-UI-003: button corners do not match the rest of the buttons.
-
-### Testing
-
-- [x] T-TEST-001: we need many more test cases for the three-section AI commit push control.
-- [x] T-TEST-002: we need to automate the test cases for the three-section AI commit push control as much as possible.
 
 Archived as of orchestrated `AI Commit All` workflow implementation.
 
@@ -157,24 +165,6 @@ Archived as of orchestrated `AI Commit All` workflow implementation.
 - [x] T-VAL-020: Add local-repository E2E coverage for modified, added, deleted, moved or renamed, unversioned, ignored, multi-changelist, and multi-root states. (Plan `PLAN-validation-coverage`, Task 2)
 - [x] T-VAL-021: Add local-repository E2E coverage for commit-only and commit-and-push using a local remote where safe. (Plan `PLAN-validation-coverage`, Task 2)
 - [x] T-VAL-022: Keep manual sandbox scenarios for E2E cases that cannot be automated reliably yet. (Plan `PLAN-validation-coverage`, Task 3)
-
-### Documentation
-
-- [x] T-DOC-001: Update `README.md` with setup and usage instructions. (Plan `PLAN-user-documentation`, Task 1)
-- [x] T-DOC-002: Document supported IDE versions. (ADR 0008)
-- [x] T-DOC-003: Document AI Assistant dependency and limitations. (Plan `PLAN-user-documentation`, Task 1)
-- [x] T-DOC-004: Document how to run the sandbox IDE. (Plan `PLAN-user-documentation`, Task 1)
-- [x] T-DOC-005: Document known unsupported cases. (Plan `PLAN-user-documentation`, Task 1)
-- [x] T-DOC-006: Document license in `README.md`. (ADR 0018)
-- [x] T-DOC-007: Document source code location for users and contributors once Marketplace metadata exists. (Plan `PLAN-user-documentation`, Task 2)
-- [x] T-DOC-008: Document the contributor-facing release and publication process after release automation is configured. (Plan `PLAN-user-documentation`, Task 2)
-- [x] T-DOC-009: Add root `CHANGELOG.md` for notable unreleased and released changes. (ADR 0029)
-- [x] T-DOC-010: Add root `SUPPORT.md` for support status and issue-reporting expectations. (ADR 0029)
-- [x] T-DOC-011: Add rule to avoid automatically loading every AI instruction file. (ADR 0031)
-- [x] T-DOC-012: Add non-number-only plan refs. (ADR 0032)
-- [x] T-DOC-013: Add `docs/proposals/` with proposal rules, template, and archive marker. (ADR 0033)
-- [x] T-DOC-014: Add proposal refs. (ADR 0034)
-- [x] T-DOC-015: Archive completed plans, proposals, and tasks.
 
 ### Publishing, Signing, Marketplace, And CI
 

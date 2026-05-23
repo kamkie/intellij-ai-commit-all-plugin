@@ -127,6 +127,24 @@ if (Test-Path -LiteralPath $tasksPath) {
     }
 }
 
+foreach ($taskDocumentName in @('TASKS.md', 'TASKS_ARCHIVE.md'))
+{
+    $taskDocumentPath = Join-Path $repoRoot $taskDocumentName
+    if (-not (Test-Path -LiteralPath $taskDocumentPath))
+    {
+        continue
+    }
+
+    $taskDocumentText = Get-Content -Raw -LiteralPath $taskDocumentPath
+    $headingGroups = [regex]::Matches($taskDocumentText, '(?m)^#{1,6}\s+(.+?)\s*$') |
+        ForEach-Object { $_.Groups[1].Value.Trim() } |
+        Group-Object
+    foreach ($headingGroup in $headingGroups | Where-Object { $_.Count -gt 1 })
+    {
+        Add-ValidationError "$taskDocumentName contains duplicate Markdown heading '$( $headingGroup.Name )'"
+    }
+}
+
 $openQuestionsPath = Join-Path $repoRoot 'docs/decisions/OPEN_QUESTIONS.md'
 if (Test-Path -LiteralPath $openQuestionsPath)
 {
