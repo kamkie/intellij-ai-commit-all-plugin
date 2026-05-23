@@ -16,7 +16,7 @@ Constraints:
 Validation expected:
 ```
 
-For small requests, a stable ID, file path, prompt name, or concrete bug report is enough. The agent should use `AGENTS.md` lookup rules to find the owning artifact.
+For small requests, a ref, file path, prompt name, or concrete bug report is enough. A ref is a durable artifact name such as `T-BUG-013`, `adr-0074`, or `PLAN-<slug>`. The agent should use `AGENTS.md` lookup rules to find the owning artifact.
 
 Prefer naming what must be true after the work over naming every file the agent should read. The repository guidance already tells agents how to find ADRs, plans, tasks, prompts, and owner docs.
 
@@ -45,9 +45,9 @@ Expect the agent to stop instead of implementing when the request needs:
 
 Implementation from a plan should start only after you explicitly approve that plan and any required ADR is accepted.
 
-## References To Name
+## Refs To Name
 
-Name stable IDs or files when they are relevant:
+Name refs or files when they are relevant:
 
 - `T-<AREA>-NNN` for backlog tasks in `TASKS.md` or `TASKS_ARCHIVE.md`.
 - `adr-NNNN` for decisions in `docs/decisions/`.
@@ -77,7 +77,7 @@ State constraints that would change implementation, validation, or coordination:
 Ask for validation that matches the risk:
 
 - Documentation or AI-guidance changes: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1` and `git diff --check`.
-- Repository references, skills, prompts, or plans: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\ai\validate-agent-artifacts.ps1`.
+- Repository refs, skills, prompts, or plans: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\ai\validate-agent-artifacts.ps1`.
 - Kotlin or Gradle changes: `.\gradlew.bat spotlessCheck`, focused tests, and broader tests when shared behavior changes.
 - Detekt cleanup: `.\gradlew.bat detekt`.
 - Plugin packaging or descriptor changes: `.\gradlew.bat buildPlugin` and `.\gradlew.bat verifyPluginStructure`.
