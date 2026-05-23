@@ -25,6 +25,8 @@ Validation expected:
 
 For bug reports, include what happened, what you expected, the action that triggered it, relevant refs or file/log paths, and any validation already run.
 
+Prompt: `bug-report-triage.md`.
+
 For screenshots or concept images, include the file path, what state it shows, and what feedback you want.
 
 ## Common Controls
@@ -220,6 +222,8 @@ Review focuses:
 - Read-only sidecar review for a second pass without edits.
 
 Prompts: `repository-quality-audit.md`, `plugin-compatibility-sweep.md`, `ci-failure-triage.md`.
+
+For a final handoff check before committing or stopping, use `change-closeout.md`.
 
 ### 9. Commit
 

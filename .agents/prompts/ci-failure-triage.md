@@ -12,6 +12,7 @@ Analyze a GitHub Actions, local CI, Gradle, lint, docs validation, or packaging 
 - the failing command output, CI log excerpt, workflow run link, job name, or failing check supplied by the user
 
 Load workflow files, Gradle files, docs validation scripts, source files, tests, or plugin metadata only after identifying the failing check class.
+Use the `gh-fix-ci-security-quality` skill when triage requires GitHub CLI inspection of workflow runs, PR checks, GitHub Actions logs, code scanning, Dependabot, or GitHub security and quality alerts.
 Use official or primary-source documentation only when current tool behavior, version compatibility, or API semantics need verification.
 
 ## Output
