@@ -17,7 +17,7 @@ Compact standing AI instruction files without changing the current policy.
     - `.agents/prompts/*.md`
     - `.agents/skills/*/SKILL.md`
     - `docs/DEVELOPMENT_LIFECYCLE.md`
-        - `docs/WORKING_WITH_AI.md`
+  - `docs/WORKING_WITH_AI.md`
 
 ## Output
 
