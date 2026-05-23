@@ -21,7 +21,7 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-None.
+- `PLAN-user-documentation-rebuild` - User Documentation Rebuild ([PLAN-user-documentation-rebuild.md](PLAN-user-documentation-rebuild.md)), draft companion to proposed ADR 0076.
 
 ## Archived Plans
 
