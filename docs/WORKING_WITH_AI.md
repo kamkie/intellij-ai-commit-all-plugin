@@ -188,13 +188,13 @@ Use read-only sidecars for exploration and review. Keep writes in <files or dirs
 
 Match validation to the risk.
 
-- Documentation or AI-guidance changes: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1` and `git diff --check`.
-- Repository refs, skills, prompts, or plans: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\ai\validate-agent-artifacts.ps1`.
-- Kotlin or Gradle changes: `.\gradlew.bat spotlessCheck`, focused tests, and broader tests when shared behavior changes.
-- Detekt cleanup: `.\gradlew.bat detekt`.
-- Plugin packaging or descriptor changes: `.\gradlew.bat buildPlugin` and `.\gradlew.bat verifyPluginStructure`.
-- Compatibility-sensitive changes: plugin verifier and targeted sandbox checks.
-- Runtime commit, push, AI Assistant, or UI workflow changes: targeted automated tests plus manual sandbox evidence where the live IDE owns the behavior.
+Useful request phrases:
+
+- `Run docs validation and whitespace checks.`
+- `Run focused tests for the changed behavior.`
+- `Run formatting or lint checks for Kotlin or Gradle changes.`
+- `Run plugin packaging or descriptor validation.`
+- `Run compatibility or sandbox checks for IDE, commit, push, AI Assistant, or UI workflow changes.`
 
 Request:
 
