@@ -12,7 +12,7 @@ This project is a pre-release IntelliJ Platform plugin repository. No Marketplac
 - Current VCS scope: Git only, including multiple Git roots.
 - JetBrains AI Assistant is declared as a required plugin dependency.
 - Manual sandbox validation remains required before release-readiness claims for final control rendering, staging-area modes, shortcut takeover, AI Assistant unavailable states, and full commit/push UI behavior.
-- Marketplace signing and publishing are configured through gated automation. The release workflow runs only from `main`, validates documentation, formatting, Detekt, tests, coverage, plugin structure, packaging, and the supported IDE verifier matrix before signing and publishing.
+- Marketplace signing and publishing are configured through gated automation. The release workflow runs only from `main` at the requested annotated release tag, validates documentation, formatting, Detekt, tests, coverage, plugin structure, packaging, and the supported IDE verifier matrix before signing and publishing.
 
 See [README.md](README.md) for the current supported scope decisions.
 

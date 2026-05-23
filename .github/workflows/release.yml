@@ -3,6 +3,9 @@ name: Release
 on:
   workflow_dispatch:
     inputs:
+      release_tag:
+        description: Annotated semantic version tag to publish.
+        required: true
       publish_channel:
         description: JetBrains Marketplace channel.
         required: true
@@ -19,12 +22,50 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Reject non-main release ref
         if: ${{ github.ref != 'refs/heads/main' }}
         run: |
           echo "Release publication must run from main." >&2
           exit 1
+
+      - name: Verify annotated release tag
+        shell: bash
+        env:
+          EXPECTED_RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "${EXPECTED_RELEASE_TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$ ]]; then
+            echo "Release tag must use vMAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH-PRERELEASE." >&2
+            exit 1
+          fi
+
+          mapfile -t release_tags < <(
+            git for-each-ref --points-at HEAD --format='%(refname:short) %(objecttype)' refs/tags |
+              while read -r tag_name object_type; do
+                if [[ "${object_type}" == "tag" && "${tag_name}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$ ]]; then
+                  echo "${tag_name}"
+                fi
+              done
+          )
+
+          if [[ "${#release_tags[@]}" -ne 1 ]]; then
+            echo "Release publication requires exactly one annotated semantic-version tag on HEAD." >&2
+            echo "Tags on HEAD:" >&2
+            git for-each-ref --points-at HEAD --format='%(refname:short) (%(objecttype))' refs/tags >&2 || true
+            exit 1
+          fi
+
+          release_tag="${release_tags[0]}"
+          if [[ "${release_tag}" != "${EXPECTED_RELEASE_TAG}" ]]; then
+            echo "Requested release tag ${EXPECTED_RELEASE_TAG} does not match checked-out tag ${release_tag}." >&2
+            exit 1
+          fi
+
+          echo "Release tag ${release_tag} verified."
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5

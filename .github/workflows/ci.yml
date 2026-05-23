@@ -40,9 +40,9 @@ jobs:
       - name: Check formatting
         run: ./gradlew spotlessCheck
 
-      - name: Validate documentation
+      - name: Validate documentation and agent artifacts
         shell: pwsh
-        run: scripts/validate-docs.ps1
+        run: scripts/ai/validate-agent-artifacts.ps1
 
       - name: Run Detekt static analysis
         id: detekt-analysis

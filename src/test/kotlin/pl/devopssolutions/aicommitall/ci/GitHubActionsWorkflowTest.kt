@@ -80,6 +80,25 @@ internal class GitHubActionsWorkflowTest {
     }
 
     @Test
+    fun `ci workflow validates repository agent artifacts`() {
+        val content = Files.readString(Path.of(".github", "workflows", "ci.yml"))
+
+        assertTrue(
+            content.contains("Validate documentation and agent artifacts"),
+            "CI workflow must name the combined documentation and agent-artifact validation gate.",
+        )
+        assertTrue(
+            content.contains("scripts/ai/validate-agent-artifacts.ps1"),
+            "CI workflow must run repository agent-artifact validation.",
+        )
+        assertTrue(
+            content.indexOf("Validate documentation and agent artifacts") <
+                content.indexOf("Run Detekt static analysis"),
+            "CI workflow must validate repository docs and agent artifacts before static analysis.",
+        )
+    }
+
+    @Test
     fun `jacoco report uses intellij instrumented production classes`() {
         val content = Files.readString(Path.of("build.gradle.kts"))
 
@@ -397,6 +416,26 @@ internal class GitHubActionsWorkflowTest {
             "Release workflow must reject manual publication from non-main refs.",
         )
         assertTrue(
+            content.contains("release_tag:"),
+            "Release workflow must require the intended release tag as a manual input.",
+        )
+        assertTrue(
+            content.contains("fetch-depth: 0"),
+            "Release workflow must fetch full history and tags before validating the release tag.",
+        )
+        assertTrue(
+            content.contains("Verify annotated release tag"),
+            "Release workflow must verify that the current main commit has an annotated release tag.",
+        )
+        assertTrue(
+            content.contains("git for-each-ref --points-at HEAD"),
+            "Release workflow must inspect tags pointing at the checked-out release commit.",
+        )
+        assertTrue(
+            content.contains("EXPECTED_RELEASE_TAG: \${{ inputs.release_tag }}"),
+            "Release workflow must compare the checked-out tag with the requested release tag.",
+        )
+        assertTrue(
             content.contains("actions/setup-node@v6"),
             "Release workflow must install Node.js before documentation validation.",
         )
@@ -420,6 +459,11 @@ internal class GitHubActionsWorkflowTest {
             content.indexOf("Validate release candidate") <
                 content.indexOf("Sign and publish to JetBrains Marketplace"),
             "Release workflow must finish validation before signing and publishing.",
+        )
+        assertTrue(
+            content.indexOf("Verify annotated release tag") <
+                content.indexOf("Validate release candidate"),
+            "Release workflow must validate the annotated tag before building the release candidate.",
         )
     }
 

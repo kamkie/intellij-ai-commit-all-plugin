@@ -4,7 +4,7 @@
 ## Validation
 
 - [ ] `.\gradlew.bat spotlessCheck`
-- [ ] `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1`
+- [ ] `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\ai\validate-agent-artifacts.ps1`
 - [ ] `.\gradlew.bat test`
 - [ ] `.\gradlew.bat buildPlugin`
 - [ ] Manual sandbox validation updated or not required
