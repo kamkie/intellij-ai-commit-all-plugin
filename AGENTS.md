@@ -61,7 +61,7 @@ When instructions overlap, apply this project-specific order:
 - Do not load every AI instruction file automatically; start from this file and then read only the specific mapped guidance needed for the current task.
 - Do not read `docs/WORKING_WITH_AI.md` during normal agent workflow; it owns human-facing guidance for asking AI to work here.
 - Follow `docs/decisions/README.md` for ADR requirements, project decisions, and repository rule changes.
-- When a requested change requires creating an ADR, create the ADR first and stop. Continue only after the user reviews and explicitly accepts it.
+- When a requested change requires creating an ADR, create the ADR and stop. If the request clearly also requires a later implementation plan, create the proposed ADR and companion draft plan in the same step, then stop. Continue only after the user reviews and explicitly accepts the ADR; implementation from the plan still requires explicit plan approval.
 - When work needs an implementation plan, create or update the plan first and stop. Start implementation only after the user reviews and explicitly approves the plan.
 - Update specs or docs before or alongside behavior changes when behavior changes.
 - Run validation that matches the diff and risk.

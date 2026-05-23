@@ -12,7 +12,7 @@ Use the direct one-off loop for ad hoc user requests, `TASKS.md` items, narrow d
 
 Use the approved-plan task loop when working from an approved plan or a post-approval plan status.
 
-If a request requires a new ADR or implementation plan, create or update that artifact first and stop for the required acceptance or approval before implementation starts.
+If a request requires a new ADR or implementation plan, create or update the required artifact first and stop for the required acceptance or approval before implementation starts. If the request clearly requires both an ADR and a later implementation plan, create the proposed ADR and companion draft plan in the same step, then stop.
 
 ## Direct One-Off Loop
 
@@ -72,7 +72,7 @@ After moving a `TASKS.md` task to `TASKS_ARCHIVE.md`, rerun documentation valida
 - Prefer existing IntelliJ Platform and Gradle plugin conventions over custom infrastructure.
 - Publishing, signing, Marketplace metadata, and CI are in scope per ADR 0019; do not add unrelated release or operations files outside that scope.
 - Follow `docs/decisions/README.md` for ADR requirements before changing governed implementation, workflow guidance, backlog, validation rules, or related behavior.
-- If a requested change needs a plan, create or update the plan first and stop. Do not start implementation until the user has reviewed and explicitly approved the plan.
+- If a requested change needs a plan instead of an ADR, create or update the plan first and stop. If it clearly needs both an ADR and a later plan, follow `docs/decisions/README.md` for the companion draft plan flow. Do not start implementation until the ADR is accepted when required and the user has reviewed and explicitly approved the plan.
 - When an agent updates plan status during autonomous, orchestrated, or delegated implementation, record the status-history actor as the responsible agent identity in `Name <email>` form. Preserve `Approved by:` as the human approval identity unless the user explicitly changes it.
 
 ## Commit Rules
@@ -102,7 +102,7 @@ For orchestrated multi-agent commits:
 
 ## Stop Conditions
 
-Stop and follow the ADR flow in `docs/decisions/README.md` when it requires an ADR.
+Stop and follow the ADR flow in `docs/decisions/README.md` when a request requires an ADR. That flow may include a companion draft plan when both artifacts are clearly required.
 
 Stop after creating or updating a required plan and wait for explicit user approval before implementation starts.
 

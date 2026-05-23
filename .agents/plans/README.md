@@ -16,6 +16,7 @@ This directory holds task-specific implementation plans for work that is too lar
 - Link unresolved user input back to `docs/decisions/OPEN_QUESTIONS.md`, and move accepted project decisions or repository rule changes to `docs/decisions/`.
 - Follow `.agents/references/planning.md` for plan readiness and task-packet shape, `.agents/references/orchestration.md` for worker orchestration, packet dispatch, parallel synchronization, worker events, and result summaries, and `.agents/references/execution.md` for approved-plan task execution and per-task commits.
 - Creating or updating a plan is not approval to implement. Implementation may start only after explicit user review and approval, recorded in `Approved by:` when the plan becomes approved.
+- A plan drafted as a companion to a proposed ADR must stay `Status: Draft`, name the proposed ADR, and state that implementation is blocked until ADR acceptance and later explicit plan approval.
 - Move closed plans to `archive/` only after the plan no longer needs active execution or release-preparation updates. Preserve the `Plan-ID`, filename, and close reason.
 
 ## Active Plans

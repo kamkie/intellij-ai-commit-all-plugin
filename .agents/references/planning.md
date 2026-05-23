@@ -15,7 +15,7 @@ Create or update a plan when:
 
 Do not create a plan for small documentation cleanup unless the user asks for one.
 
-When a requested change needs a plan, create or update the plan first and stop. Do not start implementation until the user has reviewed and explicitly approved the plan.
+When a requested change needs a plan instead of an ADR, create or update the plan first and stop. When a requested change clearly needs both an ADR and a later plan, follow `docs/decisions/README.md` and create a companion draft plan with the proposed ADR. Do not start implementation until the required ADR is accepted and the user has reviewed and explicitly approved the plan.
 
 ## Plan Location
 
@@ -62,6 +62,7 @@ A useful plan should include:
 - For approved and post-approval plans, set `Approved by:` to the configured Git identity in `Name <email>` form unless the current user request explicitly supplies another approver name.
 - For approved and post-approval plans, set `Approved at:` to the ISO 8601 timestamp with timezone offset when approval was recorded.
 - Draft or otherwise unapproved plans must not claim approval; omit `Approved by:` or leave it empty.
+- Companion plans drafted with proposed ADRs must remain `Status: Draft`, must name the proposed ADR, and must state in `## Readiness` that implementation is blocked on ADR acceptance and later explicit plan approval.
 - Every plan status change must append a `## Status History` entry in the form `<timestamp>: <from-status> -> <to-status> by <actor Name <email>>; <reason>`. `Status:` remains canonical and must match the latest status-history entry.
 - Status-history actors are separate from `Approved by:`. Use the actor that caused the specific transition.
 - For direct human commands that record a human decision or requested state change, use the configured Git identity in `Name <email>` form unless the current request explicitly supplies another human identity.
@@ -110,6 +111,7 @@ Before editing from a plan:
 - Confirm the plan has `Status: Approved` from explicit user approval.
 - Confirm `Approved by:` records the approver.
 - Confirm `Approved at:` records the approval timestamp.
+- Confirm every required ADR is accepted, including any ADR that produced a companion draft plan.
 - Confirm every plan question and required decision is answered, decided, or explicitly assumed under the current request.
 - Update the plan status to `In Progress` when implementation starts and keep `## Readiness` current.
 - Append the matching `Approved -> In Progress` entry to `## Status History` with the status-history actor selected by action source.

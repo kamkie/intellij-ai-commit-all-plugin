@@ -42,7 +42,7 @@ Constraints: Do not delegate. <or> Delegation is allowed if useful.
 Validation expected:
 ```
 
-Use direct one-off work for small documentation updates, focused bug fixes, or narrow cleanup that does not need a new ADR or implementation plan. If the agent discovers that an ADR, plan, or missing decision is required, it should stop at that gate instead of implementing.
+Use direct one-off work for small documentation updates, focused bug fixes, or narrow cleanup that does not need a new ADR or implementation plan. If the agent discovers that an ADR, plan, or missing decision is required, it should stop at that gate instead of implementing. When both an ADR and a later plan are clearly required, the agent may draft the proposed ADR and companion draft plan together, then stop.
 
 For delegated one-off work, make the main agent's orchestration role and write boundaries explicit:
 
@@ -126,12 +126,12 @@ State any constraint that would change the implementation or validation path:
 
 The agent should stop instead of implementing when the requested work needs:
 
-- A new or superseding repository decision: follow the ADR flow in `docs/decisions/README.md`.
-- A multi-step implementation plan: create or update the plan first.
+- A new or superseding repository decision: follow the ADR flow in `docs/decisions/README.md`. When a later plan is clearly required too, expect a proposed ADR plus companion draft plan in one stop.
+- A multi-step implementation plan without a required ADR: create or update the plan first.
 - Missing user input: record or point to `docs/decisions/OPEN_QUESTIONS.md`.
 - Maintainer triage of findings or options: create a proposal instead of implementing.
 
-Implementation from a plan should start only after you explicitly approve that plan.
+Implementation from a plan should start only after you explicitly approve that plan and any required ADR is accepted.
 
 Delegation cannot bypass these stops. A delegated one-off request or review-only sidecar request should still stop at the ADR, plan, missing-input, or proposal gate when that gate applies.
 
