@@ -26,6 +26,7 @@ import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowUi
 import java.awt.event.InputEvent
 import java.lang.reflect.Proxy
+import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -62,6 +63,88 @@ internal class AiCommitMessageActionInvokerTest {
         assertSame(project, actionSystemInvoker.dataContext?.getData(CommonDataKeys.PROJECT))
         assertSame(workflowHandler, actionSystemInvoker.dataContext?.getData(VcsDataKeys.COMMIT_WORKFLOW_HANDLER))
         assertSame(workflowUi, actionSystemInvoker.dataContext?.getData(VcsDataKeys.COMMIT_WORKFLOW_UI))
+    }
+
+    @Test
+    fun `invokes action discovered after transient missing lookup`() {
+        val actionReference = AiCommitMessageActionReference(
+            action = TestAction(),
+            actionId = "Vcs.LLMCommitMessageAction",
+            source = AiCommitMessageActionSource.KnownActionId,
+        )
+        val actionFinder = SequenceActionFinder(null, actionReference)
+        val actionSystemInvoker = CapturingActionSystemInvoker()
+
+        val result = AiCommitMessageActionInvoker(
+            actionFinder = actionFinder,
+            actionSystemInvoker = actionSystemInvoker,
+            dataContextFactory = TestDataContextFactory,
+        ).invokeCommitMessageGeneration(
+            project = testProxy(),
+            workflowHandler = testProxy(),
+            workflowUi = testWorkflowUi(),
+        )
+
+        val invoked = assertIs<AiCommitMessageActionInvocationResult.Invoked>(result)
+        assertEquals("Vcs.LLMCommitMessageAction", invoked.actionId)
+        assertEquals(2, actionFinder.callCount)
+        assertSame(actionReference, actionSystemInvoker.actionReference)
+    }
+
+    @Test
+    fun `returns missing action after bounded discovery retry is exhausted`() {
+        val lateActionReference = AiCommitMessageActionReference(
+            action = TestAction(),
+            actionId = "Vcs.LLMCommitMessageAction",
+            source = AiCommitMessageActionSource.KnownActionId,
+        )
+        val actionFinder = SequenceActionFinder(
+            null,
+            null,
+            null,
+            lateActionReference,
+        )
+        val actionSystemInvoker = CapturingActionSystemInvoker()
+
+        val result = AiCommitMessageActionInvoker(
+            actionFinder = actionFinder,
+            actionSystemInvoker = actionSystemInvoker,
+            dataContextFactory = TestDataContextFactory,
+        ).invokeCommitMessageGeneration(
+            project = testProxy(),
+            workflowHandler = testProxy(),
+            workflowUi = testWorkflowUi(),
+        )
+
+        assertEquals(AiCommitMessageActionInvocationResult.MissingAction, result)
+        assertEquals(3, actionFinder.callCount)
+        assertNull(actionSystemInvoker.actionReference)
+    }
+
+    @Test
+    fun `discovery sleeper does not block dispatch thread`() {
+        val delays = mutableListOf<Long>()
+        val sleeper = DispatchAwareAiCommitMessageActionDiscoverySleeper(
+            isDispatchThread = { true },
+            sleepMillis = { delay -> delays += delay },
+        )
+
+        sleeper.sleep(Duration.ofMillis(50))
+
+        assertEquals(emptyList(), delays)
+    }
+
+    @Test
+    fun `discovery sleeper waits outside dispatch thread`() {
+        val delays = mutableListOf<Long>()
+        val sleeper = DispatchAwareAiCommitMessageActionDiscoverySleeper(
+            isDispatchThread = { false },
+            sleepMillis = { delay -> delays += delay },
+        )
+
+        sleeper.sleep(Duration.ofMillis(50))
+
+        assertEquals(listOf(50L), delays)
     }
 
     @Test
@@ -118,6 +201,18 @@ internal class AiCommitMessageActionInvokerTest {
         var callCount = 0
 
         override fun findCommitMessageAction(event: AnActionEvent?): AiCommitMessageActionReference? {
+            callCount++
+            return actionReference
+        }
+    }
+
+    private class SequenceActionFinder(
+        private vararg val actionReferences: AiCommitMessageActionReference?,
+    ) : AiCommitMessageActionFinder {
+        var callCount = 0
+
+        override fun findCommitMessageAction(event: AnActionEvent?): AiCommitMessageActionReference? {
+            val actionReference = actionReferences.getOrElse(callCount) { actionReferences.lastOrNull() }
             callCount++
             return actionReference
         }

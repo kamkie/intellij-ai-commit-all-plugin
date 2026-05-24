@@ -85,6 +85,7 @@ internal class AiGenerationCompletionObserver(
         val startedAtMillis = timeSource.nowMillis()
         var observedRunning = false
         var stoppedWithUnusableMessageAtMillis: Long? = null
+        var unavailableSignalStartedAtMillis: Long? = null
         var result: AiGenerationCompletionResult? = null
 
         while (result == null && timeSource.nowMillis() - startedAtMillis <= options.timeout.toMillis()) {
@@ -101,9 +102,11 @@ internal class AiGenerationCompletionObserver(
                     AiGenerationRunningState.Running -> {
                         observedRunning = true
                         stoppedWithUnusableMessageAtMillis = null
+                        unavailableSignalStartedAtMillis = null
                     }
 
                     AiGenerationRunningState.NotRunning -> {
+                        unavailableSignalStartedAtMillis = null
                         if (shouldCompleteAfterStoppedSignal(
                                 observedRunning = observedRunning,
                                 currentMessage = currentMessage,
@@ -127,9 +130,14 @@ internal class AiGenerationCompletionObserver(
                     }
 
                     AiGenerationRunningState.Unavailable -> {
-                        result = AiGenerationCompletionResult.NoCompletionSignal(
-                            latestMessage = currentMessage,
-                        )
+                        val unavailableStartedAtMillis = unavailableSignalStartedAtMillis
+                            ?: timeSource.nowMillis()
+                                .also { nowMillis -> unavailableSignalStartedAtMillis = nowMillis }
+                        if (isUnavailableSignalSettled(unavailableStartedAtMillis, options)) {
+                            result = AiGenerationCompletionResult.NoCompletionSignal(
+                                latestMessage = currentMessage,
+                            )
+                        }
                     }
                 }
             }
@@ -139,7 +147,17 @@ internal class AiGenerationCompletionObserver(
             }
         }
 
-        return result ?: AiGenerationCompletionResult.Timeout(
+        val unavailableSignalResult = unavailableSignalStartedAtMillis
+            ?.takeIf { unavailableStartedAtMillis ->
+                isUnavailableSignalSettled(unavailableStartedAtMillis, options)
+            }
+            ?.let {
+                AiGenerationCompletionResult.NoCompletionSignal(
+                    latestMessage = messageReader.readMessage(),
+                )
+            }
+
+        return result ?: unavailableSignalResult ?: AiGenerationCompletionResult.Timeout(
             timeout = options.timeout,
             latestMessage = messageReader.readMessage(),
         )
@@ -178,6 +196,16 @@ internal class AiGenerationCompletionObserver(
     ): Boolean = stoppedWithUnusableMessageAtMillis != null &&
         focusState.isApplicationFocused() &&
         timeSource.nowMillis() - stoppedWithUnusableMessageAtMillis >= options.stoppedSignalGracePeriod.toMillis()
+
+    private fun isUnavailableSignalSettled(
+        unavailableSignalStartedAtMillis: Long,
+        options: AiGenerationCompletionOptions,
+    ): Boolean = timeSource.nowMillis() - unavailableSignalStartedAtMillis >= unavailableSignalSettlingBudgetMillis(options)
+
+    private fun unavailableSignalSettlingBudgetMillis(options: AiGenerationCompletionOptions): Long = minOf(
+        options.stoppedSignalGracePeriod.toMillis(),
+        options.timeout.toMillis(),
+    )
 
     private fun stoppedWithUnusableMessageAtMillisAfter(
         observedRunning: Boolean,

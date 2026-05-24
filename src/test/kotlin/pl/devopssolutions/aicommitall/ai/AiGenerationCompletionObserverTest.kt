@@ -79,6 +79,33 @@ internal class AiGenerationCompletionObserverTest {
     }
 
     @Test
+    fun `waits through transient unavailable signal before observing running completion`() {
+        val timeSource = MutableTimeSource()
+        val signal = SequenceRunningSignal(
+            AiGenerationRunningState.Unavailable,
+            AiGenerationRunningState.Running,
+            AiGenerationRunningState.NotRunning,
+        )
+        val observer = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+        )
+
+        val result = observer.awaitCompletion(
+            snapshot = AiCommitMessageSnapshot("old message"),
+            messageReader = AiCommitMessageReader {
+                if (signal.callCount >= 3) "generated message" else "old message"
+            },
+            runningSignal = signal,
+            options = testOptions(),
+        )
+
+        val completed = assertIs<AiGenerationCompletionResult.Completed>(result)
+        assertEquals("generated message", completed.generatedMessage)
+        assertEquals(3, signal.callCount)
+    }
+
+    @Test
     fun `waits through transient stopped signal with unchanged message`() {
         val timeSource = MutableTimeSource()
         val signal = SequenceRunningSignal(
@@ -290,15 +317,36 @@ internal class AiGenerationCompletionObserverTest {
     }
 
     @Test
-    fun `does not treat message polling alone as completion evidence`() {
-        val result = AiGenerationCompletionObserver().awaitCompletion(
+    fun `returns no completion signal when running state stays unavailable through settling budget`() {
+        val timeSource = MutableTimeSource()
+        val signal = ConstantRunningSignal(AiGenerationRunningState.Unavailable)
+
+        val result = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+        ).awaitCompletion(
             snapshot = AiCommitMessageSnapshot("old message"),
             messageReader = AiCommitMessageReader { "generated message" },
-            runningSignal = ConstantRunningSignal(AiGenerationRunningState.Unavailable),
+            runningSignal = signal,
             options = testOptions(),
         )
 
         assertEquals(AiGenerationCompletionResult.NoCompletionSignal("generated message"), result)
+        assertEquals(3, signal.callCount)
+        assertEquals(1_000, timeSource.nowMillis)
+    }
+
+    @Test
+    fun `user edit wins while running signal is unavailable`() {
+        val result = AiGenerationCompletionObserver().awaitCompletion(
+            snapshot = AiCommitMessageSnapshot("old message"),
+            messageReader = AiCommitMessageReader { "user message" },
+            runningSignal = ConstantRunningSignal(AiGenerationRunningState.Unavailable),
+            userEditSignal = AiGenerationUserEditSignal { true },
+            options = testOptions(),
+        )
+
+        assertEquals(AiGenerationCompletionResult.UserEditedMessage("user message"), result)
     }
 
     @Test
@@ -329,7 +377,12 @@ internal class AiGenerationCompletionObserverTest {
     private class ConstantRunningSignal(
         private val state: AiGenerationRunningState,
     ) : AiGenerationRunningSignal {
-        override fun state(): AiGenerationRunningState = state
+        var callCount = 0
+
+        override fun state(): AiGenerationRunningState {
+            callCount++
+            return state
+        }
     }
 
     private class MutableTimeSource : AiCompletionTimeSource {

@@ -20,6 +20,7 @@ import com.intellij.openapi.actionSystem.ActionUiKind
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.ex.ActionUtil
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
@@ -27,6 +28,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowUi
 import java.awt.event.InputEvent
+import java.time.Duration
 
 @Service(Service.Level.PROJECT)
 internal class AiCommitMessageActionInvocationService(private val project: Project) {
@@ -58,7 +60,20 @@ internal class AiCommitMessageActionInvoker(
     private val actionFinder: AiCommitMessageActionFinder,
     private val actionSystemInvoker: AiActionSystemInvoker,
     private val dataContextFactory: AiInvocationDataContextFactory = IntellijAiInvocationDataContextFactory,
+    private val actionDiscoveryRetry: AiCommitMessageActionDiscoveryRetry =
+        AiCommitMessageActionDiscoveryRetry.DEFAULT,
 ) {
+    constructor(
+        actionFinder: AiCommitMessageActionFinder,
+        actionSystemInvoker: AiActionSystemInvoker,
+        dataContextFactory: AiInvocationDataContextFactory = IntellijAiInvocationDataContextFactory,
+    ) : this(
+        actionFinder = actionFinder,
+        actionSystemInvoker = actionSystemInvoker,
+        dataContextFactory = dataContextFactory,
+        actionDiscoveryRetry = AiCommitMessageActionDiscoveryRetry.DEFAULT,
+    )
+
     fun invokeCommitMessageGeneration(
         project: Project,
         workflowHandler: CommitWorkflowHandler?,
@@ -82,9 +97,12 @@ internal class AiCommitMessageActionInvoker(
         parentDataContext: DataContext,
         inputEvent: InputEvent?,
     ): AiCommitMessageActionInvocationResult {
-        val actionReference = actionFinder.findCommitMessageAction()
+        val actionReference = actionDiscoveryRetry.findCommitMessageAction(
+            project = project,
+            actionFinder = actionFinder,
+        )
         return if (actionReference == null) {
-            logger.info("AI Commit All diagnostic: AI commit message action lookup failed")
+            logger.info("AI Commit All diagnostic: AI commit message action lookup failed after bounded retry")
             AiCommitMessageActionInvocationResult.MissingAction
         } else {
             invokeCommitMessageGeneration(
@@ -161,6 +179,72 @@ internal sealed interface AiCommitMessageActionInvocationResult {
     data object MissingWorkflow : AiCommitMessageActionInvocationResult
 
     data object MissingAction : AiCommitMessageActionInvocationResult
+}
+
+internal class AiCommitMessageActionDiscoveryRetry(
+    private val maxAttempts: Int,
+    private val retryInterval: Duration,
+    private val sleeper: AiCommitMessageActionDiscoverySleeper = ThreadAiCommitMessageActionDiscoverySleeper,
+) {
+    init {
+        require(maxAttempts > 0) { "AI action discovery retry attempts must be positive." }
+        require(!retryInterval.isNegative) { "AI action discovery retry interval must not be negative." }
+    }
+
+    fun findCommitMessageAction(
+        project: Project,
+        actionFinder: AiCommitMessageActionFinder,
+    ): AiCommitMessageActionReference? {
+        repeat(maxAttempts) { attemptIndex ->
+            if (project.isDisposed) {
+                return null
+            }
+
+            val actionReference = actionFinder.findCommitMessageAction()
+            if (actionReference != null) {
+                return actionReference
+            }
+
+            if (attemptIndex < maxAttempts - 1 && !project.isDisposed) {
+                sleeper.sleep(retryInterval)
+            }
+        }
+
+        return null
+    }
+
+    companion object {
+        val DEFAULT: AiCommitMessageActionDiscoveryRetry = AiCommitMessageActionDiscoveryRetry(
+            maxAttempts = 3,
+            retryInterval = Duration.ofMillis(50),
+        )
+    }
+}
+
+internal fun interface AiCommitMessageActionDiscoverySleeper {
+    fun sleep(duration: Duration)
+}
+
+private object ThreadAiCommitMessageActionDiscoverySleeper : AiCommitMessageActionDiscoverySleeper {
+    private val delegate = DispatchAwareAiCommitMessageActionDiscoverySleeper(
+        isDispatchThread = { ApplicationManager.getApplication()?.isDispatchThread == true },
+        sleepMillis = { millis -> Thread.sleep(millis) },
+    )
+
+    override fun sleep(duration: Duration) {
+        delegate.sleep(duration)
+    }
+}
+
+internal class DispatchAwareAiCommitMessageActionDiscoverySleeper(
+    private val isDispatchThread: () -> Boolean,
+    private val sleepMillis: (Long) -> Unit,
+) : AiCommitMessageActionDiscoverySleeper {
+    override fun sleep(duration: Duration) {
+        if (!duration.isZero && !isDispatchThread()) {
+            sleepMillis(duration.toMillis())
+        }
+    }
 }
 
 internal interface AiActionSystemInvoker {
