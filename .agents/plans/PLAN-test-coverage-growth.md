@@ -15,8 +15,10 @@ Filename: `.agents/plans/PLAN-test-coverage-growth.md`
 ## Readiness
 
 - Plan readiness: Approved by Kamil Kiewisz <kamkie@outlook.com> on 2026-05-25T01:40:55+02:00 through the implementation request. Current coverage, residual targets, task packets, and continuity fields are updated from `.\gradlew.bat test jacocoTestReport`; implementation is in progress.
+- Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Approved at: 2026-05-25T01:40:55+02:00
 - Open questions: None blocking. Coverage targets are plan assumptions and can be adjusted during approval.
-- Implementation progress: T1 dispatch starting; T1 through T5 pending.
+- Implementation progress: T1 completed in commit `dea114f`; T2 dispatch pending.
 
 ## Status History
 
@@ -186,7 +188,7 @@ Validation:
 
 Escalation triggers:
 
-- Static IntelliJ service access prevents deterministic unit coverage.
+- Escalate when static IntelliJ service access prevents deterministic unit coverage.
 - A fake `AbstractCommitWorkflowHandler` cannot be built without relying on unstable platform internals.
 - Added seams would change observable commit workflow behavior.
 - A test would need to bypass the default commit gate, before-commit checks, or platform commit executor semantics instead of observing the existing service boundary.
@@ -208,18 +210,18 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence from `.agents/references/testing.md`:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Worker events:
-- Orchestrator reconciliation:
-- Changelog/docs/spec/tasks updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: completed
+- Worker: W1 (`019e5c5e-0d29-7aa1-a340-0cb20f2b7eb9`)
+- Changed files or reviewed diff: `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowResultRegistrar.kt`; workflow tests for runner, execution, result registration, selection service, push-only execution, reflective synchronization, readiness, and staging confirmation.
+- Validation evidence: red-first `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.workflow.CommitWorkflowResultRegistrarTest"` failed at `compileTestKotlin` before the listener seam; changed workflow targeted tests passed with 98 tests; `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.workflow.*"` passed with 111 tests; `.\gradlew.bat jacocoTestReport` passed with 339 tests and 1 pending; `.\gradlew.bat spotlessCheck` passed; `git diff --check` passed.
+- Self-review evidence from `.agents/references/reviews.md`: worker checked commit selection, commit/push safeguards, AI failure handling, and platform-boundary risk; orchestrator reconciled commit metadata, changed-file set, and validation claims.
+- Commit: `dea114f91992d30fe225c0adf84cbd47f43cb767`
+- Worker events: start 2026-05-25T01:40:55+02:00; stop 2026-05-25T02:03:00+02:00.
+- Orchestrator reconciliation: T1 scope stayed in workflow production/test files; production change is limited to internal result-listener extraction with production defaults preserved. Proceeding to T2.
+- Changelog/docs/spec/tasks updates: No public behavior change; no changelog, spec, or task update required. Plan result summary updated by O1.
+- Blockers: None.
+- Review risks: Broader `CommitWorkflowSelectionService` static IntelliJ-service seams were intentionally avoided; actual `AbstractCommitWorkflowHandler` parent-disposal registration remains unfixture-tested.
+- Handoff notes and next action: Dispatch T2 VCS push/outgoing coverage worker after committing this plan evidence.
 
 ### Task Packet: T2-vcs-push-and-outgoing-coverage
 
@@ -292,7 +294,7 @@ Validation:
 
 Escalation triggers:
 
-- A coverage target requires exercising private IntelliJ environment adapters instead of the existing injected environment interfaces.
+- Escalate when a coverage target requires exercising private IntelliJ environment adapters instead of the existing injected environment interfaces.
 - A local Git fixture is needed to prove path, staged-state, rename detection, move-with-content-change, or upstream behavior that fakes cannot model safely.
 
 Stop conditions:
@@ -318,7 +320,7 @@ Result summary:
 - Status: pending
 - Worker:
 - Changed files or reviewed diff:
-- Validation evidence from `.agents/references/testing.md`:
+- Validation evidence:
 - Self-review evidence from `.agents/references/reviews.md`:
 - Commit:
 - Worker events:
@@ -394,7 +396,7 @@ Validation:
 
 Escalation triggers:
 
-- A proposed test duplicates an existing observer case without adding a new branch or behavior invariant.
+- Escalate when a proposed test duplicates an existing observer case without adding a new branch or behavior invariant.
 - An uncovered line is a platform adapter that cannot be tested without a live AI Assistant dependency.
 
 Stop conditions:
@@ -418,7 +420,7 @@ Result summary:
 - Status: pending
 - Worker:
 - Changed files or reviewed diff:
-- Validation evidence from `.agents/references/testing.md`:
+- Validation evidence:
 - Self-review evidence from `.agents/references/reviews.md`:
 - Commit:
 - Worker events:
@@ -489,7 +491,7 @@ Validation:
 
 Escalation triggers:
 
-- A control-rendering branch requires pixel assertions beyond existing deterministic paint helpers.
+- Escalate when a control-rendering branch requires pixel assertions beyond existing deterministic paint helpers.
 - A test would make generated asset dimensions or screenshots part of this plan.
 
 Stop conditions:
@@ -513,7 +515,7 @@ Result summary:
 - Status: pending
 - Worker:
 - Changed files or reviewed diff:
-- Validation evidence from `.agents/references/testing.md`:
+- Validation evidence:
 - Self-review evidence from `.agents/references/reviews.md`:
 - Commit:
 - Worker events:
@@ -581,7 +583,7 @@ Validation:
 
 Escalation triggers:
 
-- Coverage target is missed after deterministic tests are added.
+- Escalate when coverage target is missed after deterministic tests are added.
 - Coverage gain comes mostly from low-value generated or platform-adapter code.
 - The maintainer requests a threshold increase.
 
@@ -603,7 +605,7 @@ Result summary:
 - Status: pending
 - Worker:
 - Changed files or reviewed diff:
-- Validation evidence from `.agents/references/testing.md`:
+- Validation evidence:
 - Self-review evidence from `.agents/references/reviews.md`:
 - Commit:
 - Worker events:
