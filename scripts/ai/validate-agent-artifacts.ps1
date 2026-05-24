@@ -440,6 +440,42 @@ function Test-AgentPlanTaskPackets
     }
 }
 
+function Test-AgentPlanResumeGate
+{
+    param(
+        [string] $Text,
+        [string] $RelativePath
+    )
+
+    $continuityMatch = [regex]::Match($Text, '(?ms)^## Long-Run Continuity\s*(.*?)(?=^## |\z)')
+    if (-not $continuityMatch.Success)
+    {
+        Add-ValidationError "$RelativePath is missing ## Long-Run Continuity"
+        return
+    }
+
+    $continuityText = $continuityMatch.Groups[1].Value
+    if ($continuityText -notmatch '(?m)^-\s+Resume docs reread:\s*')
+    {
+        Add-ValidationError "$RelativePath Long-Run Continuity is missing Resume docs reread"
+    }
+
+    foreach ($requiredReference in @(
+        'AGENTS.md',
+        '.agents/references/execution.md',
+        '.agents/references/orchestration.md',
+        '.agents/references/testing.md',
+        '.agents/references/reviews.md',
+        '.gitmessage'
+    ))
+    {
+        if ($continuityText -notlike "*$requiredReference*")
+        {
+            Add-ValidationError "$RelativePath Long-Run Continuity Resume docs reread is missing $requiredReference"
+        }
+    }
+}
+
 function Test-AgentPlans
 {
     $plansRoot = Join-Path $repoRoot '.agents/plans'
@@ -449,10 +485,14 @@ function Test-AgentPlans
     }
 
     Test-PlanCatalogLinks
+    Test-AgentPlanResumeGate `
+        -Text (Get-Content -Raw -LiteralPath (Join-Path $plansRoot 'PLAN_TEMPLATE.md')) `
+        -RelativePath '.agents/plans/PLAN_TEMPLATE.md'
 
     $allowedPlanStatuses = @('Draft', 'Approved', 'In Progress', 'Blocked', 'Implemented', 'Closed')
     $statusesRequiringApproval = @('Approved', 'In Progress', 'Blocked', 'Implemented', 'Closed')
     $statusesRequiringTaskPacketValidation = @('Approved', 'In Progress', 'Blocked', 'Implemented')
+    $statusesRequiringResumeGate = @('Approved', 'In Progress', 'Blocked')
     $planFiles = Get-ChildItem -LiteralPath $plansRoot -Recurse -File -Filter '*.md' |
         Where-Object { $_.Name -notin @('README.md', 'PLAN_TEMPLATE.md') } |
         Sort-Object FullName
@@ -569,6 +609,11 @@ function Test-AgentPlans
         if ($null -ne $status -and $statusesRequiringTaskPacketValidation -contains $status)
         {
             Test-AgentPlanTaskPackets -Text $text -RelativePath $relative -WorkersValue $workersValue
+        }
+
+        if ($null -ne $status -and $statusesRequiringResumeGate -contains $status)
+        {
+            Test-AgentPlanResumeGate -Text $text -RelativePath $relative
         }
     }
 }

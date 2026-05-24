@@ -160,6 +160,8 @@ Result summary:
 
 Use this checkpoint for multi-task, context-heavy, delegated, parallel, or likely-compaction plans. Update it before starting each dependent task or wave, before a pause or handoff, and after any context transition.
 
+- Resume docs reread:
+  - After context compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, current task packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before any commit; and the next action's exact owner docs or source files.
 - Current task or wave:
 - Completed commits:
 - Plan status and readiness:
