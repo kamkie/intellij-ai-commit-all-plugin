@@ -47,9 +47,9 @@ Compact overview only. The metadata table inside each finding remains the source
 
 | Id   | Title                                                    | Priority | Status | Decision |
 |------|----------------------------------------------------------|----------|--------|----------|
-| F001 | Add real-time progress copy to the generated description | 2        | open   |          |
-| F002 | Produce Marketplace-ready workflow GIF and PNG media     | 4        | open   |          |
-| F003 | Add release validation for media upload and rendering    | 3        | open   |          |
+| F001 | Add real-time progress copy to the generated description | 2        | done   | accepted |
+| F002 | Produce Marketplace-ready workflow GIF and PNG media     | 4        | done   | accepted |
+| F003 | Add release validation for media upload and rendering    | 3        | done   | accepted |
 
 ## Proposal Items
 
@@ -59,12 +59,12 @@ Compact overview only. The metadata table inside each finding remains the source
 
 | Field       | Value                     |
 |-------------|---------------------------|
-| Status      | open                      |
-| Decision    |                           |
-| Decision at |                           |
+| Status      | done                      |
+| Decision    | accepted                  |
+| Decision at | 2026-05-24T15:19:31+02:00 |
 | Priority    | 2                         |
 | Owner       |                           |
-| Updated     | 2026-05-24T15:07:08+02:00 |
+| Updated     | 2026-05-24T15:19:31+02:00 |
 
 ##### Context
 
@@ -98,19 +98,19 @@ Keep the wording factual and observable. Pair the copy with F002 media instead o
 
 ##### Follow-Up
 
-- Artifact: Direct documentation/generator change if accepted as narrow copy work, or approved plan if bundled with F002 and F003.
-- Validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-description.ps1 -Check`; `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`; `git diff --check`.
+- Artifact: Implemented in `docs/user-guide.md`, `scripts/generate-intellij-platform-description.ps1`, and `config/intellij-platform/description.html`.
+- Validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-description.ps1`; final validation recorded in handoff.
 
 #### F002. Produce Marketplace-ready workflow GIF and PNG media
 
 | Field       | Value                     |
 |-------------|---------------------------|
-| Status      | open                      |
-| Decision    |                           |
-| Decision at |                           |
+| Status      | done                      |
+| Decision    | accepted                  |
+| Decision at | 2026-05-24T15:19:31+02:00 |
 | Priority    | 4                         |
 | Owner       |                           |
-| Updated     | 2026-05-24T15:07:08+02:00 |
+| Updated     | 2026-05-24T15:19:31+02:00 |
 
 ##### Context
 
@@ -157,19 +157,19 @@ Use the existing runtime Swing rendering or deterministic UI harness where possi
 
 ##### Follow-Up
 
-- Artifact: Approved implementation plan is recommended if asset generation needs UI automation, sandbox setup, source docs, generator changes, and release checklist updates together.
-- Validation: Asset dimension check; visual review of GIF and PNG in a browser; docs validation; generator checks if the description references the new assets.
+- Artifact: Implemented in `docs/assets/marketplace/`, `docs/assets/marketplace/README.md`, and `src/test/kotlin/pl/devopssolutions/aicommitall/actions/AiCommitAllControlAssetGeneratorTest.kt`.
+- Validation: Focused asset-generator test and asset dimension check; final validation recorded in handoff.
 
 #### F003. Add release validation for Marketplace media upload and rendering
 
 | Field       | Value                     |
 |-------------|---------------------------|
-| Status      | open                      |
-| Decision    |                           |
-| Decision at |                           |
+| Status      | done                      |
+| Decision    | accepted                  |
+| Decision at | 2026-05-24T15:19:31+02:00 |
 | Priority    | 3                         |
 | Owner       |                           |
-| Updated     | 2026-05-24T15:07:08+02:00 |
+| Updated     | 2026-05-24T15:19:31+02:00 |
 
 ##### Context
 
@@ -199,8 +199,8 @@ Add a release checklist row or subsection for `Marketplace media` that reference
 
 ##### Follow-Up
 
-- Artifact: Direct docs edit if accepted independently; approved plan if bundled with media production.
-- Validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`; release checklist self-review.
+- Artifact: Implemented in `docs/validation/release-checklist.md`.
+- Validation: Final documentation validation recorded in handoff.
 
 ### Errors And Mistakes
 

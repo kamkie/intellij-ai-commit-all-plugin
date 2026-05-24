@@ -10,13 +10,13 @@ Proposals are advisory until accepted through the normal repository flow. A prop
 
 Active proposals still have at least one non-terminal implementation status row or at least one untriaged finding in their `Progress Tracker`.
 
-- `PROP-marketplace-realtime-progress-media` - [Marketplace Real-Time Progress Media](PROP-marketplace-realtime-progress-media-2026-05-24T15-07.md) - open as of 2026-05-24.
+- None.
 
 ### Completed Proposals
 
 Completed proposals have no non-terminal implementation status rows and no untriaged findings in their `Progress Tracker`. Keep them listed here until they are moved to `archive/`.
 
-- None.
+- `PROP-marketplace-realtime-progress-media` - [Marketplace Real-Time Progress Media](PROP-marketplace-realtime-progress-media-2026-05-24T15-07.md) - completed as of 2026-05-24.
 
 Index entries should include the proposal ref, title, file link, and current status date when applicable.
 

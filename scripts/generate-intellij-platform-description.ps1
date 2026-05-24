@@ -12,6 +12,7 @@ $licensePath = Join-Path $repoRoot 'LICENSE'
 $descriptionPath = Join-Path $repoRoot 'config/intellij-platform/description.html'
 $sourceUrl = 'https://github.com/kamkie/intellij-ai-commit-all-plugin'
 $visualAssetsUrl = "$sourceUrl/tree/main/docs/assets/user-guide"
+$marketplaceAssetsUrl = "$sourceUrl/tree/main/docs/assets/marketplace"
 
 function Get-TextFile {
     param([string] $Path)
@@ -110,6 +111,7 @@ Assert-SourceContains $userGuideText 'docs/user-guide.md' 'If JetBrains AI Assis
 Assert-SourceContains $userGuideText 'docs/user-guide.md' 'assets/user-guide/ai-commit-all-control-light\.png' 'light control screenshot'
 Assert-SourceContains $userGuideText 'docs/user-guide.md' 'assets/user-guide/ai-commit-all-control-dark\.png' 'dark control screenshot'
 Assert-SourceContains $userGuideText 'docs/user-guide.md' 'assets/user-guide/ai-commit-all-control-running\.gif' 'running control animation'
+Assert-SourceContains $userGuideText 'docs/user-guide.md' 'assets/marketplace/README\.md' 'Marketplace workflow media pack'
 Assert-SourceContains $readmeText 'README.md' ([regex]::Escape($sourceUrl)) 'official source repository link'
 Assert-SourceContains $licenseText 'LICENSE' 'Apache License\s+Version 2\.0' 'Apache License 2.0'
 
@@ -121,6 +123,9 @@ $features = Get-FeatureItems $readmeText
 $dependencyNote = Get-Paragraph `
     -Text $readmeText `
     -Pattern 'If AI Assistant is missing or disabled, the IDE refuses to load the plugin through the required dependency\.'
+$realTimeProgress = Get-Paragraph `
+    -Text $userGuideText `
+    -Pattern 'The running section shows where the workflow is now: `AI` while JetBrains AI\s+Assistant generates the message, `Commit` while the IDE commit workflow runs,\s+and `Push` while the push step is in progress\. The control is disabled until\s+the current run finishes\.'
 
 $lines = New-Object System.Collections.Generic.List[string]
 $lines.Add("<p>$(Convert-InlineMarkdownToHtml $summary)</p>") | Out-Null
@@ -137,8 +142,11 @@ foreach ($requirement in $requirements) {
 }
 $lines.Add('</ul>') | Out-Null
 $lines.Add("<p>$(Convert-InlineMarkdownToHtml $dependencyNote)</p>") | Out-Null
-$lines.Add('<h3>Visuals</h3>') | Out-Null
-$lines.Add("<p>Reviewed light and dark screenshots plus a short running-state animation are available in the user-guide assets: <a href=""$visualAssetsUrl"">$visualAssetsUrl</a></p>") | Out-Null
+$lines.Add('<h3>Real-Time Progress</h3>') | Out-Null
+$lines.Add("<p>$( Convert-InlineMarkdownToHtml $realTimeProgress )</p>") | Out-Null
+$lines.Add('<h3>Screenshots And Animation</h3>') | Out-Null
+$lines.Add("<p>Marketplace workflow GIF and PNG media: <a href=""$marketplaceAssetsUrl"">$marketplaceAssetsUrl</a></p>") | Out-Null
+$lines.Add("<p>Reviewed exact control renderings: <a href=""$visualAssetsUrl"">$visualAssetsUrl</a></p>") | Out-Null
 $lines.Add('<h3>Source And License</h3>') | Out-Null
 $lines.Add("<p>Source code: <a href=""$sourceUrl"">$sourceUrl</a></p>") | Out-Null
 $lines.Add('<p>Licensed under the Apache License 2.0.</p>') | Out-Null

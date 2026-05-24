@@ -33,6 +33,14 @@ Short running-state animation:
 
 ![AI Commit All control running animation](assets/user-guide/ai-commit-all-control-running.gif)
 
+The running section shows where the workflow is now: `AI` while JetBrains AI
+Assistant generates the message, `Commit` while the IDE commit workflow runs,
+and `Push` while the push step is in progress. The control is disabled until
+the current run finishes.
+
+Marketplace-ready workflow media is generated from the same control rendering
+and stored in the [marketplace assets](assets/marketplace/README.md).
+
 The control is available only inside a supported Git commit workflow. It hides outside that context and disables while a plugin-owned workflow is already running.
 
 Eligible changes include:

@@ -1,6 +1,6 @@
 # Release Validation Checklist
 
-Last updated: 2026-05-23
+Last updated: 2026-05-24
 
 This reusable checklist owns manual release-readiness validation for AI Commit
 All. Use it when preparing a release candidate, validating a release-matrix
@@ -30,6 +30,8 @@ Create or update a dated report before running the manual checklist. Record:
 - Temporary local bare remote path for push validation.
 - Evidence paths for screenshots, IDE logs, Git command output, and generated
   Gradle reports.
+- Marketplace media filenames, upload status, and web or IDE rendering
+  observations when validating publication readiness.
 - Skipped checks with reasons.
 
 ## Product Matrix
@@ -65,16 +67,17 @@ register points to the primary automated evidence targets.
 
 ## Manual Gates
 
-| Gate                                             | Refs                                                                                        | Products                                            | Evidence to record                                                                                                                           |
-|--------------------------------------------------|---------------------------------------------------------------------------------------------|-----------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit tool window startup and control placement | `T-VAL-003`, `T-IDEA-011`                                                                   | `IIU`, plus `PCP` and `WS` where practical          | Product/build, fixture path, screenshot or observation showing plugin control visible and standard `Commit and Push...` absent.              |
-| Eligible file inclusion and staging behavior     | `T-VAL-005..011`, `T-VAL-017`, `SCN-STAGE-MAN-001..008`, `SCN-SELECT-MAN-001..006`          | `IIU`, plus representative non-IDEA IDE             | Commit tool window inclusion state, staging state, changelist/root names, and `git status --porcelain` output.                               |
-| Real JetBrains AI Assistant behavior             | `T-VAL-016`, `T-VAL-023`, `SCN-AI-MAN-004`, `SCN-AI-MAN-006`                                | `IIU`, plus `PCP` and `WS` where practical          | AI Assistant state, generated message, timeout or unavailable UI, and unchanged Git state for stops.                                         |
-| Commit and push execution                        | `T-VAL-012`, `T-VAL-013`, `T-BUG-015`, `SCN-WORKFLOW-MAN-004..006`, `SCN-PUSH-MAN-002..006` | `IIU` first                                         | Resulting commit hash, local and remote branch hashes, fallback or push-error UI, and no real remote contact.                                |
-| Visual control review                            | `T-VAL-014`                                                                                 | `IIU`, plus representative non-IDEA IDE             | Light and dark screenshots or observations for passive, hover, clicked, running, disabled, and divider states.                               |
-| Shortcut and settings behavior                   | `ADR-0054-1..4`, `SCN-SHORTCUT-MAN-004`, `SCN-SETTINGS-MAN-001..002`                        | `IIU`, plus macOS keymap equivalent where practical | Keymap name, setting values, action result, generated message or commit/push evidence, and persistence after restart or reopen.              |
-| Current IDE build representation                 | `T-VAL-018`                                                                                 | `IIU`, `PCP`, `WS`                                  | Product names, product codes, and build numbers.                                                                                             |
-| Platform-owned safeguards                        | `SCN-STAGE-MAN-015..018`, `SCN-WORKFLOW-MAN-007..008`                                       | `IIU` first                                         | Before-commit, commit-error, push-error, unsupported API, frozen VCS, or background VCS observations and unchanged Git state where expected. |
+| Gate                                             | Refs                                                                                        | Products                                            | Evidence to record                                                                                                                            |
+|--------------------------------------------------|---------------------------------------------------------------------------------------------|-----------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| Commit tool window startup and control placement | `T-VAL-003`, `T-IDEA-011`                                                                   | `IIU`, plus `PCP` and `WS` where practical          | Product/build, fixture path, screenshot or observation showing plugin control visible and standard `Commit and Push...` absent.               |
+| Eligible file inclusion and staging behavior     | `T-VAL-005..011`, `T-VAL-017`, `SCN-STAGE-MAN-001..008`, `SCN-SELECT-MAN-001..006`          | `IIU`, plus representative non-IDEA IDE             | Commit tool window inclusion state, staging state, changelist/root names, and `git status --porcelain` output.                                |
+| Real JetBrains AI Assistant behavior             | `T-VAL-016`, `T-VAL-023`, `SCN-AI-MAN-004`, `SCN-AI-MAN-006`                                | `IIU`, plus `PCP` and `WS` where practical          | AI Assistant state, generated message, timeout or unavailable UI, and unchanged Git state for stops.                                          |
+| Commit and push execution                        | `T-VAL-012`, `T-VAL-013`, `T-BUG-015`, `SCN-WORKFLOW-MAN-004..006`, `SCN-PUSH-MAN-002..006` | `IIU` first                                         | Resulting commit hash, local and remote branch hashes, fallback or push-error UI, and no real remote contact.                                 |
+| Visual control review                            | `T-VAL-014`                                                                                 | `IIU`, plus representative non-IDEA IDE             | Light and dark screenshots or observations for passive, hover, clicked, running, disabled, and divider states.                                |
+| Marketplace media and listing rendering          | `PROP-marketplace-realtime-progress-media`                                                  | Marketplace web listing and IDE Marketplace view    | Uploaded media filenames, web listing screenshot or observation, IDE Marketplace rendering observation or skip reason, and fallback behavior. |
+| Shortcut and settings behavior                   | `ADR-0054-1..4`, `SCN-SHORTCUT-MAN-004`, `SCN-SETTINGS-MAN-001..002`                        | `IIU`, plus macOS keymap equivalent where practical | Keymap name, setting values, action result, generated message or commit/push evidence, and persistence after restart or reopen.               |
+| Current IDE build representation                 | `T-VAL-018`                                                                                 | `IIU`, `PCP`, `WS`                                  | Product names, product codes, and build numbers.                                                                                              |
+| Platform-owned safeguards                        | `SCN-STAGE-MAN-015..018`, `SCN-WORKFLOW-MAN-007..008`                                       | `IIU` first                                         | Before-commit, commit-error, push-error, unsupported API, frozen VCS, or background VCS observations and unchanged Git state where expected.  |
 
 ## Manual Case Procedures
 
@@ -230,6 +233,19 @@ checks. Do not use a real remote while validating this workflow.
 | `SCN-PUSH-MAN-006`     | Real push failure can be produced safely against a local remote.                                                                  | Click `Push`.                                            | Push failure is surfaced and branch hashes show no unintended remote update.         |
 | `SCN-SETTINGS-MAN-001` | Settings dialog is available.                                                                                                     | Open `Settings > Tools > AI Commit All`.                 | Defaults match documented and automated settings defaults.                           |
 | `SCN-SETTINGS-MAN-002` | Settings can be changed and IDE restarted or project reopened.                                                                    | Change settings, restart or reopen, and inspect values.  | Settings persist.                                                                    |
+
+### Marketplace Media Upload Check
+
+- Preconditions: A Marketplace plugin page exists, the release operator has
+  Marketplace admin access outside the repository, and accepted media files are
+  present under `docs/assets/marketplace/`.
+- Steps: Upload the accepted GIF and PNG media through the Marketplace media
+  section, verify the public web listing, and verify the IDE Marketplace view
+  when the plugin page is visible there.
+- Expected result: Media renders without broken links. The web listing shows
+  the workflow animation. If the IDE Marketplace view presents the GIF as a
+  static frame, the static PNG fallback still communicates the `AI -> Commit ->
+  Push` sequence. Do not record credentials or admin-only URLs in the report.
 
 ## Run Command
 

@@ -13,6 +13,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 ### Changed
 
 - Added generated Marketplace description and change-note metadata from repository source docs, with reviewed control visuals linked from the user guide assets.
+- Expanded Marketplace listing preparation with real-time progress description copy, generated workflow GIF/PNG media, and release checklist validation for Marketplace media rendering.
 
 ## [v0.1.0-alpha.10] - 2026-05-24
 
