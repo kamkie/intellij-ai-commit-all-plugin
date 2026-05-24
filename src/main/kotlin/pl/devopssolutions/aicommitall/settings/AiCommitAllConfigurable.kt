@@ -84,11 +84,15 @@ internal class AiCommitAllConfigurable(
     }
 
     override fun isModified(): Boolean {
+        val timeoutSpinner = timeoutSpinner ?: return false
+        val checkIntervalSpinner = checkIntervalSpinner ?: return false
+        val clearCommitMessageCheckBox = clearCommitMessageCheckBox ?: return false
+        val useVcsShortcutsCheckBox = useVcsShortcutsCheckBox ?: return false
         val completionOptions = settings.completionOptions()
-        return timeoutSpinner?.longValue() != completionOptions.timeout.toMillis() ||
-            checkIntervalSpinner?.longValue() != completionOptions.checkInterval.toMillis() ||
-            clearCommitMessageCheckBox?.isSelected != settings.clearCommitMessageBeforeGeneration() ||
-            useVcsShortcutsCheckBox?.isSelected != settings.useVcsShortcutsForAiCommitAll()
+        return timeoutSpinner.longValue() != completionOptions.timeout.toMillis() ||
+            checkIntervalSpinner.longValue() != completionOptions.checkInterval.toMillis() ||
+            clearCommitMessageCheckBox.isSelected != settings.clearCommitMessageBeforeGeneration() ||
+            useVcsShortcutsCheckBox.isSelected != settings.useVcsShortcutsForAiCommitAll()
     }
 
     override fun apply() {

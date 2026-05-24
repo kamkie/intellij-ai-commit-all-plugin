@@ -78,6 +78,25 @@ internal class AiCommitAllConfigurableTest {
     }
 
     @Test
+    fun `isModified is false when settings ui is unavailable`() {
+        val settings = configuredSettings(
+            timeoutMillis = 12_000,
+            checkIntervalMillis = 250,
+            clearCommitMessageBeforeGeneration = false,
+            useVcsShortcutsForAiCommitAll = false,
+        )
+        val configurable = AiCommitAllConfigurable(settings)
+
+        assertFalse(configurable.isModified())
+
+        configurable.createComponent()
+        assertFalse(configurable.isModified())
+
+        configurable.disposeUIResources()
+        assertFalse(configurable.isModified())
+    }
+
+    @Test
     fun `apply persists every setting field`() {
         val settings = AiCommitAllSettings()
         val configurable = AiCommitAllConfigurable(settings)
