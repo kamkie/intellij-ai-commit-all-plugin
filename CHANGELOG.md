@@ -14,6 +14,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 - Attached the built plugin distribution ZIP to GitHub Releases created from semantic version tags.
 - Fixed Gradle-based GitHub Actions checkouts to fetch tags so Git-derived plugin versions work in CI after semantic release tags.
+- Reduced premature AI Commit All stops by boundedly rechecking transient AI Assistant, VCS, Commit tool window, action-routing, and safe-push metadata states before reporting the existing stop or fallback reason.
 
 ## [v0.1.0-beta.1] - 2026-05-24
 

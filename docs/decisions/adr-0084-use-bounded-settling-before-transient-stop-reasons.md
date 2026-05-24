@@ -107,6 +107,5 @@ routing, plus the full test suite and formatting checks.
 
 ## More Information
 
-This ADR is a companion to draft plan
-[`PLAN-premature-stop-reliability`](../../.agents/plans/PLAN-premature-stop-reliability.md). Implementation
-must not start until this ADR is accepted and the companion plan is explicitly approved.
+This ADR was implemented by
+[`PLAN-premature-stop-reliability`](../../.agents/plans/PLAN-premature-stop-reliability.md).

@@ -120,6 +120,7 @@ Result summary:
 - Worker:
 - Changed files or reviewed diff:
 - Validation evidence:
+- Commit:
 - Blockers:
 - Review risks:
 - Handoff notes:
@@ -133,6 +134,8 @@ Result summary:
 - Dispatch the plan header or readiness summary, execution graph, assigned task packet, and explicitly named governing artifacts or source files. Do not dispatch the full approved plan by default.
 - Record any task that is safe to run in parallel only when it has a disjoint write scope.
 - Finish, validate, self-review, and commit every task in the current approved wave before starting the next dependent task or wave.
+- Before starting the next dependent task or approved parallel wave, confirm every predecessor task result summary records implementation status, validation evidence, self-review or review evidence, and a commit identifier.
+- For approved parallel waves, all task commits in the current wave must exist before any dependent wave starts.
 - Use the current branch only unless a later accepted ADR authorizes per-worker git worktrees.
 
 ## Execution Graph

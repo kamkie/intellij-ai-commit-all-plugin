@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-premature-stop-reliability
 
-Status: Draft
+Status: Implemented
 
 Workers: 1
 
@@ -10,13 +10,18 @@ Filename: `.agents/plans/PLAN-premature-stop-reliability.md`
 
 ## Readiness
 
-- Plan readiness: Draft companion plan for proposed `docs/decisions/adr-0084-use-bounded-settling-before-transient-stop-reasons.md`; blocked until ADR acceptance and later explicit plan approval.
-- Open questions: None inside the implementation scope after ADR 0084 is accepted; current blocker is the required decision and approval.
-- Implementation progress: Not started.
+- Plan readiness: Implemented; release preparation may still archive the completed plan later.
+- Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Approved at: 2026-05-25T00:16:33+02:00
+- Open questions: None.
+- Implementation progress: Complete.
 
 ## Status History
 
 - 2026-05-25T00:10:58+02:00: none -> Draft by OpenAI Codex <codex@openai.com>; companion plan created for proposed ADR 0084 after plugin code and specification reliability audit.
+- 2026-05-25T00:16:33+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; user explicitly approved ADR 0084 and PLAN-premature-stop-reliability.
+- 2026-05-25T00:16:33+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; implementation started after approval.
+- 2026-05-25T01:04:18+02:00: In Progress -> Implemented by OpenAI Codex <codex@openai.com>; implementation, validation, review, and retrospective task-shaped commits completed.
 
 ## Goal
 
@@ -42,7 +47,7 @@ make those tests pass without weakening commit, push, or AI Assistant safety.
 
 ## Open Questions
 
-- None after ADR 0084 is accepted. Until then, implementation is blocked by the proposed decision.
+- None.
 
 ## Proposed Changes
 
@@ -103,7 +108,7 @@ Write scope:
 
 Dependencies:
 
-- ADR 0084 accepted and this plan approved.
+- None.
 
 Validation:
 
@@ -112,8 +117,8 @@ Validation:
 
 Escalation triggers:
 
-- A requirement change appears to alter notification text, settings, or public usage guidance.
-- Existing ADRs conflict with bounded settling instead of just immediate final stop timing.
+- Load `README.md` or `docs/user-guide.md` when a requirement change appears to alter public usage guidance.
+- Stop and report a decision conflict when an existing ADR conflicts with bounded settling instead of just immediate final stop timing.
 
 Stop conditions:
 
@@ -128,13 +133,14 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: complete
+- Worker: W1
+- Changed files or reviewed diff: `docs/specification.md`; `docs/user-guide.md`; `.agents/plans/PLAN-premature-stop-reliability.md` T1 result summary
+- Validation evidence: initial `pwsh -NoProfile -File scripts/validate-docs.ps1` failed because `validate-agent-artifacts` reported plan-packet metadata errors outside T1 write scope; after orchestrator metadata fixes, `pwsh -NoProfile -File scripts/validate-docs.ps1` and `pwsh -NoProfile -File scripts/ai/validate-agent-artifacts.ps1` passed.
+- Commit: `79208d6` (`docs(spec): define bounded transient settling`).
+- Blockers: None.
+- Review risks: `PushExecutionUnavailable` finality now documents both immediately proven executor unavailability and refreshable push-readiness uncertainty that stops instead of falling back; downstream implementation should preserve that distinction.
+- Handoff notes: Spec now traces ADR 0084 and identifies bounded-settled stop reasons versus immediate terminal states; `docs/user-guide.md` was aligned because the previous VCS-busy and AI-invocation wording implied immediate stop only.
 
 ### Task Packet: T2-ai-transient-settling
 
@@ -190,8 +196,8 @@ Validation:
 
 Escalation triggers:
 
-- Retry timing would require a new setting or public timeout default.
-- A JetBrains AI Assistant API boundary cannot be safely faked without brittle internals.
+- Stop and report a scope conflict when retry timing would require a new setting or public timeout default.
+- Ask the orchestrator for guidance when a JetBrains AI Assistant API boundary cannot be safely faked without brittle internals.
 
 Stop conditions:
 
@@ -205,13 +211,14 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: complete
+- Worker: W2
+- Changed files or reviewed diff: `src/main/kotlin/pl/devopssolutions/aicommitall/ai/AiCommitMessageActionInvocationService.kt`; `src/main/kotlin/pl/devopssolutions/aicommitall/ai/AiGenerationCompletion.kt`; `src/test/kotlin/pl/devopssolutions/aicommitall/ai/AiCommitMessageActionInvokerTest.kt`; `src/test/kotlin/pl/devopssolutions/aicommitall/ai/AiGenerationCompletionObserverTest.kt`; `.agents/plans/PLAN-premature-stop-reliability.md` T2 result summary
+- Validation evidence: red-first `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.ai.AiCommitMessageActionInvokerTest" --tests "pl.devopssolutions.aicommitall.ai.AiGenerationCompletionObserverTest"` failed with 4 expected new failures: transient missing action returned `MissingAction`, bounded missing-action retry attempted once instead of 3 times, transient `Unavailable` returned `NoCompletionSignal`, and persistent `Unavailable` settled after one read instead of 3 reads. Green rerun of the same command passed with 20 tests. `.\gradlew.bat spotlessCheck` passed. `git diff --check` passed. `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` passed.
+- Commit: `f6de9f8` (`fix(ai): settle transient assistant availability`).
+- Blockers: None.
+- Review risks: AI action discovery now performs up to 3 lookups; dispatch-aware sleeper tests prove it does not block the dispatch thread. `AiGenerationRunningState.Unavailable` settling uses the existing stopped-signal grace period capped by the AI generation timeout as the internal bounded budget.
+- Handoff notes: Persistent unknown AI completion still fails closed with `NoCompletionSignal`, and user edits still win before unavailable-signal settling can continue.
 
 ### Task Packet: T3-vcs-selection-workflow-settling
 
@@ -272,8 +279,8 @@ Validation:
 
 Escalation triggers:
 
-- Retrying would occur after staging or commit mutation has started.
-- A fake Commit tool window interaction would rely on unstable platform internals.
+- Stop and report a safety conflict when retrying would occur after staging or commit mutation has started.
+- Ask the orchestrator for guidance when a fake Commit tool window interaction would rely on unstable platform internals.
 
 Stop conditions:
 
@@ -289,13 +296,14 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: complete
+- Worker: W3 / OpenAI Codex
+- Changed files or reviewed diff: `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/AiCommitAllWorkflowCoordinator.kt`; `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowSelectionService.kt`; `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/ReflectiveCommitWorkflowSynchronizer.kt`; `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/VcsOperationReadinessService.kt`; `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/AiCommitAllWorkflowRunnerTest.kt`; `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowSelectionServiceTest.kt`; `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/ReflectiveCommitWorkflowSynchronizerTest.kt`; `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/VcsOperationReadinessServiceTest.kt`.
+- Validation evidence: red-first `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowRunnerTest" --tests "pl.devopssolutions.aicommitall.workflow.VcsOperationReadinessServiceTest" --tests "pl.devopssolutions.aicommitall.workflow.ReflectiveCommitWorkflowSynchronizerTest"` failed with 7 expected failures covering readiness clearing, empty-selection retry, persistent empty-selection expectations, push-only settling expectations, and transient reflective synchronization. Green `.\gradlew.bat test --rerun-tasks --tests "pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowRunnerTest" --tests "pl.devopssolutions.aicommitall.workflow.VcsOperationReadinessServiceTest" --tests "pl.devopssolutions.aicommitall.workflow.ReflectiveCommitWorkflowSynchronizerTest"` passed with 31 tests. Broader `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.workflow.*"` passed with 78 tests. Review-fix focused tests covering activation retry passed. `.\gradlew.bat spotlessCheck`, `git diff --check`, and `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` passed.
+- Commit: `4a703c3` (`fix(workflow): settle transient preparation state`).
+- Blockers: none.
+- Review risks: readiness and selection settling use small synchronous sleeps on existing background preparation paths; review whether the 3 x 50 ms internal budget is enough for slow Commit tool window refresh without adding visible latency. Frozen readiness still calls the existing IntelliJ frozen-state check on each bounded attempt.
+- Handoff notes: retries remain before staging and commit mutation boundaries. `UnsupportedVcs`, missing workflow, definitive unsupported workflow, missing reflective methods, and persistent transient states still fail closed with existing stop reasons.
 
 ### Task Packet: T4-push-and-action-routing-freshness
 
@@ -354,8 +362,8 @@ Validation:
 
 Escalation triggers:
 
-- Fresh action-time routing conflicts with IntelliJ action update contracts.
-- Push metadata cannot be classified as refreshable unknown versus unsafe without broader VCS design changes.
+- Stop and report an IntelliJ compatibility conflict when fresh action-time routing conflicts with action update contracts.
+- Ask the orchestrator for guidance when push metadata cannot be classified as refreshable unknown versus unsafe without broader VCS design changes.
 
 Stop conditions:
 
@@ -370,13 +378,14 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: complete
+- Worker: W4 / OpenAI Codex
+- Changed files or reviewed diff: `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/SafeImmediatePushService.kt`; `src/main/kotlin/pl/devopssolutions/aicommitall/actions/AiCommitAllActions.kt`; `src/main/kotlin/pl/devopssolutions/aicommitall/actions/ThreeSectionControlInteraction.kt`; `src/test/kotlin/pl/devopssolutions/aicommitall/vcs/SafeImmediatePushServiceTest.kt`; `src/test/kotlin/pl/devopssolutions/aicommitall/actions/AiCommitAllActionsTest.kt`; `src/test/kotlin/pl/devopssolutions/aicommitall/actions/AiCommitAllThreeSectionControlTest.kt`.
+- Validation evidence: red-first `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.vcs.SafeImmediatePushServiceTest" --tests "pl.devopssolutions.aicommitall.actions.AiCommitAllActionsTest"` failed with 4 expected new failures: toolbar section activation did not recheck fresh availability, stale enabled activation still started after becoming disabled, commit-and-push safe metadata unavailability fell back instead of retrying, and outgoing-only metadata unavailability stopped instead of retrying. Green targeted `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.vcs.SafeImmediatePushServiceTest" --tests "pl.devopssolutions.aicommitall.actions.AiCommitAllActionsTest" --tests "pl.devopssolutions.aicommitall.actions.AiCommitAllThreeSectionControlTest"` passed with 54 tests. Broader green `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.actions.*" --tests "pl.devopssolutions.aicommitall.vcs.SafeImmediatePushServiceTest"` passed with 76 tests and 1 pending generated-asset test. `.\gradlew.bat spotlessCheck` passed after one indentation fix. Final `git diff --check` passed. `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` passed.
+- Commit: `524392b` (`fix(push): settle safe-push metadata before fallback`).
+- Blockers: None.
+- Review risks: Safe push retries only the narrowly classified case where a push spec is unavailable while tracked upstream, local/upstream head match, target safety flags, and normal repository state are otherwise clean; missing upstream, unresolved conflict, unsafe repository state, ambiguous target, and force-push-unverified states still fall back immediately. The custom control now delegates clicks on visually disabled sections so the action-time availability check owns the final route; production activation still refuses to start when current availability is disabled or a workflow is running.
+- Handoff notes: `PushOnlyWorkflowExecutionService.kt` was reviewed for call-path alignment but not changed; outgoing-only settling is handled inside `SafeImmediatePushService.prepareOutgoingCommits()`.
 
 ### Task Packet: T5-verification-and-review
 
@@ -416,8 +425,7 @@ Forbidden inputs:
 
 Write scope:
 
-- `.agents/plans/PLAN-premature-stop-reliability.md` for result summaries only.
-- Documentation files changed by T1 only for small correction fixes found during review.
+- read-only
 
 Dependencies:
 
@@ -436,8 +444,8 @@ Validation:
 
 Escalation triggers:
 
-- Any validation failure.
-- Any diff that appears to weaken commit/push safety or user-edit protection.
+- Run targeted validation again when an initial validation failure looks environmental or order-dependent.
+- Stop and report a safety regression when any diff appears to weaken commit/push safety or user-edit protection.
 
 Stop conditions:
 
@@ -452,13 +460,14 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: complete
+- Worker: W5 / OpenAI Codex
+- Changed files or reviewed diff: full T1 through T4 diff plus follow-up review fixes for activation retry, dispatch-aware sleepers, and persistent safe-push metadata exhaustion.
+- Validation evidence: `.\gradlew.bat test` passed with 308 passing and 1 pending; `.\gradlew.bat spotlessCheck` passed; `pwsh -NoProfile -File scripts/validate-docs.ps1` passed; `pwsh -NoProfile -File scripts/ai/validate-agent-artifacts.ps1` passed; `git diff --check` passed. Focused review-fix tests passed with 27 passing.
+- Commit: final governance commit.
+- Blockers: None.
+- Review risks: Follow-up read-only review found no blocking issues. Residual risk is that dispatch-aware sleepers make EDT retries immediate rather than time-spanning, so availability that settles only after a later EDT tick may still require a new user action.
+- Handoff notes: W5 initially found missing activation settling and EDT sleep risk; both were fixed and re-reviewed. No fail-open commit or push safety regression was found.
 
 ## Execution Model
 
@@ -497,5 +506,6 @@ flowchart TD
 
 ## Handoff Notes
 
-- This plan is blocked until proposed ADR 0084 is accepted and the plan is explicitly approved.
+- ADR 0084 is accepted, implemented, and tracked as implemented in `docs/decisions/README.md`.
 - The existing `PLAN-test-coverage-growth` draft already lists some of these premature-abandonment cases as coverage targets, but that plan has a non-goal against user-visible behavior changes. This plan owns the reliability behavior change instead.
+- Task-shaped commits were created retrospectively after a maintainer correction that the per-task commit gate had been missed during execution; `PLAN_TEMPLATE.md` now requires result summaries to record commit evidence before dependent tasks or waves start.
