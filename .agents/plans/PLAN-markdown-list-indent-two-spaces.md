@@ -137,11 +137,11 @@ Result summary:
 
 - Status: implemented
 - Worker: W1/Franklin (`019e5752-a177-7302-8e1e-d2415b2da7ac`)
-- Changed files or reviewed diff: `.markdownlint-cli2.jsonc`, `.agents/references/code-style.md`, `.agents/prompts/compact-ai-guidance.md`, and tracked Markdown files with mechanical nested-list indentation changes.
+- Changed files or reviewed diff: `.editorconfig`, `.markdownlint-cli2.jsonc`, `.agents/references/code-style.md`, `.agents/prompts/compact-ai-guidance.md`, and tracked Markdown files with mechanical nested-list indentation changes.
 - Validation evidence: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\ai\validate-agent-artifacts.ps1`, and `git diff --check` passed.
 - Blockers: None.
 - Review risks: The diff is broad by design; review confirmed active Markdown policy and config changed to 2-space indentation while archived proposal text may still describe old historical options.
-- Handoff notes: `MD005` and `MD007` remain enabled; `MD007.indent` is now `2`.
+- Handoff notes: `MD005` and `MD007` remain enabled; `MD007.indent` and Markdown editor indentation settings are now `2`.
 
 ## Execution Model
 
