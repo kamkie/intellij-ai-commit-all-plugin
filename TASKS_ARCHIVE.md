@@ -6,9 +6,13 @@ Preserve `T-AREA-NNN` task refs, wording, grouping, and evidence links when movi
 
 ### Documentation
 
+Archived as of 2026-05-24 Marketplace change-notes release-preparation confirmation.
+
+- [x] T-DOC-019: keep the generated Marketplace change notes aligned with the `CHANGELOG.md` `Unreleased` and latest tagged release sections during release preparation. (`config/intellij-platform/change-notes.html`, `CHANGELOG.md`; evidence: latest local release tag is `v0.1.0-alpha.10`; generated change notes include the current `Unreleased` entry labeled as not yet included in a Marketplace release and the latest `v0.1.0-alpha.10` changelog section; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-change-notes.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-description.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
+
 Archived as of 2026-05-24 documentation release follow-ups closeout.
 
-- [x] T-DOC-017: finish deferred user-facing documentation follow-ups after the ADR 0076 rebuild. Priority order: generation and Marketplace metadata first (T-DOC-025, T-DOC-018, T-DOC-026, T-DOC-019), shortcut confirmation next (T-DOC-023), reviewed visual assets last after current UI validation (T-DOC-020). Plan: `PLAN-documentation-release-followups`. (`T-DOC-018`, `T-DOC-020`, `T-DOC-023`, `T-DOC-025`, and `T-DOC-026` archived; `T-DOC-019` intentionally remains open for final release-preparation confirmation; validation: Marketplace generator checks, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
+- [x] T-DOC-017: finish deferred user-facing documentation follow-ups after the ADR 0076 rebuild. Priority order: generation and Marketplace metadata first (T-DOC-025, T-DOC-018, T-DOC-026, T-DOC-019), shortcut confirmation next (T-DOC-023), reviewed visual assets last after current UI validation (T-DOC-020). Plan: `PLAN-documentation-release-followups`. (`T-DOC-018`, `T-DOC-020`, `T-DOC-023`, `T-DOC-025`, and `T-DOC-026` archived during the plan closeout; `T-DOC-019` archived in the later Marketplace change-notes release-preparation confirmation; validation: Marketplace generator checks, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
 
 Archived as of 2026-05-24 current UI visual assets.
 

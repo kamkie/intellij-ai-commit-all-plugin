@@ -21,13 +21,13 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- `PLAN-documentation-release-followups` - Documentation Release Follow-Ups ([PLAN-documentation-release-followups.md](PLAN-documentation-release-followups.md)), implemented as of 2026-05-24.
 - `PLAN-markdown-list-indent-two-spaces` - Markdown List Indent Two Spaces ([PLAN-markdown-list-indent-two-spaces.md](PLAN-markdown-list-indent-two-spaces.md)), implemented as of 2026-05-24.
 - `PLAN-unchanged-prefilled-ai-message` - Unchanged Prefilled AI Message ([PLAN-unchanged-prefilled-ai-message.md](PLAN-unchanged-prefilled-ai-message.md)), implemented as of 2026-05-24.
 - `PLAN-user-documentation-rebuild` - User Documentation Rebuild ([PLAN-user-documentation-rebuild.md](PLAN-user-documentation-rebuild.md)), implemented as of 2026-05-23.
 
 ## Archived Plans
 
+- `PLAN-documentation-release-followups` - Documentation Release Follow-Ups ([archive/PLAN-documentation-release-followups.md](archive/PLAN-documentation-release-followups.md)), archived as of 2026-05-24.
 - `PLAN-execution-context-discipline` - Execution Context Discipline ([archive/PLAN-execution-context-discipline.md](archive/PLAN-execution-context-discipline.md)), archived as of 2026-05-23.
 - `PLAN-ai-execution-orchestration-optimization` - AI Execution Orchestration Optimization ([archive/PLAN-ai-execution-orchestration-optimization.md](archive/PLAN-ai-execution-orchestration-optimization.md)), archived as of 2026-05-23.
 - `PLAN-release-matrix-ui-automation` - Release Matrix UI Automation ([archive/PLAN-release-matrix-ui-automation.md](archive/PLAN-release-matrix-ui-automation.md)), archived as of 2026-05-22.

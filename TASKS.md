@@ -12,10 +12,6 @@ Notation:
 
 ## Open Backlog
 
-### Documentation
-
-- [ ] T-DOC-019: P2; keep the generated Marketplace change notes aligned with the `CHANGELOG.md` `Unreleased` and latest tagged release sections during release preparation. (`config/intellij-platform/change-notes.html`, `CHANGELOG.md`)
-
 ### Validation
 
 - [ ] T-VAL-024: execute and record the current manual release validation matrix before Marketplace publication, covering final control rendering, staging-area modes, shortcut takeover, AI Assistant unavailable states, and full commit/push UI behavior; IDEA deterministic UI automation is present, while live AI Assistant, PyCharm/WebStorm, and platform error observations remain manual. (`docs/validation/release-checklist.md`, `docs/validation/scenario-register.md`, `.agents/plans/archive/PLAN-release-matrix-ui-automation.md`)
