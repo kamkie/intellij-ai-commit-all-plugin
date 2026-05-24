@@ -356,7 +356,10 @@ private class PostCommitPushResultHandler(
 }
 
 private object FallbackSafeImmediatePushSupport : SafeImmediatePushSupport {
-    override fun prepare(selection: GitChangeSelection): SafeImmediatePushDecision = SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.UnsupportedPushApi)
+    override fun prepare(selection: GitChangeSelection): SafeImmediatePushDecision {
+        val reason = SafeImmediatePushFallbackReason.UnsupportedPushApi
+        return SafeImmediatePushDecision.Fallback(reason)
+    }
 }
 
 internal fun interface CommitWorkflowExecutionScheduler {

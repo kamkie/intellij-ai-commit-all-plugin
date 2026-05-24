@@ -115,5 +115,8 @@ internal class PushOnlyWorkflowExecutionServiceTest {
         override fun push(pushPlan: SafeImmediatePushPlan): CompletableFuture<Unit> = throw failure
     }
 
-    private fun CommitWorkflowExecutionResult.asStarted(): CommitWorkflowExecutionResult.Started = this as CommitWorkflowExecutionResult.Started
+    private fun CommitWorkflowExecutionResult.asStarted(): CommitWorkflowExecutionResult.Started {
+        val started = this as CommitWorkflowExecutionResult.Started
+        return started
+    }
 }

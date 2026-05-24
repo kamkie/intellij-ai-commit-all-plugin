@@ -116,7 +116,10 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         expectedPaths = expectedPaths,
     )
 
-    private fun Class<*>.findMethod(name: String, vararg parameterTypes: Class<*>): Method? = methods.firstOrNull { method ->
+    private fun Class<*>.findMethod(
+        name: String,
+        vararg parameterTypes: Class<*>,
+    ): Method? = methods.firstOrNull { method ->
         method.name == name &&
             method.parameterTypes.contentEquals(parameterTypes)
     }

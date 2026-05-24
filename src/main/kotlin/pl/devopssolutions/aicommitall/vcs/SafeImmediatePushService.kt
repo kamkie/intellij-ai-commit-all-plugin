@@ -376,7 +376,10 @@ private fun MutableList<FilePath>.addAffectedPaths(change: Change) {
     change.afterRevision?.file?.let(::add)
 }
 
-private fun GitChangeSelection.hasUnresolvedConflicts(): Boolean = trackedChanges.any { change -> change.fileStatus in unresolvedConflictStatuses }
+private fun GitChangeSelection.hasUnresolvedConflicts(): Boolean {
+    val conflictStatuses = unresolvedConflictStatuses
+    return trackedChanges.any { change -> change.fileStatus in conflictStatuses }
+}
 
 private val unresolvedConflictStatuses = setOf(
     FileStatus.MERGED_WITH_CONFLICTS,

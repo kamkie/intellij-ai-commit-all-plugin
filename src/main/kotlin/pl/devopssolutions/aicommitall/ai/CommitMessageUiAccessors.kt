@@ -31,7 +31,10 @@ internal object CommitMessageUiAccessors {
 
     fun editorComponent(commitMessageUi: CommitMessageUi): JComponent? = editorTextComponent(commitMessageUi)?.component
 
-    private fun editorTextComponent(commitMessageUi: CommitMessageUi): EditorTextComponent? = editorField(commitMessageUi) as? EditorTextComponent
+    private fun editorTextComponent(commitMessageUi: CommitMessageUi): EditorTextComponent? {
+        val editorField = editorField(commitMessageUi)
+        return editorField as? EditorTextComponent
+    }
 
     private fun editorField(commitMessageUi: CommitMessageUi): Any? = runCatching {
         commitMessageUi.javaClass.findMethod("getEditorField")?.invoke(commitMessageUi)

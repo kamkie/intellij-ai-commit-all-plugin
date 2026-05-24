@@ -26,7 +26,10 @@ import java.util.*
 internal class AiCommitMessageActionDiscoveryService : AiCommitMessageActionFinder {
     private val discovery = AiCommitMessageActionDiscovery(IntellijAiActionLookup)
 
-    override fun findCommitMessageAction(event: AnActionEvent?): AiCommitMessageActionReference? = discovery.findCommitMessageAction(event)
+    override fun findCommitMessageAction(event: AnActionEvent?): AiCommitMessageActionReference? {
+        val reference = discovery.findCommitMessageAction(event)
+        return reference
+    }
 
     companion object {
         fun getInstance(): AiCommitMessageActionDiscoveryService = service()
@@ -69,13 +72,16 @@ internal class AiCommitMessageActionDiscovery(
         }
         .firstOrNull()
 
-    private fun findPresentationAction(): AiCommitMessageActionReference? = presentationFallbackActionIdPrefixes.asSequence()
-        .flatMap { prefix -> actionLookup.getActionIdList(prefix).asSequence() }
-        .distinct()
-        .mapNotNull { actionId ->
-            actionLookup.getAction(actionId)?.toPresentationFallbackReference(actionId)
-        }
-        .firstOrNull()
+    private fun findPresentationAction(): AiCommitMessageActionReference? {
+        val fallbackPrefixes = presentationFallbackActionIdPrefixes
+        return fallbackPrefixes.asSequence()
+            .flatMap { prefix -> actionLookup.getActionIdList(prefix).asSequence() }
+            .distinct()
+            .mapNotNull { actionId ->
+                actionLookup.getAction(actionId)?.toPresentationFallbackReference(actionId)
+            }
+            .firstOrNull()
+    }
 
     private fun AnAction.toPresentationFallbackReference(actionId: String): AiCommitMessageActionReference? {
         val presentationText = listOfNotNull(templatePresentation.text, templatePresentation.description)
@@ -146,5 +152,8 @@ internal interface AiActionLookup {
 private object IntellijAiActionLookup : AiActionLookup {
     override fun getAction(actionId: String): AnAction? = ActionManager.getInstance().getAction(actionId)
 
-    override fun getActionIdList(prefix: String): List<String> = ActionManager.getInstance().getActionIdList(prefix).toList()
+    override fun getActionIdList(prefix: String): List<String> {
+        val actionManager = ActionManager.getInstance()
+        return actionManager.getActionIdList(prefix).toList()
+    }
 }

@@ -34,7 +34,10 @@ import java.util.concurrent.atomic.AtomicReference
 internal class AiGenerationCompletionService {
     private val observer = AiGenerationCompletionObserver()
 
-    fun captureInitialMessage(commitMessageUi: CommitMessageUi): AiCommitMessageSnapshot = AiCommitMessageSnapshot.capture(commitMessageUi)
+    fun captureInitialMessage(commitMessageUi: CommitMessageUi): AiCommitMessageSnapshot {
+        val snapshot = AiCommitMessageSnapshot.capture(commitMessageUi)
+        return snapshot
+    }
 
     fun awaitCompletionAsync(
         snapshot: AiCommitMessageSnapshot,
@@ -158,7 +161,10 @@ internal class AiGenerationCompletionObserver(
             )
     }
 
-    private fun String.isUsableChangedMessage(snapshot: AiCommitMessageSnapshot): Boolean = isNotBlank() && this != snapshot.originalMessage
+    private fun String.isUsableChangedMessage(snapshot: AiCommitMessageSnapshot): Boolean {
+        val originalMessage = snapshot.originalMessage
+        return isNotBlank() && this != originalMessage
+    }
 
     private fun String.isAcceptableUnchangedMessage(snapshot: AiCommitMessageSnapshot): Boolean = isNotBlank() &&
         this == snapshot.originalMessage &&
@@ -358,7 +364,10 @@ internal fun interface AiCompletionFocusState {
 }
 
 private object AwtAiCompletionFocusState : AiCompletionFocusState {
-    override fun isApplicationFocused(): Boolean = KeyboardFocusManager.getCurrentKeyboardFocusManager().activeWindow != null
+    override fun isApplicationFocused(): Boolean {
+        val focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager()
+        return focusManager.activeWindow != null
+    }
 }
 
 internal interface AiCompletionTimeSource {

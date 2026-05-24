@@ -284,9 +284,10 @@ internal class AiCommitAllWorkflowRunner(
             stopped(unavailableReason)
     }
 
-    private fun stopped(reason: AiCommitAllWorkflowStopReason): CompletableFuture<AiCommitAllWorkflowResult> = CompletableFuture.completedFuture(
-        stoppedResult(reason),
-    )
+    private fun stopped(reason: AiCommitAllWorkflowStopReason): CompletableFuture<AiCommitAllWorkflowResult> {
+        val result = stoppedResult(reason)
+        return CompletableFuture.completedFuture(result)
+    }
 
     private fun stoppedResult(reason: AiCommitAllWorkflowStopReason): AiCommitAllWorkflowResult {
         dependencies.reportStop(reason)
@@ -352,7 +353,10 @@ internal interface AiCommitAllWorkflowScheduler {
 }
 
 private object IntellijAiCommitAllWorkflowScheduler : AiCommitAllWorkflowScheduler {
-    override fun <T> supplyBackground(action: () -> T): CompletableFuture<T> = CompletableFuture.supplyAsync(action, JobScheduler.getScheduler())
+    override fun <T> supplyBackground(action: () -> T): CompletableFuture<T> {
+        val scheduler = JobScheduler.getScheduler()
+        return CompletableFuture.supplyAsync(action, scheduler)
+    }
 
     override fun <T> supplyEdt(action: () -> T): CompletableFuture<T> {
         val application = ApplicationManager.getApplication()
@@ -431,11 +435,15 @@ internal sealed interface AiCommitAllAiGenerationResult {
 }
 
 private class ProjectAiCommitAllWorkflowDependencies(private val project: Project) : AiCommitAllWorkflowDependencies {
-    override fun startActivity(phase: AiGenerationActivityPhase): AiCommitAllWorkflowActivity = ProjectAiCommitAllWorkflowActivity(
-        AiGenerationActivityStateService.getInstance(project).start(phase),
-    )
+    override fun startActivity(phase: AiGenerationActivityPhase): AiCommitAllWorkflowActivity {
+        val activity = AiGenerationActivityStateService.getInstance(project).start(phase)
+        return ProjectAiCommitAllWorkflowActivity(activity)
+    }
 
-    override fun checkReadiness(): VcsOperationReadinessResult = VcsOperationReadinessService.getInstance(project).checkAndReport()
+    override fun checkReadiness(): VcsOperationReadinessResult {
+        val readinessService = VcsOperationReadinessService.getInstance(project)
+        return readinessService.checkAndReport()
+    }
 
     override fun prepareAllFilesSelection(
         workflowHandler: CommitWorkflowHandler,
@@ -483,8 +491,10 @@ private class ProjectAiCommitAllWorkflowDependencies(private val project: Projec
         }
     }
 
-    override fun executeCommit(workflowHandler: CommitWorkflowHandler): CommitWorkflowExecutionResult = CommitWorkflowExecutionService.getInstance(project)
-        .executeCommit(workflowHandler)
+    override fun executeCommit(workflowHandler: CommitWorkflowHandler): CommitWorkflowExecutionResult {
+        val executionService = CommitWorkflowExecutionService.getInstance(project)
+        return executionService.executeCommit(workflowHandler)
+    }
 
     override fun executeCommitAndPush(
         workflowHandler: CommitWorkflowHandler,
@@ -498,7 +508,10 @@ private class ProjectAiCommitAllWorkflowDependencies(private val project: Projec
             onPushStarted = onPushStarted,
         )
 
-    override fun hasOutgoingCommitsToPush(): Boolean = GitOutgoingCommitsService.getInstance(project).hasOutgoingCommitsToPush()
+    override fun hasOutgoingCommitsToPush(): Boolean {
+        val outgoingCommitsService = GitOutgoingCommitsService.getInstance(project)
+        return outgoingCommitsService.hasOutgoingCommitsToPush()
+    }
 
     override fun executePushOnly(
         dataContext: DataContext,

@@ -66,7 +66,9 @@ internal class GitStageConfirmation(
                 operations.refreshTrackerState()
             }.getOrNull()
 
-            if (refreshedState != null && GitStageSelectionItems.containsAllStagedPaths(refreshedState, distinctExpectedPaths)) {
+            val expectedPathsAreStaged = refreshedState != null &&
+                GitStageSelectionItems.containsAllStagedPaths(refreshedState, distinctExpectedPaths)
+            if (expectedPathsAreStaged) {
                 confirmedState = refreshedState
             }
 

@@ -527,7 +527,10 @@ internal class CommitWorkflowExecutionServiceTest {
             }
         }
 
-        override fun isExecutorEnabled(executor: CommitExecutor): Boolean = executor === commitAndPushExecutor && commitAndPushEnabled
+        override fun isExecutorEnabled(executor: CommitExecutor): Boolean {
+            val isCommitAndPushExecutor = executor === commitAndPushExecutor
+            return isCommitAndPushExecutor && commitAndPushEnabled
+        }
 
         override fun execute(executor: CommitExecutor) {
             executeCallCount++
@@ -535,7 +538,10 @@ internal class CommitWorkflowExecutionServiceTest {
             executeFailure?.let { failure -> throw failure }
         }
 
-        override fun getState(): CommitWorkflowHandlerState = CommitWorkflowHandlerState(isAmend = false, isSkipCommitChecks = false)
+        override fun getState(): CommitWorkflowHandlerState {
+            val state = CommitWorkflowHandlerState(isAmend = false, isSkipCommitChecks = false)
+            return state
+        }
     }
 
     private object UnsupportedCommitWorkflowHandler : CommitWorkflowHandler {
@@ -548,12 +554,18 @@ internal class CommitWorkflowExecutionServiceTest {
 
         override fun execute(executor: CommitExecutor) = error("Not needed for execution tests.")
 
-        override fun getState(): CommitWorkflowHandlerState = CommitWorkflowHandlerState(isAmend = false, isSkipCommitChecks = false)
+        override fun getState(): CommitWorkflowHandlerState {
+            val state = CommitWorkflowHandlerState(isAmend = false, isSkipCommitChecks = false)
+            return state
+        }
     }
 
     private object TestCommitAndPushExecutor : CommitExecutor {
         override fun getActionText(): String = "Commit and Push"
     }
 
-    private fun CommitWorkflowExecutionResult.asStarted(): CommitWorkflowExecutionResult.Started = this as CommitWorkflowExecutionResult.Started
+    private fun CommitWorkflowExecutionResult.asStarted(): CommitWorkflowExecutionResult.Started {
+        val started = this as CommitWorkflowExecutionResult.Started
+        return started
+    }
 }

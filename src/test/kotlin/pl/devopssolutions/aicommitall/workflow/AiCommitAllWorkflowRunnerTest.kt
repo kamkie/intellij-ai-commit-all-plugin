@@ -563,7 +563,10 @@ internal class AiCommitAllWorkflowRunnerTest {
     }
 
     private companion object {
-        private fun runner(dependencies: CapturingWorkflowDependencies): AiCommitAllWorkflowRunner = AiCommitAllWorkflowRunner(dependencies, ImmediateWorkflowScheduler)
+        private fun runner(dependencies: CapturingWorkflowDependencies): AiCommitAllWorkflowRunner {
+            val scheduler = ImmediateWorkflowScheduler
+            return AiCommitAllWorkflowRunner(dependencies, scheduler)
+        }
 
         private fun completedAiGeneration(): AiGenerationCompletionResult = AiGenerationCompletionResult.Completed(
             originalMessage = "",

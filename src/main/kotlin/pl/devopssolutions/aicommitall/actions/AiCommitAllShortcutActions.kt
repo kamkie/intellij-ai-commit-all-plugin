@@ -62,33 +62,29 @@ internal abstract class AiCommitAllShortcutAction(
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
-        if (project == null || !settingsProvider.useVcsShortcutsForAiCommitAll()) {
-            standardActionDelegate.perform(sourceActionId, event)
-            return
-        }
-        if (isWorkflowRunning(project)) {
-            return
-        }
-        if (!isWorkflowAvailable(project, event.dataContext)) {
-            standardActionDelegate.perform(sourceActionId, event)
-            return
-        }
+        when {
+            project == null || !settingsProvider.useVcsShortcutsForAiCommitAll() ->
+                standardActionDelegate.perform(sourceActionId, event)
 
-        workflowStarter.start(
-            project = project,
-            mode = section.mode,
-            dataContext = event.dataContext,
-            inputEvent = event.inputEvent,
-        )
+            isWorkflowRunning(project) -> Unit
+
+            isWorkflowAvailable(project, event.dataContext) ->
+                workflowStarter.start(
+                    project = project,
+                    mode = section.mode,
+                    dataContext = event.dataContext,
+                    inputEvent = event.inputEvent,
+                )
+
+            else ->
+                standardActionDelegate.perform(sourceActionId, event)
+        }
     }
 
     internal fun isTakeoverAvailable(dataContext: DataContext): Boolean {
-        if (!settingsProvider.useVcsShortcutsForAiCommitAll()) {
-            return false
-        }
-
-        val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return false
-        return isWorkflowAvailable(project, dataContext)
+        val project = CommonDataKeys.PROJECT.getData(dataContext)
+        return settingsProvider.useVcsShortcutsForAiCommitAll() &&
+            project?.let { isWorkflowAvailable(it, dataContext) } == true
     }
 
     private fun isWorkflowAvailable(
@@ -105,7 +101,10 @@ internal abstract class AiCommitAllShortcutAction(
         return isWorkflowRunning(project)
     }
 
-    private fun isWorkflowRunning(project: Project): Boolean = activityProvider.runningSection(project) != null
+    private fun isWorkflowRunning(project: Project): Boolean {
+        val runningSection = activityProvider.runningSection(project)
+        return runningSection != null
+    }
 }
 
 internal class AiCommitAllShortcutActionPromoter(
@@ -152,7 +151,10 @@ internal fun interface AiCommitAllShortcutSettingsProvider {
 }
 
 internal object ProjectAiCommitAllShortcutSettingsProvider : AiCommitAllShortcutSettingsProvider {
-    override fun useVcsShortcutsForAiCommitAll(): Boolean = AiCommitAllSettings.getInstance().useVcsShortcutsForAiCommitAll()
+    override fun useVcsShortcutsForAiCommitAll(): Boolean {
+        val settings = AiCommitAllSettings.getInstance()
+        return settings.useVcsShortcutsForAiCommitAll()
+    }
 }
 
 internal fun interface StandardVcsShortcutActionDelegate {

@@ -19,6 +19,7 @@ import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SearchableConfigurable
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.awt.Insets
 import javax.swing.JCheckBox
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -91,26 +92,33 @@ internal class AiCommitAllConfigurable(
     }
 
     override fun apply() {
-        val timeoutMillis = timeoutSpinner?.longValue() ?: return
-        val checkIntervalMillis = checkIntervalSpinner?.longValue() ?: return
+        val timeoutMillis = timeoutSpinner?.longValue()
+        val checkIntervalMillis = checkIntervalSpinner?.longValue()
 
-        if (timeoutMillis <= 0) {
-            throw ConfigurationException("AI generation timeout must be positive.")
-        }
-        if (checkIntervalMillis <= 0) {
-            throw ConfigurationException("Completion check interval must be positive.")
-        }
+        if (timeoutMillis != null && checkIntervalMillis != null) {
+            if (timeoutMillis <= 0) {
+                throw ConfigurationException("AI generation timeout must be positive.")
+            }
+            if (checkIntervalMillis <= 0) {
+                throw ConfigurationException("Completion check interval must be positive.")
+            }
 
-        settings.updateCompletionOptions(
-            timeoutMillis = timeoutMillis,
-            checkIntervalMillis = checkIntervalMillis,
-        )
-        settings.updateClearCommitMessageBeforeGeneration(
-            enabled = clearCommitMessageCheckBox?.isSelected ?: return,
-        )
-        settings.updateUseVcsShortcutsForAiCommitAll(
-            enabled = useVcsShortcutsCheckBox?.isSelected ?: return,
-        )
+            settings.updateCompletionOptions(
+                timeoutMillis = timeoutMillis,
+                checkIntervalMillis = checkIntervalMillis,
+            )
+
+            clearCommitMessageCheckBox?.isSelected?.let { clearCommitMessageBeforeGeneration ->
+                settings.updateClearCommitMessageBeforeGeneration(
+                    enabled = clearCommitMessageBeforeGeneration,
+                )
+                useVcsShortcutsCheckBox?.isSelected?.let { useVcsShortcutsForAiCommitAll ->
+                    settings.updateUseVcsShortcutsForAiCommitAll(
+                        enabled = useVcsShortcutsForAiCommitAll,
+                    )
+                }
+            }
+        }
     }
 
     override fun reset() {
@@ -147,12 +155,13 @@ internal class AiCommitAllConfigurable(
         anchor = GridBagConstraints.WEST
         fill = if (column == 1 || width > 1) GridBagConstraints.HORIZONTAL else GridBagConstraints.NONE
         weightx = if (column == 1 || width > 1) 1.0 else 0.0
-        insets = java.awt.Insets(4, 4, 4, 4)
+        insets = Insets(CONTROL_INSET, CONTROL_INSET, CONTROL_INSET, CONTROL_INSET)
     }
 
     companion object {
         private const val MIN_MILLIS = 1L
         private const val MAX_MILLIS = Int.MAX_VALUE.toLong()
         private const val STEP_MILLIS = 100L
+        private const val CONTROL_INSET = 4
     }
 }

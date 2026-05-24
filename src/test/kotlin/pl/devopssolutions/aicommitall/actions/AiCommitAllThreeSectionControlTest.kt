@@ -322,7 +322,10 @@ internal class AiCommitAllThreeSectionControlTest {
         )
     }
 
-    private fun AiCommitAllThreeSectionControl.toolTipFor(section: AiCommitAllControlSection): String? = getToolTipText(mouseEvent(MouseEvent.MOUSE_MOVED, section, MouseEvent.NOBUTTON))
+    private fun AiCommitAllThreeSectionControl.toolTipFor(section: AiCommitAllControlSection): String? {
+        val event = mouseEvent(MouseEvent.MOUSE_MOVED, section, MouseEvent.NOBUTTON)
+        return getToolTipText(event)
+    }
 
     private fun AiCommitAllThreeSectionControl.mouseEvent(
         id: Int,
