@@ -6,6 +6,10 @@ Preserve `T-AREA-NNN` task refs, wording, grouping, and evidence links when movi
 
 ### Documentation
 
+Archived as of 2026-05-24 documentation release follow-ups closeout.
+
+- [x] T-DOC-017: finish deferred user-facing documentation follow-ups after the ADR 0076 rebuild. Priority order: generation and Marketplace metadata first (T-DOC-025, T-DOC-018, T-DOC-026, T-DOC-019), shortcut confirmation next (T-DOC-023), reviewed visual assets last after current UI validation (T-DOC-020). Plan: `PLAN-documentation-release-followups`. (`T-DOC-018`, `T-DOC-020`, `T-DOC-023`, `T-DOC-025`, and `T-DOC-026` archived; `T-DOC-019` intentionally remains open for final release-preparation confirmation; validation: Marketplace generator checks, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
+
 Archived as of 2026-05-24 current UI visual assets.
 
 - [x] T-DOC-020: add reviewed screenshots and a short animation of the current `AI | Commit | Push` control in light and dark themes, then link them from `docs/user-guide.md` and the generated Marketplace description. (`docs/assets/user-guide/ai-commit-all-control-light.png`, `docs/assets/user-guide/ai-commit-all-control-dark.png`, `docs/assets/user-guide/ai-commit-all-control-running.gif`, `docs/user-guide.md`, `config/intellij-platform/description.html`, `scripts/generate-intellij-platform-description.ps1`, `src/test/kotlin/pl/devopssolutions/aicommitall/actions/AiCommitAllControlAssetGeneratorTest.kt`; evidence: generated from the actual runtime `AiCommitAllThreeSectionControl` Swing paint path with `JBColor.setDark`; validation: `$env:AICOMMITALL_GENERATE_USER_GUIDE_ASSETS='true'; .\gradlew.bat test --tests "pl.devopssolutions.aicommitall.actions.AiCommitAllControlAssetGeneratorTest"`, plus final T4 handoff validation)

@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-documentation-release-followups
 
-Status: In Progress
+Status: Implemented
 
 Workers: 1
 
@@ -10,17 +10,18 @@ Filename: `.agents/plans/PLAN-documentation-release-followups.md`
 
 ## Readiness
 
-- Plan readiness: Approved and in progress; explicit user approval was recorded from the 2026-05-24 request to "approve and implement PLAN-documentation-release-followups".
+- Plan readiness: Approved and implemented; explicit user approval was recorded from the 2026-05-24 request to "approve and implement PLAN-documentation-release-followups".
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-24T14:20:15+02:00
 - Open questions: None.
-- Implementation progress: Task packets are defined; executing sequentially through approved-plan sub-agent workers.
+- Implementation progress: T1 through T5 are complete. Release-preparation upkeep remains tracked by `T-DOC-019`; this plan is not a release pass and should not close that task.
 
 ## Status History
 
 - 2026-05-24T14:08:09+02:00: none -> Draft by OpenAI Codex <codex@openai.com>; plan created after documentation backlog priority triage.
 - 2026-05-24T14:20:15+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
 - 2026-05-24T14:20:16+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; implementation started through approved-plan sub-agent workers.
+- 2026-05-24T14:51:09+02:00: In Progress -> Implemented by OpenAI Codex <codex@openai.com>; final documentation closeout completed with `T-DOC-019` left open for release preparation.
 
 ## Goal
 
@@ -169,6 +170,11 @@ Finish the deferred user-facing documentation follow-ups left after ADR 0076 by 
   Blocked evidence path recorded: `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` failed before IDE startup because the cached IU layout was Linux and lacked `idea64.exe`, so Starter screenshots were not used.
   Validation evidence: `$env:AICOMMITALL_GENERATE_USER_GUIDE_ASSETS='true'; .\gradlew.bat test --tests "pl.devopssolutions.aicommitall.actions.AiCommitAllControlAssetGeneratorTest"` passed and generated assets; final repository validation evidence is recorded in the W4 handoff.
   Review risks: assets prove deterministic runtime Swing control rendering only; they do not close the remaining full manual IDE matrix tracked by `T-VAL-024`.
+- `T5-final-docs-closeout` completed final plan review and archived `T-DOC-017`.
+  Changed `README.md`, `CHANGELOG.md`, `TASKS.md`, `TASKS_ARCHIVE.md`, `.agents/plans/PLAN-documentation-release-followups.md`, `.agents/plans/README.md`, and regenerated `config/intellij-platform/change-notes.html`.
+  Review result: no unsupported Marketplace publication, support, release, or validation-completion claims found; the stale README visual-assets limitation was replaced with a user-guide asset reference; `T-DOC-019` remains open for the final release pass.
+  Validation evidence: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-description.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-change-notes.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, and `git diff --check` passed.
+  Review risks: this closeout does not perform release preparation, Marketplace publication, manual release validation, or the full `T-VAL-024` matrix.
 
 ## Execution Model
 
@@ -214,4 +220,4 @@ flowchart TD
 
 - `T-DOC-024` was archived during plan creation because `README.md` already links to `docs/user-guide.md`.
 - `T-DOC-019` should stay open until a release pass confirms generated change notes for the target release.
-- `T-DOC-020` depends on current UI evidence from `T-VAL-024` or an approved scoped visual validation pass.
+- `T-DOC-020` was closed using approved scoped visual validation; full manual release visual validation remains tracked by `T-VAL-024`.

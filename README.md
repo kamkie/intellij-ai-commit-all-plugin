@@ -60,7 +60,7 @@ Open `Settings | Tools | AI Commit All`.
 - Git is the only supported VCS.
 - There is no non-AI fallback message generator.
 - Safe push behavior is intentionally conservative.
-- Final screenshots and animation are not published here; concept graphics are references only.
+- Current reviewed screenshots and animation are linked from the user guide; concept graphics are references only.
 
 ## Documentation
 

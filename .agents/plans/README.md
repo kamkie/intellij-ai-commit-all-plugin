@@ -21,7 +21,7 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- `PLAN-documentation-release-followups` - Documentation Release Follow-Ups ([PLAN-documentation-release-followups.md](PLAN-documentation-release-followups.md)), in progress as of 2026-05-24.
+- `PLAN-documentation-release-followups` - Documentation Release Follow-Ups ([PLAN-documentation-release-followups.md](PLAN-documentation-release-followups.md)), implemented as of 2026-05-24.
 - `PLAN-markdown-list-indent-two-spaces` - Markdown List Indent Two Spaces ([PLAN-markdown-list-indent-two-spaces.md](PLAN-markdown-list-indent-two-spaces.md)), implemented as of 2026-05-24.
 - `PLAN-unchanged-prefilled-ai-message` - Unchanged Prefilled AI Message ([PLAN-unchanged-prefilled-ai-message.md](PLAN-unchanged-prefilled-ai-message.md)), implemented as of 2026-05-24.
 - `PLAN-user-documentation-rebuild` - User Documentation Rebuild ([PLAN-user-documentation-rebuild.md](PLAN-user-documentation-rebuild.md)), implemented as of 2026-05-23.

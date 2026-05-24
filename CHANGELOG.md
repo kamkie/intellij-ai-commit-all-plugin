@@ -10,6 +10,10 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ## [Unreleased]
 
+### Changed
+
+- Added generated Marketplace description and change-note metadata from repository source docs, with reviewed control visuals linked from the user guide assets.
+
 ## [v0.1.0-alpha.10] - 2026-05-24
 
 ### Added
