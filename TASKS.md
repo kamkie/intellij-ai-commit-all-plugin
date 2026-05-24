@@ -15,11 +15,3 @@ Notation:
 ### Validation
 
 - [ ] T-VAL-024: execute and record the current manual release validation matrix before Marketplace publication, covering final control rendering, staging-area modes, shortcut takeover, AI Assistant unavailable states, and full commit/push UI behavior; IDEA deterministic UI automation is present, while live AI Assistant, PyCharm/WebStorm, and platform error observations remain manual. (`docs/validation/release-checklist.md`, `docs/validation/scenario-register.md`, `.agents/plans/archive/PLAN-release-matrix-ui-automation.md`)
-
-### Publishing, Signing, Marketplace, And CI
-
-- [ ] T-REL-018: make version number be sortable.
-  - ai-commit-all-v0.1.0-alpha.9-g6cb835fa4d.dirty.zip
-  - ai-commit-all-v0.1.0-alpha.10-4-gac64d5f648.zip
-  - ai-commit-all-v0.1.0-alpha.10-13-g7c3dff137f.zip
-  - ai-commit-all-v0.1.0-alpha.10-g64b3f33af7.zip

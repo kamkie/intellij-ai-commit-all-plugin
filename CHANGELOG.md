@@ -16,6 +16,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 - Added an empty-Detekt-baseline guard to Gradle, CI, and release validation so suppressed static-analysis findings cannot return unnoticed.
 - Added GitHub Release automation for pushed semantic version tags, with release notes generated from the matching `CHANGELOG.md` release section.
 - Expanded Marketplace listing preparation with real-time progress description copy, generated workflow GIF/PNG media, and release checklist validation for Marketplace media rendering.
+- Separated Marketplace plugin SemVer from local distribution ZIP naming so release tags drop the leading `v`, post-tag builds use SemVer build metadata, and ZIP filenames omit the `g` prefix before Git hashes.
 
 ## [v0.1.0-alpha.10] - 2026-05-24
 
