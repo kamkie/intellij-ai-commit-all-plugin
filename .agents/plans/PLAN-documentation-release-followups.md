@@ -153,6 +153,11 @@ Finish the deferred user-facing documentation follow-ups left after ADR 0076 by 
   The generator derives the Marketplace description from `README.md`, `docs/user-guide.md`, and `LICENSE`, and fails when required source claims disappear.
   Validation evidence: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-description.ps1 -Check` passed; final repository validation evidence is recorded in the W1 handoff.
   Review risks: generated text intentionally avoids Marketplace publication status, support guarantees, screenshots, and release-note claims; next worker can reuse the script pattern or split shared metadata generation during T2.
+- `T2-change-notes-generation` completed `T-DOC-026` and left `T-DOC-019` open for final release-pass confirmation.
+  Changed `scripts/generate-intellij-platform-change-notes.ps1` and `config/intellij-platform/change-notes.html`, then moved only `T-DOC-026` to `TASKS_ARCHIVE.md`.
+  The generator derives Marketplace change notes from `CHANGELOG.md`, omits empty `Unreleased` content, labels non-empty `Unreleased` notes as not yet included in a Marketplace release, and fails when the changelog lacks `Unreleased` or a released version section.
+  Validation evidence: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-change-notes.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, and `git diff --check` passed.
+  Review risks: generation flattens Keep a Changelog category headings into one Marketplace list; `T-DOC-019` remains open to confirm the generated notes during final release preparation.
 
 ## Execution Model
 

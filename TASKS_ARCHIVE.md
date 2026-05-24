@@ -6,6 +6,10 @@ Preserve `T-AREA-NNN` task refs, wording, grouping, and evidence links when movi
 
 ### Documentation
 
+Archived as of 2026-05-24 Marketplace change-notes generation.
+
+- [x] T-DOC-026: generate `config/intellij-platform/change-notes.html` from `CHANGELOG.md` so release notes do not drift. (`scripts/generate-intellij-platform-change-notes.ps1`, `config/intellij-platform/change-notes.html`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-change-notes.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
+
 Archived as of 2026-05-24 marketplace description generation.
 
 - [x] T-DOC-025: generate `config/intellij-platform/description.html` from stable user-facing source docs, primarily `docs/user-guide.md`, so Marketplace text does not drift. (`scripts/generate-intellij-platform-description.ps1`, `config/intellij-platform/description.html`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-description.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)

@@ -1,39 +1,20 @@
 <p>v0.1.0-alpha.10 prerelease.</p>
 <ul>
-    <li>Adds Detekt Kotlin static analysis with a checked-in baseline, SARIF uploads to GitHub code scanning, and report
-        artifacts in CI.
-    </li>
-    <li>Publishes Gradle unit test summaries and test report artifacts in GitHub Actions CI.</li>
-    <li>Adds a Trivy filesystem security workflow with SARIF uploads to GitHub code scanning and report artifacts.</li>
-    <li>Enables Gradle configuration cache and makes coverage verification cache-compatible for faster local and CI
-        Gradle configuration.
-    </li>
-    <li>Rebuilds public plugin documentation around a concise README, dedicated user guide, troubleshooting FAQ, support
-        policy, and validation-focused behavior specification.
-    </li>
-    <li>Reworks validation documentation into a validation index, scenario register, release checklist, and dated
-        validation report structure.
-    </li>
-    <li>Expands the manual release workflow gate to require the requested annotated release tag on <code>main</code> and
-        run documentation validation, formatting, Detekt, tests, coverage verification, plugin packaging, and the
-        supported IDE Plugin Verifier matrix before Marketplace signing and publication.
-    </li>
-    <li>Includes JetBrains Starter IDE logs and screenshots in Release Matrix UI workflow evidence artifacts.</li>
-    <li>Fixes JaCoCo coverage reporting for IntelliJ plugin tests so CI uploads nonzero production coverage.</li>
-    <li>Replaces the deprecated Codecov test-results action with <code>codecov-action</code> test-result uploads and
-        explicit JUnit XML file collection.
-    </li>
-    <li>Prevents outgoing-only Push from opening the IDE Push dialog when there are no files to commit, while allowing
-        normal tracked-branch outgoing commits to use safe immediate push.
-    </li>
-    <li>Removes the deprecated IntelliJ action invocation API from standard commit and push shortcut delegation.</li>
-    <li>Waits for IntelliJ smart mode before executing default Commit workflow calls so Commit and commit-producing Push
-        runs do not stall during project indexing.
-    </li>
-    <li>Avoids re-running <code>git add</code> on already-staged deleted or renamed paths in the Git staging-area
-        workflow, fixing stale pathspec failures before AI message generation.
-    </li>
-    <li>Allows Commit and Push to continue when clearing is disabled and AI Assistant reliably completes without changing
-        a non-empty prefilled commit message, while keeping missing completion evidence and empty results fail-closed.
-    </li>
+    <li>Added Detekt Kotlin static analysis with a checked-in baseline, SARIF uploads to GitHub code scanning, and report artifacts in CI.</li>
+    <li>Published Gradle unit test summaries and test report artifacts in GitHub Actions CI.</li>
+    <li>Added a Trivy filesystem security workflow with SARIF uploads to GitHub code scanning and report artifacts.</li>
+    <li>Enabled Gradle configuration cache and made coverage verification cache-compatible for faster local and CI Gradle configuration.</li>
+    <li>Updated README validation, prerelease status, CI, and manual validation scope notes to match the current build and workflow configuration.</li>
+    <li>Rebuilt public plugin documentation around a concise README, dedicated user guide, troubleshooting FAQ, support policy in <code>docs/SUPPORT.md</code>, and a validation-focused behavior specification.</li>
+    <li>Reworked validation documentation into a validation index, scenario register, release checklist, and dated validation report structure.</li>
+    <li>Expanded the manual release workflow gate to require the requested annotated release tag on <code>main</code> and run documentation validation, formatting, Detekt, tests, coverage verification, plugin packaging, and the supported IDE Plugin Verifier matrix before Marketplace signing and publication.</li>
+    <li>Validated repository agent artifacts in CI alongside documentation validation.</li>
+    <li>Included JetBrains Starter IDE logs and screenshots in Release Matrix UI workflow evidence artifacts.</li>
+    <li>Fixed JaCoCo coverage reporting for IntelliJ plugin tests so CI uploads nonzero production coverage instead of an all-uncovered report.</li>
+    <li>Replaced the deprecated Codecov test-results action with <code>codecov-action</code> test-result uploads and explicit JUnit XML file collection.</li>
+    <li>Prevented outgoing-only <code>Push</code> from opening the IDE Push dialog when there are no files to commit, while allowing normal tracked-branch outgoing commits to use safe immediate push.</li>
+    <li>Removed the deprecated IntelliJ action invocation API from standard commit and push shortcut delegation.</li>
+    <li>Waited for IntelliJ smart mode before executing default Commit workflow calls so <code>Commit</code> and commit-producing <code>Push</code> runs do not stall during project indexing.</li>
+    <li>Avoided re-running <code>git add</code> on already-staged deleted or renamed paths in the Git staging-area workflow, fixing stale pathspec failures before AI message generation.</li>
+    <li>Allowed <code>Commit</code> and <code>Push</code> to continue when clearing is disabled and AI Assistant reliably completes without changing a non-empty prefilled commit message, while keeping missing completion evidence and empty results fail-closed.</li>
 </ul>
