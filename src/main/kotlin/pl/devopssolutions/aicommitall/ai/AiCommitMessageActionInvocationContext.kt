@@ -25,7 +25,6 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.CommitMessageI
 import com.intellij.openapi.vcs.VcsDataKeys
-import com.intellij.vcs.commit.CommitMessageUi
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowUi
 import java.awt.event.InputEvent

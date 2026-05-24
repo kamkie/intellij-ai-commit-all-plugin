@@ -80,7 +80,8 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
         }
     }
 
-    private fun chooseActiveChangeList(changeLists: List<LocalChangeList>): LocalChangeList = changeLists.firstOrNull() ?: ChangeListManager.getInstance(project).defaultChangeList
+    private fun chooseActiveChangeList(changeLists: List<LocalChangeList>): LocalChangeList = changeLists.firstOrNull()
+        ?: ChangeListManager.getInstance(project).defaultChangeList
 
     companion object {
         fun getInstance(project: Project): CommitWorkflowSelectionService = project.service()

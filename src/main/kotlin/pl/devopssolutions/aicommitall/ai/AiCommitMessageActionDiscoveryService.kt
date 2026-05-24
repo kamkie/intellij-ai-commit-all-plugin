@@ -20,7 +20,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
-import java.util.Locale
+import java.util.*
 
 @Service(Service.Level.APP)
 internal class AiCommitMessageActionDiscoveryService : AiCommitMessageActionFinder {

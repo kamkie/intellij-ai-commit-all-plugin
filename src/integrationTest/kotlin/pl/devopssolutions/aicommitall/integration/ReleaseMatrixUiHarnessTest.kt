@@ -857,6 +857,7 @@ private interface RemoteFakeAiAssistantProbe {
         project: Project,
         outputDirectory: String,
     ): List<String>
+
     fun generatedCommitMessageThroughDataContext(): String
     fun isProjectSmart(project: Project): Boolean
     fun registeredKeyboardShortcutText(actionId: String): String?

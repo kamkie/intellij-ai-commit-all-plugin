@@ -18,11 +18,11 @@ If a request requires a new ADR or implementation plan, create or update the req
 
 ## Routing Matrix
 
-| Path | Use When | Stop Or Escalate When |
-|------|----------|-----------------------|
-| Direct one-off | The request is narrow, the intended behavior is already decided by an accepted ADR, spec, owner doc, or task ref, and the likely write set is small. | A new decision, plan, unresolved input, broad coordination, or high-risk workflow surface appears. |
-| Approved plan | The work starts from an approved plan or needs sequencing, task packets, disjoint write scopes, cross-area implementation, or broader validation. | The plan is not approved, approval metadata is missing, a required ADR is not accepted, or a new blocker appears. |
-| Proposal | The user wants analysis, options, duplicated-rule findings, simplification ideas, or triage before implementation. | The user accepts a finding for implementation and the change needs an ADR, plan, or task. |
+| Path           | Use When                                                                                                                                             | Stop Or Escalate When                                                                                             |
+|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
+| Direct one-off | The request is narrow, the intended behavior is already decided by an accepted ADR, spec, owner doc, or task ref, and the likely write set is small. | A new decision, plan, unresolved input, broad coordination, or high-risk workflow surface appears.                |
+| Approved plan  | The work starts from an approved plan or needs sequencing, task packets, disjoint write scopes, cross-area implementation, or broader validation.    | The plan is not approved, approval metadata is missing, a required ADR is not accepted, or a new blocker appears. |
+| Proposal       | The user wants analysis, options, duplicated-rule findings, simplification ideas, or triage before implementation.                                   | The user accepts a finding for implementation and the change needs an ADR, plan, or task.                         |
 
 ## Direct One-Off Loop
 

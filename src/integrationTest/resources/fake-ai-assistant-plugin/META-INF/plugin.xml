@@ -8,9 +8,9 @@
 
     <actions>
         <action
-            id="Vcs.LLMCommitMessageAction"
-            class="pl.devopssolutions.aicommitall.integration.fakeai.FakeLlmCommitMessageAction"
-            text="Generate Commit Message With AI"
-            description="Test substitute for JetBrains AI Assistant commit message generation." />
+                id="Vcs.LLMCommitMessageAction"
+                class="pl.devopssolutions.aicommitall.integration.fakeai.FakeLlmCommitMessageAction"
+                text="Generate Commit Message With AI"
+                description="Test substitute for JetBrains AI Assistant commit message generation."/>
     </actions>
 </idea-plugin>
