@@ -10,7 +10,7 @@ Filename: `.agents/plans/PLAN-test-coverage-growth.md`
 
 ## Readiness
 
-- Plan readiness: Drafted from a full current JaCoCo coverage pass and source/test layout review; extended with staged and unstaged move/rename coverage targets plus current source/test scans for complex uncovered workflow, VCS, AI, UI, reliability, and premature-abandonment edge cases; ready for maintainer review, not approved for implementation.
+- Plan readiness: Draft refreshed on 2026-05-25 after `PLAN-premature-stop-reliability` was implemented and plan-template governance changed. Current coverage, residual targets, task packets, and continuity fields are updated from `.\gradlew.bat test jacocoTestReport`; ready for maintainer review, not approved for implementation.
 - Open questions: None blocking. Coverage targets are plan assumptions and can be adjusted during approval.
 - Implementation progress: Not started.
 
@@ -22,29 +22,31 @@ Filename: `.agents/plans/PLAN-test-coverage-growth.md`
 
 Increase automated test coverage for the IntelliJ plugin codebase by adding focused behavior tests around the highest missed-line and missed-branch clusters, while preserving existing plugin behavior and commit/push safety guarantees.
 
-Current baseline from `.\gradlew.bat test jacocoTestReport` on 2026-05-24:
+Current baseline from `.\gradlew.bat test jacocoTestReport` on 2026-05-25:
 
 | Metric      | Covered / Total | Coverage | Missed |
 |-------------|-----------------|----------|--------|
-| Line        | 2161 / 2981     | 72.5%    | 820    |
-| Branch      | 751 / 1152      | 65.2%    | 401    |
-| Instruction | 10280 / 14383   | 71.5%    | 4103   |
+| Line        | 2525 / 3400     | 74.3%    | 875    |
+| Branch      | 926 / 1404      | 66.0%    | 478    |
+| Instruction | 11829 / 16282   | 72.7%    | 4453   |
 
 Package concentration:
 
 | Package                                        | Line Coverage | Missed Lines | Branch Coverage | Missed Branches |
 |------------------------------------------------|---------------|--------------|-----------------|-----------------|
-| `pl.devopssolutions.aicommitall.workflow`      | 62.0%         | 337          | 62.0%           | 108             |
-| `pl.devopssolutions.aicommitall.vcs`           | 65.6%         | 221          | 51.0%           | 149             |
-| `pl.devopssolutions.aicommitall.ai`            | 73.2%         | 159          | 77.3%           | 56              |
-| `pl.devopssolutions.aicommitall.actions`       | 88.0%         | 85           | 70.1%           | 69              |
-| `pl.devopssolutions.aicommitall.settings`      | 91.4%         | 11           | 77.9%           | 19              |
+| `pl.devopssolutions.aicommitall.workflow`      | 67.3%         | 364          | 66.5%           | 142             |
+| `pl.devopssolutions.aicommitall.vcs`           | 66.9%         | 238          | 52.2%           | 175             |
+| `pl.devopssolutions.aicommitall.ai`            | 75.2%         | 173          | 75.8%           | 72              |
+| `pl.devopssolutions.aicommitall.actions`       | 87.7%         | 88           | 70.3%           | 71              |
+| `pl.devopssolutions.aicommitall.settings`      | 96.2%         | 5            | 76.9%           | 18              |
 | `pl.devopssolutions.aicommitall.notifications` | 68.4%         | 6            | 100.0%          | 0               |
+| `pl.devopssolutions.aicommitall`               | 0.0%          | 1            | 100.0%          | 0               |
 
 Target outcome for this plan:
 
 - Raise actual coverage to at least 78% line and 70% branch coverage.
 - Stretch target: 80% line and 72% branch coverage if the additional tests stay deterministic and low-maintenance.
+- From the current baseline, 78% line coverage requires roughly 127 more covered lines at the same total size, and 70% branch coverage requires roughly 57 more covered branches.
 - Keep `verifyJacocoCoverageReport` thresholds unchanged in this plan unless the maintainer explicitly approves a validation-policy change after the measured result.
 
 ## Non-Goals
@@ -52,6 +54,7 @@ Target outcome for this plan:
 - Do not change user-visible plugin behavior.
 - Do not bypass IDE commit, push, before-commit, or AI Assistant safeguards to make tests easier.
 - Do not add brittle UI sleeps or real remote pushes.
+- Do not duplicate the bounded-settling reliability implementation from `PLAN-premature-stop-reliability`; treat those tests as existing regression coverage and add only residual cases with distinct behavior value.
 - Do not raise `build.gradle.kts` coverage gates as part of this plan without explicit maintainer approval or a separate required decision.
 - Do not replace manual release validation for live AI Assistant and Marketplace behavior.
 
@@ -60,6 +63,7 @@ Target outcome for this plan:
 - Coverage growth should prioritize behavior risk and branch concentration over maximizing raw line count.
 - Small internal test seams are acceptable when they preserve production defaults and remove static IntelliJ service coupling from otherwise valuable unit tests.
 - Local Git repositories and deterministic fakes remain preferred over real remotes, live AI Assistant, or long-running sandbox scenarios.
+- ADR 0084 bounded-settling behavior is already implemented; this plan may extend regression coverage around it but should not change retry budgets or stop-reason semantics.
 - Current skipped asset-generation test remains skipped unless asset regeneration is explicitly requested.
 
 ## Open Questions
@@ -68,28 +72,25 @@ Target outcome for this plan:
 
 ## Proposed Changes
 
-1. Add or extend workflow tests for selection preparation, execution lifecycle, post-commit push handling, push-only execution, commit result registration, and transient readiness or selection states that should not make the plugin give up too early.
-2. Add or extend VCS tests for outgoing-commit status, safe immediate push decisions, push completion tracking, Git selection service behavior, staged/unstaged file move or rename states, including moves or renames with destination content changes, listener/dispose races, and safe-push fallback decisions while repository state is still refreshing.
-3. Add AI integration-boundary tests for commit-message invocation data, full action-event construction, completion service wiring, text access, completion edge states, user-edit precedence, late AI action availability, and transient progress-signal failures.
-4. Add action and UI branch tests for availability, data context fallback, shortcut takeover boundaries, accessibility, geometry hit-testing, section-state behavior, and user-action routing when toolbar or shortcut update data was stale.
+1. Add or extend workflow tests for remaining selection preparation, execution lifecycle, post-commit push handling, push-only execution, commit result registration, reflective synchronization diagnostics, and adapter seams that can be tested without platform brittleness.
+2. Add or extend VCS tests for outgoing-commit status, safe immediate push branch clusters not covered by ADR 0084 settling tests, push completion tracking, Git selection service behavior, staged/unstaged file move or rename states, listener/dispose races, and unsafe-versus-refreshable classification boundaries.
+3. Add AI integration-boundary tests for commit-message invocation data, full action-event construction, completion service wiring, text access adapters, completion edge states not already covered by bounded-settling tests, user-edit precedence, and reflection diagnostics.
+4. Add action and UI branch tests for availability, data context fallback, shortcut takeover boundaries, accessibility, geometry hit-testing, section-state behavior, and stale-update regression gaps not already covered by the reliability plan.
 5. Run the full coverage gate and record the achieved coverage in the plan result summary before any optional threshold follow-up.
 
-Additional complex cases identified from the current source/test scan:
+Residual high-value cases identified from the 2026-05-25 source/test and coverage scan:
 
 - Workflow orchestration has tests for ordinary stop reasons, but not for activity cleanup, active-workflow reset, and phase transitions when background preparation, EDT AI invocation, commit completion, push completion, or push-only completion fails exceptionally.
 - Commit execution tests cover happy paths and some invocation failures, but not every registered result-handler path: default commit success with a registered listener, listener disposal on executor/gate failure, post-commit immediate-push cancel/failure/no-success paths, asynchronous immediate-push failures, and fallback commit-and-push cancel/failure before after-refresh.
-- Push completion tracking covers core success/failure/cancel/timeout results, but not empty repository waits, irrelevant repository events, duplicate completion events after a waiter is done, listener removal by parent disposal, dispose-time cancellation with partial results, or timeout-handle cancellation races.
-- AI invocation context tests mostly cover collected data, leaving full `AnActionEvent` construction, cloned presentation isolation, input-event propagation, child data-context override versus stale parent data, and missing commit-message control/document combinations as higher-risk gaps.
-- Action and control tests cover main routing and rendering smoke cases, but not boundary hit testing at dividers and outside bounds, no-enabled-section keyboard movement, animation start/stop on displayability changes, custom accessible-name override behavior, and shortcut promoter behavior when both plugin shortcut actions and source IDE actions are present in mixed order.
+- Push completion tracking covers core success/failure/cancel/timeout results, but not empty repository waits, irrelevant repository events, duplicate completion events after a waiter is done, listener removal by parent disposal, dispose-time cancellation with partial results, timeout-handle cancellation races, or every successful push result type.
+- AI invocation context tests cover some collected data, leaving full `AnActionEvent` construction, cloned presentation isolation, input-event propagation, child data-context override versus stale parent data, missing commit-message control/document combinations, and UI text mutation/access adapters as higher-risk gaps.
+- Action and control tests cover main routing and several stale-update regressions, but remaining boundary hit testing at dividers and outside bounds, no-enabled-section keyboard movement, animation start/stop on displayability changes, custom accessible-name override behavior, and mixed source/plugin shortcut ordering still have value.
+- Adapter-heavy classes such as project-level service providers, IntelliJ Git environment wrappers, UI-thread accessors, and compatibility diagnostics should be tested only where a narrow fake or fixture proves repository behavior instead of platform internals.
 
-Premature-abandonment cases identified from the current source/test scan:
+Reliability coverage already implemented by `PLAN-premature-stop-reliability` and ADR 0084:
 
-- `AiCommitMessageActionInvoker` treats a single missing AI action lookup as final; add red-first tests where the action appears on a later lookup before the timeout budget expires.
-- `AiGenerationCompletionObserver` immediately returns `NoCompletionSignal` on `AiGenerationRunningState.Unavailable`; add red-first tests for transient progress-signal lookup/read failures followed by `Running` and a valid stopped generated message.
-- `VcsOperationReadinessGuard` and workflow preparation are currently single-shot checks; add tests for frozen/background VCS and empty-selection states that clear on a controlled retry before the workflow reports a stop reason.
-- `CommitWorkflowSelectionService` can stop on activation or synchronization failure after one attempt; add tests where the Commit tool window activation or reflective synchronization succeeds on a later deterministic attempt without bypassing platform safeguards.
-- `SafeImmediatePushService` makes immediate push fallback decisions from one repository snapshot; add tests where upstream hashes, push specs, and outgoing commits are initially unavailable but become safe before falling back to the IDE commit-and-push executor.
-- Shortcut and toolbar routing can rely on stale update-time availability; add tests where action execution rechecks fresh data and does not delegate to the IDE action or hide the plugin action solely because the previous update saw transient missing workflow data.
+- Late AI action discovery, transient AI progress-signal unavailability, VCS readiness settling, empty-selection settling, Commit tool window activation settling, reflective synchronization settling, refreshable safe-push metadata settling, and action-time availability rechecks.
+- Future coverage work should preserve these as regression baselines, but should not re-add them as red-first scope unless a distinct uncovered branch or failure mode is identified.
 
 Expected write areas:
 
@@ -121,6 +122,8 @@ Initial context budget:
 
 - Read first:
   - This plan header, readiness summary, execution graph, and this task packet.
+  - `docs/specification.md`
+  - `docs/decisions/adr-0084-use-bounded-settling-before-transient-stop-reasons.md`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowSelectionService.kt`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowSelectionResult.kt`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowSelectionItems.kt`
@@ -171,6 +174,9 @@ Validation:
 - Run targeted workflow tests added or changed by this packet.
 - Run `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.workflow.*"` when practical.
 - Run `.\gradlew.bat spotlessCheck` if Kotlin files changed.
+- Run `git diff --check`.
+- Perform self-review using `.agents/references/reviews.md`.
+- Record a task commit before starting T2 when approved-plan execution requires per-task commits.
 
 Escalation triggers:
 
@@ -186,12 +192,9 @@ Stop conditions:
 
 Expected output:
 
-- Tests for missing workflow, unsupported VCS, empty selection, no owning changelist, activation failure, synchronization failure, and prepared selection paths where feasible.
+- Tests for missing workflow, unsupported VCS, no owning changelist, activation failure, synchronization failure, and prepared selection paths where feasible, without duplicating ADR 0084 settling tests already present.
 - Tests for commit result listener success, success-after-refresh, cancel, failure, disposal idempotence, and failed registration where feasible.
 - Tests proving workflow activity closes and the active-workflow lock resets when preparation, AI invocation, AI completion, commit completion, commit-and-push completion, or push-only completion fails exceptionally; include a repeated-start-after-failure case.
-- Red-first reliability tests for transient `VcsOperationReadinessResult.Frozen` and `BackgroundOperationRunning` results that become `Ready` within a bounded retry budget before workflow selection starts.
-- Red-first reliability tests where the first selection collection is empty because VCS state has not refreshed, then a later controlled refresh exposes committable content before the plugin reports `EmptySelection`.
-- Red-first reliability tests where commit workflow UI activation or reflective synchronization fails once and then succeeds, proving the plugin does not prematurely stop while the Commit tool window is still settling.
 - Tests for push-only unavailable execution after empty selection with outgoing commits, so `PushExecutionUnavailable` is reported and activity still closes.
 - Tests for default commit success through a registered result listener, result-listener disposal when the default executor or readiness gate throws, safe immediate push not starting on post-commit cancel/failure, synchronous and asynchronous immediate-push failures, and fallback commit-and-push cancel/failure before after-refresh.
 - Tests for reflective workflow synchronization with unversioned files included, missing only `synchronizeInclusion`, missing only `setCommitState`, invocation failure from `setCommitState`, and diagnostic contents for each missing-method combination.
@@ -202,10 +205,15 @@ Result summary:
 - Status: pending
 - Worker:
 - Changed files or reviewed diff:
-- Validation evidence:
+- Validation evidence from `.agents/references/testing.md`:
+- Self-review evidence from `.agents/references/reviews.md`:
+- Commit:
+- Worker events:
+- Orchestrator reconciliation:
+- Changelog/docs/spec/tasks updates:
 - Blockers:
 - Review risks:
-- Handoff notes:
+- Handoff notes and next action:
 
 ### Task Packet: T2-vcs-push-and-outgoing-coverage
 
@@ -226,6 +234,8 @@ Initial context budget:
 
 - Read first:
   - This plan header, readiness summary, execution graph, and this task packet.
+  - `docs/specification.md`
+  - `docs/decisions/adr-0084-use-bounded-settling-before-transient-stop-reasons.md`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/SafeImmediatePushService.kt`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/GitOutgoingCommitsService.kt`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/GitPushCompletionService.kt`
@@ -270,6 +280,9 @@ Validation:
 - Run targeted VCS tests added or changed by this packet.
 - Run `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.vcs.*"` when practical.
 - Run `.\gradlew.bat spotlessCheck` if Kotlin files changed.
+- Run `git diff --check`.
+- Perform self-review using `.agents/references/reviews.md`.
+- Record a task commit before starting T3 when approved-plan execution requires per-task commits.
 
 Escalation triggers:
 
@@ -289,8 +302,7 @@ Expected output:
 - Tests for affected-path extraction from before/after revisions, resolved conflicts, staging-area paths, duplicates, outgoing-only filtering, null push specs, unsafe filtered states, and push invocation failure propagation in `SafeImmediatePushService`.
 - Tests for multi-repository affected selections that deduplicate repeated paths per repository, stop at the first missing repository without loading push states, and preserve stable push-spec ordering across multiple roots.
 - Tests for outgoing-only push preparation when some repositories have null push specs, some have outgoing commits, and some throw while checking outgoing commits; unsafe or unavailable repositories must not be silently pushed.
-- Red-first reliability tests for safe immediate push preparation where push support, push specs, tracked-upstream hash parity, or outgoing-commit data is transiently unavailable and then becomes safe inside a bounded retry or refresh cycle.
-- Tests that distinguish a genuinely unsafe repository state from a not-yet-refreshed repository state, so the plugin falls back immediately for real divergence, conflicts, special refs, and missing upstream, but waits or retries when the environment reports a refreshable unknown state.
+- Residual safe-push tests that distinguish genuinely unsafe repository states from refreshable unknown states not already covered by ADR 0084 metadata-settling tests.
 - Tests for staged rename, unstaged rename, staged move, unstaged move, staged rename with additional work-tree content changes, and unstaged move or rename with destination content changes. Cover both old and new path handling where IntelliJ or Git exposes both paths, and document the exact local Git short-status shapes used to map those scenarios into deterministic unit fixtures.
 - Tests for `GitStageSelectionItems` that prove already-staged renames are not re-staged, partially staged renames or moves with content changes are staged by the destination path, committable path collection keeps rename destinations, and missing-staged-path confirmation fails closed when a rename destination remains unstaged.
 - Coverage result delta for VCS package.
@@ -300,10 +312,15 @@ Result summary:
 - Status: pending
 - Worker:
 - Changed files or reviewed diff:
-- Validation evidence:
+- Validation evidence from `.agents/references/testing.md`:
+- Self-review evidence from `.agents/references/reviews.md`:
+- Commit:
+- Worker events:
+- Orchestrator reconciliation:
+- Changelog/docs/spec/tasks updates:
 - Blockers:
 - Review risks:
-- Handoff notes:
+- Handoff notes and next action:
 
 ### Task Packet: T3-ai-boundary-coverage
 
@@ -324,6 +341,8 @@ Initial context budget:
 
 - Read first:
   - This plan header, readiness summary, execution graph, and this task packet.
+  - `docs/specification.md`
+  - `docs/decisions/adr-0084-use-bounded-settling-before-transient-stop-reasons.md`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/ai/AiGenerationCompletion.kt`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/ai/AiCommitMessageActionDiscoveryService.kt`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/ai/AiCommitMessageActionInvocationService.kt`
@@ -363,6 +382,9 @@ Validation:
 - Run targeted AI tests added or changed by this packet.
 - Run `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.ai.*"` when practical.
 - Run `.\gradlew.bat spotlessCheck` if Kotlin files changed.
+- Run `git diff --check`.
+- Perform self-review using `.agents/references/reviews.md`.
+- Record a task commit before starting T4 when approved-plan execution requires per-task commits.
 
 Escalation triggers:
 
@@ -379,8 +401,8 @@ Expected output:
 - Tests for service wrapper wiring, default option normalization, text cleaner branches, focus inactive handling, user-edit signal fallback, unavailable running-signal diagnostics, parent data-context fallback, and input-event propagation.
 - Tests for `createInvocationContext` that assert the AI action event place, input event, cloned presentation isolation, project/workflow/UI data override stale parent data, and optional commit-message control/document keys are omitted when neither workflow UI nor parent context can provide them.
 - Tests where user-edit detection wins over a simultaneously changed generated message, unavailable running signal with blank and nonblank messages returns the expected fail-closed result, focus returns after an inactive stopped-signal window, zero stopped-signal grace period completes immediately after a stable stop, and timeout boundary behavior is deterministic at exactly the configured timeout.
-- Red-first reliability tests where `AiCommitMessageActionDiscovery` returns no action on the first lookup but finds the known action, a prefix match, or a presentation fallback on a later lookup within the AI invocation timeout budget.
-- Red-first reliability tests where `ReflectiveActionProgressRunningSignal` reports `Unavailable` once because the progress indicator field is temporarily missing, unreadable, or throws, then reports `Running` and `NotRunning` with a generated message; these should expose any immediate `NoCompletionSignal` stop.
+- Residual action-discovery retry tests only for fallback variants not already covered by the ADR 0084 transient-missing-action regression test, such as prefix or presentation fallback becoming available on a later lookup.
+- Residual running-signal tests only for diagnostics and observer boundary conditions not already covered by the transient `Unavailable` settling regression tests.
 - Tests for initial `NotRunning` and unchanged message followed by delayed `Running`, delayed generated text after stop, and focus regaining during the stopped-signal grace window, proving the observer waits for credible completion evidence instead of giving up on the first quiet poll.
 - Tests for `AiGenerationCompletionService.awaitCompletionAsync` that prove the user-edit signal is closed after normal, stopped, timeout, and exceptional observer paths if a lightweight injectable seam is needed.
 - Coverage result delta for AI package.
@@ -390,10 +412,15 @@ Result summary:
 - Status: pending
 - Worker:
 - Changed files or reviewed diff:
-- Validation evidence:
+- Validation evidence from `.agents/references/testing.md`:
+- Self-review evidence from `.agents/references/reviews.md`:
+- Commit:
+- Worker events:
+- Orchestrator reconciliation:
+- Changelog/docs/spec/tasks updates:
 - Blockers:
 - Review risks:
-- Handoff notes:
+- Handoff notes and next action:
 
 ### Task Packet: T4-actions-and-small-package-coverage
 
@@ -414,6 +441,8 @@ Initial context budget:
 
 - Read first:
   - This plan header, readiness summary, execution graph, and this task packet.
+  - `docs/specification.md`
+  - `docs/decisions/adr-0084-use-bounded-settling-before-transient-stop-reasons.md`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/actions/AiCommitAllActions.kt`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/actions/AiCommitAllShortcutActions.kt`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/actions/AiCommitAllThreeSectionControl.kt`
@@ -448,6 +477,9 @@ Validation:
 - Run targeted action/settings tests added or changed by this packet.
 - Run `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.actions.*" --tests "pl.devopssolutions.aicommitall.settings.*"` when practical.
 - Run `.\gradlew.bat spotlessCheck` if Kotlin files changed.
+- Run `git diff --check`.
+- Perform self-review using `.agents/references/reviews.md`.
+- Record a task commit before starting T5 when approved-plan execution requires per-task commits.
 
 Escalation triggers:
 
@@ -464,8 +496,8 @@ Expected output:
 - Tests for action update branches with missing or partial providers, unknown running mode, mixed enabled/disabled availability, component fallback, keyboard/mouse paths not already covered, settings validation branch gaps, and small marker/notification lines where useful.
 - Tests for toolbar custom component fallback when the presentation has no control state, non-control component update no-op, custom component data-context lookup using the actual clicked component, and workflow start receiving the original input event from mouse activation.
 - Tests for shortcut takeover when commit and push plugin actions are both present with their source IDE actions in mixed order, source-action absence in the IntelliJ delegate, workflow-running actionPerformed no-op, project-missing update fallback, and setting toggles changing promoter suppress/promote results without stale state.
-- Red-first reliability tests where shortcut `update` observes missing workflow data, but `actionPerformed` receives a fresh data context with workflow data and starts the plugin workflow instead of delegating to the IDE source action.
-- Red-first reliability tests where the three-section toolbar presentation was hidden or disabled by stale availability, but the clicked custom component resolves a fresh enabled data context and starts the intended workflow section.
+- Residual shortcut freshness tests where `update` observes missing workflow data, but `actionPerformed` receives a fresh data context with workflow data and starts the plugin workflow instead of delegating to the IDE source action.
+- Do not duplicate the toolbar action-time availability tests already added by `PLAN-premature-stop-reliability`; add toolbar coverage only for distinct branches such as fallback component state or input-event propagation.
 - Tests for control boundary hit-testing at section divider pixels and outside bounds, no-enabled-section keyboard movement no-op, focus request on mouse press, animation timer start/stop across `addNotify`, running-state removal, and `removeNotify`, custom accessible name/description overrides, and geometry behavior under very narrow or zero-size bounds.
 - Tests for settings configurable after `disposeUIResources`, `apply` before `createComponent`, reset after rejected apply, max spinner values, and independent persistence when one checkbox component is absent.
 - Coverage result delta for actions and smaller packages.
@@ -475,16 +507,21 @@ Result summary:
 - Status: pending
 - Worker:
 - Changed files or reviewed diff:
-- Validation evidence:
+- Validation evidence from `.agents/references/testing.md`:
+- Self-review evidence from `.agents/references/reviews.md`:
+- Commit:
+- Worker events:
+- Orchestrator reconciliation:
+- Changelog/docs/spec/tasks updates:
 - Blockers:
 - Review risks:
-- Handoff notes:
+- Handoff notes and next action:
 
 ### Task Packet: T5-coverage-verification-and-threshold-recommendation
 
 Task id: T5-coverage-verification-and-threshold-recommendation
 
-Lane: review
+Lane: testing
 
 Required skills:
 
@@ -499,6 +536,8 @@ Initial context budget:
 
 - Read first:
   - This plan header, readiness summary, execution graph, and this task packet.
+  - `.agents/references/testing.md`
+  - `.agents/references/reviews.md`
   - `build.gradle.kts`
   - `README.md`
   - `build/reports/jacoco/test/jacocoTestReport.xml` after T1 through T4 complete.
@@ -532,6 +571,7 @@ Validation:
 - Run `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1` if this plan or docs are updated.
 - Run `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` if `.agents/` artifacts are updated.
 - Run `git diff --check`.
+- Perform self-review using `.agents/references/reviews.md`.
 
 Escalation triggers:
 
@@ -550,24 +590,49 @@ Expected output:
 - List of task packets completed, skipped, and why.
 - Recommendation for future coverage gates, if any.
 - Remaining manual or fixture coverage gaps.
+- Final plan result summaries with validation evidence, self-review evidence, commit identifiers, worker events, and orchestrator reconciliation notes where applicable.
 
 Result summary:
 
 - Status: pending
 - Worker:
 - Changed files or reviewed diff:
-- Validation evidence:
+- Validation evidence from `.agents/references/testing.md`:
+- Self-review evidence from `.agents/references/reviews.md`:
+- Commit:
+- Worker events:
+- Orchestrator reconciliation:
+- Changelog/docs/spec/tasks updates:
 - Blockers:
 - Review risks:
-- Handoff notes:
+- Handoff notes and next action:
 
 ## Execution Model
 
 - `Workers: 1`; execute packets sequentially unless the maintainer explicitly approves parallel sub-agent work later.
 - T1 through T4 are independent enough to reorder, but T5 must run last.
-- Approved-plan execution in this repository normally requires fresh sub-agent task workers. If the active tool contract does not authorize sub-agents at implementation time, stop before implementation and ask for explicit delegation approval.
+- Approved-plan execution in this repository normally requires fresh sub-agent task workers. If sub-agents are unavailable, unauthorized by the active tool contract, or explicitly forbidden at implementation time, stop before implementation and report the blocker.
+- Record an orchestrator decision capsule before context-heavy work, delegated work, write-worker work, approved parallel waves, or work likely to trigger context compaction.
+- Before starting each dependent packet, confirm predecessor result summaries record implementation status, validation evidence from `.agents/references/testing.md`, self-review evidence from `.agents/references/reviews.md`, and a commit identifier when commits are required.
 - Keep production changes limited to internal test seams that preserve existing defaults.
 - Commit each completed approved-plan task separately when commits are requested or required by the active execution rules.
+
+## Long-Run Continuity
+
+Use this checkpoint before starting each dependent task, before a pause or handoff, and after any context transition.
+
+- Resume docs reread:
+  - After context compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, current task packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before any commit; and the next action's exact owner docs or source files.
+- Current task or wave: Draft refresh complete; implementation not started.
+- Completed commits: None for this plan. Related baseline work includes `PLAN-premature-stop-reliability` commits `79208d6`, `f6de9f8`, `4a703c3`, `524392b`, and follow-up plan-governance commits through `2b08f27`.
+- Plan status and readiness: `Draft`; maintainer review and explicit approval are still required before implementation.
+- Validation and self-review state: Baseline `.\gradlew.bat test jacocoTestReport` passed on 2026-05-25 with 308 passing and 1 pending; governed-document validation must be rerun after this plan refresh.
+- Worker event state: No approved-plan workers have run for this plan.
+- Orchestrator reconciliation state: Not started; reconcile packet claims against final diffs and validation output during execution.
+- Changelog, docs, spec, task, or plan updates: This plan is refreshed to account for ADR 0084 implementation and current plan-template continuity requirements; no public changelog entry is expected for the plan refresh itself.
+- Blockers or open questions: None blocking; approval remains the implementation gate.
+- Next action: Maintainer review and explicit approval, then T1 if accepted.
+- Context handoff notes: Treat ADR 0084 settling tests as existing regression coverage and target residual branch clusters from the current JaCoCo report.
 
 ## Execution Graph
 
@@ -602,6 +667,7 @@ Implementation validation:
 - Final `.\gradlew.bat test jacocoTestReport verifyJacocoCoverageReport`.
 - `.\gradlew.bat spotlessCheck` for Kotlin changes.
 - `git diff --check`.
+- Self-review using `.agents/references/reviews.md`.
 
 ## Risks
 
@@ -612,8 +678,8 @@ Implementation validation:
 
 ## Handoff Notes
 
-- Current high-value coverage targets by missed lines are `AiCommitAllWorkflowCoordinator.kt` (91), `AiGenerationCompletion.kt` (66), `CommitWorkflowSelectionService.kt` (58), `SafeImmediatePushService.kt` (55), `GitPushCompletionService.kt` (52), `ReflectiveCommitWorkflowSynchronizer.kt` (47), `GitOutgoingCommitsService.kt` (46), `GitStageConfirmation.kt` (45), `AiCommitAllActions.kt` (39), `AiCommitMessageActionInvocationContext.kt` (39), `GitChangeSelectionService.kt` (39), and `CommitWorkflowResultRegistrar.kt` (32).
-- The current suite has broad workflow behavior coverage already (`287` passing, `1` pending), so avoid duplicating existing happy paths.
-- A 2026-05-24 source/test scan found the best additional return in cross-phase exceptional paths, listener lifecycle races, parent/child data-context override behavior, and UI boundary conditions rather than more happy-path assertions.
-- A follow-up reliability scan found single-shot stop decisions around AI action discovery, progress-signal availability, VCS readiness, selection collection, safe-push repository snapshots, and stale action-update data; these should be covered with red-first tests that fail if the plugin gives up before a bounded retry or fresh action-time read can succeed.
-- The best expected return is from service edge cases, scheduler/timeout behavior, failure branches, lifecycle cleanup, and deterministic fakes around existing injection points.
+- Current high-value coverage targets by missed lines are `CommitWorkflowSelectionService.kt` (54), `AiCommitAllWorkflowCoordinator.kt` project dependency adapter (46), `SafeImmediatePushService.kt` (45), `ReflectiveCommitWorkflowSynchronizer.kt` (44), `GitChangeSelectionService.kt` (38), `AiCommitMessageActionInvocationContext.kt` (36), `GitStageConfirmation.kt` adapter operations (35), `GitOutgoingCommitsService.kt` IntelliJ environment (33), `GitPushCompletionService.kt` tracker/service paths (27 and 19), `SafeImmediatePushService.kt` IntelliJ environment (24), and `ReflectiveActionProgressRunningSignal` (22).
+- The current suite has broad workflow behavior coverage already (`308` passing, `1` pending), so avoid duplicating existing happy paths or ADR 0084 settling regressions.
+- The 2026-05-25 coverage refresh shows line coverage improved from 72.5% to 74.3% and branch coverage from 65.2% to 66.0%, but total missed line and branch counts increased because the reliability implementation added production retry paths.
+- `PLAN-premature-stop-reliability` implemented the earlier premature-abandonment targets for late AI action discovery, transient progress-signal unavailability, VCS readiness, empty selection, Commit tool window activation/synchronization, safe-push metadata, and stale toolbar availability. This plan should now focus on residual branches around those boundaries.
+- The best expected return is from service edge cases, scheduler/timeout behavior, listener lifecycle cleanup, path and rename state coverage, parent/child data-context override behavior, UI boundary conditions, and deterministic fakes around existing injection points.
