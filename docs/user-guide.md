@@ -68,7 +68,7 @@ What happens:
 
 No commit or push is attempted by the `AI` section.
 
-The workflow treats AI generation as unsuccessful when generation times out, the result is empty, AI Assistant cannot be invoked, or you edit the commit message while generation is running. It also stops when completion cannot be observed reliably.
+The workflow treats AI generation as unsuccessful when generation times out, the result is empty, AI Assistant cannot be invoked after a bounded retry, or you edit the commit message while generation is running. It also stops when completion cannot be observed reliably after the bounded observation window.
 
 With the default clear-message setting, the snapshot starts empty and AI Assistant must produce a non-empty message. When you disable clearing, you can intentionally ask AI Assistant to revise existing text. If AI Assistant runs to reliable completion and leaves that non-empty prefilled message unchanged, the workflow may continue; unchanged empty text, missing completion evidence, and user edits still stop the workflow.
 
@@ -114,7 +114,7 @@ Practical effects:
 
 When the IDE's Git staging-area commit workflow is active, AI Commit All stages every eligible non-ignored path before invoking JetBrains AI Assistant. This keeps the generated commit message aligned with the content that the IDE commit workflow will commit.
 
-Already staged paths remain staged when additional eligible unstaged paths are added. If IntelliJ is still refreshing or mutating VCS state, such as during a branch switch, update, commit, push, staging, rollback, merge, or rebase, the workflow stops before changing staged files. Wait for the IDE operation to finish, then try again.
+Already staged paths remain staged when additional eligible unstaged paths are added. If IntelliJ is still refreshing or mutating VCS state, such as during a branch switch, update, commit, push, staging, rollback, merge, or rebase, the plugin briefly rechecks that state before changing staged files. If the state is still busy or frozen after that bounded wait, the workflow stops before changing staged files. Wait for the IDE operation to finish, then try again.
 
 ## Shortcuts
 

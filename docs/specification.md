@@ -1,6 +1,6 @@
 # Plugin Behavior Specification
 
-Last updated: 2026-05-24
+Last updated: 2026-05-25
 
 This document is the validation contract for the intended observable behavior of
 the `AI Commit All` IntelliJ plugin. It states what the plugin must do and where
@@ -61,6 +61,7 @@ manual sandbox checks, and future documentation.
 - REQ-ACT-003: The control MUST be available for both the changelist-backed commit workflow and the Git staging-area commit workflow. Source: ADR 0020. Validates: SCN-STAGE-MAN-001..003, T-VAL-017 (manual).
 - REQ-ACT-004: The Commit tool window primary actions MUST show the plugin three-section control without also showing the standard `Commit and Push...` toolbar action. Source: ADR 0070. Validates: SCN-CONTROL-AUT-001, T-IDEA-011 (manual).
 - REQ-ACT-005: The control MUST appear in the Commit tool window primary action order after the IDE commit-and-push executor. Source: plugin descriptor. Validates: SCN-CONTROL-AUT-001.
+- REQ-ACT-006: When commit workflow activation or synchronization initially cannot prove a supported workflow, the plugin MUST retry within a bounded settling window before reporting `UnsupportedWorkflow`. A workflow type that is definitively unsupported remains terminal and MUST stop immediately without AI, commit, or push work. Source: ADR 0084. Validates: SCN-WORKFLOW-*.
 
 ## 3. Three-Section Control
 
@@ -74,6 +75,7 @@ The control surface is `<AI icon> AI | Commit | Push`.
 - REQ-UI-004: Activating the `Push` section MUST start the `Push` workflow mode. Source: ADR 0052. Validates: SCN-CONTROL-AUT-004.
 - REQ-UI-005: A fallback action invocation that cannot identify a specific section MUST default to `Commit` workflow mode. Source: PLAN-three-section-ai-commit-push-control. Validates: SCN-CONTROL-AUT-005.
 - REQ-UI-006: The control MUST NOT start a workflow when no project is available. Source: ADR 0009. Validates: SCN-CONTROL-AUT-006.
+- REQ-UI-018: Section activation MUST evaluate current action-time project, workflow, VCS, and push context before deciding whether to start a plugin workflow, stop fail-closed, or delegate to an IDE fallback path. Stale update-time visibility or enablement MUST NOT be the only basis for that execution decision. Source: ADR 0084. Validates: SCN-CONTROL-AUT-*, SCN-WORKFLOW-*.
 
 ### 3.2 Enabled, Disabled, And Running States
 
@@ -104,16 +106,16 @@ The selection is the set of files acted on by a workflow run.
 - REQ-SEL-006: Multi-root and nested-module paths MUST be grouped per Git root and MUST NOT be merged or lost across roots. Source: ADR 0009. Validates: SCN-STAGE-AUT-004..005.
 - REQ-SEL-007: Equivalent path spellings that differ only by slash direction MUST be treated as the same path so the selection is not duplicated. Source: PLAN-include-all-git-files. Validates: SCN-STAGE-AUT-006.
 - REQ-SEL-008: The workflow MUST NOT invoke AI generation until staging state confirms that every expected path is staged; if confirmation cannot be reached within the bounded staging-confirmation window, the workflow MUST fail closed. Source: PLAN-confirm-staged-before-ai-generation. Validates: SCN-STAGE-AUT-007..014, SCN-STAGE-AUT-020.
-- REQ-SEL-009: When the IDE changelist state is frozen, the workflow MUST stop before staging mutation and MUST report `VcsFrozen`. Source: ADR 0016. Validates: SCN-WORKFLOW-*.
-- REQ-SEL-010: When a background VCS operation is already running, the workflow MUST stop before staging mutation and MUST report `VcsBackgroundOperationRunning`. Source: ADR 0016. Validates: SCN-WORKFLOW-*, SCN-STAGE-MAN-018.
-- REQ-SEL-011: When the selection is empty after collection, the workflow MUST stop and MUST report `EmptySelection`. Source: ADR 0016. Validates: SCN-WORKFLOW-*, SCN-STAGE-MAN-017.
+- REQ-SEL-009: When the IDE changelist state is frozen, the workflow MUST treat the observation as provisional until bounded settling completes before staging mutation. If the state remains frozen after settling, the workflow MUST stop before staging mutation and MUST report `VcsFrozen`. Source: ADR 0016, ADR 0084. Validates: SCN-WORKFLOW-*.
+- REQ-SEL-010: When a background VCS operation is already running, the workflow MUST treat the observation as provisional until bounded settling completes before staging mutation. If the background operation remains active after settling, the workflow MUST stop before staging mutation and MUST report `VcsBackgroundOperationRunning`. Source: ADR 0016, ADR 0084. Validates: SCN-WORKFLOW-*, SCN-STAGE-MAN-018.
+- REQ-SEL-011: When selection collection appears empty, the workflow MUST retry or refresh the selection within bounded settling before reporting `EmptySelection`. If the selection remains empty after settling, the workflow MUST stop and MUST report `EmptySelection`. Source: ADR 0016, ADR 0084. Validates: SCN-WORKFLOW-*, SCN-STAGE-MAN-017.
 
 ## 5. AI Section Behavior
 
 - REQ-AI-001: The `AI` workflow MUST collect the selection per Section 4, activate the non-modal commit workflow, prepare the staging area when applicable, capture the current commit message as a snapshot, invoke AI message generation, wait for completion, and stop without committing. Source: ADR 0052. Implements: T-AI-007. Validates: SCN-AI-*, T-VAL-023 (manual).
 - REQ-AI-002: AI Assistant action discovery MUST locate the dedicated commit-message generation action by preferring the stable commit-message action ID, accepting compatible VCS commit-message generation actions, and excluding reword, rewrite, and conflict-resolution actions. Source: PLAN-ai-assistant-message-generation. Implements: T-AI-001..003. Validates: SCN-AI-*.
 - REQ-AI-003: AI Assistant invocation MUST receive the active project, commit workflow, and visible commit-message control needed to generate into the current commit message field. Source: PLAN-ai-assistant-message-generation. Implements: T-AI-004. Validates: SCN-AI-*.
-- REQ-AI-004: When the AI Assistant action cannot be discovered or invoked, the workflow MUST stop and MUST report `MissingAiAction`. Source: ADR 0014. Validates: SCN-AI-*, T-VAL-016 (manual).
+- REQ-AI-004: When the AI Assistant action cannot initially be discovered or invoked, the workflow MUST retry within a bounded invocation window for refreshable action-discovery state. If the action still cannot be discovered or invoked after settling, the workflow MUST stop and MUST report `MissingAiAction`. Source: ADR 0014, ADR 0084. Validates: SCN-AI-*, T-VAL-016 (manual).
 - REQ-AI-005: When `clearCommitMessageBeforeGeneration` is enabled, the commit-message control and underlying document MUST be cleared before AI generation begins. Source: PLAN-ai-generation-completion. Validates: SCN-SETTINGS-*.
 - REQ-AI-006: AI generation activity MUST start in the `Ai` phase. The phase MUST advance according to the workflow mode as defined in REQ-UI-009 so the running indicator and workflow progress stay synchronized. Source: ADR 0053. Validates: SCN-CONTROL-AUT-014.
 - REQ-AI-007: AI Assistant sign-in, unavailable, and other generation messages MUST be surfaced through AI Assistant's standard UI where the IDE supports it, without being replaced by plugin-owned text. Source: ADR 0014. Implements: T-AI-006. Validates: T-VAL-016 (manual).
@@ -126,7 +128,7 @@ The selection is the set of files acted on by a workflow run.
 - REQ-AI-011: When AI generation does not finish within `aiGenerationTimeoutMillis`, the workflow MUST stop without committing or pushing and MUST report `AiTimeout`. Source: ADR 0012. Implements: T-WAIT-006. Validates: SCN-AI-*, SCN-STAGE-MAN-012.
 - REQ-AI-012: When AI generation completes but the resulting message is empty, the workflow MUST stop and MUST report `EmptyMessage`. Source: ADR 0014. Validates: SCN-AI-*, SCN-STAGE-MAN-013.
 - REQ-AI-013: When AI generation completes but the message has not changed from the snapshot, the workflow MUST stop and MUST report `UnchangedMessage` unless the unchanged message is a non-empty prefilled snapshot accepted under REQ-AI-008. Unchanged empty snapshots MUST remain unsuccessful. Source: ADR 0014, ADR 0081. Validates: SCN-AI-*.
-- REQ-AI-014: When the plugin cannot reliably determine whether AI Assistant generation is still running or has completed, the workflow MUST stop and MUST report `NoCompletionSignal`. This is distinct from `AiTimeout`, which is reported when the running-state signal remains readable but the timeout window elapses. Source: ADR 0012. Validates: SCN-AI-*.
+- REQ-AI-014: When the plugin cannot reliably determine whether AI Assistant generation is still running or has completed, transient unreadable progress-signal reads MUST be tolerated within bounded settling during the existing `aiGenerationTimeoutMillis` window. If the plugin still cannot reliably determine generation state after settling, the workflow MUST stop and MUST report `NoCompletionSignal`. This is distinct from `AiTimeout`, which is reported when the running-state signal remains readable but the timeout window elapses. Source: ADR 0012, ADR 0084. Validates: SCN-AI-*.
 
 ## 6. Commit Section Behavior
 
@@ -144,8 +146,8 @@ The selection is the set of files acted on by a workflow run.
 - REQ-PUSH-002: Safe immediate push MUST be used, skipping the IDE Push Commits dialog, only when ALL of the following are verified for every affected Git repository: the current branch has a tracked upstream; the target push is unambiguous; the target is the tracked upstream; the target is not a new branch or special ref; the repository state is `NORMAL`; no unresolved conflicts are present in the affected commit scope; and, for commit-and-push, the local branch matches the tracked upstream before commit. Source: ADR 0047. Validates: SCN-PUSH-*.
 - REQ-PUSH-003: Outgoing-only `Push` MUST NOT require local-matches-upstream verification, allowing an already-ahead local branch to push. Source: ADR 0047, alpha.9 fix. Validates: SCN-PUSH-*.
 - REQ-PUSH-004: Protected branch settings that prohibit force push MUST NOT by themselves force the IDE Push dialog when the push is a normal non-force push. Source: ADR 0047. Validates: T-BUG-015 (manual).
-- REQ-PUSH-005: When any verification in REQ-PUSH-002 fails for committable changes, push MUST fall back to the IDE commit-and-push executor and Push Commits dialog, and the fallback reason MUST be one of: `NoAffectedRepositories`, `MissingAffectedRepository`, `UnsafeRepositoryState`, `UnresolvedConflict`, `MissingTrackedUpstream`, `ForcePushStateUnverified`, `AmbiguousTarget`, `UnsupportedPushApi`. Source: ADR 0047. Validates: SCN-PUSH-*.
-- REQ-PUSH-006: Outgoing-only `Push` MUST NOT open the IDE Push Commits dialog when safe immediate push cannot be prepared; instead the workflow MUST stop. Source: ADR 0069. Validates: SCN-PUSH-*.
+- REQ-PUSH-005: When a refreshable unknown push-readiness state blocks verification in REQ-PUSH-002 for committable changes, the plugin MUST retry within bounded settling before choosing the fallback path. When any verification still fails after settling, or when a genuinely unsafe state is proven immediately, push MUST fall back to the IDE commit-and-push executor and Push Commits dialog, and the fallback reason MUST be one of: `NoAffectedRepositories`, `MissingAffectedRepository`, `UnsafeRepositoryState`, `UnresolvedConflict`, `MissingTrackedUpstream`, `ForcePushStateUnverified`, `AmbiguousTarget`, `UnsupportedPushApi`. Source: ADR 0047, ADR 0084. Validates: SCN-PUSH-*.
+- REQ-PUSH-006: Outgoing-only `Push` MUST NOT open the IDE Push Commits dialog when safe immediate push cannot be prepared. When a refreshable unknown push-readiness state blocks preparation, the plugin MUST retry within bounded settling before stopping; genuinely unsafe or unsupported states may stop immediately. Source: ADR 0069, ADR 0084. Validates: SCN-PUSH-*.
 - REQ-PUSH-007: A plugin-owned confirmation dialog MUST NOT be added for the safe immediate push path. Source: ADR 0047. Validates: SCN-PUSH-*.
 - REQ-PUSH-008: When the push executor is unavailable, the workflow MUST stop and MUST report `PushExecutionUnavailable`. Source: ADR 0016. Validates: SCN-WORKFLOW-*.
 - REQ-PUSH-009: The running indicator MUST remain active until safe immediate push observes a successful per-repository completion, cancellation, failed push result, or bounded missing-event timeout; it MUST NOT stop immediately after the push request is dispatched or treat a failed completed push as successful. Source: alpha.8 fix, PLAN-maintainability-stability-audit. Validates: SCN-CONTROL-AUT-014, SCN-PUSH-AUT-016..018.
@@ -159,6 +161,7 @@ The selection is the set of files acted on by a workflow run.
 - REQ-SHC-005: The `AI` section MUST NOT receive a standard VCS shortcut. Source: ADR 0054. Validates: SCN-SHORTCUT-*.
 - REQ-SHC-006: Plugin shortcut actions MUST NOT permanently overwrite the user's keymap; opt-out MUST restore the standard IDE behavior without manual keymap edits. Source: ADR 0054. Validates: SCN-SHORTCUT-*.
 - REQ-SHC-007: When a plugin workflow is already running for the project, the IDE commit and push shortcuts MUST be no-ops while takeover is enabled: they MUST NOT start a second plugin workflow and MUST NOT delegate to the standard IDE action. The plugin shortcut action MUST report itself as disabled during this state. Source: PLAN-ai-generation-completion, ADR 0054. Validates: SCN-SHORTCUT-*.
+- REQ-SHC-008: Shortcut takeover routing MUST evaluate current action-time project, workflow, VCS, and push context before deciding whether to run the plugin workflow or delegate to the standard IDE action. Stale update-time visibility or enablement MUST NOT be the only basis for that shortcut execution decision. Source: ADR 0054, ADR 0084. Validates: SCN-SHORTCUT-*.
 
 ## 9. Settings
 
@@ -183,6 +186,7 @@ Settings are application-scoped and exposed via `Settings | Tools | AI Commit Al
 - REQ-ERR-003: For workflow stop reasons not covered by a standard platform message, the plugin MAY surface a plugin-owned warning notification through the `AI Commit All` group. The only such plugin-owned notification body is the AI timeout text: `AI Assistant did not finish generating a commit message before the configured timeout.` Source: ADR 0014. Implements: T-ERROR-004, T-ERROR-007. Validates: SCN-WORKFLOW-*.
 - REQ-ERR-004: Workflow stop reasons `MissingWorkflow`, `UnsupportedVcs`, `UnsupportedWorkflow`, `MissingAiAction`, `AiCompletionFailed`, `UnchangedMessage`, `NoCompletionSignal`, `UserEditedMessage`, `CommitExecutionUnavailable`, `PushExecutionUnavailable`, `VcsFrozen`, and `VcsBackgroundOperationRunning` MUST NOT trigger plugin-owned notifications; their user-visible effect MUST be limited to existing IDE-owned UI or to no notification when the IDE has none for that state. Source: ADR 0016. Validates: SCN-WORKFLOW-*.
 - REQ-ERR-005: When a stop occurs, the workflow MUST NOT commit, push, or modify the working copy beyond changes already made before the stop. Source: ADR 0011, ADR 0014. Validates: SCN-WORKFLOW-*, SCN-STAGE-MAN-011..018.
+- REQ-ERR-006: Refreshable transient states MUST be treated as provisional until their bounded settling budget expires. Bounded settling MUST use existing safe IDE, VCS, and AI Assistant paths, MUST NOT add user-facing prompts or custom confirmations, MUST NOT wait indefinitely, and MUST NOT bypass standard commit, push, or AI Assistant safeguards. If the transient state clears inside the budget, the workflow MUST continue through the existing safe path; if it does not clear, the workflow MUST report the existing final stop reason or fallback reason. Source: ADR 0084. Validates: SCN-WORKFLOW-*, SCN-AI-*, SCN-PUSH-*.
 
 ### 10.1 Workflow Stop Reasons
 
@@ -190,23 +194,23 @@ The complete set of workflow stop reasons is fixed. Implementations MUST report
 exactly one of these values per stopped run, and MUST NOT add new values without
 updating this specification.
 
-| Stop Reason                     | Trigger                                                                        |
-|---------------------------------|--------------------------------------------------------------------------------|
-| `MissingWorkflow`               | Commit tool window workflow handler or UI was not present.                    |
-| `VcsFrozen`                     | IDE changelist state is frozen at selection time.                             |
-| `VcsBackgroundOperationRunning` | A background VCS operation is in progress.                                     |
-| `EmptySelection`                | After selection collection, no eligible files and no outgoing commits exist.   |
-| `UnsupportedVcs`                | The project's active VCS is not Git.                                           |
-| `UnsupportedWorkflow`           | The active commit workflow type cannot be driven by the plugin.                |
-| `MissingAiAction`               | AI Assistant commit-message action could not be located or invoked.            |
-| `AiCompletionFailed`            | AI generation reported a failure condition during completion detection.        |
-| `AiTimeout`                     | AI generation did not complete within `aiGenerationTimeoutMillis`.             |
-| `EmptyMessage`                  | AI generation produced an empty commit message.                                |
-| `UnchangedMessage`              | AI generation produced a message identical to the captured snapshot and the unchanged prefilled-message acceptance path did not apply. |
-| `NoCompletionSignal`            | AI generation running-state could not be determined reliably.                  |
-| `UserEditedMessage`             | The user edited or cleared the message during AI generation.                   |
-| `CommitExecutionUnavailable`    | IDE commit executor is unavailable for the current workflow state.             |
-| `PushExecutionUnavailable`      | IDE push executor is unavailable for the current workflow state.               |
+| Stop Reason                     | Trigger                                                                        | Finality                                                                       |
+|---------------------------------|--------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| `MissingWorkflow`               | Commit tool window workflow handler or UI was not present.                    | Immediately terminal after current action-time context is checked.             |
+| `VcsFrozen`                     | IDE changelist state is frozen at selection time.                             | Final after bounded settling if the changelist state remains frozen.           |
+| `VcsBackgroundOperationRunning` | A background VCS operation is in progress.                                     | Final after bounded settling if the background operation remains active.       |
+| `EmptySelection`                | After selection collection, no eligible files and no outgoing commits exist.   | Final after bounded selection refresh still finds no eligible files or outgoing commits. |
+| `UnsupportedVcs`                | The project's active VCS is not Git.                                           | Immediately terminal.                                                          |
+| `UnsupportedWorkflow`           | The active commit workflow type cannot be driven by the plugin.                | Final after bounded activation or synchronization settling when support is uncertain; immediately terminal when the workflow type is definitively unsupported. |
+| `MissingAiAction`               | AI Assistant commit-message action could not be located or invoked.            | Final after bounded AI action discovery or invocation retry.                   |
+| `AiCompletionFailed`            | AI generation reported a failure condition during completion detection.        | Immediately terminal when AI Assistant reports failure.                        |
+| `AiTimeout`                     | AI generation did not complete within `aiGenerationTimeoutMillis`.             | Terminal when the configured timeout elapses.                                  |
+| `EmptyMessage`                  | AI generation produced an empty commit message.                                | Immediately terminal after completed AI generation is evaluated.               |
+| `UnchangedMessage`              | AI generation produced a message identical to the captured snapshot and the unchanged prefilled-message acceptance path did not apply. | Immediately terminal after completed AI generation is evaluated. |
+| `NoCompletionSignal`            | AI generation running-state could not be determined reliably.                  | Final after bounded progress-signal settling within the AI generation timeout window. |
+| `UserEditedMessage`             | The user edited or cleared the message during AI generation.                   | Immediately terminal.                                                          |
+| `CommitExecutionUnavailable`    | IDE commit executor is unavailable for the current workflow state.             | Immediately terminal.                                                          |
+| `PushExecutionUnavailable`      | IDE push executor is unavailable for the current workflow state.               | Immediately terminal when executor unavailability is proven; final after bounded settling only for refreshable push-readiness uncertainty that stops instead of falling back. |
 
 ## 11. IDE Action Registration Compatibility
 
@@ -254,6 +258,7 @@ behavior change.
 | ADR 0069 | REQ-PUSH-006                                                                                                         |
 | ADR 0070 | REQ-ACT-004, REQ-INT-003                                                                                             |
 | ADR 0081 | REQ-AI-008, REQ-AI-013                                                                                               |
+| ADR 0084 | REQ-ACT-006, REQ-UI-018, REQ-SEL-009..REQ-SEL-011, REQ-AI-004, REQ-AI-014, REQ-PUSH-005, REQ-PUSH-006, REQ-SHC-008, REQ-ERR-006 |
 
 ### 13.2 Non-ADR Sources
 
