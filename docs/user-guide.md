@@ -102,12 +102,12 @@ Already staged paths remain staged when additional eligible unstaged paths are a
 
 AI Commit All registers two shortcut-target actions that mirror the IDE `CheckinProject` and `Vcs.Push` actions:
 
-| Plugin action | Default Windows/Linux keymap | Notes |
-|---------------|------------------------------|-------|
-| `Commit` | `Ctrl+K` | Routes to the plugin when the Commit tool window workflow is available and shortcut takeover is enabled. |
-| `Push` | `Ctrl+Shift+K` | Routes to the plugin when the Commit tool window workflow is available and shortcut takeover is enabled. |
+| Plugin action | Mirrors IDE action | Default Windows/Linux keymap | Default macOS keymap | Notes |
+|---------------|--------------------|------------------------------|----------------------|-------|
+| `Commit` | `Commit...` | `Ctrl+K` | `Cmd+K` | Routes to the plugin when the Commit tool window workflow is available and shortcut takeover is enabled. |
+| `Push` | `Push...` | `Ctrl+Shift+K` | `Cmd+Shift+K` | Routes to the plugin when the Commit tool window workflow is available and shortcut takeover is enabled. |
 
-The `AI` section does not have a standard VCS shortcut. macOS equivalents are keymap-specific unless confirmed in the active IDE keymap.
+The `AI` section does not have a standard VCS shortcut. The listed shortcuts are the predefined JetBrains keymap defaults; custom keymaps can differ.
 
 If a plugin workflow is already running, the shortcut actions are disabled for that project until the workflow finishes. When shortcut takeover is disabled or no plugin workflow is available, the standard IDE actions handle the shortcuts.
 
@@ -148,7 +148,7 @@ The plugin does not add its own confirmation dialog for the safe immediate-push 
 - Safe immediate push is intentionally conservative.
 - Final screenshots or animation are not published here; [concept graphics](concepts/graphics/README.md) are references only.
 - Full manual visual review across supported IDE products is still tracked as validation work.
-- Shortcut names outside the default Windows/Linux keymap are keymap-specific unless confirmed in the active IDE.
+- Shortcut names outside the predefined JetBrains keymaps are keymap-specific unless confirmed in the active IDE.
 
 ## More References
 

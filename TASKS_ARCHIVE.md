@@ -6,6 +6,10 @@ Preserve `T-AREA-NNN` task refs, wording, grouping, and evidence links when movi
 
 ### Documentation
 
+Archived as of 2026-05-24 shortcut keymap documentation.
+
+- [x] T-DOC-023: confirm macOS keymap equivalents for the plugin commit and push shortcuts, then update the user guide shortcut table. (`docs/user-guide.md`, `src/main/resources/META-INF/plugin.xml`; evidence: JetBrains IntelliJ IDEA 2026.1 Predefined macOS keymap global VCS actions list `Commit...` as `Cmd+K` and `Push...` as `Cmd+Shift+K`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check`)
+
 Archived as of 2026-05-24 Marketplace change-notes generation.
 
 - [x] T-DOC-026: generate `config/intellij-platform/change-notes.html` from `CHANGELOG.md` so release notes do not drift. (`scripts/generate-intellij-platform-change-notes.ps1`, `config/intellij-platform/change-notes.html`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-change-notes.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)

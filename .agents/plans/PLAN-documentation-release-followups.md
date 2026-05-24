@@ -158,6 +158,11 @@ Finish the deferred user-facing documentation follow-ups left after ADR 0076 by 
   The generator derives Marketplace change notes from `CHANGELOG.md`, omits empty `Unreleased` content, labels non-empty `Unreleased` notes as not yet included in a Marketplace release, and fails when the changelog lacks `Unreleased` or a released version section.
   Validation evidence: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-change-notes.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, and `git diff --check` passed.
   Review risks: generation flattens Keep a Changelog category headings into one Marketplace list; `T-DOC-019` remains open to confirm the generated notes during final release preparation.
+- `T3-shortcut-keymap-docs` completed `T-DOC-023`.
+  Changed `docs/user-guide.md`, then moved only `T-DOC-023` to `TASKS_ARCHIVE.md`.
+  Shortcut evidence: `src/main/resources/META-INF/plugin.xml` mirrors `CheckinProject` and `Vcs.Push`; JetBrains IntelliJ IDEA 2026.1 Predefined macOS keymap lists global VCS `Commit...` as `Cmd+K` and `Push...` as `Cmd+Shift+K`; JetBrains Main version control shortcuts lists the matching Windows/Linux defaults as `Ctrl+K` and `Ctrl+Shift+K`.
+  Validation evidence: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, and `git diff --check` passed.
+  Review risks: wording is limited to predefined JetBrains keymap defaults; custom keymaps remain keymap-specific and must be confirmed in the active IDE.
 
 ## Execution Model
 
