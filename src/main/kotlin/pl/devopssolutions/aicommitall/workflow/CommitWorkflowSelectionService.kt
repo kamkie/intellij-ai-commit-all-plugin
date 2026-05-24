@@ -18,6 +18,7 @@ package pl.devopssolutions.aicommitall.workflow
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.ChangeListManager
 import com.intellij.openapi.vcs.changes.LocalChangeList
@@ -81,8 +82,18 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
     ): CommitWorkflowSelectionResult {
         val activeChangeList = chooseActiveChangeList(changeLists)
         val inclusionItems = CommitWorkflowSelectionItems.inclusionItems(selection)
+        logger.info(
+            "AI Commit All diagnostic: activating commit workflow UI, " +
+                "trackedChanges=${selection.trackedChanges.size}, " +
+                "unversionedFiles=${selection.unversionedFiles.size}, " +
+                "resolvedConflicts=${selection.resolvedConflictPaths.size}, " +
+                "stagingAreaPaths=${selection.stagingAreaPaths.size}, " +
+                "changeLists=${changeLists.size}, inclusionItems=${inclusionItems.size}",
+        )
+        val activated = CommitWorkflowUiThreadAccess.run { input.workflowUi.activate() }
+        logger.info("AI Commit All diagnostic: commit workflow UI activation result, activated=$activated")
 
-        return if (CommitWorkflowUiThreadAccess.run { input.workflowUi.activate() }) {
+        return if (activated) {
             synchronizedSelectionResult(
                 input = input,
                 selection = selection,
@@ -109,6 +120,10 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
             activeChangeList = activeChangeList,
             inclusionItems = inclusionItems,
         )
+        logger.info(
+            "AI Commit All diagnostic: commit workflow selection synchronization finished, " +
+                "synchronized=$synchronized, inclusionItems=${inclusionItems.size}",
+        )
 
         return if (synchronized) {
             CommitWorkflowSelectionResult.Prepared(selection)
@@ -123,6 +138,8 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
         ?: ChangeListManager.getInstance(project).defaultChangeList
 
     companion object {
+        private val logger: Logger = Logger.getInstance(CommitWorkflowSelectionService::class.java)
+
         fun getInstance(project: Project): CommitWorkflowSelectionService = project.service()
     }
 }

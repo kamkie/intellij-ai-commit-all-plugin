@@ -20,6 +20,7 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.vcs.commit.CommitWorkflowHandler
@@ -95,11 +96,20 @@ internal class AiCommitAllWorkflowRunner(
         dataContext: DataContext,
         inputEvent: InputEvent? = null,
     ): CompletableFuture<AiCommitAllWorkflowResult> = synchronized(activeWorkflowLock) {
-        activeWorkflow?.takeIf { future -> !future.isDone }
-            ?: startNewWorkflow(mode, dataContext, inputEvent).also { future ->
+        val runningWorkflow = activeWorkflow?.takeIf { future -> !future.isDone }
+        if (runningWorkflow != null) {
+            logger.info(
+                "AI Commit All diagnostic: workflow start requested while workflow is active, " +
+                    "requestedMode=$mode",
+            )
+            runningWorkflow
+        } else {
+            logger.info("AI Commit All diagnostic: workflow start requested, mode=$mode")
+            startNewWorkflow(mode, dataContext, inputEvent).also { future ->
                 activeWorkflow = future
                 future.whenComplete { _, _ -> clearActiveWorkflow(future) }
             }
+        }
     }
 
     private fun startNewWorkflow(
@@ -110,13 +120,27 @@ internal class AiCommitAllWorkflowRunner(
         val workflowHandler = VcsDataKeys.COMMIT_WORKFLOW_HANDLER.getData(dataContext)
         val workflowUi = VcsDataKeys.COMMIT_WORKFLOW_UI.getData(dataContext)
         if (workflowHandler == null || workflowUi == null) {
+            logger.info(
+                "AI Commit All diagnostic: workflow stopped before preparation, " +
+                    "mode=$mode, reason=${AiCommitAllWorkflowStopReason.MissingWorkflow}, " +
+                    "hasWorkflowHandler=${workflowHandler != null}, hasWorkflowUi=${workflowUi != null}",
+            )
             return stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
         }
+        logger.info(
+            "AI Commit All diagnostic: workflow context resolved, " +
+                "mode=$mode, workflowHandler=${workflowHandler.javaClass.name}, " +
+                "workflowUi=${workflowUi.javaClass.name}",
+        )
 
         val activity = dependencies.startActivity(AiGenerationActivityPhase.Ai)
         return scheduler.supplyBackground {
             prepareWorkflow(mode, workflowHandler, workflowUi)
         }.thenCompose { preparation ->
+            logger.info(
+                "AI Commit All diagnostic: workflow preparation completed, " +
+                    "mode=$mode, result=${preparation.diagnosticName()}",
+            )
             when (preparation) {
                 is AiCommitAllWorkflowPreparationResult.Prepared ->
                     startAiGeneration(
@@ -178,33 +202,52 @@ internal class AiCommitAllWorkflowRunner(
         dataContext: DataContext,
         inputEvent: InputEvent?,
         activity: AiCommitAllWorkflowActivity,
-    ): CompletableFuture<AiCommitAllWorkflowResult> = scheduler.supplyEdt {
-        dependencies.runAiGeneration(
-            phase = AiGenerationActivityPhase.Ai,
-            workflowHandler = workflowHandler,
-            workflowUi = workflowUi,
-            parentDataContext = dataContext,
-            inputEvent = inputEvent,
+    ): CompletableFuture<AiCommitAllWorkflowResult> {
+        logger.info(
+            "AI Commit All diagnostic: AI generation phase scheduled, " +
+                "mode=$mode, selection=${selection.diagnosticSummary()}",
         )
-    }.thenCompose { generationResult ->
-        when (generationResult) {
-            is AiCommitAllAiGenerationResult.AwaitingCompletion ->
-                generationResult.completion.handle { completionResult, throwable ->
-                    if (throwable != null) {
-                        stopped(AiCommitAllWorkflowStopReason.AiCompletionFailed)
-                    } else {
-                        completeAfterAiGeneration(
-                            mode = mode,
-                            workflowHandler = workflowHandler,
-                            selection = selection,
-                            completionResult = completionResult,
-                            activity = activity,
-                        )
-                    }
-                }.thenCompose { result -> result }
+        return scheduler.supplyEdt {
+            dependencies.runAiGeneration(
+                phase = AiGenerationActivityPhase.Ai,
+                workflowHandler = workflowHandler,
+                workflowUi = workflowUi,
+                parentDataContext = dataContext,
+                inputEvent = inputEvent,
+            )
+        }.thenCompose { generationResult ->
+            logger.info(
+                "AI Commit All diagnostic: AI generation invocation completed, " +
+                    "mode=$mode, result=${generationResult.diagnosticName()}",
+            )
+            when (generationResult) {
+                is AiCommitAllAiGenerationResult.AwaitingCompletion ->
+                    generationResult.completion.handle { completionResult, throwable ->
+                        if (throwable != null) {
+                            logger.info(
+                                "AI Commit All diagnostic: AI completion future failed, " +
+                                    "mode=$mode, exception=${throwable.javaClass.name}, " +
+                                    "cause=${throwable.cause?.javaClass?.name ?: "<none>"}",
+                            )
+                            stopped(AiCommitAllWorkflowStopReason.AiCompletionFailed)
+                        } else {
+                            logger.info(
+                                "AI Commit All diagnostic: AI completion result, " +
+                                    "mode=$mode, result=${completionResult.diagnosticName()}",
+                            )
+                            completeAfterAiGeneration(
+                                mode = mode,
+                                workflowHandler = workflowHandler,
+                                selection = selection,
+                                completionResult = completionResult,
+                                activity = activity,
+                            )
+                        }
+                    }.thenCompose { result -> result }
 
-            is AiCommitAllAiGenerationResult.Stopped ->
-                stopped(generationResult.reason)
+                is AiCommitAllAiGenerationResult.Stopped ->
+                    stopped(generationResult.reason)
+            }
         }
     }
 
@@ -252,12 +295,14 @@ internal class AiCommitAllWorkflowRunner(
             CompletableFuture.completedFuture(AiCommitAllWorkflowResult.Started)
 
         AiCommitAllWorkflowMode.Commit -> {
+            logger.info("AI Commit All diagnostic: executing completed workflow, mode=$mode")
             activity.moveTo(AiGenerationActivityPhase.Commit)
             dependencies.executeCommit(workflowHandler)
                 .toWorkflowResult(AiCommitAllWorkflowStopReason.CommitExecutionUnavailable)
         }
 
         AiCommitAllWorkflowMode.Push -> {
+            logger.info("AI Commit All diagnostic: executing completed workflow, mode=$mode")
             activity.moveTo(AiGenerationActivityPhase.Commit)
             dependencies.executeCommitAndPush(
                 workflowHandler = workflowHandler,
@@ -290,8 +335,13 @@ internal class AiCommitAllWorkflowRunner(
     }
 
     private fun stoppedResult(reason: AiCommitAllWorkflowStopReason): AiCommitAllWorkflowResult {
+        logger.info("AI Commit All diagnostic: workflow stopped, reason=$reason")
         dependencies.reportStop(reason)
         return AiCommitAllWorkflowResult.Stopped(reason)
+    }
+
+    private companion object {
+        val logger: Logger = Logger.getInstance(AiCommitAllWorkflowRunner::class.java)
     }
 }
 
@@ -305,6 +355,16 @@ private sealed interface AiCommitAllWorkflowPreparationResult {
     data class Stopped(
         val reason: AiCommitAllWorkflowStopReason,
     ) : AiCommitAllWorkflowPreparationResult
+}
+
+private fun AiCommitAllWorkflowPreparationResult.diagnosticName(): String = when (this) {
+    is AiCommitAllWorkflowPreparationResult.Prepared ->
+        "Prepared(${selection.diagnosticSummary()})"
+
+    AiCommitAllWorkflowPreparationResult.PushOnly -> "PushOnly"
+
+    is AiCommitAllWorkflowPreparationResult.Stopped ->
+        "Stopped(reason=$reason)"
 }
 
 private fun VcsOperationReadinessResult.stopReason(): AiCommitAllWorkflowStopReason? = when (this) {
@@ -433,6 +493,34 @@ internal sealed interface AiCommitAllAiGenerationResult {
         val reason: AiCommitAllWorkflowStopReason,
     ) : AiCommitAllAiGenerationResult
 }
+
+private fun AiCommitAllAiGenerationResult.diagnosticName(): String = when (this) {
+    is AiCommitAllAiGenerationResult.AwaitingCompletion -> "AwaitingCompletion"
+    is AiCommitAllAiGenerationResult.Stopped -> "Stopped(reason=$reason)"
+}
+
+private fun AiGenerationCompletionResult?.diagnosticName(): String = when (this) {
+    is AiGenerationCompletionResult.Completed ->
+        "Completed(evidence=$evidence)"
+
+    is AiGenerationCompletionResult.Timeout ->
+        "Timeout(timeout=$timeout)"
+
+    AiGenerationCompletionResult.EmptyMessage -> "EmptyMessage"
+
+    is AiGenerationCompletionResult.UnchangedMessage -> "UnchangedMessage"
+
+    is AiGenerationCompletionResult.NoCompletionSignal -> "NoCompletionSignal"
+
+    is AiGenerationCompletionResult.UserEditedMessage -> "UserEditedMessage"
+
+    null -> "MissingCompletionResult"
+}
+
+private fun GitChangeSelection.diagnosticSummary(): String = "trackedChanges=${trackedChanges.size}, " +
+    "unversionedFiles=${unversionedFiles.size}, " +
+    "resolvedConflicts=${resolvedConflictPaths.size}, " +
+    "stagingAreaPaths=${stagingAreaPaths.size}"
 
 private class ProjectAiCommitAllWorkflowDependencies(private val project: Project) : AiCommitAllWorkflowDependencies {
     override fun startActivity(phase: AiGenerationActivityPhase): AiCommitAllWorkflowActivity {

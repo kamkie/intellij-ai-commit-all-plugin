@@ -22,6 +22,7 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowUi
@@ -83,6 +84,7 @@ internal class AiCommitMessageActionInvoker(
     ): AiCommitMessageActionInvocationResult {
         val actionReference = actionFinder.findCommitMessageAction()
         return if (actionReference == null) {
+            logger.info("AI Commit All diagnostic: AI commit message action lookup failed")
             AiCommitMessageActionInvocationResult.MissingAction
         } else {
             invokeCommitMessageGeneration(
@@ -108,6 +110,12 @@ internal class AiCommitMessageActionInvoker(
             workflowUi = workflow.workflowUi,
             parentDataContext = parentDataContext,
         )
+        logger.info(
+            "AI Commit All diagnostic: invoking AI commit message action, " +
+                "actionId=${actionReference.actionId ?: "<none>"}, " +
+                "source=${actionReference.source}, " +
+                "actionClass=${actionReference.action.javaClass.name}",
+        )
 
         actionSystemInvoker.invoke(
             actionReference = actionReference,
@@ -120,6 +128,10 @@ internal class AiCommitMessageActionInvoker(
             actionId = actionReference.actionId,
             source = actionReference.source,
         )
+    }
+
+    private companion object {
+        val logger: Logger = Logger.getInstance(AiCommitMessageActionInvoker::class.java)
     }
 }
 

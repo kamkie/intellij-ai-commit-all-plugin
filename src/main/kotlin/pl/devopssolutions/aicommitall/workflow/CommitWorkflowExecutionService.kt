@@ -19,6 +19,7 @@ import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.EmptyProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
@@ -47,22 +48,41 @@ internal class CommitWorkflowExecutionService(
 ) {
     fun canExecuteCommit(workflowHandler: CommitWorkflowHandler?): Boolean = workflowHandler is CommitExecutorListener
 
-    fun executeCommit(workflowHandler: CommitWorkflowHandler?): CommitWorkflowExecutionResult = when (
+    fun executeCommit(workflowHandler: CommitWorkflowHandler?): CommitWorkflowExecutionResult {
         val execution = workflowHandler.defaultCommitExecution()
-    ) {
-        DefaultCommitExecutionState.MissingWorkflow -> CommitWorkflowExecutionResult.MissingWorkflow
-        DefaultCommitExecutionState.UnsupportedExecutor -> CommitWorkflowExecutionResult.UnsupportedExecutor
-        is DefaultCommitExecutionState.Ready -> executeDefaultCommit(execution)
+        logger.info(
+            "AI Commit All diagnostic: commit execution requested, " +
+                "state=${execution.diagnosticName()}",
+        )
+        return when (execution) {
+            DefaultCommitExecutionState.MissingWorkflow -> CommitWorkflowExecutionResult.MissingWorkflow
+            DefaultCommitExecutionState.UnsupportedExecutor -> CommitWorkflowExecutionResult.UnsupportedExecutor
+            is DefaultCommitExecutionState.Ready -> executeDefaultCommit(execution)
+        }
     }
 
     private fun executeDefaultCommit(
         execution: DefaultCommitExecutionState.Ready,
     ): CommitWorkflowExecutionResult {
         val completion = CompletableFuture<Unit>()
+        logger.info(
+            "AI Commit All diagnostic: default commit execution scheduled, " +
+                "workflowHandler=${execution.workflowHandler.javaClass.name}",
+        )
+        completion.whenComplete { _, throwable ->
+            logger.info(
+                "AI Commit All diagnostic: default commit execution completed, " +
+                    "outcome=${throwable?.diagnosticOutcome() ?: "completed"}",
+            )
+        }
         scheduler.schedule {
             completeExceptionallyOnFailure(completion) {
                 defaultCommitExecutionGate.runWhenReady(execution.workflowHandler) {
                     val registration = registerCompletion(execution.workflowHandler, completion)
+                    logger.info(
+                        "AI Commit All diagnostic: invoking default commit executor, " +
+                            "resultListenerRegistered=${registration != null}",
+                    )
                     completeExceptionallyOnFailure(completion, registration) {
                         execution.executorListener.executorCalled(null)
                         if (registration == null) {
@@ -85,19 +105,26 @@ internal class CommitWorkflowExecutionService(
         selection: GitChangeSelection? = null,
         safeImmediatePushSupport: SafeImmediatePushSupport = this.safeImmediatePushSupport,
         onPushStarted: () -> Unit = {},
-    ): CommitWorkflowExecutionResult = when (val execution = workflowHandler.commitAndPushExecution()) {
-        CommitAndPushExecutionState.MissingWorkflow -> CommitWorkflowExecutionResult.MissingWorkflow
-
-        CommitAndPushExecutionState.UnsupportedExecutor -> CommitWorkflowExecutionResult.UnsupportedExecutor
-
-        CommitAndPushExecutionState.DisabledExecutor -> CommitWorkflowExecutionResult.DisabledExecutor
-
-        is CommitAndPushExecutionState.Ready -> executeCommitAndPush(
-            execution = execution,
-            selection = selection,
-            safeImmediatePushSupport = safeImmediatePushSupport,
-            onPushStarted = onPushStarted,
+    ): CommitWorkflowExecutionResult {
+        val execution = workflowHandler.commitAndPushExecution()
+        logger.info(
+            "AI Commit All diagnostic: commit-and-push execution requested, " +
+                "state=${execution.diagnosticName()}, hasSelection=${selection != null}",
         )
+        return when (execution) {
+            CommitAndPushExecutionState.MissingWorkflow -> CommitWorkflowExecutionResult.MissingWorkflow
+
+            CommitAndPushExecutionState.UnsupportedExecutor -> CommitWorkflowExecutionResult.UnsupportedExecutor
+
+            CommitAndPushExecutionState.DisabledExecutor -> CommitWorkflowExecutionResult.DisabledExecutor
+
+            is CommitAndPushExecutionState.Ready -> executeCommitAndPush(
+                execution = execution,
+                selection = selection,
+                safeImmediatePushSupport = safeImmediatePushSupport,
+                onPushStarted = onPushStarted,
+            )
+        }
     }
 
     private fun executeCommitAndPush(
@@ -107,6 +134,17 @@ internal class CommitWorkflowExecutionService(
         onPushStarted: () -> Unit,
     ): CommitWorkflowExecutionResult {
         val completion = CompletableFuture<Unit>()
+        logger.info(
+            "AI Commit All diagnostic: commit-and-push execution scheduled, " +
+                "workflowHandler=${execution.workflowHandler.javaClass.name}, " +
+                "executor=${execution.executor.id}",
+        )
+        completion.whenComplete { _, throwable ->
+            logger.info(
+                "AI Commit All diagnostic: commit-and-push execution completed, " +
+                    "outcome=${throwable?.diagnosticOutcome() ?: "completed"}",
+            )
+        }
         scheduler.schedule {
             if (execution.workflowHandler.isExecutorEnabled(execution.executor)) {
                 val immediatePushStarted = selection != null &&
@@ -117,11 +155,19 @@ internal class CommitWorkflowExecutionService(
                         onPushStarted = onPushStarted,
                         completion = completion,
                     )
+                logger.info(
+                    "AI Commit All diagnostic: commit-and-push execution path selected, " +
+                        "immediatePushStarted=$immediatePushStarted",
+                )
                 if (!immediatePushStarted) {
                     val registration = registerCommitAndPushCompletion(
                         workflowHandler = execution.workflowHandler,
                         completion = completion,
                         onPushStarted = onPushStarted,
+                    )
+                    logger.info(
+                        "AI Commit All diagnostic: invoking commit-and-push executor, " +
+                            "resultListenerRegistered=${registration != null}",
                     )
                     completeExceptionallyOnFailure(completion, registration) {
                         execution.workflowHandler.execute(execution.executor)
@@ -131,6 +177,7 @@ internal class CommitWorkflowExecutionService(
                     }
                 }
             } else {
+                logger.info("AI Commit All diagnostic: commit-and-push executor became disabled before invocation")
                 completion.complete(Unit)
             }
         }
@@ -226,6 +273,8 @@ internal class CommitWorkflowExecutionService(
     )
 
     companion object {
+        private val logger: Logger = Logger.getInstance(CommitWorkflowExecutionService::class.java)
+
         fun getInstance(project: Project): CommitWorkflowExecutionService = project.service()
     }
 }
@@ -245,6 +294,15 @@ private fun CommitWorkflowHandler?.defaultCommitExecution(): DefaultCommitExecut
     null -> DefaultCommitExecutionState.MissingWorkflow
     !is CommitExecutorListener -> DefaultCommitExecutionState.UnsupportedExecutor
     else -> DefaultCommitExecutionState.Ready(workflowHandler = this, executorListener = this)
+}
+
+private fun DefaultCommitExecutionState.diagnosticName(): String = when (this) {
+    DefaultCommitExecutionState.MissingWorkflow -> "MissingWorkflow"
+
+    DefaultCommitExecutionState.UnsupportedExecutor -> "UnsupportedExecutor"
+
+    is DefaultCommitExecutionState.Ready ->
+        "Ready(workflowHandler=${workflowHandler.javaClass.name})"
 }
 
 private sealed interface CommitAndPushExecutionState {
@@ -268,6 +326,17 @@ private fun CommitWorkflowHandler?.commitAndPushExecution(): CommitAndPushExecut
         !isExecutorEnabled(executor) -> CommitAndPushExecutionState.DisabledExecutor
         else -> CommitAndPushExecutionState.Ready(workflowHandler = this, executor = executor)
     }
+}
+
+private fun CommitAndPushExecutionState.diagnosticName(): String = when (this) {
+    CommitAndPushExecutionState.MissingWorkflow -> "MissingWorkflow"
+
+    CommitAndPushExecutionState.UnsupportedExecutor -> "UnsupportedExecutor"
+
+    CommitAndPushExecutionState.DisabledExecutor -> "DisabledExecutor"
+
+    is CommitAndPushExecutionState.Ready ->
+        "Ready(workflowHandler=${workflowHandler.javaClass.name}, executor=${executor.id})"
 }
 
 private data class ImmediatePushExecution(
@@ -448,3 +517,5 @@ private inline fun completeExceptionallyOnFailure(
     }
     result.getOrThrow()
 }
+
+private fun Throwable.diagnosticOutcome(): String = "exception=${javaClass.name}, cause=${cause?.javaClass?.name ?: "<none>"}"

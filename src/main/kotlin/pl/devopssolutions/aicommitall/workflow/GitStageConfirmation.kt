@@ -16,6 +16,7 @@
 package pl.devopssolutions.aicommitall.workflow
 
 import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vcs.FilePath
@@ -50,8 +51,19 @@ internal class GitStageConfirmation(
             }
             .filterValues { paths -> paths.isNotEmpty() }
         if (attempts <= 0 || distinctExpectedPaths.isEmpty()) {
+            logger.info(
+                "AI Commit All diagnostic: staging confirmation skipped, " +
+                    "attempts=$attempts, expectedPaths=${distinctExpectedPaths.size}",
+            )
             return null
         }
+
+        val pathsToStageCount = pathsToStageByRoot.values.sumOf { paths -> paths.size }
+        logger.info(
+            "AI Commit All diagnostic: staging confirmation started, " +
+                "attempts=$attempts, roots=${pathsToStageByRoot.size}, " +
+                "pathsToStage=$pathsToStageCount, expectedPaths=${distinctExpectedPaths.size}",
+        )
 
         var confirmedState: GitStageTracker.State? = null
         var attempt = 0
@@ -64,10 +76,23 @@ internal class GitStageConfirmation(
                 operations.markPathsDirty(distinctExpectedPaths)
                 operations.waitForStatusRefresh()
                 operations.refreshTrackerState()
-            }.getOrNull()
+            }.getOrElse { exception ->
+                logger.info(
+                    "AI Commit All diagnostic: staging confirmation attempt failed, " +
+                        "attempt=${attempt + 1}/$attempts, " +
+                        "exception=${exception.javaClass.name}, " +
+                        "cause=${exception.cause?.javaClass?.name ?: "<none>"}",
+                )
+                null
+            }
 
             val expectedPathsAreStaged = refreshedState != null &&
                 GitStageSelectionItems.containsAllStagedPaths(refreshedState, distinctExpectedPaths)
+            logger.info(
+                "AI Commit All diagnostic: staging confirmation attempt completed, " +
+                    "attempt=${attempt + 1}/$attempts, " +
+                    "refreshedState=${refreshedState != null}, confirmed=$expectedPathsAreStaged",
+            )
             if (expectedPathsAreStaged) {
                 confirmedState = refreshedState
             }
@@ -78,6 +103,10 @@ internal class GitStageConfirmation(
             attempt += 1
         }
 
+        logger.info(
+            "AI Commit All diagnostic: staging confirmation finished, " +
+                "confirmed=${confirmedState != null}, attemptsUsed=$attempt",
+        )
         return confirmedState
     }
 
@@ -85,6 +114,7 @@ internal class GitStageConfirmation(
 
     private companion object {
         private const val DEFAULT_RETRY_DELAY_MILLIS = 250L
+        val logger: Logger = Logger.getInstance(GitStageConfirmation::class.java)
         val DEFAULT_RETRY_DELAY: Duration = Duration.ofMillis(DEFAULT_RETRY_DELAY_MILLIS)
     }
 }
