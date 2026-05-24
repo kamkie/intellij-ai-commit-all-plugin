@@ -267,4 +267,5 @@ it as release-readiness evidence.
 
 ## Existing Reports
 
+- [2026-05-24 v0.1.0-alpha.10 Release Preparation](reports/2026-05-24-v0.1.0-alpha.10.md)
 - [2026-05-22 Release Matrix UI Automation](reports/2026-05-22-release-matrix-ui.md)

@@ -4,11 +4,13 @@ All notable public plugin-facing changes are documented in this file.
 
 The format is based on Keep a Changelog. Release tags should use semantic version tags in the form `vMAJOR.MINOR.PATCH` for stable releases or `vMAJOR.MINOR.PATCH-PRERELEASE` for prereleases.
 
-This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.9` is the current implementation prerelease candidate prepared from this repository.
+This repository has no Marketplace-published plugin version yet. `v0.1.0-alpha.10` is the current implementation prerelease candidate prepared from this repository.
 
 This changelog records plugin source and runtime behavior changes, public plugin documentation changes, compatibility and support changes, and CI or release pipeline changes that affect the plugin artifact or publication. Internal AI-agent documentation, repository workflow notes, plans, proposals, ADR maintenance, scenario-register tracking, and test-case inventory changes are intentionally omitted unless they also change public plugin behavior or release artifacts.
 
 ## [Unreleased]
+
+## [v0.1.0-alpha.10] - 2026-05-24
 
 ### Added
 

@@ -75,17 +75,19 @@ internal object GitStageSelectionItems {
         path
     }
 
-    private fun GitFileStatus.pathToStage(): FilePath? = if (isIgnored() || isNotChanged() || isConflicted() || isAlreadyFullyStaged()) {
+    private fun GitFileStatus.pathToStage(): FilePath? = if (isExcludedFromStageMutation() || isAlreadyFullyStaged()) {
         null
     } else {
         path
     }
 
-    private fun GitFileStatus.stagedPath(): FilePath? = if (isIgnored() || isNotChanged() || isConflicted() || index == ' ' || index == '?') {
+    private fun GitFileStatus.stagedPath(): FilePath? = if (isExcludedFromStageMutation() || index == ' ' || index == '?') {
         null
     } else {
         path
     }
+
+    private fun GitFileStatus.isExcludedFromStageMutation(): Boolean = isIgnored() || isNotChanged() || isConflicted()
 
     private fun GitFileStatus.isAlreadyFullyStaged(): Boolean = index != ' ' && index != '?' && workTree == ' '
 

@@ -1,83 +1,39 @@
-<p>v0.1.0-alpha.9 prerelease.</p>
+<p>v0.1.0-alpha.10 prerelease.</p>
 <ul>
+    <li>Adds Detekt Kotlin static analysis with a checked-in baseline, SARIF uploads to GitHub code scanning, and report
+        artifacts in CI.
+    </li>
+    <li>Publishes Gradle unit test summaries and test report artifacts in GitHub Actions CI.</li>
+    <li>Adds a Trivy filesystem security workflow with SARIF uploads to GitHub code scanning and report artifacts.</li>
+    <li>Enables Gradle configuration cache and makes coverage verification cache-compatible for faster local and CI
+        Gradle configuration.
+    </li>
+    <li>Rebuilds public plugin documentation around a concise README, dedicated user guide, troubleshooting FAQ, support
+        policy, and validation-focused behavior specification.
+    </li>
+    <li>Reworks validation documentation into a validation index, scenario register, release checklist, and dated
+        validation report structure.
+    </li>
+    <li>Expands the manual release workflow gate to require the requested annotated release tag on <code>main</code> and
+        run documentation validation, formatting, Detekt, tests, coverage verification, plugin packaging, and the
+        supported IDE Plugin Verifier matrix before Marketplace signing and publication.
+    </li>
+    <li>Includes JetBrains Starter IDE logs and screenshots in Release Matrix UI workflow evidence artifacts.</li>
+    <li>Fixes JaCoCo coverage reporting for IntelliJ plugin tests so CI uploads nonzero production coverage.</li>
+    <li>Replaces the deprecated Codecov test-results action with <code>codecov-action</code> test-result uploads and
+        explicit JUnit XML file collection.
+    </li>
     <li>Prevents outgoing-only Push from opening the IDE Push dialog when there are no files to commit, while allowing
         normal tracked-branch outgoing commits to use safe immediate push.
     </li>
-    <li>Derives Gradle project and IntelliJ plugin descriptor versions from Git tags and short commit hashes using
-        Palantir gradle-git-version.
+    <li>Removes the deprecated IntelliJ action invocation API from standard commit and push shortcut delegation.</li>
+    <li>Waits for IntelliJ smart mode before executing default Commit workflow calls so Commit and commit-producing Push
+        runs do not stall during project indexing.
     </li>
-    <li>Moves push-only outgoing-commit preparation and post-commit safe immediate pushes off the UI thread.
+    <li>Avoids re-running <code>git add</code> on already-staged deleted or renamed paths in the Git staging-area
+        workflow, fixing stale pathspec failures before AI message generation.
     </li>
-    <li>Refreshes outgoing-commit availability after Git repository and push completion events so the Push section does
-        not stay enabled after outgoing commits are pushed.
-    </li>
-    <li>Keeps the Push section animation active until safe immediate Git pushes report completion instead of stopping
-        immediately after push start.
-    </li>
-    <li>Routes the IDE push shortcut to the plugin Push section while shortcut takeover is enabled.</li>
-    <li>Uses the safe immediate push path for outgoing-only Push clicks without invoking the IDE Push workflow.
-    </li>
-    <li>Keeps the Push section available for already-created outgoing Git commits when there are no committable changes,
-        pushing that case through the safe immediate path.
-    </li>
-    <li>Replaces the standard Commit tool window Commit and Push toolbar action with the plugin's three-section control
-        while preserving standard IDE executor and shortcut delegation paths.
-    </li>
-    <li>Matches the three-section control corner radius to neighboring IDE toolbar buttons.</li>
-    <li>Advances the progress animation from AI to Commit to Push, and keeps it active through the post-commit push
-        handoff.
-    </li>
-    <li>Adds repository quality and security automation for wrapper validation, source formatting, documentation
-        validation, CodeQL scanning, Dependabot, CODEOWNERS, security reporting, and contribution templates.
-    </li>
-    <li>Waits through initial AI Assistant startup polling so Commit and Push workflows do not stop before generation
-        begins.
-    </li>
-    <li>Prevents duplicate workflow starts from rapid repeated action or shortcut invocations.</li>
-    <li>Allows safe immediate push on protected branches when no force push is required.</li>
-    <li>Binds plugin shortcut actions directly to the IDE commit shortcuts so takeover is registered even when shortcut
-        mirroring is insufficient.
-    </li>
-    <li>Clears commit-message control and document data before AI generation, not only the public CommitMessageUi text
-        accessor.
-    </li>
-    <li>Moves all-files selection and Git staging confirmation off the UI event thread while returning Commit UI updates
-        and AI invocation to the UI thread, so staging-area mode can reach AI commit-message generation.
-    </li>
-    <li>Prevents the running indicator from throwing a negative dash phase paint exception after animation starts.</li>
-    <li>Increases the default AI generation timeout to 30 seconds so cold AI Assistant requests can finish in the first
-        Commit or Push attempt.
-    </li>
-    <li>Preserves Git staging-area paths when synchronizing fallback Commit tool window inclusion, so already staged
-        files are not dropped from the plugin workflow.
-    </li>
-    <li>Ensures the three-section control exposes its fallback accessibility description when Swing provides a blank
-        description.
-    </li>
-    <li>Refreshes the three-section control running indicator immediately when AI activity starts or finishes.</li>
-    <li>Reloads externally changed staged files before each Git staging tracker recheck, with bounded retries before AI
-        commit-message generation.
-    </li>
-    <li>Adds the working AI, Commit, and Push control to the Commit tool window.</li>
-    <li>Selects or stages non-ignored Git changes across changelists, Git staging-area workflows, and Git roots,
-        including unversioned and resolved-conflict files.
-    </li>
-    <li>Invokes JetBrains AI Assistant commit-message generation through the IntelliJ action system and waits for
-        completion.
-    </li>
-    <li>Lets the AI section generate a message and stop before commit; Commit and Push continue only after successful AI
-        generation.
-    </li>
-    <li>Stops without committing when AI generation times out, remains running, produces no usable message, or the user
-        edits the message.
-    </li>
-    <li>Clears stale commit-message text before AI generation by default, with a settings opt-out.</li>
-    <li>Confirms Git staging-area inclusion before AI generation, including nested module and product paths.</li>
-    <li>Commits through the standard IntelliJ workflow and pushes immediately only when the tracked-upstream Git state
-        is safe; otherwise falls back to the IDE commit-and-push executor.
-    </li>
-    <li>Routes IDE commit shortcuts to AI Commit All Commit and Push workflows by default, with a settings opt-out.</li>
-    <li>Adds settings, validation tests, pull-request CI, Plugin Verifier CI, signing configuration, and gated
-        Marketplace publishing automation.
+    <li>Allows Commit and Push to continue when clearing is disabled and AI Assistant reliably completes without changing
+        a non-empty prefilled commit message, while keeping missing completion evidence and empty results fail-closed.
     </li>
 </ul>
