@@ -23,6 +23,7 @@ import com.intellij.openapi.vcs.changes.ChangeListManager
 import com.intellij.openapi.vcs.changes.LocalChangeList
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowUi
+import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelectionService
 import pl.devopssolutions.aicommitall.vcs.GitVcsSupportStatus
 import java.util.concurrent.atomic.AtomicReference
@@ -32,39 +33,77 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
     fun prepareAllFilesSelection(
         workflowHandler: CommitWorkflowHandler?,
         workflowUi: CommitWorkflowUi?,
-    ): CommitWorkflowSelectionResult {
-        if (workflowHandler == null || workflowUi == null) {
-            return CommitWorkflowSelectionResult.MissingWorkflow
-        }
+    ): CommitWorkflowSelectionResult = CommitWorkflowSelectionInput.create(workflowHandler, workflowUi)
+        ?.let(::prepareAllFilesSelection)
+        ?: CommitWorkflowSelectionResult.MissingWorkflow
 
+    private fun prepareAllFilesSelection(input: CommitWorkflowSelectionInput): CommitWorkflowSelectionResult {
         val selectionService = GitChangeSelectionService.getInstance(project)
         val supportStatus = selectionService.supportStatus()
-        if (supportStatus != GitVcsSupportStatus.Supported) {
-            return CommitWorkflowSelectionResult.UnsupportedVcs(supportStatus)
+        return if (supportStatus == GitVcsSupportStatus.Supported) {
+            prepareSupportedSelection(input, selectionService)
+        } else {
+            CommitWorkflowSelectionResult.UnsupportedVcs(supportStatus)
         }
+    }
 
+    private fun prepareSupportedSelection(
+        input: CommitWorkflowSelectionInput,
+        selectionService: GitChangeSelectionService,
+    ): CommitWorkflowSelectionResult {
         val selection = selectionService.collectSelection()
-        if (!selection.hasCommittableContent) {
-            return CommitWorkflowSelectionResult.EmptySelection
+        return if (selection.hasCommittableContent) {
+            prepareCommittableSelection(input, selection)
+        } else {
+            CommitWorkflowSelectionResult.EmptySelection
         }
+    }
 
+    private fun prepareCommittableSelection(
+        input: CommitWorkflowSelectionInput,
+        selection: GitChangeSelection,
+    ): CommitWorkflowSelectionResult {
         val changeLists = CommitWorkflowSelectionItems.changeListsContaining(
             trackedChanges = selection.trackedChanges,
             changeLists = ChangeListManager.getInstance(project).changeLists,
         )
-        if (changeLists.isEmpty() && selection.trackedChanges.isNotEmpty()) {
-            return CommitWorkflowSelectionResult.UnsupportedWorkflow("No Git changelist owns the selected tracked changes.")
+        return if (changeLists.isEmpty() && selection.trackedChanges.isNotEmpty()) {
+            CommitWorkflowSelectionResult.UnsupportedWorkflow("No Git changelist owns the selected tracked changes.")
+        } else {
+            synchronizeSelection(input, selection, changeLists)
         }
+    }
 
+    private fun synchronizeSelection(
+        input: CommitWorkflowSelectionInput,
+        selection: GitChangeSelection,
+        changeLists: List<LocalChangeList>,
+    ): CommitWorkflowSelectionResult {
         val activeChangeList = chooseActiveChangeList(changeLists)
         val inclusionItems = CommitWorkflowSelectionItems.inclusionItems(selection)
 
-        if (!CommitWorkflowUiThreadAccess.run { workflowUi.activate() }) {
-            return CommitWorkflowSelectionResult.UnsupportedWorkflow("The Commit tool window workflow could not be activated.")
+        return if (CommitWorkflowUiThreadAccess.run { input.workflowUi.activate() }) {
+            synchronizedSelectionResult(
+                input = input,
+                selection = selection,
+                changeLists = changeLists,
+                activeChangeList = activeChangeList,
+                inclusionItems = inclusionItems,
+            )
+        } else {
+            CommitWorkflowSelectionResult.UnsupportedWorkflow("The Commit tool window workflow could not be activated.")
         }
+    }
 
+    private fun synchronizedSelectionResult(
+        input: CommitWorkflowSelectionInput,
+        selection: GitChangeSelection,
+        changeLists: List<LocalChangeList>,
+        activeChangeList: LocalChangeList,
+        inclusionItems: Collection<Any>,
+    ): CommitWorkflowSelectionResult {
         val synchronized = ReflectiveCommitWorkflowSynchronizer.synchronize(
-            workflowHandler = workflowHandler,
+            workflowHandler = input.workflowHandler,
             changeLists = changeLists,
             unversionedFiles = selection.unversionedFiles,
             activeChangeList = activeChangeList,
@@ -88,21 +127,38 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
     }
 }
 
-internal object CommitWorkflowUiThreadAccess {
-    fun <T> run(action: () -> T): T {
-        val application = ApplicationManager.getApplication() ?: return action()
-        if (application.isDispatchThread) {
-            return action()
+private data class CommitWorkflowSelectionInput(
+    val workflowHandler: CommitWorkflowHandler,
+    val workflowUi: CommitWorkflowUi,
+) {
+    companion object {
+        fun create(
+            workflowHandler: CommitWorkflowHandler?,
+            workflowUi: CommitWorkflowUi?,
+        ): CommitWorkflowSelectionInput? = if (workflowHandler != null && workflowUi != null) {
+            CommitWorkflowSelectionInput(workflowHandler, workflowUi)
+        } else {
+            null
         }
+    }
+}
 
+internal object CommitWorkflowUiThreadAccess {
+    fun <T> run(action: () -> T): T = ApplicationManager.getApplication()
+        ?.takeUnless { application -> application.isDispatchThread }
+        ?.let { application -> runOnEdt(application, action) }
+        ?: action()
+
+    private fun <T> runOnEdt(
+        application: com.intellij.openapi.application.Application,
+        action: () -> T,
+    ): T {
         val result = AtomicReference<T>()
         val failure = AtomicReference<Throwable>()
         application.invokeAndWait {
-            try {
-                result.set(action())
-            } catch (throwable: Throwable) {
-                failure.set(throwable)
-            }
+            runCatching(action)
+                .onSuccess(result::set)
+                .onFailure(failure::set)
         }
         failure.get()?.let { throwable -> throw throwable }
         return result.get()

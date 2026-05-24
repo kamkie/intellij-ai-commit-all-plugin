@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit
 internal class GitStageConfirmation(
     private val attempts: Int,
     private val operations: GitStageConfirmationOperations,
-    private val retryDelay: Duration = Duration.ofMillis(250),
+    private val retryDelay: Duration = DEFAULT_RETRY_DELAY,
     private val sleeper: GitStageConfirmationSleeper = ThreadGitStageConfirmationSleeper,
 ) {
     fun confirm(
@@ -53,7 +53,9 @@ internal class GitStageConfirmation(
             return null
         }
 
-        repeat(attempts) { attempt ->
+        var confirmedState: GitStageTracker.State? = null
+        var attempt = 0
+        while (attempt < attempts && confirmedState == null) {
             val refreshedState = runCatching {
                 pathsToStageByRoot.forEach { (root, paths) ->
                     operations.stagePaths(root, paths)
@@ -65,18 +67,24 @@ internal class GitStageConfirmation(
             }.getOrNull()
 
             if (refreshedState != null && GitStageSelectionItems.containsAllStagedPaths(refreshedState, distinctExpectedPaths)) {
-                return refreshedState
+                confirmedState = refreshedState
             }
 
-            if (attempt < attempts - 1 && !retryDelay.isNegative && !retryDelay.isZero) {
+            if (confirmedState == null && attempt < attempts - 1 && retryDelay.isPositive()) {
                 sleeper.sleep(retryDelay)
             }
+            attempt += 1
         }
 
-        return null
+        return confirmedState
     }
 
     private fun FilePath.normalizedPath(): String = path.replace('\\', '/')
+
+    private companion object {
+        private const val DEFAULT_RETRY_DELAY_MILLIS = 250L
+        val DEFAULT_RETRY_DELAY: Duration = Duration.ofMillis(DEFAULT_RETRY_DELAY_MILLIS)
+    }
 }
 
 internal interface GitStageConfirmationOperations {

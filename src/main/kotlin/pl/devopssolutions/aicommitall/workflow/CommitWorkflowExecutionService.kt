@@ -23,6 +23,7 @@ import com.intellij.openapi.progress.EmptyProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vcs.changes.CommitExecutor
 import com.intellij.vcs.commit.AbstractCommitWorkflowHandler
 import com.intellij.vcs.commit.CommitExecutorListener
 import com.intellij.vcs.commit.CommitWorkflowHandler
@@ -32,6 +33,8 @@ import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushFallbackReason
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushPlan
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushSupport
 import java.util.concurrent.CompletableFuture
+
+private const val GIT_COMMIT_AND_PUSH_EXECUTOR_ID = "Git.Commit.And.Push.Executor"
 
 @Service(Service.Level.PROJECT)
 internal class CommitWorkflowExecutionService(
@@ -44,69 +47,71 @@ internal class CommitWorkflowExecutionService(
 ) {
     fun canExecuteCommit(workflowHandler: CommitWorkflowHandler?): Boolean = workflowHandler is CommitExecutorListener
 
-    fun executeCommit(workflowHandler: CommitWorkflowHandler?): CommitWorkflowExecutionResult {
-        if (workflowHandler == null) {
-            return CommitWorkflowExecutionResult.MissingWorkflow
-        }
+    fun executeCommit(workflowHandler: CommitWorkflowHandler?): CommitWorkflowExecutionResult = when (
+        val execution = workflowHandler.defaultCommitExecution()
+    ) {
+        DefaultCommitExecutionState.MissingWorkflow -> CommitWorkflowExecutionResult.MissingWorkflow
+        DefaultCommitExecutionState.UnsupportedExecutor -> CommitWorkflowExecutionResult.UnsupportedExecutor
+        is DefaultCommitExecutionState.Ready -> executeDefaultCommit(execution)
+    }
 
-        val executorListener = workflowHandler as? CommitExecutorListener
-            ?: return CommitWorkflowExecutionResult.UnsupportedExecutor
+    private fun executeDefaultCommit(
+        execution: DefaultCommitExecutionState.Ready,
+    ): CommitWorkflowExecutionResult {
         val completion = CompletableFuture<Unit>()
         scheduler.schedule {
-            try {
-                defaultCommitExecutionGate.runWhenReady(workflowHandler) {
-                    val registration = registerCompletion(workflowHandler, completion)
-                    try {
-                        executorListener.executorCalled(null)
+            completeExceptionallyOnFailure(completion) {
+                defaultCommitExecutionGate.runWhenReady(execution.workflowHandler) {
+                    val registration = registerCompletion(execution.workflowHandler, completion)
+                    completeExceptionallyOnFailure(completion, registration) {
+                        execution.executorListener.executorCalled(null)
                         if (registration == null) {
                             completion.complete(Unit)
                         }
-                    } catch (throwable: Throwable) {
-                        registration?.dispose()
-                        completion.completeExceptionally(throwable)
-                        throw throwable
                     }
                 }
-            } catch (throwable: Throwable) {
-                completion.completeExceptionally(throwable)
-                throw throwable
             }
         }
         return CommitWorkflowExecutionResult.Started(completion)
     }
 
-    fun canExecuteCommitAndPush(workflowHandler: CommitWorkflowHandler?): Boolean {
-        if (workflowHandler == null) {
-            return false
-        }
-
-        val executor = workflowHandler.getExecutor(GIT_COMMIT_AND_PUSH_EXECUTOR_ID)
-            ?: return false
-        return workflowHandler.isExecutorEnabled(executor)
-    }
+    fun canExecuteCommitAndPush(workflowHandler: CommitWorkflowHandler?): Boolean = workflowHandler?.let { handler ->
+        handler.getExecutor(GIT_COMMIT_AND_PUSH_EXECUTOR_ID)
+            ?.let(handler::isExecutorEnabled)
+    } == true
 
     fun executeCommitAndPush(
         workflowHandler: CommitWorkflowHandler?,
         selection: GitChangeSelection? = null,
         safeImmediatePushSupport: SafeImmediatePushSupport = this.safeImmediatePushSupport,
         onPushStarted: () -> Unit = {},
+    ): CommitWorkflowExecutionResult = when (val execution = workflowHandler.commitAndPushExecution()) {
+        CommitAndPushExecutionState.MissingWorkflow -> CommitWorkflowExecutionResult.MissingWorkflow
+
+        CommitAndPushExecutionState.UnsupportedExecutor -> CommitWorkflowExecutionResult.UnsupportedExecutor
+
+        CommitAndPushExecutionState.DisabledExecutor -> CommitWorkflowExecutionResult.DisabledExecutor
+
+        is CommitAndPushExecutionState.Ready -> executeCommitAndPush(
+            execution = execution,
+            selection = selection,
+            safeImmediatePushSupport = safeImmediatePushSupport,
+            onPushStarted = onPushStarted,
+        )
+    }
+
+    private fun executeCommitAndPush(
+        execution: CommitAndPushExecutionState.Ready,
+        selection: GitChangeSelection?,
+        safeImmediatePushSupport: SafeImmediatePushSupport,
+        onPushStarted: () -> Unit,
     ): CommitWorkflowExecutionResult {
-        if (workflowHandler == null) {
-            return CommitWorkflowExecutionResult.MissingWorkflow
-        }
-
-        val executor = workflowHandler.getExecutor(GIT_COMMIT_AND_PUSH_EXECUTOR_ID)
-            ?: return CommitWorkflowExecutionResult.UnsupportedExecutor
-        if (!workflowHandler.isExecutorEnabled(executor)) {
-            return CommitWorkflowExecutionResult.DisabledExecutor
-        }
-
         val completion = CompletableFuture<Unit>()
         scheduler.schedule {
-            if (workflowHandler.isExecutorEnabled(executor)) {
+            if (execution.workflowHandler.isExecutorEnabled(execution.executor)) {
                 val immediatePushStarted = selection != null &&
                     executeImmediatePushWhenSafe(
-                        workflowHandler = workflowHandler,
+                        workflowHandler = execution.workflowHandler,
                         selection = selection,
                         safeImmediatePushSupport = safeImmediatePushSupport,
                         onPushStarted = onPushStarted,
@@ -114,19 +119,15 @@ internal class CommitWorkflowExecutionService(
                     )
                 if (!immediatePushStarted) {
                     val registration = registerCommitAndPushCompletion(
-                        workflowHandler = workflowHandler,
+                        workflowHandler = execution.workflowHandler,
                         completion = completion,
                         onPushStarted = onPushStarted,
                     )
-                    try {
-                        workflowHandler.execute(executor)
+                    completeExceptionallyOnFailure(completion, registration) {
+                        execution.workflowHandler.execute(execution.executor)
                         if (registration == null) {
                             completion.complete(Unit)
                         }
-                    } catch (throwable: Throwable) {
-                        registration?.dispose()
-                        completion.completeExceptionally(throwable)
-                        throw throwable
                     }
                 }
             } else {
@@ -143,37 +144,49 @@ internal class CommitWorkflowExecutionService(
         onPushStarted: () -> Unit,
         completion: CompletableFuture<Unit>,
     ): Boolean {
-        val executorListener = workflowHandler as? CommitExecutorListener
-            ?: return false
-        val decision = safeImmediatePushSupport.prepare(selection)
-        if (decision !is SafeImmediatePushDecision.Immediate) {
-            return false
-        }
-
-        val registration = registerPostCommitPush(
+        val execution = immediatePushExecution(
             workflowHandler = workflowHandler,
-            pushPlan = decision.plan,
+            selection = selection,
+            safeImmediatePushSupport = safeImmediatePushSupport,
             onPushStarted = onPushStarted,
             completion = completion,
         )
-            ?: return false
-
-        try {
-            defaultCommitExecutionGate.runWhenReady(workflowHandler) {
-                try {
-                    executorListener.executorCalled(null)
-                } catch (throwable: Throwable) {
-                    registration.dispose()
-                    completion.completeExceptionally(throwable)
-                    throw throwable
+        if (execution != null) {
+            completeExceptionallyOnFailure(completion, execution.registration) {
+                defaultCommitExecutionGate.runWhenReady(workflowHandler) {
+                    completeExceptionallyOnFailure(completion, execution.registration) {
+                        execution.executorListener.executorCalled(null)
+                    }
                 }
             }
-        } catch (throwable: Throwable) {
-            registration.dispose()
-            completion.completeExceptionally(throwable)
-            throw throwable
         }
-        return true
+        return execution != null
+    }
+
+    private fun immediatePushExecution(
+        workflowHandler: CommitWorkflowHandler,
+        selection: GitChangeSelection,
+        safeImmediatePushSupport: SafeImmediatePushSupport,
+        onPushStarted: () -> Unit,
+        completion: CompletableFuture<Unit>,
+    ): ImmediatePushExecution? {
+        val executorListener = workflowHandler as? CommitExecutorListener
+        val pushPlan = (safeImmediatePushSupport.prepare(selection) as? SafeImmediatePushDecision.Immediate)?.plan
+        return if (executorListener != null && pushPlan != null) {
+            registerPostCommitPush(
+                workflowHandler = workflowHandler,
+                pushPlan = pushPlan,
+                onPushStarted = onPushStarted,
+                completion = completion,
+            )?.let { registration ->
+                ImmediatePushExecution(
+                    executorListener = executorListener,
+                    registration = registration,
+                )
+            }
+        } else {
+            null
+        }
     }
 
     private fun registerCompletion(
@@ -214,10 +227,53 @@ internal class CommitWorkflowExecutionService(
 
     companion object {
         fun getInstance(project: Project): CommitWorkflowExecutionService = project.service()
-
-        private const val GIT_COMMIT_AND_PUSH_EXECUTOR_ID = "Git.Commit.And.Push.Executor"
     }
 }
+
+private sealed interface DefaultCommitExecutionState {
+    data object MissingWorkflow : DefaultCommitExecutionState
+
+    data object UnsupportedExecutor : DefaultCommitExecutionState
+
+    data class Ready(
+        val workflowHandler: CommitWorkflowHandler,
+        val executorListener: CommitExecutorListener,
+    ) : DefaultCommitExecutionState
+}
+
+private fun CommitWorkflowHandler?.defaultCommitExecution(): DefaultCommitExecutionState = when (this) {
+    null -> DefaultCommitExecutionState.MissingWorkflow
+    !is CommitExecutorListener -> DefaultCommitExecutionState.UnsupportedExecutor
+    else -> DefaultCommitExecutionState.Ready(workflowHandler = this, executorListener = this)
+}
+
+private sealed interface CommitAndPushExecutionState {
+    data object MissingWorkflow : CommitAndPushExecutionState
+
+    data object UnsupportedExecutor : CommitAndPushExecutionState
+
+    data object DisabledExecutor : CommitAndPushExecutionState
+
+    data class Ready(
+        val workflowHandler: CommitWorkflowHandler,
+        val executor: CommitExecutor,
+    ) : CommitAndPushExecutionState
+}
+
+private fun CommitWorkflowHandler?.commitAndPushExecution(): CommitAndPushExecutionState {
+    val executor = this?.getExecutor(GIT_COMMIT_AND_PUSH_EXECUTOR_ID)
+    return when {
+        this == null -> CommitAndPushExecutionState.MissingWorkflow
+        executor == null -> CommitAndPushExecutionState.UnsupportedExecutor
+        !isExecutorEnabled(executor) -> CommitAndPushExecutionState.DisabledExecutor
+        else -> CommitAndPushExecutionState.Ready(workflowHandler = this, executor = executor)
+    }
+}
+
+private data class ImmediatePushExecution(
+    val executorListener: CommitExecutorListener,
+    val registration: CommitWorkflowResultRegistration,
+)
 
 private class CompletionResultHandler(
     private val completion: CompletableFuture<Unit>,
@@ -278,7 +334,7 @@ private class PostCommitPushResultHandler(
     }
 
     private fun executePush() {
-        try {
+        completeExceptionallyOnFailure(completion) {
             immediatePushExecutor.push(pushPlan)
                 .whenComplete { _, throwable ->
                     if (throwable != null) {
@@ -287,9 +343,6 @@ private class PostCommitPushResultHandler(
                         completion.complete(Unit)
                     }
                 }
-        } catch (throwable: Throwable) {
-            completion.completeExceptionally(throwable)
-            throw throwable
         }
     }
 
@@ -378,4 +431,17 @@ internal sealed interface CommitWorkflowExecutionResult {
     data object UnsupportedExecutor : CommitWorkflowExecutionResult
 
     data object DisabledExecutor : CommitWorkflowExecutionResult
+}
+
+private inline fun completeExceptionallyOnFailure(
+    completion: CompletableFuture<Unit>,
+    registration: CommitWorkflowResultRegistration? = null,
+    action: () -> Unit,
+) {
+    val result = runCatching(action)
+    result.exceptionOrNull()?.let { failure ->
+        registration?.dispose()
+        completion.completeExceptionally(failure)
+    }
+    result.getOrThrow()
 }

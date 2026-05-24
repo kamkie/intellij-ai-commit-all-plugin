@@ -148,40 +148,14 @@ internal class AiCommitAllWorkflowRunner(
         mode: AiCommitAllWorkflowMode,
         workflowHandler: CommitWorkflowHandler,
         workflowUi: CommitWorkflowUi,
-    ): AiCommitAllWorkflowPreparationResult {
-        when (dependencies.checkReadiness()) {
-            VcsOperationReadinessResult.Ready -> Unit
-
-            VcsOperationReadinessResult.Frozen ->
-                return AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.VcsFrozen)
-
-            VcsOperationReadinessResult.BackgroundOperationRunning ->
-                return AiCommitAllWorkflowPreparationResult.Stopped(
-                    AiCommitAllWorkflowStopReason.VcsBackgroundOperationRunning,
-                )
-        }
-
-        return when (val selectionResult = dependencies.prepareAllFilesSelection(workflowHandler, workflowUi)) {
-            is CommitWorkflowSelectionResult.Prepared ->
-                AiCommitAllWorkflowPreparationResult.Prepared(selectionResult.selection)
-
-            CommitWorkflowSelectionResult.EmptySelection ->
-                if (mode == AiCommitAllWorkflowMode.Push && dependencies.hasOutgoingCommitsToPush()) {
-                    AiCommitAllWorkflowPreparationResult.PushOnly
-                } else {
-                    AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.EmptySelection)
-                }
-
-            CommitWorkflowSelectionResult.MissingWorkflow ->
-                AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
-
-            is CommitWorkflowSelectionResult.UnsupportedVcs ->
-                AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.UnsupportedVcs)
-
-            is CommitWorkflowSelectionResult.UnsupportedWorkflow ->
-                AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.UnsupportedWorkflow)
-        }
-    }
+    ): AiCommitAllWorkflowPreparationResult = dependencies.checkReadiness()
+        .stopReason()
+        ?.let(AiCommitAllWorkflowPreparationResult::Stopped)
+        ?: selectionPreparation(
+            mode = mode,
+            selectionResult = dependencies.prepareAllFilesSelection(workflowHandler, workflowUi),
+            hasOutgoingCommitsToPush = dependencies::hasOutgoingCommitsToPush,
+        )
 
     private fun executePushOnly(
         dataContext: DataContext,
@@ -332,6 +306,45 @@ private sealed interface AiCommitAllWorkflowPreparationResult {
     ) : AiCommitAllWorkflowPreparationResult
 }
 
+private fun VcsOperationReadinessResult.stopReason(): AiCommitAllWorkflowStopReason? = when (this) {
+    VcsOperationReadinessResult.Ready -> null
+
+    VcsOperationReadinessResult.Frozen -> AiCommitAllWorkflowStopReason.VcsFrozen
+
+    VcsOperationReadinessResult.BackgroundOperationRunning ->
+        AiCommitAllWorkflowStopReason.VcsBackgroundOperationRunning
+}
+
+private fun selectionPreparation(
+    mode: AiCommitAllWorkflowMode,
+    selectionResult: CommitWorkflowSelectionResult,
+    hasOutgoingCommitsToPush: () -> Boolean,
+): AiCommitAllWorkflowPreparationResult = when (selectionResult) {
+    is CommitWorkflowSelectionResult.Prepared ->
+        AiCommitAllWorkflowPreparationResult.Prepared(selectionResult.selection)
+
+    CommitWorkflowSelectionResult.EmptySelection ->
+        emptySelectionPreparation(mode, hasOutgoingCommitsToPush)
+
+    CommitWorkflowSelectionResult.MissingWorkflow ->
+        AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.MissingWorkflow)
+
+    is CommitWorkflowSelectionResult.UnsupportedVcs ->
+        AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.UnsupportedVcs)
+
+    is CommitWorkflowSelectionResult.UnsupportedWorkflow ->
+        AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.UnsupportedWorkflow)
+}
+
+private fun emptySelectionPreparation(
+    mode: AiCommitAllWorkflowMode,
+    hasOutgoingCommitsToPush: () -> Boolean,
+): AiCommitAllWorkflowPreparationResult = if (mode == AiCommitAllWorkflowMode.Push && hasOutgoingCommitsToPush()) {
+    AiCommitAllWorkflowPreparationResult.PushOnly
+} else {
+    AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.EmptySelection)
+}
+
 internal interface AiCommitAllWorkflowScheduler {
     fun <T> supplyBackground(action: () -> T): CompletableFuture<T>
 
@@ -362,11 +375,9 @@ private fun <T> completedFrom(action: () -> T): CompletableFuture<T> {
 }
 
 private fun <T> CompletableFuture<T>.completeFrom(action: () -> T) {
-    try {
-        complete(action())
-    } catch (throwable: Throwable) {
-        completeExceptionally(throwable)
-    }
+    runCatching(action)
+        .onSuccess(::complete)
+        .onFailure(::completeExceptionally)
 }
 
 internal interface AiCommitAllWorkflowActivity : AutoCloseable {
@@ -493,7 +504,7 @@ private class ProjectAiCommitAllWorkflowDependencies(private val project: Projec
         dataContext: DataContext,
         inputEvent: InputEvent?,
     ): CommitWorkflowExecutionResult = PushOnlyWorkflowExecutionService.getInstance(project)
-        .executePush(dataContext, inputEvent)
+        .executePush()
 
     override fun reportStop(reason: AiCommitAllWorkflowStopReason) {
         AiCommitAllWorkflowStopReporter.getInstance(project).report(reason)

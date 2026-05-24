@@ -32,14 +32,15 @@ import javax.swing.SwingUtilities
 internal object CommitMessageUserEditSignalFactory {
     fun create(commitMessageUi: CommitMessageUi): ActiveCommitMessageUserEditSignal {
         val document = CommitMessageUiAccessors.editorDocument(commitMessageUi)
-            ?: return ActiveCommitMessageUserEditSignal.NotEdited
         val component = CommitMessageUiAccessors.editorComponent(commitMessageUi)
-            ?: return ActiveCommitMessageUserEditSignal.NotEdited
-
-        return DocumentCommitMessageUserEditSignal(
-            document = document,
-            detector = AwtCommitMessageUserEditDetector(component),
-        )
+        return if (document != null && component != null) {
+            DocumentCommitMessageUserEditSignal(
+                document = document,
+                detector = AwtCommitMessageUserEditDetector(component),
+            )
+        } else {
+            ActiveCommitMessageUserEditSignal.NotEdited
+        }
     }
 }
 
@@ -96,15 +97,14 @@ internal class AwtCommitMessageUserEditDetector(
     private val currentEventProvider: () -> AWTEvent? = { IdeEventQueue.getInstance().trueCurrentEvent },
 ) : CommitMessageUserEditDetector {
     override fun isUserEditEventInProgress(): Boolean {
-        val event = currentEventProvider() ?: return false
-        if (!event.canEditText()) {
-            return false
-        }
-
-        val sourceComponent = event.source as? Component ?: return false
-        return sourceComponent === editorComponent ||
-            SwingUtilities.isDescendingFrom(sourceComponent, editorComponent)
+        val sourceComponent = currentEventProvider()
+            ?.takeIf { event -> event.canEditText() }
+            ?.source as? Component
+        return sourceComponent != null && isEditorEventSource(sourceComponent)
     }
+
+    private fun isEditorEventSource(sourceComponent: Component): Boolean = sourceComponent === editorComponent ||
+        SwingUtilities.isDescendingFrom(sourceComponent, editorComponent)
 
     private fun AWTEvent.canEditText(): Boolean = this is KeyEvent ||
         this is InputMethodEvent ||

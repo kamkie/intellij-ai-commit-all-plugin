@@ -107,18 +107,23 @@ private class IntellijGitOutgoingCommitsEnvironment(private val project: Project
     private fun GitRepository.hasOutgoingCommits(pushSupport: GitPushSupport): Boolean {
         val source = pushSupport.getSource(this)
         val target = source?.let { pushSource -> pushSupport.getDefaultTarget(this, pushSource) }
-        val outgoingResult = if (state == Repository.State.NORMAL && source != null && target != null) {
-            runCatching {
-                pushSupport.outgoingCommitsProvider.getOutgoingCommits(
-                    this,
-                    PushSpec<GitPushSource, GitPushTarget>(source, target),
-                    false,
-                )
-            }.getOrNull()
-        } else {
-            null
-        }
-        return outgoingResult?.commits?.isNotEmpty() == true
+        return outgoingCommits(pushSupport, source, target)?.commits?.isNotEmpty() == true
+    }
+
+    private fun GitRepository.outgoingCommits(
+        pushSupport: GitPushSupport,
+        source: GitPushSource?,
+        target: GitPushTarget?,
+    ) = if (state == Repository.State.NORMAL && source != null && target != null) {
+        runCatching {
+            pushSupport.outgoingCommitsProvider.getOutgoingCommits(
+                this,
+                PushSpec<GitPushSource, GitPushTarget>(source, target),
+                false,
+            )
+        }.getOrNull()
+    } else {
+        null
     }
 }
 

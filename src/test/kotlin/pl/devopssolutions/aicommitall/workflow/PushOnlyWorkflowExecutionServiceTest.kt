@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package pl.devopssolutions.aicommitall.workflow
-
-import com.intellij.openapi.actionSystem.DataContext
 import pl.devopssolutions.aicommitall.vcs.SafeImmediateOutgoingPushSupport
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushDecision
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushFallbackReason
@@ -23,6 +21,7 @@ import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushPlan
 import java.util.concurrent.CompletableFuture
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
@@ -39,7 +38,7 @@ internal class PushOnlyWorkflowExecutionServiceTest {
             immediatePushExecutor = immediatePushExecutor,
         )
 
-        val result = service.executePush(DataContext.EMPTY_CONTEXT, inputEvent = null)
+        val result = service.executePush()
 
         val started = result.asStarted()
         assertEquals(1, immediatePushExecutor.pushCallCount)
@@ -59,9 +58,26 @@ internal class PushOnlyWorkflowExecutionServiceTest {
             ),
         )
 
-        val result = service.executePush(DataContext.EMPTY_CONTEXT, inputEvent = null)
+        val result = service.executePush()
 
         assertSame(CommitWorkflowExecutionResult.UnsupportedExecutor, result)
+    }
+
+    @Test
+    fun `does not catch immediate outgoing push invocation failures`() {
+        val failure = IllegalStateException("push failed")
+        val service = PushOnlyWorkflowExecutionService(
+            outgoingPushSupport = TestOutgoingPushSupport(
+                SafeImmediatePushDecision.Immediate(CapturingSafeImmediatePushPlan()),
+            ),
+            immediatePushExecutor = ThrowingImmediatePushExecutor(failure),
+        )
+
+        val thrown = assertFailsWith<IllegalStateException> {
+            service.executePush()
+        }
+
+        assertSame(failure, thrown)
     }
 
     private class TestOutgoingPushSupport(
@@ -91,6 +107,12 @@ internal class PushOnlyWorkflowExecutionServiceTest {
             pushCallCount++
             return pushPlan.push()
         }
+    }
+
+    private class ThrowingImmediatePushExecutor(
+        private val failure: RuntimeException,
+    ) : ImmediatePushExecutor {
+        override fun push(pushPlan: SafeImmediatePushPlan): CompletableFuture<Unit> = throw failure
     }
 
     private fun CommitWorkflowExecutionResult.asStarted(): CommitWorkflowExecutionResult.Started = this as CommitWorkflowExecutionResult.Started

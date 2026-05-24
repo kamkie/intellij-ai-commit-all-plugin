@@ -47,14 +47,25 @@ internal object IntellijCommitWorkflowResultRegistrar : CommitWorkflowResultRegi
     override fun register(
         workflowHandler: CommitWorkflowHandler,
         resultHandler: CommitWorkflowResultHandler,
+    ): CommitWorkflowResultRegistration? = (workflowHandler as? AbstractCommitWorkflowHandler<*, *>)
+        ?.registerResultHandler(resultHandler)
+
+    private fun AbstractCommitWorkflowHandler<*, *>.registerResultHandler(
+        resultHandler: CommitWorkflowResultHandler,
     ): CommitWorkflowResultRegistration? {
-        val abstractHandler = workflowHandler as? AbstractCommitWorkflowHandler<*, *>
-            ?: return null
         val listenerDisposable = Disposer.newDisposable("AI Commit All commit result")
-        if (!Disposer.tryRegister(abstractHandler, listenerDisposable)) {
+        return if (Disposer.tryRegister(this, listenerDisposable)) {
+            registerDisposableResultHandler(listenerDisposable, resultHandler)
+        } else {
             Disposer.dispose(listenerDisposable)
-            return null
+            null
         }
+    }
+
+    private fun AbstractCommitWorkflowHandler<*, *>.registerDisposableResultHandler(
+        listenerDisposable: com.intellij.openapi.Disposable,
+        resultHandler: CommitWorkflowResultHandler,
+    ): CommitWorkflowResultRegistration {
         var listenerDisposed = false
 
         fun disposeListener() {
@@ -65,7 +76,7 @@ internal object IntellijCommitWorkflowResultRegistrar : CommitWorkflowResultRegi
         }
 
         var successPendingAfterRefresh = false
-        abstractHandler.workflow.addVcsCommitListener(
+        workflow.addVcsCommitListener(
             object : com.intellij.vcs.commit.CommitterResultHandler {
                 override fun onSuccess() {
                     if (!resultHandler.waitForAfterRefreshOnSuccess) {

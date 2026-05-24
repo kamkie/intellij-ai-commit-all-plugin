@@ -2,9 +2,7 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>ComplexCondition:GitStageSelectionItems.kt:GitStageSelectionItems$isIgnored() || isNotChanged() || isConflicted() || index == ' ' || index == '?'</ID>
     <ID>MagicNumber:AiCommitAllConfigurable.kt:AiCommitAllConfigurable$4</ID>
-    <ID>MagicNumber:GitStageConfirmation.kt:GitStageConfirmation$250</ID>
     <ID>MaxLineLength:AiCommitAllActions.kt:AiCommitAllControlState$fun isSectionEnabled: Boolean</ID>
     <ID>MaxLineLength:AiCommitAllActions.kt:ProjectAiCommitAllWorkflowActivityProvider$override fun runningSection: AiCommitAllControlSection?</ID>
     <ID>MaxLineLength:AiCommitAllShortcutActions.kt:ProjectAiCommitAllShortcutSettingsProvider$override fun useVcsShortcutsForAiCommitAll: Boolean</ID>
@@ -53,35 +51,5 @@
     <ID>ReturnCount:AiCommitAllConfigurable.kt:AiCommitAllConfigurable$override fun apply</ID>
     <ID>ReturnCount:AiCommitAllShortcutActions.kt:AiCommitAllShortcutAction$internal fun isTakeoverAvailable: Boolean</ID>
     <ID>ReturnCount:AiCommitAllShortcutActions.kt:AiCommitAllShortcutAction$override fun actionPerformed</ID>
-    <ID>ReturnCount:AiCommitAllWorkflowCoordinator.kt:AiCommitAllWorkflowRunner$private fun prepareWorkflow: AiCommitAllWorkflowPreparationResult</ID>
-    <ID>ReturnCount:AiCommitMessageActionDiscoveryService.kt:AiCommitMessageActionDiscovery$private fun AnAction.toPresentationFallbackReference: AiCommitMessageActionReference?</ID>
-    <ID>ReturnCount:AiCommitMessageActionInvocationService.kt:AiCommitMessageActionInvoker$fun invokeCommitMessageGeneration: AiCommitMessageActionInvocationResult</ID>
-    <ID>ReturnCount:AiGenerationCompletion.kt:AiGenerationCompletionObserver$fun awaitCompletion: AiGenerationCompletionResult</ID>
-    <ID>ReturnCount:AiGenerationCompletion.kt:EdtCommitMessageUiTextAccess$override fun readText: String</ID>
-    <ID>ReturnCount:CommitMessageUserEditSignal.kt:AwtCommitMessageUserEditDetector$override fun isUserEditEventInProgress: Boolean</ID>
-    <ID>ReturnCount:CommitMessageUserEditSignal.kt:CommitMessageUserEditSignalFactory$fun create: ActiveCommitMessageUserEditSignal</ID>
-    <ID>ReturnCount:CommitWorkflowExecutionService.kt:CommitWorkflowExecutionService$fun canExecuteCommitAndPush: Boolean</ID>
-    <ID>ReturnCount:CommitWorkflowExecutionService.kt:CommitWorkflowExecutionService$fun executeCommit: CommitWorkflowExecutionResult</ID>
-    <ID>ReturnCount:CommitWorkflowExecutionService.kt:CommitWorkflowExecutionService$fun executeCommitAndPush: CommitWorkflowExecutionResult</ID>
-    <ID>ReturnCount:CommitWorkflowExecutionService.kt:CommitWorkflowExecutionService$private fun executeImmediatePushWhenSafe: Boolean</ID>
-    <ID>ReturnCount:CommitWorkflowResultRegistrar.kt:IntellijCommitWorkflowResultRegistrar$override fun register: CommitWorkflowResultRegistration?</ID>
-    <ID>ReturnCount:CommitWorkflowSelectionService.kt:CommitWorkflowSelectionService$fun prepareAllFilesSelection: CommitWorkflowSelectionResult</ID>
-    <ID>ReturnCount:CommitWorkflowSelectionService.kt:CommitWorkflowUiThreadAccess$fun &lt;T> run: T</ID>
-    <ID>ReturnCount:GitOutgoingCommitsService.kt:GitOutgoingCommitsService$private fun GitRepository.hasOutgoingCommits: Boolean</ID>
-    <ID>ReturnCount:GitOutgoingCommitsService.kt:GitOutgoingCommitsService$private fun loadHasOutgoingCommitsToPush: Boolean</ID>
-    <ID>ReturnCount:GitStageConfirmation.kt:GitStageConfirmation$fun confirm: GitStageTracker.State?</ID>
-    <ID>ReturnCount:ReflectiveCommitWorkflowSynchronizer.kt:ReflectiveCommitWorkflowSynchronizer$fun synchronize: Boolean</ID>
-    <ID>ReturnCount:SafeImmediatePushService.kt:SafeImmediatePushDecisionPolicy$fun fallbackReason: SafeImmediatePushFallbackReason?</ID>
-    <ID>ReturnCount:SafeImmediatePushService.kt:SafeImmediatePushService$override fun prepare: SafeImmediatePushDecision</ID>
-    <ID>ReturnCount:SafeImmediatePushService.kt:SafeImmediatePushService$override fun prepareOutgoingCommits: SafeImmediatePushDecision</ID>
-    <ID>ReturnCount:SafeImmediatePushService.kt:SafeImmediatePushService$private fun GitRepository.localMatchesTrackedUpstream: Boolean</ID>
-    <ID>TooGenericExceptionCaught:AiCommitAllWorkflowCoordinator.kt:throwable: Throwable</ID>
-    <ID>TooGenericExceptionCaught:CommitWorkflowExecutionService.kt:CommitWorkflowExecutionService$throwable: Throwable</ID>
-    <ID>TooGenericExceptionCaught:CommitWorkflowExecutionService.kt:PostCommitPushResultHandler$throwable: Throwable</ID>
-    <ID>TooGenericExceptionCaught:CommitWorkflowSelectionService.kt:CommitWorkflowUiThreadAccess$throwable: Throwable</ID>
-    <ID>TooGenericExceptionCaught:PushOnlyWorkflowExecutionService.kt:PushOnlyWorkflowExecutionService$throwable: Throwable</ID>
-    <ID>TooGenericExceptionCaught:SafeImmediatePushService.kt:SafeImmediatePushService$throwable: Throwable</ID>
-    <ID>UnusedParameter:PushOnlyWorkflowExecutionService.kt:PushOnlyWorkflowExecutionService$dataContext: DataContext</ID>
-    <ID>UnusedParameter:PushOnlyWorkflowExecutionService.kt:PushOnlyWorkflowExecutionService$inputEvent: InputEvent?</ID>
   </CurrentIssues>
 </SmellBaseline>

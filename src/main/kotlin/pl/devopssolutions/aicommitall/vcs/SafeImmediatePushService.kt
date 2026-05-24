@@ -80,36 +80,32 @@ internal object SafeImmediatePushDecisionPolicy {
         repositories: Collection<SafeImmediatePushRepositoryState>,
         hasUnresolvedConflicts: Boolean,
         requireTrackedUpstreamHeadMatch: Boolean = true,
-    ): SafeImmediatePushFallbackReason? {
-        if (repositories.isEmpty()) {
-            return SafeImmediatePushFallbackReason.NoAffectedRepositories
-        }
-        if (hasUnresolvedConflicts) {
-            return SafeImmediatePushFallbackReason.UnresolvedConflict
-        }
-        if (repositories.any { repository -> !repository.repositoryStateIsNormal }) {
-            return SafeImmediatePushFallbackReason.UnsafeRepositoryState
-        }
-        if (repositories.any { repository -> !repository.hasTrackedUpstream }) {
-            return SafeImmediatePushFallbackReason.MissingTrackedUpstream
-        }
-        if (requireTrackedUpstreamHeadMatch && repositories.any { repository -> !repository.localMatchesTrackedUpstream }) {
-            return SafeImmediatePushFallbackReason.ForcePushStateUnverified
-        }
-        if (repositories.any { repository -> repository.hasAmbiguousTarget }) {
-            return SafeImmediatePushFallbackReason.AmbiguousTarget
-        }
-        if (repositories.any { repository -> !repository.pushSpecAvailable }) {
-            return SafeImmediatePushFallbackReason.UnsupportedPushApi
-        }
-        return null
-    }
+    ): SafeImmediatePushFallbackReason? = listOf(
+        repositories.isEmpty() to SafeImmediatePushFallbackReason.NoAffectedRepositories,
+        hasUnresolvedConflicts to SafeImmediatePushFallbackReason.UnresolvedConflict,
+        repositories.any { repository -> !repository.repositoryStateIsNormal } to
+            SafeImmediatePushFallbackReason.UnsafeRepositoryState,
+        repositories.any { repository -> !repository.hasTrackedUpstream } to
+            SafeImmediatePushFallbackReason.MissingTrackedUpstream,
+        trackedUpstreamHeadMismatch(repositories, requireTrackedUpstreamHeadMatch) to
+            SafeImmediatePushFallbackReason.ForcePushStateUnverified,
+        repositories.any { repository -> repository.hasAmbiguousTarget } to
+            SafeImmediatePushFallbackReason.AmbiguousTarget,
+        repositories.any { repository -> !repository.pushSpecAvailable } to
+            SafeImmediatePushFallbackReason.UnsupportedPushApi,
+    ).firstOrNull { (applies, _) -> applies }?.second
 
     private val SafeImmediatePushRepositoryState.hasAmbiguousTarget: Boolean
         get() = !targetIsTrackingBranch ||
             !targetMatchesTrackedUpstream ||
             targetIsNewBranch ||
             targetIsSpecialRef
+
+    private fun trackedUpstreamHeadMismatch(
+        repositories: Collection<SafeImmediatePushRepositoryState>,
+        requireTrackedUpstreamHeadMatch: Boolean,
+    ): Boolean = requireTrackedUpstreamHeadMatch &&
+        repositories.any { repository -> !repository.localMatchesTrackedUpstream }
 }
 
 @Service(Service.Level.PROJECT)
@@ -118,25 +114,41 @@ internal class SafeImmediatePushService @JvmOverloads constructor(
     private val environment: SafeImmediatePushEnvironment = IntellijSafeImmediatePushEnvironment(project),
 ) : SafeImmediatePushSupport,
     SafeImmediateOutgoingPushSupport {
-    override fun prepare(selection: GitChangeSelection): SafeImmediatePushDecision {
-        val paths = selection.affectedPaths()
-        if (paths.isEmpty()) {
-            return SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.NoAffectedRepositories)
-        }
+    override fun prepare(selection: GitChangeSelection): SafeImmediatePushDecision = when (
+        val affectedRepositories = affectedRepositories(selection.affectedPaths())
+    ) {
+        AffectedRepositoryResolution.NoAffectedRepositories ->
+            SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.NoAffectedRepositories)
 
+        AffectedRepositoryResolution.MissingAffectedRepository ->
+            SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.MissingAffectedRepository)
+
+        is AffectedRepositoryResolution.Resolved ->
+            prepareResolvedSelection(selection, affectedRepositories.repositories)
+    }
+
+    private fun affectedRepositories(paths: Collection<FilePath>): AffectedRepositoryResolution {
         val repositories = linkedSetOf<SafeImmediatePushRepositoryHandle>()
+        var missingRepository = false
         for (path in paths) {
             val repository = environment.repositoryForPath(path)
-                ?: return SafeImmediatePushDecision.Fallback(
-                    SafeImmediatePushFallbackReason.MissingAffectedRepository,
-                )
+            if (repository == null) {
+                missingRepository = true
+                break
+            }
             repositories += repository
         }
-
-        if (!environment.isPushSupportAvailable()) {
-            return SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.UnsupportedPushApi)
+        return when {
+            paths.isEmpty() -> AffectedRepositoryResolution.NoAffectedRepositories
+            missingRepository -> AffectedRepositoryResolution.MissingAffectedRepository
+            else -> AffectedRepositoryResolution.Resolved(repositories)
         }
+    }
 
+    private fun prepareResolvedSelection(
+        selection: GitChangeSelection,
+        repositories: Collection<SafeImmediatePushRepositoryHandle>,
+    ): SafeImmediatePushDecision = if (environment.isPushSupportAvailable()) {
         val pushSpecs = linkedMapOf<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>()
         val repositoryStates = repositories.map { repository ->
             environment.pushState(repository).also { state ->
@@ -144,22 +156,26 @@ internal class SafeImmediatePushService @JvmOverloads constructor(
             }.repositoryState
         }
 
-        return decision(
+        decision(
             pushSpecs = pushSpecs,
             repositoryStates = repositoryStates,
             hasUnresolvedConflicts = selection.hasUnresolvedConflicts(),
         )
+    } else {
+        SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.UnsupportedPushApi)
     }
 
-    override fun prepareOutgoingCommits(): SafeImmediatePushDecision {
-        if (project.isDisposed) {
-            return SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.NoAffectedRepositories)
-        }
+    override fun prepareOutgoingCommits(): SafeImmediatePushDecision = when {
+        project.isDisposed ->
+            SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.NoAffectedRepositories)
 
-        if (!environment.isPushSupportAvailable()) {
-            return SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.UnsupportedPushApi)
-        }
+        !environment.isPushSupportAvailable() ->
+            SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.UnsupportedPushApi)
 
+        else -> prepareOutgoingCommitsForActiveProject()
+    }
+
+    private fun prepareOutgoingCommitsForActiveProject(): SafeImmediatePushDecision {
         val pushSpecs = linkedMapOf<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>()
         val repositoryStates = mutableListOf<SafeImmediatePushRepositoryState>()
 
@@ -195,11 +211,8 @@ internal class SafeImmediatePushService @JvmOverloads constructor(
             SafeImmediatePushDecision.Immediate(
                 SafeImmediatePushPlan {
                     val pushCompletion = environment.awaitPushCompletion(pushSpecs.keys)
-                    try {
+                    completeExceptionallyOnFailure(pushCompletion) {
                         environment.push(pushSpecs)
-                    } catch (throwable: Throwable) {
-                        pushCompletion.completeExceptionally(throwable)
-                        throw throwable
                     }
                     pushCompletion
                 },
@@ -212,6 +225,16 @@ internal class SafeImmediatePushService @JvmOverloads constructor(
     companion object {
         fun getInstance(project: Project): SafeImmediatePushService = project.service()
     }
+}
+
+private sealed interface AffectedRepositoryResolution {
+    data object NoAffectedRepositories : AffectedRepositoryResolution
+
+    data object MissingAffectedRepository : AffectedRepositoryResolution
+
+    data class Resolved(
+        val repositories: Collection<SafeImmediatePushRepositoryHandle>,
+    ) : AffectedRepositoryResolution
 }
 
 internal data class SafeImmediatePushRepositoryHandle(val value: Any)
@@ -360,3 +383,12 @@ private val unresolvedConflictStatuses = setOf(
     FileStatus.MERGED_WITH_BOTH_CONFLICTS,
     FileStatus.MERGED_WITH_PROPERTY_CONFLICTS,
 )
+
+private inline fun completeExceptionallyOnFailure(
+    completion: CompletableFuture<Unit>,
+    action: () -> Unit,
+) {
+    val result = runCatching(action)
+    result.exceptionOrNull()?.let(completion::completeExceptionally)
+    result.getOrThrow()
+}

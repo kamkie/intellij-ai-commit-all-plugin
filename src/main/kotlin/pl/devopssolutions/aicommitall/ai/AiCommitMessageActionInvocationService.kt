@@ -64,17 +64,48 @@ internal class AiCommitMessageActionInvoker(
         workflowUi: CommitWorkflowUi?,
         parentDataContext: DataContext = DataContext.EMPTY_CONTEXT,
         inputEvent: InputEvent? = null,
-    ): AiCommitMessageActionInvocationResult {
-        if (workflowHandler == null || workflowUi == null) {
-            return AiCommitMessageActionInvocationResult.MissingWorkflow
+    ): AiCommitMessageActionInvocationResult = AiCommitMessageInvocationWorkflow.create(workflowHandler, workflowUi)
+        ?.let { workflow ->
+            invokeCommitMessageGeneration(
+                project = project,
+                workflow = workflow,
+                parentDataContext = parentDataContext,
+                inputEvent = inputEvent,
+            )
         }
+        ?: AiCommitMessageActionInvocationResult.MissingWorkflow
 
+    private fun invokeCommitMessageGeneration(
+        project: Project,
+        workflow: AiCommitMessageInvocationWorkflow,
+        parentDataContext: DataContext,
+        inputEvent: InputEvent?,
+    ): AiCommitMessageActionInvocationResult {
         val actionReference = actionFinder.findCommitMessageAction()
-            ?: return AiCommitMessageActionInvocationResult.MissingAction
+        return if (actionReference == null) {
+            AiCommitMessageActionInvocationResult.MissingAction
+        } else {
+            invokeCommitMessageGeneration(
+                project = project,
+                workflow = workflow,
+                actionReference = actionReference,
+                parentDataContext = parentDataContext,
+                inputEvent = inputEvent,
+            )
+        }
+    }
+
+    private fun invokeCommitMessageGeneration(
+        project: Project,
+        workflow: AiCommitMessageInvocationWorkflow,
+        actionReference: AiCommitMessageActionReference,
+        parentDataContext: DataContext,
+        inputEvent: InputEvent?,
+    ): AiCommitMessageActionInvocationResult {
         val dataContext = dataContextFactory.createDataContext(
             project = project,
-            workflowHandler = workflowHandler,
-            workflowUi = workflowUi,
+            workflowHandler = workflow.workflowHandler,
+            workflowUi = workflow.workflowUi,
             parentDataContext = parentDataContext,
         )
 
@@ -89,6 +120,22 @@ internal class AiCommitMessageActionInvoker(
             actionId = actionReference.actionId,
             source = actionReference.source,
         )
+    }
+}
+
+private data class AiCommitMessageInvocationWorkflow(
+    val workflowHandler: CommitWorkflowHandler,
+    val workflowUi: CommitWorkflowUi,
+) {
+    companion object {
+        fun create(
+            workflowHandler: CommitWorkflowHandler?,
+            workflowUi: CommitWorkflowUi?,
+        ): AiCommitMessageInvocationWorkflow? = if (workflowHandler != null && workflowUi != null) {
+            AiCommitMessageInvocationWorkflow(workflowHandler, workflowUi)
+        } else {
+            null
+        }
     }
 }
 

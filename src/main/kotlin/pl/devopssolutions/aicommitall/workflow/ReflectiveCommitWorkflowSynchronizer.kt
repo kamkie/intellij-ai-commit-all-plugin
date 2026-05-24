@@ -34,31 +34,43 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         unversionedFiles: List<FilePath>,
         activeChangeList: LocalChangeList,
         inclusionItems: Collection<Any>,
-    ): Boolean {
-        synchronizeGitStageWorkflow(workflowHandler)?.let { synchronized ->
-            return synchronized
-        }
+    ): Boolean = synchronizeGitStageWorkflow(workflowHandler)
+        ?: synchronizeCommitWorkflow(
+            workflowHandler = workflowHandler,
+            changeLists = changeLists,
+            unversionedFiles = unversionedFiles,
+            activeChangeList = activeChangeList,
+            inclusionItems = inclusionItems,
+        )
 
-        if (inclusionItems.isEmpty()) {
-            return false
-        }
+    private fun synchronizeCommitWorkflow(
+        workflowHandler: CommitWorkflowHandler,
+        changeLists: List<LocalChangeList>,
+        unversionedFiles: List<FilePath>,
+        activeChangeList: LocalChangeList,
+        inclusionItems: Collection<Any>,
+    ): Boolean = inclusionItems.isNotEmpty() &&
+        workflowHandler.javaClass.commitWorkflowMethods()?.synchronize(
+            workflowHandler = workflowHandler,
+            changeLists = changeLists,
+            unversionedFiles = unversionedFiles,
+            activeChangeList = activeChangeList,
+            inclusionItems = inclusionItems,
+        ) == true
 
-        val handlerClass = workflowHandler.javaClass
-        val synchronizeInclusion = handlerClass.findMethod("synchronizeInclusion", List::class.java, List::class.java)
-            ?: return false
-        val setCommitState = handlerClass.findMethod(
+    private fun Class<*>.commitWorkflowMethods(): CommitWorkflowMethods? {
+        val synchronizeInclusion = findMethod("synchronizeInclusion", List::class.java, List::class.java)
+        val setCommitState = findMethod(
             "setCommitState",
             LocalChangeList::class.java,
             Collection::class.java,
             java.lang.Boolean.TYPE,
-        ) ?: return false
-
-        return runCatching {
-            CommitWorkflowUiThreadAccess.run {
-                synchronizeInclusion.invoke(workflowHandler, changeLists, unversionedFiles)
-                setCommitState.invoke(workflowHandler, activeChangeList, inclusionItems, true)
-            }
-        }.isSuccess
+        )
+        return if (synchronizeInclusion != null && setCommitState != null) {
+            CommitWorkflowMethods(synchronizeInclusion, setCommitState)
+        } else {
+            null
+        }
     }
 
     private fun synchronizeGitStageWorkflow(workflowHandler: CommitWorkflowHandler): Boolean? {
@@ -108,4 +120,22 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         method.name == name &&
             method.parameterTypes.contentEquals(parameterTypes)
     }
+}
+
+private data class CommitWorkflowMethods(
+    val synchronizeInclusion: Method,
+    val setCommitState: Method,
+) {
+    fun synchronize(
+        workflowHandler: CommitWorkflowHandler,
+        changeLists: List<LocalChangeList>,
+        unversionedFiles: List<FilePath>,
+        activeChangeList: LocalChangeList,
+        inclusionItems: Collection<Any>,
+    ): Boolean = runCatching {
+        CommitWorkflowUiThreadAccess.run {
+            synchronizeInclusion.invoke(workflowHandler, changeLists, unversionedFiles)
+            setCommitState.invoke(workflowHandler, activeChangeList, inclusionItems, true)
+        }
+    }.isSuccess
 }

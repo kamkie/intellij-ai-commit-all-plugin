@@ -15,7 +15,6 @@
  */
 package pl.devopssolutions.aicommitall.workflow
 
-import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -23,7 +22,6 @@ import pl.devopssolutions.aicommitall.vcs.SafeImmediateOutgoingPushSupport
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushDecision
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushPlan
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushService
-import java.awt.event.InputEvent
 import java.util.concurrent.CompletableFuture
 
 @Service(Service.Level.PROJECT)
@@ -35,10 +33,7 @@ internal class PushOnlyWorkflowExecutionService(
         outgoingPushSupport = SafeImmediatePushService.getInstance(project),
     )
 
-    fun executePush(
-        dataContext: DataContext,
-        inputEvent: InputEvent?,
-    ): CommitWorkflowExecutionResult {
+    fun executePush(): CommitWorkflowExecutionResult {
         val decision = outgoingPushSupport.prepareOutgoingCommits()
         if (decision is SafeImmediatePushDecision.Immediate) {
             return executeImmediatePush(decision.plan)
@@ -48,7 +43,7 @@ internal class PushOnlyWorkflowExecutionService(
 
     private fun executeImmediatePush(pushPlan: SafeImmediatePushPlan): CommitWorkflowExecutionResult {
         val completion = CompletableFuture<Unit>()
-        try {
+        completeExceptionallyOnFailure(completion) {
             immediatePushExecutor.push(pushPlan)
                 .whenComplete { _, throwable ->
                     if (throwable != null) {
@@ -57,9 +52,6 @@ internal class PushOnlyWorkflowExecutionService(
                         completion.complete(Unit)
                     }
                 }
-        } catch (throwable: Throwable) {
-            completion.completeExceptionally(throwable)
-            throw throwable
         }
         return CommitWorkflowExecutionResult.Started(completion)
     }
@@ -67,4 +59,13 @@ internal class PushOnlyWorkflowExecutionService(
     companion object {
         fun getInstance(project: Project): PushOnlyWorkflowExecutionService = project.service()
     }
+}
+
+private inline fun completeExceptionallyOnFailure(
+    completion: CompletableFuture<Unit>,
+    action: () -> Unit,
+) {
+    val result = runCatching(action)
+    result.exceptionOrNull()?.let(completion::completeExceptionally)
+    result.getOrThrow()
 }

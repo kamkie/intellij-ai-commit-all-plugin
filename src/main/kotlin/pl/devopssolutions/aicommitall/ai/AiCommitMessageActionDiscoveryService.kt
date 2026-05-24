@@ -78,26 +78,27 @@ internal class AiCommitMessageActionDiscovery(
         .firstOrNull()
 
     private fun AnAction.toPresentationFallbackReference(actionId: String): AiCommitMessageActionReference? {
-        if (looksLikeCommitMessageActionId(actionId)) {
-            return AiCommitMessageActionReference(
-                action = this,
-                actionId = actionId,
-                source = AiCommitMessageActionSource.PresentationActionId,
-            )
-        }
-
         val presentationText = listOfNotNull(templatePresentation.text, templatePresentation.description)
             .joinToString(separator = " ")
-        if (!looksLikeCommitMessagePresentation(presentationText)) {
-            return null
-        }
+        return when {
+            looksLikeCommitMessageActionId(actionId) ->
+                actionReference(actionId, AiCommitMessageActionSource.PresentationActionId)
 
-        return AiCommitMessageActionReference(
-            action = this,
-            actionId = actionId,
-            source = AiCommitMessageActionSource.PresentationText,
-        )
+            looksLikeCommitMessagePresentation(presentationText) ->
+                actionReference(actionId, AiCommitMessageActionSource.PresentationText)
+
+            else -> null
+        }
     }
+
+    private fun AnAction.actionReference(
+        actionId: String,
+        source: AiCommitMessageActionSource,
+    ): AiCommitMessageActionReference = AiCommitMessageActionReference(
+        action = this,
+        actionId = actionId,
+        source = source,
+    )
 
     companion object {
         private val knownActionIds = listOf("Vcs.LLMCommitMessageAction")

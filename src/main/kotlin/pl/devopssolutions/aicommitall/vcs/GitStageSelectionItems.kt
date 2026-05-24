@@ -68,28 +68,32 @@ internal object GitStageSelectionItems {
             .distinctBy { path -> path.normalizedPath() }
             .filter { path -> path.normalizedPath() !in stagedPaths }
     }
-
-    private fun GitFileStatus.committablePath(): FilePath? = if (isIgnored() || isNotChanged()) {
-        null
-    } else {
-        path
-    }
-
-    private fun GitFileStatus.pathToStage(): FilePath? = if (isExcludedFromStageMutation() || isAlreadyFullyStaged()) {
-        null
-    } else {
-        path
-    }
-
-    private fun GitFileStatus.stagedPath(): FilePath? = if (isExcludedFromStageMutation() || index == ' ' || index == '?') {
-        null
-    } else {
-        path
-    }
-
-    private fun GitFileStatus.isExcludedFromStageMutation(): Boolean = isIgnored() || isNotChanged() || isConflicted()
-
-    private fun GitFileStatus.isAlreadyFullyStaged(): Boolean = index != ' ' && index != '?' && workTree == ' '
-
-    private fun FilePath.normalizedPath(): String = path.replace('\\', '/')
 }
+
+private fun GitFileStatus.committablePath(): FilePath? = if (isIgnored() || isNotChanged()) {
+    null
+} else {
+    path
+}
+
+private fun GitFileStatus.pathToStage(): FilePath? = if (isExcludedFromStageMutation() || isAlreadyFullyStaged()) {
+    null
+} else {
+    path
+}
+
+private fun GitFileStatus.stagedPath(): FilePath? = if (canConfirmStagedPath()) {
+    path
+} else {
+    null
+}
+
+private fun GitFileStatus.isExcludedFromStageMutation(): Boolean = isIgnored() || isNotChanged() || isConflicted()
+
+private fun GitFileStatus.isAlreadyFullyStaged(): Boolean = hasStagedIndex() && workTree == ' '
+
+private fun GitFileStatus.canConfirmStagedPath(): Boolean = !isExcludedFromStageMutation() && hasStagedIndex()
+
+private fun GitFileStatus.hasStagedIndex(): Boolean = index != ' ' && index != '?'
+
+private fun FilePath.normalizedPath(): String = path.replace('\\', '/')

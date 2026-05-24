@@ -80,56 +80,61 @@ internal class AiGenerationCompletionObserver(
         val startedAtMillis = timeSource.nowMillis()
         var observedRunning = false
         var stoppedWithUnusableMessageAtMillis: Long? = null
+        var result: AiGenerationCompletionResult? = null
 
-        while (timeSource.nowMillis() - startedAtMillis <= options.timeout.toMillis()) {
+        while (result == null && timeSource.nowMillis() - startedAtMillis <= options.timeout.toMillis()) {
             val signalState = runningSignal.state()
             val currentMessage = messageReader.readMessage()
             if (userEditSignal.isUserEdited()) {
-                return AiGenerationCompletionResult.UserEditedMessage(
+                result = AiGenerationCompletionResult.UserEditedMessage(
                     latestMessage = currentMessage,
                 )
             }
 
-            when (signalState) {
-                AiGenerationRunningState.Running -> {
-                    observedRunning = true
-                    stoppedWithUnusableMessageAtMillis = null
-                }
-
-                AiGenerationRunningState.NotRunning -> {
-                    if (shouldCompleteAfterStoppedSignal(
-                            observedRunning = observedRunning,
-                            currentMessage = currentMessage,
-                            snapshot = snapshot,
-                            stoppedWithUnusableMessageAtMillis = stoppedWithUnusableMessageAtMillis,
-                            options = options,
-                        )
-                    ) {
-                        return completionResult(
-                            snapshot = snapshot,
-                            currentMessage = currentMessage,
-                        )
+            if (result == null) {
+                when (signalState) {
+                    AiGenerationRunningState.Running -> {
+                        observedRunning = true
+                        stoppedWithUnusableMessageAtMillis = null
                     }
 
-                    stoppedWithUnusableMessageAtMillis = stoppedWithUnusableMessageAtMillisAfter(
-                        observedRunning = observedRunning,
-                        currentMessage = currentMessage,
-                        snapshot = snapshot,
-                        stoppedWithUnusableMessageAtMillis = stoppedWithUnusableMessageAtMillis,
-                    )
-                }
+                    AiGenerationRunningState.NotRunning -> {
+                        if (shouldCompleteAfterStoppedSignal(
+                                observedRunning = observedRunning,
+                                currentMessage = currentMessage,
+                                snapshot = snapshot,
+                                stoppedWithUnusableMessageAtMillis = stoppedWithUnusableMessageAtMillis,
+                                options = options,
+                            )
+                        ) {
+                            result = completionResult(
+                                snapshot = snapshot,
+                                currentMessage = currentMessage,
+                            )
+                        } else {
+                            stoppedWithUnusableMessageAtMillis = stoppedWithUnusableMessageAtMillisAfter(
+                                observedRunning = observedRunning,
+                                currentMessage = currentMessage,
+                                snapshot = snapshot,
+                                stoppedWithUnusableMessageAtMillis = stoppedWithUnusableMessageAtMillis,
+                            )
+                        }
+                    }
 
-                AiGenerationRunningState.Unavailable -> {
-                    return AiGenerationCompletionResult.NoCompletionSignal(
-                        latestMessage = currentMessage,
-                    )
+                    AiGenerationRunningState.Unavailable -> {
+                        result = AiGenerationCompletionResult.NoCompletionSignal(
+                            latestMessage = currentMessage,
+                        )
+                    }
                 }
             }
 
-            sleeper.sleep(options.checkInterval)
+            if (result == null) {
+                sleeper.sleep(options.checkInterval)
+            }
         }
 
-        return AiGenerationCompletionResult.Timeout(
+        return result ?: AiGenerationCompletionResult.Timeout(
             timeout = options.timeout,
             latestMessage = messageReader.readMessage(),
         )
@@ -282,12 +287,15 @@ internal fun interface CommitMessageUiTextAccess {
 }
 
 private object EdtCommitMessageUiTextAccess : CommitMessageUiTextAccess {
-    override fun readText(readNow: () -> String): String {
-        val application = ApplicationManager.getApplication() ?: return readNow()
-        if (application.isDispatchThread) {
-            return readNow()
-        }
+    override fun readText(readNow: () -> String): String = ApplicationManager.getApplication()
+        ?.takeUnless { application -> application.isDispatchThread }
+        ?.let { application -> readTextOnEdt(application, readNow) }
+        ?: readNow()
 
+    private fun readTextOnEdt(
+        application: com.intellij.openapi.application.Application,
+        readNow: () -> String,
+    ): String {
         val result = AtomicReference<String>()
         application.invokeAndWait {
             result.set(readNow())
