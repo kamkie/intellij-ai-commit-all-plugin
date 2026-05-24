@@ -16,17 +16,6 @@ Notation:
 
 - [ ] T-VAL-024: execute and record the current manual release validation matrix before Marketplace publication, covering final control rendering, staging-area modes, shortcut takeover, AI Assistant unavailable states, and full commit/push UI behavior; IDEA deterministic UI automation is present, while live AI Assistant, PyCharm/WebStorm, and platform error observations remain manual. (`docs/validation/release-checklist.md`, `docs/validation/scenario-register.md`, `.agents/plans/archive/PLAN-release-matrix-ui-automation.md`)
 
-### Detekt Plugin
-
-- [ ] T-DETEKT-001: clean detekt findings (umbrella for T-DETEKT-002..T-DETEKT-008). The baseline at `config/detekt/baseline.xml` lists 118 suppressed findings to retire.
-- [ ] T-DETEKT-002: extract named constants for non-color `MagicNumber` findings in `AiCommitAllThreeSectionControl.kt` (geometry, scale factors, animation counts). (`src/main/kotlin/.../actions/AiCommitAllThreeSectionControl.kt`)
-- [ ] T-DETEKT-003: replace the `ControlColors` hex `MagicNumber` findings with a named colour container or `JBColor.namedColor` lookups, then remove the matching baseline entries. (`src/main/kotlin/.../actions/AiCommitAllThreeSectionControl.kt`, `config/detekt/baseline.xml`)
-- [ ] T-DETEKT-004: resolve `MaxLineLength` findings by refactoring offending declarations or raising the configured threshold with rationale in `config/detekt/`. (`src/main/kotlin/.../`, `src/test/kotlin/.../`, `config/detekt/`)
-- [ ] T-DETEKT-005: reduce `ReturnCount` violations in workflow, VCS, and AI services by extracting helpers or using sealed-result early returns. (`src/main/kotlin/.../workflow/`, `src/main/kotlin/.../vcs/`, `src/main/kotlin/.../ai/`)
-- [ ] T-DETEKT-006: replace `TooGenericExceptionCaught` (catch `Throwable`) sites with the narrowest safe exception types, keeping platform fail-closed behavior. (`src/main/kotlin/.../workflow/`, `src/main/kotlin/.../vcs/`)
-- [ ] T-DETEKT-007: address the remaining baseline findings: `ComplexCondition` in `GitStageSelectionItems`, `TooManyFunctions` in `AiCommitAllThreeSectionControl`, `UnusedParameter` in `PushOnlyWorkflowExecutionService`, and the `GitStageConfirmation` `250` constant. (`src/main/kotlin/.../vcs/`, `src/main/kotlin/.../actions/`, `src/main/kotlin/.../workflow/`)
-- [ ] T-DETEKT-008: empty `config/detekt/baseline.xml` once T-DETEKT-002..T-DETEKT-007 are landed and add a CI check that fails when the baseline grows. (`config/detekt/baseline.xml`, `build.gradle.kts`, `.github/workflows/ci.yml`)
-
 ### Publishing, Signing, Marketplace, And CI
 
 - [ ] T-REL-017: make GitHub release for pushed tags. release notes should be generated automatically from changelog entries and include all chenges form previous release.

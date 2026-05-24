@@ -89,7 +89,7 @@ jobs:
 
       - name: Validate release candidate
         run: >
-          ./gradlew spotlessCheck detekt test jacocoTestReport
+          ./gradlew spotlessCheck verifyDetektBaseline detekt test jacocoTestReport
           verifyJacocoCoverageReport verifyPluginStructure buildPlugin verifyPlugin
           -PpluginVerifierIdeVersions=IU-2026.1.1,PY-2026.1.1,WS-2026.1.1
           -PpluginPublishChannels=${{ inputs.publish_channel }}

@@ -50,6 +50,7 @@ val pluginDescription = providers.fileContents(
 val releaseMatrixIdeProducts = providers.gradleProperty("ideProducts").orElse("IU")
 val releaseMatrixIdeVersion = providers.gradleProperty("ideVersion")
     .orElse(providers.gradleProperty("platformVersion"))
+val detektBaselineFile = layout.projectDirectory.file("config/detekt/baseline.xml")
 
 val integrationTestSourceSet = sourceSets.create("integrationTest") {
     compileClasspath += sourceSets.main.get().output
@@ -98,7 +99,7 @@ java {
 detekt {
     toolVersion = "2.0.0-alpha.3"
     source.setFrom("src/main/kotlin", "src/test/kotlin")
-    baseline = file("config/detekt/baseline.xml")
+    baseline = detektBaselineFile.asFile
     basePath.set(projectDir)
 }
 
@@ -111,6 +112,69 @@ tasks.withType<Detekt>().configureEach {
         sarif.required.set(true)
         markdown.required.set(true)
     }
+}
+
+abstract class VerifyDetektBaselineTask : DefaultTask() {
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val baselineFile: RegularFileProperty
+
+    @TaskAction
+    fun verify() {
+        val documentBuilderFactory = DocumentBuilderFactory.newInstance()
+        documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+        documentBuilderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false)
+        documentBuilderFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+
+        val document = documentBuilderFactory
+            .newDocumentBuilder()
+            .parse(baselineFile.get().asFile)
+        val root = document.documentElement
+
+        if (root.tagName != "SmellBaseline") {
+            throw GradleException("Detekt baseline XML root must be SmellBaseline.")
+        }
+
+        val currentIssueCount = root.baselineSection("CurrentIssues").childElementCount()
+        val manualSuppressionCount = root.baselineSection("ManuallySuppressedIssues").childElementCount()
+
+        if (currentIssueCount > 0 || manualSuppressionCount > 0) {
+            throw GradleException(
+                "Detekt baseline must stay empty. Found $currentIssueCount current issues and " +
+                    "$manualSuppressionCount manual suppressions in ${baselineFile.get().asFile}.",
+            )
+        }
+    }
+
+    private fun Element.baselineSection(tagName: String): Element {
+        val sections = childElements(tagName)
+        if (sections.size != 1) {
+            throw GradleException("Detekt baseline XML must contain exactly one $tagName element.")
+        }
+        return sections.single()
+    }
+
+    private fun Element.childElementCount(): Int = childElements().size
+
+    private fun Element.childElements(tagName: String? = null): List<Element> {
+        val children = childNodes
+        return (0 until children.length)
+            .asSequence()
+            .map { index -> children.item(index) }
+            .filterIsInstance<Element>()
+            .filter { child -> tagName == null || child.tagName == tagName }
+            .toList()
+    }
+}
+
+val verifyDetektBaseline by tasks.registering(VerifyDetektBaselineTask::class) {
+    group = "verification"
+    description = "Verifies the Detekt baseline contains no suppressed issues."
+    baselineFile.set(detektBaselineFile)
+}
+
+tasks.check {
+    dependsOn(verifyDetektBaseline)
 }
 
 testlogger {

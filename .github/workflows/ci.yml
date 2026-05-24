@@ -44,6 +44,9 @@ jobs:
         shell: pwsh
         run: scripts/ai/validate-agent-artifacts.ps1
 
+      - name: Verify Detekt baseline is empty
+        run: ./gradlew verifyDetektBaseline
+
       - name: Run Detekt static analysis
         id: detekt-analysis
         continue-on-error: true

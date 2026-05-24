@@ -96,6 +96,19 @@ Archived as of 2026-05-18 backlog cleanup.
 
 Archived as of 2026-05-18 backlog cleanup.
 
+### Detekt Plugin
+
+Archived as of 2026-05-24 Detekt baseline cleanup.
+
+- [x] T-DETEKT-001: clean detekt findings (umbrella for T-DETEKT-002..T-DETEKT-008). The baseline at `config/detekt/baseline.xml` listed 118 suppressed findings to retire. (Plan `PLAN-detekt-baseline-cleanup`; validation: `.\gradlew.bat spotlessCheck`, `.\gradlew.bat detekt`, `.\gradlew.bat verifyDetektBaseline`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check HEAD^ HEAD`)
+- [x] T-DETEKT-002: extract named constants for non-color `MagicNumber` findings in `AiCommitAllThreeSectionControl.kt` (geometry, scale factors, animation counts). (`src/main/kotlin/.../actions/AiCommitAllThreeSectionControl.kt`; Plan `PLAN-detekt-baseline-cleanup`, Task 1)
+- [x] T-DETEKT-003: replace the `ControlColors` hex `MagicNumber` findings with a named colour container or `JBColor.namedColor` lookups, then remove the matching baseline entries. (`src/main/kotlin/.../actions/AiCommitAllThreeSectionControl.kt`, `config/detekt/baseline.xml`; Plan `PLAN-detekt-baseline-cleanup`, Task 1)
+- [x] T-DETEKT-004: resolve `MaxLineLength` findings by refactoring offending declarations or raising the configured threshold with rationale in `config/detekt/`. (`src/main/kotlin/.../`, `src/test/kotlin/.../`, `config/detekt/`; Plan `PLAN-detekt-baseline-cleanup`, Task 3)
+- [x] T-DETEKT-005: reduce `ReturnCount` violations in workflow, VCS, and AI services by extracting helpers or using sealed-result early returns. (`src/main/kotlin/.../workflow/`, `src/main/kotlin/.../vcs/`, `src/main/kotlin/.../ai/`; Plan `PLAN-detekt-baseline-cleanup`, Task 2)
+- [x] T-DETEKT-006: replace `TooGenericExceptionCaught` (catch `Throwable`) sites with the narrowest safe exception types, keeping platform fail-closed behavior. (`src/main/kotlin/.../workflow/`, `src/main/kotlin/.../vcs/`; Plan `PLAN-detekt-baseline-cleanup`, Task 2)
+- [x] T-DETEKT-007: address the remaining baseline findings: `ComplexCondition` in `GitStageSelectionItems`, `TooManyFunctions` in `AiCommitAllThreeSectionControl`, `UnusedParameter` in `PushOnlyWorkflowExecutionService`, and the `GitStageConfirmation` `250` constant. (`src/main/kotlin/.../vcs/`, `src/main/kotlin/.../actions/`, `src/main/kotlin/.../workflow/`; Plan `PLAN-detekt-baseline-cleanup`, Tasks 1 and 2)
+- [x] T-DETEKT-008: empty `config/detekt/baseline.xml` once T-DETEKT-002..T-DETEKT-007 are landed and add a CI check that fails when the baseline grows. (`config/detekt/baseline.xml`, `build.gradle.kts`, `.github/workflows/ci.yml`; Plan `PLAN-detekt-baseline-cleanup`, Task 4; guard command: `.\gradlew.bat verifyDetektBaseline`)
+
 ### Three-Section AI Commit Push Control
 
 - [x] T-ACTIONS-009: Replace the current `AI Commit All` / `& Push` Commit tool window control with the ADR 0052 three-section `<AI icon> AI | Commit | Push` control. (Plan `PLAN-three-section-ai-commit-push-control`, ADR 0052)

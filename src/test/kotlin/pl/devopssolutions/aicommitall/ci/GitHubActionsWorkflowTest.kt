@@ -152,8 +152,24 @@ internal class GitHubActionsWorkflowTest {
             "Detekt must analyze production and test Kotlin sources explicitly.",
         )
         assertTrue(
-            content.contains("baseline = file(\"config/detekt/baseline.xml\")"),
-            "Detekt must use a checked-in baseline so existing findings do not block incremental adoption.",
+            content.contains("val detektBaselineFile = layout.projectDirectory.file(\"config/detekt/baseline.xml\")"),
+            "Detekt and the baseline guard must share the checked-in baseline path.",
+        )
+        assertTrue(
+            content.contains("baseline = detektBaselineFile.asFile"),
+            "Detekt must read the same checked-in baseline file verified by the guardrail.",
+        )
+        assertTrue(
+            content.contains("abstract class VerifyDetektBaselineTask : DefaultTask()"),
+            "The build must define a configuration-cache-compatible Detekt baseline guard task.",
+        )
+        assertTrue(
+            content.contains("tasks.registering(VerifyDetektBaselineTask::class)"),
+            "The build must register the Detekt baseline guard through Gradle task registration.",
+        )
+        assertTrue(
+            content.contains("dependsOn(verifyDetektBaseline)"),
+            "The Gradle verification lifecycle must fail when the Detekt baseline grows.",
         )
         assertTrue(
             content.contains("basePath.set(projectDir)"),
@@ -166,6 +182,25 @@ internal class GitHubActionsWorkflowTest {
         assertTrue(
             content.contains("markdown.required.set(true)"),
             "Detekt must emit a Markdown report for GitHub Actions artifacts.",
+        )
+    }
+
+    @Test
+    fun `ci workflow rejects detekt baseline growth before analysis`() {
+        val content = Files.readString(Path.of(".github", "workflows", "ci.yml"))
+
+        assertTrue(
+            content.contains("Verify Detekt baseline is empty"),
+            "CI workflow must name the empty Detekt baseline guardrail.",
+        )
+        assertTrue(
+            content.contains("./gradlew verifyDetektBaseline"),
+            "CI workflow must fail when the Detekt baseline contains suppressed issues.",
+        )
+        assertTrue(
+            content.indexOf("Verify Detekt baseline is empty") <
+                content.indexOf("Run Detekt static analysis"),
+            "CI workflow must reject baseline growth before Detekt report publication continues.",
         )
     }
 
@@ -444,8 +479,9 @@ internal class GitHubActionsWorkflowTest {
             "Release workflow must validate documentation before publication.",
         )
         assertTrue(
-            content.contains("spotlessCheck detekt test jacocoTestReport"),
-            "Release workflow must include formatting, static analysis, tests, and coverage generation.",
+            content.contains("spotlessCheck verifyDetektBaseline detekt test jacocoTestReport"),
+            "Release workflow must include formatting, the Detekt baseline guard, " +
+                "static analysis, tests, and coverage generation.",
         )
         assertTrue(
             content.contains("verifyJacocoCoverageReport verifyPluginStructure buildPlugin verifyPlugin"),
