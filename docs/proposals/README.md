@@ -10,7 +10,7 @@ Proposals are advisory until accepted through the normal repository flow. A prop
 
 Active proposals still have at least one non-terminal implementation status row or at least one untriaged finding in their `Progress Tracker`.
 
-- None.
+- `PROP-marketplace-realtime-progress-media` - [Marketplace Real-Time Progress Media](PROP-marketplace-realtime-progress-media-2026-05-24T15-07.md) - open as of 2026-05-24.
 
 ### Completed Proposals
 

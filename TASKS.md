@@ -29,4 +29,4 @@ Notation:
 
 ### Publishing, Signing, Marketplace, And CI
 
-- [ ] T-REL-017: make GitHub release.
+- [ ] T-REL-017: make GitHub release for pushed tags. release notes should be generated automatically from changelog entries and include all chenges form previous release.
