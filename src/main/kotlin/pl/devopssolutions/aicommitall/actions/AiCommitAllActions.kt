@@ -96,14 +96,27 @@ internal class AiCommitAllThreeSectionAction(
         section: AiCommitAllControlSection,
         dataContext: DataContext,
         inputEvent: InputEvent?,
-    ): CompletableFuture<AiCommitAllWorkflowResult>? = project?.let {
-        workflowStarter.start(
-            project = it,
+    ): CompletableFuture<AiCommitAllWorkflowResult>? = project
+        ?.takeIf { currentProject -> isSectionAvailableAtActionTime(currentProject, section, dataContext) }
+        ?.let { currentProject ->
+            workflowStarter.start(
+                project = currentProject,
+                mode = section.mode,
+                dataContext = dataContext,
+                inputEvent = inputEvent,
+            )
+        }
+
+    private fun isSectionAvailableAtActionTime(
+        project: Project,
+        section: AiCommitAllControlSection,
+        dataContext: DataContext,
+    ): Boolean = activityProvider.runningSection(project) == null &&
+        availabilityProvider.availability(
+            project = project,
             mode = section.mode,
             dataContext = dataContext,
-            inputEvent = inputEvent,
-        )
-    }
+        ).enabled
 
     private fun controlState(
         project: Project?,

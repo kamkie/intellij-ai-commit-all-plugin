@@ -52,7 +52,7 @@ internal class ThreeSectionControlInteraction(
 
             override fun mouseClicked(event: MouseEvent) {
                 val section = renderer.sectionAt(component, event.point)
-                if (section != null && model.state.isSectionEnabled(section)) {
+                if (section != null && model.state.runningSection == null) {
                     activateSection(section, event)
                 }
             }
@@ -86,7 +86,7 @@ internal class ThreeSectionControlInteraction(
             ACTIVATE_SECTION_ACTION,
             object : AbstractAction() {
                 override fun actionPerformed(event: ActionEvent) {
-                    if (model.state.isSectionEnabled(model.keyboardSection)) {
+                    if (model.state.runningSection == null) {
                         activateSection(model.keyboardSection, null)
                     }
                 }

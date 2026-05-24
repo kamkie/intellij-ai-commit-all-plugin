@@ -18,6 +18,7 @@ package pl.devopssolutions.aicommitall.vcs
 import com.intellij.dvcs.push.PushSpec
 import com.intellij.dvcs.push.PushSupport
 import com.intellij.dvcs.repo.Repository
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -31,6 +32,7 @@ import git4idea.push.GitPushTarget
 import git4idea.push.GitPushTargetType
 import git4idea.repo.GitRepository
 import git4idea.repo.GitRepositoryManager
+import java.time.Duration
 import java.util.concurrent.CompletableFuture
 
 private typealias GitPushSpec = PushSpec<GitPushSource, GitPushTarget>
@@ -148,21 +150,38 @@ internal class SafeImmediatePushService @JvmOverloads constructor(
     private fun prepareResolvedSelection(
         selection: GitChangeSelection,
         repositories: Collection<SafeImmediatePushRepositoryHandle>,
-    ): SafeImmediatePushDecision = if (environment.isPushSupportAvailable()) {
-        val pushSpecs = linkedMapOf<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>()
-        val repositoryStates = repositories.map { repository ->
-            environment.pushState(repository).also { state ->
-                state.pushSpec?.let { pushSpec -> pushSpecs[repository] = pushSpec }
-            }.repositoryState
-        }
+    ): SafeImmediatePushDecision = settleRefreshablePushMetadata {
+        prepareResolvedSelectionAttempt(selection, repositories)
+    }
 
-        decision(
+    private fun prepareResolvedSelectionAttempt(
+        selection: GitChangeSelection,
+        repositories: Collection<SafeImmediatePushRepositoryHandle>,
+    ): SafeImmediatePushPreparationAttempt = if (environment.isPushSupportAvailable()) {
+        val pushSpecs = linkedMapOf<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>()
+        val pushStates = repositories.map { repository ->
+            repository to environment.pushState(repository).also { state ->
+                state.pushSpec?.let { pushSpec -> pushSpecs[repository] = pushSpec }
+            }
+        }
+        val repositoryStates = pushStates.map { (_, state) -> state.repositoryState }
+        val decision = decision(
             pushSpecs = pushSpecs,
             repositoryStates = repositoryStates,
             hasUnresolvedConflicts = selection.hasUnresolvedConflicts(),
         )
+
+        if (decision.isRefreshablePushMetadataFallback(pushStates.map { (_, state) -> state })) {
+            SafeImmediatePushPreparationAttempt.RefreshablePushMetadataUnavailable(
+                SafeImmediatePushFallbackReason.UnsupportedPushApi,
+            )
+        } else {
+            SafeImmediatePushPreparationAttempt.Decided(decision)
+        }
     } else {
-        SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.UnsupportedPushApi)
+        SafeImmediatePushPreparationAttempt.Decided(
+            SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.UnsupportedPushApi),
+        )
     }
 
     override fun prepareOutgoingCommits(): SafeImmediatePushDecision = when {
@@ -172,15 +191,20 @@ internal class SafeImmediatePushService @JvmOverloads constructor(
         !environment.isPushSupportAvailable() ->
             SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.UnsupportedPushApi)
 
-        else -> prepareOutgoingCommitsForActiveProject()
+        else -> settleRefreshablePushMetadata(::prepareOutgoingCommitsForActiveProject)
     }
 
-    private fun prepareOutgoingCommitsForActiveProject(): SafeImmediatePushDecision {
+    private fun prepareOutgoingCommitsForActiveProject(): SafeImmediatePushPreparationAttempt {
         val pushSpecs = linkedMapOf<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>()
         val repositoryStates = mutableListOf<SafeImmediatePushRepositoryState>()
+        var hasRefreshableUnavailableMetadata = false
 
         environment.repositories().forEach { repository ->
             val state = environment.pushState(repository)
+            if (state.hasRefreshableUnavailableMetadata) {
+                hasRefreshableUnavailableMetadata = true
+                return@forEach
+            }
             val pushSpec = state.pushSpec ?: return@forEach
             if (environment.hasOutgoingCommits(repository, pushSpec)) {
                 pushSpecs[repository] = pushSpec
@@ -188,12 +212,19 @@ internal class SafeImmediatePushService @JvmOverloads constructor(
             }
         }
 
-        return decision(
+        val decision = decision(
             pushSpecs = pushSpecs,
             repositoryStates = repositoryStates,
             hasUnresolvedConflicts = false,
             requireTrackedUpstreamHeadMatch = false,
         )
+        return if (hasRefreshableUnavailableMetadata && decision.isNotUnsafeFallback()) {
+            SafeImmediatePushPreparationAttempt.RefreshablePushMetadataUnavailable(
+                SafeImmediatePushFallbackReason.UnsupportedPushApi,
+            )
+        } else {
+            SafeImmediatePushPreparationAttempt.Decided(decision)
+        }
     }
 
     private fun decision(
@@ -225,10 +256,79 @@ internal class SafeImmediatePushService @JvmOverloads constructor(
         }
     }
 
+    private fun settleRefreshablePushMetadata(
+        read: () -> SafeImmediatePushPreparationAttempt,
+    ): SafeImmediatePushDecision {
+        var finalFallbackReason = SafeImmediatePushFallbackReason.UnsupportedPushApi
+        repeat(PUSH_METADATA_SETTLING_ATTEMPTS) { attemptIndex ->
+            when (val attempt = read()) {
+                is SafeImmediatePushPreparationAttempt.Decided ->
+                    return attempt.decision
+
+                is SafeImmediatePushPreparationAttempt.RefreshablePushMetadataUnavailable ->
+                    finalFallbackReason = attempt.finalFallbackReason
+            }
+
+            if (attemptIndex < PUSH_METADATA_SETTLING_ATTEMPTS - 1 && !project.isDisposed) {
+                PUSH_METADATA_SETTLING_SLEEPER.sleep(PUSH_METADATA_SETTLING_RETRY_INTERVAL)
+            }
+        }
+        return SafeImmediatePushDecision.Fallback(finalFallbackReason)
+    }
+
     companion object {
+        private const val PUSH_METADATA_SETTLING_ATTEMPTS = 3
+        private val PUSH_METADATA_SETTLING_RETRY_INTERVAL: Duration = Duration.ofMillis(50)
+        private val PUSH_METADATA_SETTLING_SLEEPER: SafeImmediatePushMetadataSettlingSleeper =
+            ThreadSafeImmediatePushMetadataSettlingSleeper
+
         fun getInstance(project: Project): SafeImmediatePushService = project.service()
     }
 }
+
+private sealed interface SafeImmediatePushPreparationAttempt {
+    data class Decided(val decision: SafeImmediatePushDecision) : SafeImmediatePushPreparationAttempt
+
+    data class RefreshablePushMetadataUnavailable(
+        val finalFallbackReason: SafeImmediatePushFallbackReason,
+    ) : SafeImmediatePushPreparationAttempt
+}
+
+internal fun interface SafeImmediatePushMetadataSettlingSleeper {
+    fun sleep(duration: Duration)
+}
+
+private object ThreadSafeImmediatePushMetadataSettlingSleeper : SafeImmediatePushMetadataSettlingSleeper {
+    private val delegate = DispatchAwareSafeImmediatePushMetadataSettlingSleeper(
+        isDispatchThread = { ApplicationManager.getApplication()?.isDispatchThread == true },
+        sleepMillis = { millis -> Thread.sleep(millis) },
+    )
+
+    override fun sleep(duration: Duration) {
+        delegate.sleep(duration)
+    }
+}
+
+internal class DispatchAwareSafeImmediatePushMetadataSettlingSleeper(
+    private val isDispatchThread: () -> Boolean,
+    private val sleepMillis: (Long) -> Unit,
+) : SafeImmediatePushMetadataSettlingSleeper {
+    override fun sleep(duration: Duration) {
+        if (!duration.isZero && !isDispatchThread()) {
+            sleepMillis(duration.toMillis())
+        }
+    }
+}
+
+private fun SafeImmediatePushDecision.isRefreshablePushMetadataFallback(
+    pushStates: Collection<SafeImmediatePushRepositoryPushState>,
+): Boolean = this is SafeImmediatePushDecision.Fallback &&
+    reason == SafeImmediatePushFallbackReason.UnsupportedPushApi &&
+    pushStates.any { state -> state.hasRefreshableUnavailableMetadata }
+
+private fun SafeImmediatePushDecision.isNotUnsafeFallback(): Boolean = this !is SafeImmediatePushDecision.Fallback ||
+    reason == SafeImmediatePushFallbackReason.NoAffectedRepositories ||
+    reason == SafeImmediatePushFallbackReason.UnsupportedPushApi
 
 private sealed interface AffectedRepositoryResolution {
     data object NoAffectedRepositories : AffectedRepositoryResolution
@@ -269,6 +369,19 @@ internal data class SafeImmediatePushRepositoryPushState(
     val repositoryState: SafeImmediatePushRepositoryState,
     val pushSpec: SafeImmediatePushSpecHandle?,
 )
+
+private val SafeImmediatePushRepositoryPushState.hasRefreshableUnavailableMetadata: Boolean
+    get() = pushSpec == null && repositoryState.hasOnlyRefreshablePushSpecUnavailable
+
+private val SafeImmediatePushRepositoryState.hasOnlyRefreshablePushSpecUnavailable: Boolean
+    get() = hasTrackedUpstream &&
+        localMatchesTrackedUpstream &&
+        targetIsTrackingBranch &&
+        targetMatchesTrackedUpstream &&
+        !pushSpecAvailable &&
+        !targetIsNewBranch &&
+        !targetIsSpecialRef &&
+        repositoryStateIsNormal
 
 private class IntellijSafeImmediatePushEnvironment(private val project: Project) : SafeImmediatePushEnvironment {
     override fun repositoryForPath(path: FilePath) = GitRepositoryManager.getInstance(project)
@@ -320,6 +433,7 @@ private fun GitRepository.pushState(
 ): SafeImmediatePushRepositoryPushState {
     val currentBranch = this.currentBranch
     val trackInfo = currentBranch?.let { branch -> getBranchTrackInfo(branch.name) }
+    val localMatchesTrackedUpstream = trackInfo != null && localMatchesTrackedUpstream(trackInfo)
     val source = pushSupport.getSource(this)
     val target = if (source == null) {
         null
@@ -330,17 +444,42 @@ private fun GitRepository.pushState(
     val pushSpec = if (source != null && target != null) PushSpec(source, target) else null
 
     return SafeImmediatePushRepositoryPushState(
-        repositoryState = SafeImmediatePushRepositoryState(
-            hasTrackedUpstream = trackInfo != null,
-            localMatchesTrackedUpstream = trackInfo != null && localMatchesTrackedUpstream(trackInfo),
-            targetIsTrackingBranch = target?.targetType == GitPushTargetType.TRACKING_BRANCH,
-            targetMatchesTrackedUpstream = trackInfo != null && target?.branch == trackInfo.remoteBranch,
-            pushSpecAvailable = pushSpec != null,
-            targetIsNewBranch = target?.isNewBranchCreated != false,
-            targetIsSpecialRef = target?.isSpecialRef != false,
-            repositoryStateIsNormal = state == Repository.State.NORMAL,
+        repositoryState = repositoryState(
+            trackInfo = trackInfo,
+            localMatchesTrackedUpstream = localMatchesTrackedUpstream,
+            target = target,
+            pushSpec = pushSpec,
         ),
         pushSpec = pushSpec?.let(::SafeImmediatePushSpecHandle),
+    )
+}
+
+private fun GitRepository.repositoryState(
+    trackInfo: git4idea.repo.GitBranchTrackInfo?,
+    localMatchesTrackedUpstream: Boolean,
+    target: GitPushTarget?,
+    pushSpec: GitPushSpec?,
+): SafeImmediatePushRepositoryState = if (trackInfo != null && pushSpec == null) {
+    SafeImmediatePushRepositoryState(
+        hasTrackedUpstream = true,
+        localMatchesTrackedUpstream = localMatchesTrackedUpstream,
+        targetIsTrackingBranch = true,
+        targetMatchesTrackedUpstream = true,
+        pushSpecAvailable = false,
+        targetIsNewBranch = false,
+        targetIsSpecialRef = false,
+        repositoryStateIsNormal = state == Repository.State.NORMAL,
+    )
+} else {
+    SafeImmediatePushRepositoryState(
+        hasTrackedUpstream = trackInfo != null,
+        localMatchesTrackedUpstream = localMatchesTrackedUpstream,
+        targetIsTrackingBranch = target?.targetType == GitPushTargetType.TRACKING_BRANCH,
+        targetMatchesTrackedUpstream = trackInfo != null && target?.branch == trackInfo.remoteBranch,
+        pushSpecAvailable = pushSpec != null,
+        targetIsNewBranch = target?.isNewBranchCreated != false,
+        targetIsSpecialRef = target?.isSpecialRef != false,
+        repositoryStateIsNormal = state == Repository.State.NORMAL,
     )
 }
 

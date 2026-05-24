@@ -50,7 +50,11 @@ internal class AiCommitAllActionsTest {
     @Test
     fun `ai section starts ai workflow mode`() {
         val starter = CapturingWorkflowStarter()
-        val action = AiCommitAllThreeSectionAction(starter)
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = starter,
+            availabilityProvider = StaticAvailabilityProvider(),
+            activityProvider = StaticActivityProvider(),
+        )
         val project = testProject()
         val dataContext = testDataContext(project)
 
@@ -64,7 +68,11 @@ internal class AiCommitAllActionsTest {
     @Test
     fun `commit section starts commit workflow mode`() {
         val starter = CapturingWorkflowStarter()
-        val action = AiCommitAllThreeSectionAction(starter)
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = starter,
+            availabilityProvider = StaticAvailabilityProvider(),
+            activityProvider = StaticActivityProvider(),
+        )
         val project = testProject()
         val dataContext = testDataContext(project)
 
@@ -78,7 +86,11 @@ internal class AiCommitAllActionsTest {
     @Test
     fun `push section starts push workflow mode`() {
         val starter = CapturingWorkflowStarter()
-        val action = AiCommitAllThreeSectionAction(starter)
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = starter,
+            availabilityProvider = StaticAvailabilityProvider(),
+            activityProvider = StaticActivityProvider(),
+        )
         val project = testProject()
         val dataContext = testDataContext(project)
 
@@ -92,7 +104,11 @@ internal class AiCommitAllActionsTest {
     @Test
     fun `fallback action invocation starts commit workflow mode`() {
         val starter = CapturingWorkflowStarter()
-        val action = AiCommitAllThreeSectionAction(starter)
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = starter,
+            availabilityProvider = StaticAvailabilityProvider(),
+            activityProvider = StaticActivityProvider(),
+        )
         val project = testProject()
         val dataContext = testDataContext(project)
 
@@ -106,10 +122,68 @@ internal class AiCommitAllActionsTest {
     @Test
     fun `action does not start without project`() {
         val starter = CapturingWorkflowStarter()
-        val action = AiCommitAllThreeSectionAction(starter)
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = starter,
+            availabilityProvider = StaticAvailabilityProvider(),
+            activityProvider = StaticActivityProvider(),
+        )
 
         action.actionPerformed(testEvent(DataContext.EMPTY_CONTEXT))
 
+        assertNull(starter.mode)
+    }
+
+    @Test
+    fun `section activation rechecks availability at action time after stale disabled update`() {
+        val starter = CapturingWorkflowStarter()
+        val availabilityProvider = MutableAvailabilityProvider(
+            availability = AiCommitAllWorkflowActionAvailability.Disabled,
+        )
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = starter,
+            availabilityProvider = availabilityProvider,
+            activityProvider = StaticActivityProvider(),
+        )
+        val project = testProject()
+        val dataContext = testDataContext(project)
+        val event = testEvent(dataContext)
+
+        action.update(event)
+        availabilityProvider.availability = AiCommitAllWorkflowActionAvailability.Enabled
+        action.startSection(project, AiCommitAllControlSection.Push, dataContext, null)
+
+        assertEquals(AiCommitAllWorkflowMode.Push, starter.mode)
+        assertEquals(
+            listOf(
+                AiCommitAllWorkflowMode.Ai,
+                AiCommitAllWorkflowMode.Commit,
+                AiCommitAllWorkflowMode.Push,
+                AiCommitAllWorkflowMode.Push,
+            ),
+            availabilityProvider.modes,
+        )
+    }
+
+    @Test
+    fun `section activation stops when action-time availability becomes disabled after stale enabled update`() {
+        val starter = CapturingWorkflowStarter()
+        val availabilityProvider = MutableAvailabilityProvider(
+            availability = AiCommitAllWorkflowActionAvailability.Enabled,
+        )
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = starter,
+            availabilityProvider = availabilityProvider,
+            activityProvider = StaticActivityProvider(),
+        )
+        val project = testProject()
+        val dataContext = testDataContext(project)
+        val event = testEvent(dataContext)
+
+        action.update(event)
+        availabilityProvider.availability = AiCommitAllWorkflowActionAvailability.Disabled
+        val result = action.startSection(project, AiCommitAllControlSection.Push, dataContext, null)
+
+        assertNull(result)
         assertNull(starter.mode)
     }
 
@@ -418,6 +492,21 @@ internal class AiCommitAllActionsTest {
         vararg overrides: Pair<AiCommitAllWorkflowMode, AiCommitAllWorkflowActionAvailability>,
         defaultAvailability: AiCommitAllWorkflowActionAvailability = AiCommitAllWorkflowActionAvailability.Enabled,
     ) : CapturingAvailabilityProvider(defaultAvailability, overrides.toMap())
+
+    private class MutableAvailabilityProvider(
+        var availability: AiCommitAllWorkflowActionAvailability,
+    ) : AiCommitAllWorkflowAvailabilityProvider {
+        val modes = mutableListOf<AiCommitAllWorkflowMode>()
+
+        override fun availability(
+            project: Project,
+            mode: AiCommitAllWorkflowMode,
+            dataContext: DataContext,
+        ): AiCommitAllWorkflowActionAvailability {
+            modes += mode
+            return availability
+        }
+    }
 
     private class StaticActivityProvider(
         private val runningSection: AiCommitAllControlSection? = null,

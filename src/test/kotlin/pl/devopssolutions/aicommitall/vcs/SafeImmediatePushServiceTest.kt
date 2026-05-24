@@ -30,6 +30,7 @@ import git4idea.update.GitUpdateResult
 import java.io.File
 import java.lang.reflect.Proxy
 import java.nio.charset.Charset
+import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
 import kotlin.test.Test
@@ -136,6 +137,90 @@ internal class SafeImmediatePushServiceTest {
         environment.completePush()
 
         assertTrue(completion.isDone)
+    }
+
+    @Test
+    fun `prepare retries refreshable unavailable push metadata before falling back`() {
+        val path = TestFilePath("/repo/modified.txt")
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val pushSpec = SafeImmediatePushSpecHandle("spec")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            repositoriesByPath = mapOf(path.path to repository),
+            pushStateSequences = mapOf(
+                repository to listOf(
+                    pushState(pushSpec = null),
+                    pushState(pushSpec),
+                ),
+            ),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepare(
+            GitChangeSelection(
+                trackedChanges = emptyList(),
+                unversionedFiles = listOf(path),
+            ),
+        )
+        decision.asImmediate().plan.push()
+
+        assertEquals(listOf(repository, repository), environment.pushStateRequests)
+        assertEquals(mapOf(repository to pushSpec), environment.pushedSpecs.single())
+    }
+
+    @Test
+    fun `prepare falls back after refreshable push metadata never settles`() {
+        val path = TestFilePath("/repo/modified.txt")
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            repositoriesByPath = mapOf(path.path to repository),
+            pushStateSequences = mapOf(
+                repository to listOf(
+                    pushState(pushSpec = null),
+                    pushState(pushSpec = null),
+                    pushState(pushSpec = null),
+                    pushState(SafeImmediatePushSpecHandle("late-spec")),
+                ),
+            ),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepare(
+            GitChangeSelection(
+                trackedChanges = emptyList(),
+                unversionedFiles = listOf(path),
+            ),
+        )
+
+        assertFallback(SafeImmediatePushFallbackReason.UnsupportedPushApi, decision)
+        assertEquals(listOf(repository, repository, repository), environment.pushStateRequests)
+        assertEquals(emptyList(), environment.pushedSpecs)
+    }
+
+    @Test
+    fun `prepare falls back immediately when repository state is unsafe even if later metadata is safe`() {
+        val path = TestFilePath("/repo/modified.txt")
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val pushSpec = SafeImmediatePushSpecHandle("spec")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            repositoriesByPath = mapOf(path.path to repository),
+            pushStateSequences = mapOf(
+                repository to listOf(
+                    pushState(pushSpec, repositoryStateIsNormal = false),
+                    pushState(pushSpec),
+                ),
+            ),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepare(
+            GitChangeSelection(
+                trackedChanges = emptyList(),
+                unversionedFiles = listOf(path),
+            ),
+        )
+
+        assertFallback(SafeImmediatePushFallbackReason.UnsafeRepositoryState, decision)
+        assertEquals(listOf(repository), environment.pushStateRequests)
     }
 
     @Test
@@ -261,16 +346,18 @@ internal class SafeImmediatePushServiceTest {
         val thirdRepository = SafeImmediatePushRepositoryHandle("third")
         val firstSpec = SafeImmediatePushSpecHandle("first-spec")
         val secondSpec = SafeImmediatePushSpecHandle("second-spec")
+        val thirdSpec = SafeImmediatePushSpecHandle("third-spec")
         val environment = CapturingSafeImmediatePushEnvironment(
             allRepositories = listOf(firstRepository, secondRepository, thirdRepository),
             pushStates = mapOf(
                 firstRepository to pushState(firstSpec, localMatchesTrackedUpstream = false),
                 secondRepository to pushState(secondSpec),
-                thirdRepository to pushState(pushSpec = null),
+                thirdRepository to pushState(thirdSpec),
             ),
             outgoingCommits = mapOf(
                 firstRepository to true,
                 secondRepository to false,
+                thirdRepository to false,
             ),
         )
         val service = SafeImmediatePushService(testProject(), environment)
@@ -280,6 +367,55 @@ internal class SafeImmediatePushServiceTest {
 
         assertEquals(setOf(firstRepository), environment.awaitedRepositories.single().toSet())
         assertEquals(mapOf(firstRepository to firstSpec), environment.pushedSpecs.single())
+    }
+
+    @Test
+    fun `prepare outgoing commits retries refreshable unavailable push metadata before stopping`() {
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val pushSpec = SafeImmediatePushSpecHandle("spec")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            allRepositories = listOf(repository),
+            pushStateSequences = mapOf(
+                repository to listOf(
+                    pushState(pushSpec = null),
+                    pushState(pushSpec),
+                ),
+            ),
+            outgoingCommits = mapOf(repository to true),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepareOutgoingCommits()
+        decision.asImmediate().plan.push()
+
+        assertEquals(listOf(repository, repository), environment.pushStateRequests)
+        assertEquals(mapOf(repository to pushSpec), environment.pushedSpecs.single())
+    }
+
+    @Test
+    fun `metadata settling sleeper does not block dispatch thread`() {
+        val delays = mutableListOf<Long>()
+        val sleeper = DispatchAwareSafeImmediatePushMetadataSettlingSleeper(
+            isDispatchThread = { true },
+            sleepMillis = { delay -> delays += delay },
+        )
+
+        sleeper.sleep(Duration.ofMillis(50))
+
+        assertEquals(emptyList(), delays)
+    }
+
+    @Test
+    fun `metadata settling sleeper waits outside dispatch thread`() {
+        val delays = mutableListOf<Long>()
+        val sleeper = DispatchAwareSafeImmediatePushMetadataSettlingSleeper(
+            isDispatchThread = { false },
+            sleepMillis = { delay -> delays += delay },
+        )
+
+        sleeper.sleep(Duration.ofMillis(50))
+
+        assertEquals(listOf(50L), delays)
     }
 
     @Test
@@ -303,6 +439,10 @@ internal class SafeImmediatePushServiceTest {
         private val allRepositories: List<SafeImmediatePushRepositoryHandle> = emptyList(),
         private val pushStates: Map<SafeImmediatePushRepositoryHandle, SafeImmediatePushRepositoryPushState> =
             emptyMap(),
+        private val pushStateSequences: Map<
+            SafeImmediatePushRepositoryHandle,
+            List<SafeImmediatePushRepositoryPushState>,
+            > = emptyMap(),
         private val outgoingCommits: Map<SafeImmediatePushRepositoryHandle, Boolean> = emptyMap(),
         private val pushFailure: RuntimeException? = null,
     ) : SafeImmediatePushEnvironment {
@@ -329,6 +469,11 @@ internal class SafeImmediatePushServiceTest {
             repository: SafeImmediatePushRepositoryHandle,
         ): SafeImmediatePushRepositoryPushState {
             pushStateRequests += repository
+            val stateSequence = pushStateSequences[repository]
+            if (stateSequence != null) {
+                val sequenceIndex = pushStateRequests.count { request -> request == repository } - 1
+                return stateSequence.getOrElse(sequenceIndex) { stateSequence.last() }
+            }
             return pushStates.getValue(repository)
         }
 

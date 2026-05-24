@@ -39,7 +39,7 @@ internal class AiCommitAllThreeSectionControlTest {
     }
 
     @Test
-    fun `disabled section ignores mouse interaction`() {
+    fun `disabled section suppresses hover but delegates activation for action-time routing`() {
         val activations = mutableListOf<AiCommitAllControlSection>()
         val control = testControl(
             state = testState(
@@ -50,7 +50,7 @@ internal class AiCommitAllThreeSectionControlTest {
         control.dispatchMove(AiCommitAllControlSection.Push)
         control.dispatchClick(AiCommitAllControlSection.Push)
 
-        assertTrue(activations.isEmpty())
+        assertEquals(listOf(AiCommitAllControlSection.Push), activations)
         assertEquals(emptySet(), control.highlightedSectionsForTest())
     }
 
