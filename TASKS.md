@@ -18,7 +18,6 @@ Notation:
 
 ### Publishing, Signing, Marketplace, And CI
 
-- [ ] T-REL-017: make GitHub release for pushed tags. release notes should be generated automatically from changelog entries and include all chenges form previous release.
 - [ ] T-REL-018: make version number be sortable.
   - ai-commit-all-v0.1.0-alpha.9-g6cb835fa4d.dirty.zip
   - ai-commit-all-v0.1.0-alpha.10-4-gac64d5f648.zip

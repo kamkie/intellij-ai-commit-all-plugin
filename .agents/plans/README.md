@@ -22,7 +22,7 @@ This directory holds task-specific implementation plans for work that is too lar
 ## Active Plans
 
 - `PLAN-detekt-baseline-cleanup` - Detekt Baseline Cleanup ([PLAN-detekt-baseline-cleanup.md](PLAN-detekt-baseline-cleanup.md)), implemented as of 2026-05-24.
-- `PLAN-github-release-for-tags` - GitHub Release For Tags ([PLAN-github-release-for-tags.md](PLAN-github-release-for-tags.md)), draft as of 2026-05-24.
+- `PLAN-github-release-for-tags` - GitHub Release For Tags ([PLAN-github-release-for-tags.md](PLAN-github-release-for-tags.md)), implemented as of 2026-05-24.
 - `PLAN-markdown-list-indent-two-spaces` - Markdown List Indent Two Spaces ([PLAN-markdown-list-indent-two-spaces.md](PLAN-markdown-list-indent-two-spaces.md)), implemented as of 2026-05-24.
 - `PLAN-unchanged-prefilled-ai-message` - Unchanged Prefilled AI Message ([PLAN-unchanged-prefilled-ai-message.md](PLAN-unchanged-prefilled-ai-message.md)), implemented as of 2026-05-24.
 - `PLAN-user-documentation-rebuild` - User Documentation Rebuild ([PLAN-user-documentation-rebuild.md](PLAN-user-documentation-rebuild.md)), implemented as of 2026-05-23.

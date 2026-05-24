@@ -210,6 +210,10 @@ Archived as of orchestrated `AI Commit All` workflow implementation.
 
 ### Publishing, Signing, Marketplace, And CI
 
+Archived as of 2026-05-24 GitHub Release automation.
+
+- [x] T-REL-017: make GitHub release for pushed tags. Release notes are generated automatically from the matching `CHANGELOG.md` release section for the pushed semantic version tag, covering the changes recorded for that release since the previous release. (`.github/workflows/github-release.yml`, `scripts/generate-github-release-notes.ps1`, `src/test/kotlin/pl/devopssolutions/aicommitall/ci/GitHubActionsWorkflowTest.kt`, `CHANGELOG.md`; validation: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.ci.GitHubActionsWorkflowTest"`, `.\gradlew.bat spotlessCheck`, `.\gradlew.bat detekt`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check`)
+
 - [x] T-REL-001: Add Marketplace-ready plugin metadata. (Plan `PLAN-marketplace-ci-release`, Task 1)
 - [x] T-REL-002: Add official source code link to plugin and Marketplace metadata. (Plan `PLAN-marketplace-ci-release`, Task 1)
 - [x] T-REL-003: Configure plugin signing through IntelliJ Platform Gradle Plugin 2.x using local properties or CI secrets. (Plan `PLAN-marketplace-ci-release`, Task 2)

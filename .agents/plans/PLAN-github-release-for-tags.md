@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-github-release-for-tags
 
-Status: Draft
+Status: Implemented
 
 Workers: 1
 
@@ -10,13 +10,18 @@ Filename: `.agents/plans/PLAN-github-release-for-tags.md`
 
 ## Readiness
 
-- Plan readiness: Ready for maintainer review; not approved for implementation.
+- Plan readiness: Implemented; task validation and closeout are complete.
+- Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Approved at: 2026-05-24T17:56:31+02:00
 - Open questions: None.
-- Implementation progress: Not started.
+- Implementation progress: Worker W1 completed `T1-github-release-for-tags`; validation and task closeout are recorded in the result summary.
 
 ## Status History
 
 - 2026-05-24T17:53:06+02:00: none -> Draft by Kamil Kiewisz <kamkie@outlook.com>; plan created from `TASKS.md` `T-REL-017`.
+- 2026-05-24T17:56:31+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
+- 2026-05-24T17:56:31+02:00: Approved -> In Progress by Codex <codex@openai.com>; approved-plan implementation started through worker W1.
+- 2026-05-24T18:06:24+02:00: In Progress -> Implemented by Codex <codex@openai.com>; worker W1 completed `T1-github-release-for-tags`.
 
 ## Goal
 
@@ -139,10 +144,10 @@ Validation:
 
 Escalation triggers:
 
-- The implementation would need a third-party GitHub Action instead of GitHub-owned tooling or `gh`.
-- Changelog parsing cannot reliably identify the matching tag section.
-- Release notes would need to include unreleased content or multiple changelog sections.
-- Workflow permissions would require more than `contents: write`.
+- Escalate if the implementation would need a third-party GitHub Action instead of GitHub-owned tooling or `gh`.
+- Escalate if changelog parsing cannot reliably identify the matching tag section.
+- Escalate if release notes would need to include unreleased content or multiple changelog sections.
+- Escalate if workflow permissions would require more than `contents: write`.
 
 Stop conditions:
 
@@ -163,13 +168,13 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: completed
+- Worker: W1
+- Changed files or reviewed diff: `.github/workflows/github-release.yml`, `scripts/generate-github-release-notes.ps1`, `src/test/kotlin/pl/devopssolutions/aicommitall/ci/GitHubActionsWorkflowTest.kt`, `CHANGELOG.md`, `TASKS.md`, `TASKS_ARCHIVE.md`, `.agents/plans/PLAN-github-release-for-tags.md`, `.agents/plans/README.md`
+- Validation evidence: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.ci.GitHubActionsWorkflowTest"`, `.\gradlew.bat spotlessCheck`, `.\gradlew.bat detekt`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check`
+- Blockers: none
+- Review risks: GitHub Release creation itself was not executed locally; coverage is by script execution tests and workflow contract assertions.
+- Handoff notes: Workflow is separate from Marketplace publication, uses only `contents: write`, validates pushed semantic tags, generates notes from the matching `CHANGELOG.md` release section, and creates or updates the GitHub Release with `gh`.
 
 ## Execution Model
 
@@ -210,5 +215,6 @@ Run `.\gradlew.bat test` if the implementation touches broader test helpers or G
 
 ## Handoff Notes
 
-- This is a draft plan only. Implementation must wait for explicit user approval and then follow the approved-plan sub-agent execution rule.
-- The working tree already contained an unrelated `.idea/codeStyles/Project.xml` modification when this plan was created; implementation workers must preserve unrelated user edits.
+- Implementation is complete for `T1-github-release-for-tags`.
+- No real GitHub Release or Marketplace publication was executed during implementation.
+- Unrelated user edits were preserved during implementation.

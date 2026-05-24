@@ -1,0 +1,68 @@
+name: GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create or update GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Validate release tag
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "${RELEASE_TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$ ]]; then
+            echo "Release tag must use vMAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH-PRERELEASE." >&2
+            exit 1
+          fi
+
+          echo "Release tag ${RELEASE_TAG} verified."
+
+      - name: Generate release notes
+        shell: pwsh
+        run: >
+          scripts/generate-github-release-notes.ps1
+          -Tag '${{ github.ref_name }}'
+          -OutputPath 'build/github-release-notes.md'
+
+      - name: Create or update GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_NOTES: build/github-release-notes.md
+        run: |
+          set -euo pipefail
+
+          prerelease_args=()
+          if [[ "${RELEASE_TAG}" == *-* ]]; then
+            prerelease_args+=(--prerelease)
+          fi
+
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            gh release edit "${RELEASE_TAG}" \
+              --title "${RELEASE_TAG}" \
+              --notes-file "${RELEASE_NOTES}" \
+              --verify-tag \
+              "${prerelease_args[@]}"
+          else
+            gh release create "${RELEASE_TAG}" \
+              --title "${RELEASE_TAG}" \
+              --notes-file "${RELEASE_NOTES}" \
+              --verify-tag \
+              "${prerelease_args[@]}"
+          fi

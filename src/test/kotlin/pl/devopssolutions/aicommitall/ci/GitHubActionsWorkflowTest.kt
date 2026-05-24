@@ -19,6 +19,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.name
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -502,6 +503,130 @@ internal class GitHubActionsWorkflowTest {
             "Release workflow must validate the annotated tag before building the release candidate.",
         )
     }
+
+    @Test
+    fun `github release notes generator uses matching section and rejects invalid inputs`() {
+        val success = runReleaseNotesGenerator(
+            "v1.2.3",
+            changelogWithReleaseNotes(
+                """
+                    ### Added
+
+                    - Added GitHub Release automation.
+                """,
+            ),
+        )
+        assertEquals(0, success.exitCode, success.log)
+        assertEquals("### Added\n\n- Added GitHub Release automation.\n", success.releaseNotes)
+
+        assertGeneratorFails(
+            runReleaseNotesGenerator("1.2.3", changelogWithReleaseNotes()),
+            "Release tag must use vMAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH-PRERELEASE.",
+        )
+        assertGeneratorFails(
+            runReleaseNotesGenerator("v9.9.9", changelogWithReleaseNotes()),
+            "CHANGELOG.md is missing release section [v9.9.9].",
+        )
+        assertGeneratorFails(
+            runReleaseNotesGenerator("v1.2.3", changelogWithReleaseNotes("### Changed\n\n-")),
+            "CHANGELOG.md section [v1.2.3] has an empty release-note item.",
+        )
+    }
+
+    @Test
+    fun `github release workflow creates releases from generated changelog notes`() {
+        val content = Files.readString(Path.of(".github", "workflows", "github-release.yml"))
+
+        listOf(
+            "name: GitHub Release",
+            "push:",
+            "tags:",
+            "- 'v*.*.*'",
+            "permissions:\n  contents: write",
+            "fetch-depth: 0",
+            "Validate release tag",
+            "^v[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$",
+            "scripts/generate-github-release-notes.ps1",
+            "-Tag '\${{ github.ref_name }}'",
+            "-OutputPath 'build/github-release-notes.md'",
+            "GH_TOKEN: \${{ secrets.GITHUB_TOKEN }}",
+            "gh release view \"\${RELEASE_TAG}\"",
+            "gh release edit \"\${RELEASE_TAG}\"",
+            "gh release create \"\${RELEASE_TAG}\"",
+            "--notes-file \"\${RELEASE_NOTES}\"",
+            "--verify-tag",
+        ).forEach { snippet ->
+            assertTrue(content.contains(snippet), "GitHub Release workflow is missing: $snippet")
+        }
+
+        assertFalse(
+            content.contains("jetbrains-marketplace") ||
+                content.contains("PUBLISH_TOKEN") ||
+                content.contains("CERTIFICATE_CHAIN") ||
+                content.contains("PRIVATE_KEY_PASSWORD") ||
+                content.contains("signPlugin") ||
+                content.contains("publishPlugin"),
+            "GitHub Release workflow must not require Marketplace publication configuration.",
+        )
+        assertTrue(
+            content.indexOf("Validate release tag") < content.indexOf("Generate release notes"),
+            "GitHub Release workflow must validate the tag before reading changelog release notes.",
+        )
+        assertTrue(
+            content.indexOf("Generate release notes") < content.lastIndexOf("Create or update GitHub Release"),
+            "GitHub Release workflow must generate notes before creating or updating the release.",
+        )
+    }
+
+    private data class ScriptResult(val exitCode: Int, val log: String, val releaseNotes: String)
+
+    private fun runReleaseNotesGenerator(tag: String, changelogText: String): ScriptResult {
+        val tempDirectory = Files.createTempDirectory("github-release-notes-test")
+        try {
+            val changelogPath = tempDirectory.resolve("CHANGELOG.md")
+            val outputPath = tempDirectory.resolve("release-notes.md")
+            Files.writeString(changelogPath, changelogText.trimIndent().trimStart())
+            val process = ProcessBuilder(
+                "pwsh",
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                Path.of("scripts", "generate-github-release-notes.ps1").toAbsolutePath().toString(),
+                "-Tag",
+                tag,
+                "-ChangelogPath",
+                changelogPath.toString(),
+                "-OutputPath",
+                outputPath.toString(),
+            ).redirectErrorStream(true).start()
+
+            val log = process.inputStream.bufferedReader().readText()
+            val releaseNotes = if (Files.exists(outputPath)) Files.readString(outputPath) else ""
+            return ScriptResult(process.waitFor(), log, releaseNotes)
+        } finally {
+            tempDirectory.toFile().deleteRecursively()
+        }
+    }
+
+    private fun assertGeneratorFails(result: ScriptResult, message: String) {
+        assertTrue(result.exitCode != 0, result.log)
+        assertTrue(result.log.contains(message), "Generator output did not contain: $message\n${result.log}")
+    }
+
+    private fun changelogWithReleaseNotes(body: String = "### Changed\n\n- Added release notes."): String = listOf(
+        "# Changelog",
+        "",
+        "## [Unreleased]",
+        "",
+        "### Changed",
+        "",
+        "- Work in progress.",
+        "",
+        "## [v1.2.3] - 2026-05-24",
+        "",
+        body.trimIndent(),
+    ).joinToString("\n") + "\n"
 
     private fun gradleWorkflows(): List<Path> = Files.list(Path.of(".github", "workflows")).use { workflows ->
         workflows
