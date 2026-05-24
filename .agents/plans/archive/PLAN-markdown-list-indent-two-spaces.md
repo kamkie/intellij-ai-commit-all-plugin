@@ -8,7 +8,7 @@ Close-Reason: Archived
 
 Workers: 1
 
-Filename: `.agents/plans/PLAN-markdown-list-indent-two-spaces.md`
+Filename: `.agents/plans/archive/PLAN-markdown-list-indent-two-spaces.md`
 
 ## Readiness
 

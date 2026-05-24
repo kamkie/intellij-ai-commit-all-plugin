@@ -8,7 +8,7 @@ Close-Reason: Archived
 
 Workers: 1
 
-Filename: `.agents/plans/PLAN-unchanged-prefilled-ai-message.md`
+Filename: `.agents/plans/archive/PLAN-unchanged-prefilled-ai-message.md`
 
 ## Readiness
 

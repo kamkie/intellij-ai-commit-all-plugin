@@ -21,15 +21,15 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- `PLAN-detekt-baseline-cleanup` - Detekt Baseline Cleanup ([PLAN-detekt-baseline-cleanup.md](PLAN-detekt-baseline-cleanup.md)), closed as of 2026-05-24; ready to archive.
-- `PLAN-github-release-for-tags` - GitHub Release For Tags ([PLAN-github-release-for-tags.md](PLAN-github-release-for-tags.md)), closed as of 2026-05-24; ready to archive.
-- `PLAN-markdown-list-indent-two-spaces` - Markdown List Indent Two Spaces ([PLAN-markdown-list-indent-two-spaces.md](PLAN-markdown-list-indent-two-spaces.md)), closed as of 2026-05-24; ready to archive.
 - `PLAN-test-coverage-growth` - Test Coverage Growth ([PLAN-test-coverage-growth.md](PLAN-test-coverage-growth.md)), drafted as of 2026-05-24.
-- `PLAN-unchanged-prefilled-ai-message` - Unchanged Prefilled AI Message ([PLAN-unchanged-prefilled-ai-message.md](PLAN-unchanged-prefilled-ai-message.md)), closed as of 2026-05-24; ready to archive.
-- `PLAN-user-documentation-rebuild` - User Documentation Rebuild ([PLAN-user-documentation-rebuild.md](PLAN-user-documentation-rebuild.md)), closed as of 2026-05-24; ready to archive.
 
 ## Archived Plans
 
+- `PLAN-user-documentation-rebuild` - User Documentation Rebuild ([archive/PLAN-user-documentation-rebuild.md](archive/PLAN-user-documentation-rebuild.md)), archived as of 2026-05-24.
+- `PLAN-unchanged-prefilled-ai-message` - Unchanged Prefilled AI Message ([archive/PLAN-unchanged-prefilled-ai-message.md](archive/PLAN-unchanged-prefilled-ai-message.md)), archived as of 2026-05-24.
+- `PLAN-markdown-list-indent-two-spaces` - Markdown List Indent Two Spaces ([archive/PLAN-markdown-list-indent-two-spaces.md](archive/PLAN-markdown-list-indent-two-spaces.md)), archived as of 2026-05-24.
+- `PLAN-github-release-for-tags` - GitHub Release For Tags ([archive/PLAN-github-release-for-tags.md](archive/PLAN-github-release-for-tags.md)), archived as of 2026-05-24.
+- `PLAN-detekt-baseline-cleanup` - Detekt Baseline Cleanup ([archive/PLAN-detekt-baseline-cleanup.md](archive/PLAN-detekt-baseline-cleanup.md)), archived as of 2026-05-24.
 - `PLAN-maintainability-stability-audit` - Maintainability Stability Audit ([archive/PLAN-maintainability-stability-audit.md](archive/PLAN-maintainability-stability-audit.md)), archived as of 2026-05-24.
 - `PLAN-documentation-release-followups` - Documentation Release Follow-Ups ([archive/PLAN-documentation-release-followups.md](archive/PLAN-documentation-release-followups.md)), archived as of 2026-05-24.
 - `PLAN-execution-context-discipline` - Execution Context Discipline ([archive/PLAN-execution-context-discipline.md](archive/PLAN-execution-context-discipline.md)), archived as of 2026-05-23.

@@ -8,7 +8,7 @@ Close-Reason: Archived
 
 Workers: 3 (parallel, tasks: T2-readme-user-guide, T3-troubleshooting-support, T4-specification-and-retirement)
 
-Filename: `.agents/plans/PLAN-user-documentation-rebuild.md`
+Filename: `.agents/plans/archive/PLAN-user-documentation-rebuild.md`
 
 ## Readiness
 

@@ -8,7 +8,7 @@ Close-Reason: Archived
 
 Workers: 1
 
-Filename: `.agents/plans/PLAN-github-release-for-tags.md`
+Filename: `.agents/plans/archive/PLAN-github-release-for-tags.md`
 
 ## Readiness
 
@@ -128,7 +128,7 @@ Write scope:
 - `CHANGELOG.md`
 - `TASKS.md`
 - `TASKS_ARCHIVE.md`
-- `.agents/plans/PLAN-github-release-for-tags.md`
+- `.agents/plans/archive/PLAN-github-release-for-tags.md`
 - `.agents/plans/README.md`
 
 Dependencies:
@@ -173,7 +173,7 @@ Result summary:
 
 - Status: completed
 - Worker: W1
-- Changed files or reviewed diff: `.github/workflows/github-release.yml`, `scripts/generate-github-release-notes.ps1`, `src/test/kotlin/pl/devopssolutions/aicommitall/ci/GitHubActionsWorkflowTest.kt`, `CHANGELOG.md`, `TASKS.md`, `TASKS_ARCHIVE.md`, `.agents/plans/PLAN-github-release-for-tags.md`, `.agents/plans/README.md`
+- Changed files or reviewed diff: `.github/workflows/github-release.yml`, `scripts/generate-github-release-notes.ps1`, `src/test/kotlin/pl/devopssolutions/aicommitall/ci/GitHubActionsWorkflowTest.kt`, `CHANGELOG.md`, `TASKS.md`, `TASKS_ARCHIVE.md`, `.agents/plans/archive/PLAN-github-release-for-tags.md`, `.agents/plans/README.md`
 - Validation evidence: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.ci.GitHubActionsWorkflowTest"`, `.\gradlew.bat spotlessCheck`, `.\gradlew.bat detekt`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check`
 - Blockers: none
 - Review risks: GitHub Release creation itself was not executed locally; coverage is by script execution tests and workflow contract assertions.

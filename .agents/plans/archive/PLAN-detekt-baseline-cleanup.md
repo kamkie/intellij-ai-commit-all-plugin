@@ -8,7 +8,7 @@ Close-Reason: Archived
 
 Workers: 1
 
-Filename: `.agents/plans/PLAN-detekt-baseline-cleanup.md`
+Filename: `.agents/plans/archive/PLAN-detekt-baseline-cleanup.md`
 
 ## Readiness
 
@@ -425,7 +425,7 @@ Write scope:
 - `TASKS.md`.
 - `TASKS_ARCHIVE.md`.
 - `CHANGELOG.md`.
-- `.agents/plans/PLAN-detekt-baseline-cleanup.md`.
+- `.agents/plans/archive/PLAN-detekt-baseline-cleanup.md`.
 - `.agents/plans/README.md`.
 
 Dependencies:
@@ -471,7 +471,7 @@ Result summary:
   - `TASKS.md`
   - `TASKS_ARCHIVE.md`
   - `CHANGELOG.md`
-  - `.agents/plans/PLAN-detekt-baseline-cleanup.md`
+  - `.agents/plans/archive/PLAN-detekt-baseline-cleanup.md`
   - `.agents/plans/README.md`
   - `src/test/kotlin/pl/devopssolutions/aicommitall/ci/GitHubActionsWorkflowTest.kt`
 - Validation evidence:
