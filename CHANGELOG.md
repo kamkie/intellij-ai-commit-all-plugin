@@ -12,6 +12,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ### Fixed
 
+- Attached the built plugin distribution ZIP to GitHub Releases created from semantic version tags.
 - Fixed Gradle-based GitHub Actions checkouts to fetch tags so Git-derived plugin versions work in CI after semantic release tags.
 
 ## [v0.1.0-beta.1] - 2026-05-24

@@ -549,12 +549,20 @@ internal class GitHubActionsWorkflowTest {
             "scripts/generate-github-release-notes.ps1",
             "-Tag '\${{ github.ref_name }}'",
             "-OutputPath 'build/github-release-notes.md'",
+            "actions/setup-java@v5",
+            "gradle/actions/setup-gradle@v6",
+            "validate-wrappers: true",
+            "Build release distribution",
+            "./gradlew verifyPluginStructure buildPlugin",
             "GH_TOKEN: \${{ secrets.GITHUB_TOKEN }}",
             "gh release view \"\${RELEASE_TAG}\"",
             "gh release edit \"\${RELEASE_TAG}\"",
             "gh release create \"\${RELEASE_TAG}\"",
             "--notes-file \"\${RELEASE_NOTES}\"",
             "--verify-tag",
+            "distribution_files=(build/distributions/*.zip)",
+            "Expected exactly one distribution ZIP",
+            "gh release upload \"\${RELEASE_TAG}\" \"\${distribution_files[0]}\" --clobber",
         ).forEach { snippet ->
             assertTrue(content.contains(snippet), "GitHub Release workflow is missing: $snippet")
         }
@@ -575,6 +583,10 @@ internal class GitHubActionsWorkflowTest {
         assertTrue(
             content.indexOf("Generate release notes") < content.lastIndexOf("Create or update GitHub Release"),
             "GitHub Release workflow must generate notes before creating or updating the release.",
+        )
+        assertTrue(
+            content.indexOf("Build release distribution") < content.lastIndexOf("Create or update GitHub Release"),
+            "GitHub Release workflow must build the distribution ZIP before attaching release assets.",
         )
     }
 

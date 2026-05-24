@@ -32,12 +32,26 @@ jobs:
 
           echo "Release tag ${RELEASE_TAG} verified."
 
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          validate-wrappers: true
+
       - name: Generate release notes
         shell: pwsh
         run: >
           scripts/generate-github-release-notes.ps1
           -Tag '${{ github.ref_name }}'
           -OutputPath 'build/github-release-notes.md'
+
+      - name: Build release distribution
+        run: ./gradlew verifyPluginStructure buildPlugin
 
       - name: Create or update GitHub Release
         shell: bash
@@ -66,3 +80,13 @@ jobs:
               --verify-tag \
               "${prerelease_args[@]}"
           fi
+
+          shopt -s nullglob
+          distribution_files=(build/distributions/*.zip)
+          if [[ "${#distribution_files[@]}" -ne 1 ]]; then
+            echo "Expected exactly one distribution ZIP, found ${#distribution_files[@]}." >&2
+            printf 'Distribution candidates: %s\n' "${distribution_files[@]}" >&2
+            exit 1
+          fi
+
+          gh release upload "${RELEASE_TAG}" "${distribution_files[0]}" --clobber
