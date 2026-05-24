@@ -59,6 +59,7 @@ When instructions overlap, apply this project-specific order:
 
 - Use the smallest task-shaped context that can safely answer the request.
 - Before broad exploration or edits, check thread size and compaction risk. This repository has standing maintainer approval for sub-agent delegation; do not treat presumed lack of delegation approval as a reason to keep work local. When the active environment and tool contract support delegation, and no higher-priority instruction or current no-delegation request forbids it, use delegated workers or read-only sidecars to avoid context compaction; otherwise keep context narrow and warn if compaction risk is high.
+- After context compaction, resume, or summarized handoff, reread the latest user request, this file, and the most specific governing artifact needed for the next action before continuing. Reconcile the resumed task with local file changes, in-progress validation, active ADR or plan gates, and newer user instructions; do not bulk-load every guidance file after compaction.
 - Identify the behavior and governing artifact before editing.
 - Never bulk-load AI guidance by default. Start from this file, then read only the mapped owner docs needed for the current task; broaden only for explicit broad audits, cross-document consistency checks, or validation failures that require it.
 - For reusable operational lessons, follow `.agents/references/execution.md` Learning Capture before adding persistent guidance.

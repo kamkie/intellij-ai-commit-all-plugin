@@ -1,7 +1,7 @@
 ---
-status: proposed
+status: accepted
 date: 2026-05-25
-accepted_at:
+accepted_at: 2026-05-25T01:48:18+02:00
 decision-makers: Kamil Kiewisz <kamkie@outlook.com>
 consulted: OpenAI Codex
 informed: Repository contributors

@@ -82,6 +82,8 @@ Use this shape:
 - Validation plan: commands, review checks, manual checks, or skipped-check reason.
 - Current blocker status: none, or the blocker owner and stop condition.
 
+After compaction, resume, or summarized handoff during delegated or context-heavy work, the orchestrator rereads the latest user request, `AGENTS.md`, the decision capsule when one exists, worker outputs or validation evidence needed for the next action, and only the owner artifacts required to resume integration. Reconcile worker claims with the current diff, validation state, active ADR or plan gates, and newer user instructions before dispatching more work, editing, or handing off.
+
 ## Local Packet Mode
 
 Local packet mode is the fallback for a direct one-off brief when a fresh worker is unavailable, not authorized, or not useful enough to justify delegation overhead. It is not allowed for approved-plan task execution.

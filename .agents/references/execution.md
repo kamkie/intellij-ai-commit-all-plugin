@@ -26,17 +26,18 @@ If a request requires a new ADR or implementation plan, create or update the req
 
 ## Direct One-Off Loop
 
-1. Frame the behavior: name the user-facing behavior, command, action, or workflow being changed.
-2. Identify the owner artifact: find the source, descriptor, docs, task list, or reference guide that governs the behavior.
-3. Check gates: follow ADR and plan requirements before editing governed implementation, workflow guidance, backlog, validation rules, or related behavior.
-4. Run context and delegation preflight before optional broad loading: estimate the likely read set, context-pressure risk, active tool or user delegation limits, and whether local work, local packet mode, read-only exploration, validation, review, or a write worker is appropriate.
-5. Record a compact orchestrator decision capsule from `.agents/references/orchestration.md` when the work is context-heavy, delegated, write-worker based, parallel, or likely to trigger compaction.
-6. Load the smallest useful context: use `AGENTS.md` and the guidance map to choose only the needed owner documents.
-7. Update docs or specs when behavior changes: keep `README.md`, `TASKS.md`, and agent guidance aligned with the implementation.
-8. Implement the smallest change: stay within the requested scope and existing project shape.
-9. Run targeted validation: choose checks from `.agents/references/testing.md` based on the diff.
-10. Self-review: use `.agents/references/reviews.md` to check for behavior, compatibility, and validation gaps.
-11. Report evidence: summarize changed files, validation run, and any remaining risk.
+1. After context compaction, resume, or summarized handoff, run the targeted reread check before continuing: reread the latest user request, `AGENTS.md`, and the most specific governing artifact needed for the next action. Reconcile the resumed task with local file changes, in-progress validation, active ADR or plan gates, and newer user instructions; do not bulk-load every guidance file.
+2. Frame the behavior: name the user-facing behavior, command, action, or workflow being changed.
+3. Identify the owner artifact: find the source, descriptor, docs, task list, or reference guide that governs the behavior.
+4. Check gates: follow ADR and plan requirements before editing governed implementation, workflow guidance, backlog, validation rules, or related behavior.
+5. Run context and delegation preflight before optional broad loading: estimate the likely read set, context-pressure risk, active tool or user delegation limits, and whether local work, local packet mode, read-only exploration, validation, review, or a write worker is appropriate.
+6. Record a compact orchestrator decision capsule from `.agents/references/orchestration.md` when the work is context-heavy, delegated, write-worker based, parallel, or likely to trigger compaction.
+7. Load the smallest useful context: use `AGENTS.md` and the guidance map to choose only the needed owner documents.
+8. Update docs or specs when behavior changes: keep `README.md`, `TASKS.md`, and agent guidance aligned with the implementation.
+9. Implement the smallest change: stay within the requested scope and existing project shape.
+10. Run targeted validation: choose checks from `.agents/references/testing.md` based on the diff.
+11. Self-review: use `.agents/references/reviews.md` to check for behavior, compatibility, and validation gaps.
+12. Report evidence: summarize changed files, validation run, and any remaining risk.
 
 Direct one-off worker results are summarized in chat. Do not create durable `.agents/runs/` logs.
 
@@ -103,6 +104,7 @@ After moving a `TASKS.md` task to `TASKS_ARCHIVE.md`, rerun documentation valida
 
 - Read only the context needed for the current task.
 - Do not bulk-load every AI instruction file automatically; use `AGENTS.md` and the guidance map to choose the smallest governing read set.
+- After compaction, resume, or summarized handoff, reread only the latest user request, `AGENTS.md`, and the owner artifact needed for the next action before continuing; then reconcile local changes, validation state, active gates, and newer user instructions.
 - Use the artifact lookup rules in `AGENTS.md`; fall back to repository-wide search only when scoped lookup fails or the reference is ambiguous.
 - Broaden the read set only when targeted discovery shows another owner document is needed, the user asks for a broad audit, or validation requires cross-document consistency checks.
 - For direct one-off work, do not load approved-plan orchestration details unless delegation, context pressure, or a coordination trigger makes `.agents/references/orchestration.md` relevant.
