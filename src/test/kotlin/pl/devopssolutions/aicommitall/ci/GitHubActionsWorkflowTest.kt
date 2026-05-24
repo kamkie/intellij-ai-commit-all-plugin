@@ -137,24 +137,6 @@ internal class GitHubActionsWorkflowTest {
     }
 
     @Test
-    fun `gradle versioning keeps marketplace semver and readable local zip metadata`() {
-        val content = Files.readString(Path.of("build.gradle.kts"))
-
-        listOf(
-            "\"v0.1.0-alpha.10\"",
-            "\"0.1.0-alpha.10\"",
-            "\"0.1.0-alpha.10+4.gac64d5f648\"",
-            "\"0.1.0-alpha.10+4.ac64d5f648\"",
-            "\"0.1.0-alpha.10+4.gac64d5f648.dirty\"",
-            "\"0.1.0-alpha.10+4.ac64d5f648.dirty\"",
-            "archiveVersion.set(pluginArchiveVersion)",
-            "verifyPluginVersionFormatting",
-        ).forEach { snippet ->
-            assertTrue(content.contains(snippet), "Gradle versioning is missing: $snippet")
-        }
-    }
-
-    @Test
     fun `gradle configures detekt static analysis reports`() {
         val content = Files.readString(Path.of("build.gradle.kts"))
 

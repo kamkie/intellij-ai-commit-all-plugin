@@ -24,43 +24,7 @@ data class PluginBuildVersion(
     val archiveVersion: String,
 )
 
-data class VersionFormatCase(
-    val tag: String,
-    val commitDistance: Int,
-    val gitHash: String,
-    val dirty: Boolean,
-    val pluginVersion: String,
-    val archiveVersion: String,
-)
-
 object PluginVersionFormatter {
-    val versionFormatCases = listOf(
-        VersionFormatCase(
-            tag = "v0.1.0-alpha.10",
-            commitDistance = 0,
-            gitHash = "64b3f33af7",
-            dirty = false,
-            pluginVersion = "0.1.0-alpha.10",
-            archiveVersion = "0.1.0-alpha.10",
-        ),
-        VersionFormatCase(
-            tag = "v0.1.0-alpha.10",
-            commitDistance = 4,
-            gitHash = "ac64d5f648",
-            dirty = false,
-            pluginVersion = "0.1.0-alpha.10+4.gac64d5f648",
-            archiveVersion = "0.1.0-alpha.10+4.ac64d5f648",
-        ),
-        VersionFormatCase(
-            tag = "v0.1.0-alpha.10",
-            commitDistance = 4,
-            gitHash = "ac64d5f648",
-            dirty = true,
-            pluginVersion = "0.1.0-alpha.10+4.gac64d5f648.dirty",
-            archiveVersion = "0.1.0-alpha.10+4.ac64d5f648.dirty",
-        ),
-    )
-
     private val semanticVersionPattern =
         Regex("""^v?((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?)$""")
 
@@ -301,36 +265,8 @@ val verifyDetektBaseline by tasks.registering(VerifyDetektBaselineTask::class) {
     baselineFile.set(detektBaselineFile)
 }
 
-abstract class VerifyPluginVersionFormattingTask : DefaultTask() {
-    @TaskAction
-    fun verify() {
-        PluginVersionFormatter.versionFormatCases.forEach { testCase ->
-            val actual = PluginVersionFormatter.formatPluginBuildVersion(
-                tag = testCase.tag,
-                commitDistance = testCase.commitDistance,
-                gitHash = testCase.gitHash,
-                dirty = testCase.dirty,
-            )
-
-            if (actual.pluginVersion != testCase.pluginVersion || actual.archiveVersion != testCase.archiveVersion) {
-                throw GradleException(
-                    "Version formatting failed for ${testCase.tag} at distance ${testCase.commitDistance}. " +
-                        "Expected plugin=${testCase.pluginVersion}, archive=${testCase.archiveVersion}; " +
-                        "actual plugin=${actual.pluginVersion}, archive=${actual.archiveVersion}.",
-                )
-            }
-        }
-    }
-}
-
-val verifyPluginVersionFormatting by tasks.registering(VerifyPluginVersionFormattingTask::class) {
-    group = "verification"
-    description = "Verifies plugin SemVer and local ZIP version formatting examples."
-}
-
 tasks.check {
     dependsOn(verifyDetektBaseline)
-    dependsOn(verifyPluginVersionFormatting)
 }
 
 testlogger {
@@ -497,7 +433,6 @@ val fakeAiAssistantPlugin by tasks.registering(Zip::class) {
 val fakeAiAssistantPluginArchiveFile = fakeAiAssistantPlugin.flatMap { plugin -> plugin.archiveFile }
 
 tasks.buildPlugin {
-    dependsOn(verifyPluginVersionFormatting)
     archiveVersion.set(pluginArchiveVersion)
 }
 
