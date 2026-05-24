@@ -631,16 +631,16 @@ Use this checkpoint before starting each dependent task, before a pause or hando
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, current task packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before any commit; and the next action's exact owner docs or source files.
-- Current task or wave: Draft refresh complete; implementation not started.
-- Completed commits: None for this plan. Related baseline work includes `PLAN-premature-stop-reliability` commits `79208d6`, `f6de9f8`, `4a703c3`, `524392b`, and follow-up plan-governance commits through `2b08f27`.
-- Plan status and readiness: `Draft`; maintainer review and explicit approval are still required before implementation.
-- Validation and self-review state: Baseline `.\gradlew.bat test jacocoTestReport` passed on 2026-05-25 with 308 passing and 1 pending; governed-document validation must be rerun after this plan refresh.
-- Worker event state: No approved-plan workers have run for this plan.
-- Orchestrator reconciliation state: Not started; reconcile packet claims against final diffs and validation output during execution.
-- Changelog, docs, spec, task, or plan updates: This plan is refreshed to account for ADR 0084 implementation and current plan-template continuity requirements; no public changelog entry is expected for the plan refresh itself.
-- Blockers or open questions: None blocking; approval remains the implementation gate.
-- Next action: Maintainer review and explicit approval, then T1 if accepted.
-- Context handoff notes: Treat ADR 0084 settling tests as existing regression coverage and target residual branch clusters from the current JaCoCo report.
+- Current task or wave: T1 complete; T2 VCS push/outgoing coverage dispatch pending.
+- Completed commits: `dea114f` for T1 workflow coverage and `fd7d3a6` for T1 plan evidence. Related baseline work includes `PLAN-premature-stop-reliability` commits `79208d6`, `f6de9f8`, `4a703c3`, `524392b`, and follow-up plan-governance commits through `2b08f27`.
+- Plan status and readiness: `In Progress`; approved by Kamil Kiewisz <kamkie@outlook.com> at 2026-05-25T01:40:55+02:00, with no blocking open questions.
+- Validation and self-review state: T1 workflow targeted tests, workflow package tests, `jacocoTestReport`, `spotlessCheck`, and `git diff --check` passed in worker evidence; plan evidence validation passed with `scripts\validate-docs.ps1`, `scripts\ai\validate-agent-artifacts.ps1`, and `git diff --check`.
+- Worker event state: W1 started 2026-05-25T01:40:55+02:00 and stopped 2026-05-25T02:03:00+02:00; no active workers.
+- Orchestrator reconciliation state: T1 reconciled against commit metadata, changed-file set, validation evidence, and plan scope; T2 not started.
+- Changelog, docs, spec, task, or plan updates: Plan approval/progress metadata, T1 result summary, and active-plan catalog updates are committed; no public changelog, spec, or task update required for T1.
+- Blockers or open questions: None blocking.
+- Next action: Dispatch T2 VCS push/outgoing coverage worker.
+- Context handoff notes: Treat ADR 0084 settling tests as existing regression coverage, keep T2 focused on VCS residual branch clusters, and preserve the T1 review risk around static IntelliJ-service seams.
 
 ## Execution Graph
 
