@@ -11,8 +11,8 @@
 
 ## Status
 
-Unreleased prerelease. The plugin has not been published to JetBrains
-Marketplace yet. Latest tag: `v0.1.0-alpha.10`.
+GitHub prerelease. The plugin has not been published to JetBrains
+Marketplace yet. Latest tag: `v0.1.0-beta.1`.
 
 ## Requirements
 
