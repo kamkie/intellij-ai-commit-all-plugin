@@ -17,6 +17,7 @@ package pl.devopssolutions.aicommitall.actions
 
 import com.intellij.ide.ui.laf.darcula.DarculaUIUtil
 import com.intellij.ui.JBColor
+import java.awt.Color
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
@@ -358,9 +359,7 @@ internal class AiCommitAllThreeSectionControlTest {
     }
 
     private fun AiCommitAllThreeSectionControl.setSnakeOffsetForTest(offset: Float) {
-        val field = AiCommitAllThreeSectionControl::class.java.getDeclaredField("snakeOffset")
-        field.isAccessible = true
-        field.setFloat(this, offset)
+        testPeerForTest.setSnakeOffset(offset)
     }
 
     private fun AiCommitAllThreeSectionControl.renderImage(): BufferedImage {
@@ -402,3 +401,23 @@ internal class AiCommitAllThreeSectionControlTest {
         }
     }
 }
+
+internal fun AiCommitAllThreeSectionControl.sectionLabels(): List<String> = testPeerForTest.sectionLabels()
+
+internal fun AiCommitAllThreeSectionControl.isSectionEnabledForTest(
+    section: AiCommitAllControlSection,
+): Boolean = testPeerForTest.isSectionEnabled(section)
+
+internal fun AiCommitAllThreeSectionControl.setHoverSectionForTest(section: AiCommitAllControlSection?) {
+    testPeerForTest.setHoverSection(section)
+}
+
+internal fun AiCommitAllThreeSectionControl.highlightedSectionsForTest() = testPeerForTest.highlightedSections()
+
+internal fun AiCommitAllThreeSectionControl.dividerColorsForTest(): Pair<Color, Color> = testPeerForTest.dividerColors()
+
+internal fun AiCommitAllThreeSectionControl.runningIndicatorDashForTest(
+    section: AiCommitAllControlSection,
+): RunningIndicatorDash = testPeerForTest.runningIndicatorDash(section)
+
+internal fun AiCommitAllThreeSectionControl.cornerArcForTest(): Float = testPeerForTest.cornerArc()

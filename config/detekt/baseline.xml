@@ -4,42 +4,6 @@
   <CurrentIssues>
     <ID>ComplexCondition:GitStageSelectionItems.kt:GitStageSelectionItems$isIgnored() || isNotChanged() || isConflicted() || index == ' ' || index == '?'</ID>
     <ID>MagicNumber:AiCommitAllConfigurable.kt:AiCommitAllConfigurable$4</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$0.5f</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$10</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$10f</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$12</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$13</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$14</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$15</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$17</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$27</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$28</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$3</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$4</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$5</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$7</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$8</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl$9</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x238449</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x263C32</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x28394E</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x2E9D50</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x2F3A35</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x2F5AA0</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x303641</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x315FAE</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x342A47</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x6F4BB8</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x834DF0</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x8AF0A1</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0x9DB6E3</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0xA571E6</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0xB99BE8</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0xDCEAE2</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0xE4E8F0</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0xE8F5EC</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0xEAF1FF</ID>
-    <ID>MagicNumber:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl.ControlColors$0xF0E9FF</ID>
     <ID>MagicNumber:GitStageConfirmation.kt:GitStageConfirmation$250</ID>
     <ID>MaxLineLength:AiCommitAllActions.kt:AiCommitAllControlState$fun isSectionEnabled: Boolean</ID>
     <ID>MaxLineLength:AiCommitAllActions.kt:ProjectAiCommitAllWorkflowActivityProvider$override fun runningSection: AiCommitAllControlSection?</ID>
@@ -117,7 +81,6 @@
     <ID>TooGenericExceptionCaught:CommitWorkflowSelectionService.kt:CommitWorkflowUiThreadAccess$throwable: Throwable</ID>
     <ID>TooGenericExceptionCaught:PushOnlyWorkflowExecutionService.kt:PushOnlyWorkflowExecutionService$throwable: Throwable</ID>
     <ID>TooGenericExceptionCaught:SafeImmediatePushService.kt:SafeImmediatePushService$throwable: Throwable</ID>
-    <ID>TooManyFunctions:AiCommitAllThreeSectionControl.kt:AiCommitAllThreeSectionControl : JComponent</ID>
     <ID>UnusedParameter:PushOnlyWorkflowExecutionService.kt:PushOnlyWorkflowExecutionService$dataContext: DataContext</ID>
     <ID>UnusedParameter:PushOnlyWorkflowExecutionService.kt:PushOnlyWorkflowExecutionService$inputEvent: InputEvent?</ID>
   </CurrentIssues>
