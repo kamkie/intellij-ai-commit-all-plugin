@@ -56,7 +56,7 @@ Compact overview only. The metadata table inside each finding remains the source
 | E001 | Pull-request CI does not run the full documentation validator         | 2        | done         | accepted |
 | E002 | Safe immediate push completion ignores the Git push result            | 1        | done         | accepted |
 | E003 | Compatibility-boundary failures are often silent                      | 4        | done         | accepted |
-| S001 | Split the three-section Swing control into reviewable units           | 6        | planned      | accepted |
+| S001 | Split the three-section Swing control into reviewable units           | 6        | done         | accepted |
 | S002 | Move custom Gradle verification tasks out of the root build script    | 6        | planned      | accepted |
 
 ## Proposal Items
@@ -265,12 +265,12 @@ _No tracked findings._
 
 | Field       | Value                     |
 |-------------|---------------------------|
-| Status      | planned                   |
+| Status      | done                      |
 | Decision    | accepted                  |
 | Decision at | 2026-05-24T20:53:28+02:00 |
 | Priority    | 6                         |
 | Owner       |                           |
-| Updated     | 2026-05-24T21:06:43+02:00 |
+| Updated     | 2026-05-24T22:31:10+02:00 |
 
 ##### Context
 
