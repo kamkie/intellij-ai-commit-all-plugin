@@ -10,7 +10,7 @@ Proposals are advisory until accepted through the normal repository flow. A prop
 
 Active proposals still have at least one non-terminal implementation status row or at least one untriaged finding in their `Progress Tracker`.
 
-- None.
+- `PROP-maintainability-stability-audit` - [Maintainability Stability Audit](PROP-maintainability-stability-audit-2026-05-24T20-17.md) - open as of 2026-05-24.
 
 ### Completed Proposals
 
@@ -26,9 +26,14 @@ This summary lists accepted findings whose implementation status is not terminal
 
 Implementation evidence can be a task, approved plan, ADR, changed file, commit, validation result, blocker, open question, or clear open-intake note. Do not create a `TASKS.md` entry solely to satisfy this summary when another evidence path is clearer.
 
-| Proposal | Finding | Title  | Priority | Status | Evidence                                                        |
-|----------|---------|--------|----------|--------|-----------------------------------------------------------------|
-| _None_   | _None_  | _None_ | _None_   | _None_ | _No accepted findings with non-terminal implementation status._ |
+| Proposal                                                                                         | Finding | Title                                                              | Priority | Status | Evidence                                                                                                                                                |
+|--------------------------------------------------------------------------------------------------|---------|--------------------------------------------------------------------|----------|--------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [PROP-maintainability-stability-audit](PROP-maintainability-stability-audit-2026-05-24T20-17.md) | F002    | Extend deterministic release-matrix UI automation beyond IDEA      | 5        | open   | Draft plan [PLAN-maintainability-stability-audit](../../.agents/plans/PLAN-maintainability-stability-audit.md) created; explicit approval still needed. |
+| [PROP-maintainability-stability-audit](PROP-maintainability-stability-audit-2026-05-24T20-17.md) | E001    | Pull-request CI does not run the full documentation validator      | 2        | open   | Draft plan [PLAN-maintainability-stability-audit](../../.agents/plans/PLAN-maintainability-stability-audit.md) created; explicit approval still needed. |
+| [PROP-maintainability-stability-audit](PROP-maintainability-stability-audit-2026-05-24T20-17.md) | E002    | Safe immediate push completion ignores the Git push result         | 1        | open   | Draft plan [PLAN-maintainability-stability-audit](../../.agents/plans/PLAN-maintainability-stability-audit.md) created; explicit approval still needed. |
+| [PROP-maintainability-stability-audit](PROP-maintainability-stability-audit-2026-05-24T20-17.md) | E003    | Compatibility-boundary failures are often silent                   | 4        | open   | Draft plan [PLAN-maintainability-stability-audit](../../.agents/plans/PLAN-maintainability-stability-audit.md) created; explicit approval still needed. |
+| [PROP-maintainability-stability-audit](PROP-maintainability-stability-audit-2026-05-24T20-17.md) | S001    | Split the three-section Swing control into reviewable units        | 6        | open   | Draft plan [PLAN-maintainability-stability-audit](../../.agents/plans/PLAN-maintainability-stability-audit.md) created; explicit approval still needed. |
+| [PROP-maintainability-stability-audit](PROP-maintainability-stability-audit-2026-05-24T20-17.md) | S002    | Move custom Gradle verification tasks out of the root build script | 6        | open   | Draft plan [PLAN-maintainability-stability-audit](../../.agents/plans/PLAN-maintainability-stability-audit.md) created; explicit approval still needed. |
 
 ## When To Use A Proposal
 
