@@ -1,7 +1,17 @@
-<p>AI Commit All adds an AI-assisted Commit tool window workflow for Git projects.</p>
-<p>The Commit tool window control has AI, Commit, and Push sections. AI selects or stages every non-ignored committable
-    Git change and asks JetBrains AI Assistant to generate the commit message without committing. Commit continues
-    through the standard IntelliJ commit workflow. Push commits and then pushes immediately only for safe
-    tracked-upstream Git states, otherwise falling back to the IDE commit-and-push executor.</p>
-<p>Source code: <a href="https://github.com/kamkie/intellij-ai-commit-all-plugin">https://github.com/kamkie/intellij-ai-commit-all-plugin</a>
-</p>
+<p><strong>AI Commit All</strong> (<code>pl.devopssolutions.aicommitall</code>) is an IntelliJ Platform plugin that adds an <code>AI | Commit | Push</code> control to the Commit tool window. It uses JetBrains AI Assistant to draft the commit message, then can commit or commit-and-push eligible Git changes.</p>
+<h3>Feature Summary</h3>
+<ul>
+    <li><strong>AI</strong>: Generate a commit message without committing.</li>
+    <li><strong>Commit</strong>: Generate the message, then commit.</li>
+    <li><strong>Push</strong>: Commit and push, or push safe outgoing commits when nothing new needs committing.</li>
+</ul>
+<h3>Requirements</h3>
+<ul>
+    <li>A JetBrains IDE on the <code>2026.1</code> IntelliJ Platform line with the non-modal Commit tool window.</li>
+    <li>Git as the active VCS.</li>
+    <li>JetBrains AI Assistant installed, enabled, and signed in.</li>
+</ul>
+<p>If AI Assistant is missing or disabled, the IDE refuses to load the plugin through the required dependency.</p>
+<h3>Source And License</h3>
+<p>Source code: <a href="https://github.com/kamkie/intellij-ai-commit-all-plugin">https://github.com/kamkie/intellij-ai-commit-all-plugin</a></p>
+<p>Licensed under the Apache License 2.0.</p>

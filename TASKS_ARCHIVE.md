@@ -6,6 +6,15 @@ Preserve `T-AREA-NNN` task refs, wording, grouping, and evidence links when movi
 
 ### Documentation
 
+Archived as of 2026-05-24 marketplace description generation.
+
+- [x] T-DOC-025: generate `config/intellij-platform/description.html` from stable user-facing source docs, primarily `docs/user-guide.md`, so Marketplace text does not drift. (`scripts/generate-intellij-platform-description.ps1`, `config/intellij-platform/description.html`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-description.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
+- [x] T-DOC-018: expand the generated Marketplace description with feature summary, requirements, AI Assistant dependency, source link, and license note. (`config/intellij-platform/description.html`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-description.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
+
+Archived as of 2026-05-24 documentation priority triage.
+
+- [x] T-DOC-024: update the plugin README with the [user-guide.md](docs/user-guide.md) reference. (`README.md`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check`)
+
 Archived as of 2026-05-23 user documentation rebuild.
 
 - [x] T-DOC-022: add troubleshooting and FAQ guidance for missing or disabled AI Assistant, AI generation timeout, hidden or disabled controls, push fallback to the IDE dialog, outgoing-only push stops, unresolved conflicts, and background VCS operations. (`docs/troubleshooting.md`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check`)
