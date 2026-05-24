@@ -2,19 +2,21 @@
 
 Plan-ID: PLAN-maintainability-stability-audit
 
-Status: Implemented
+Status: Closed
+
+Close-Reason: Archived
 
 Workers: 1
 
-Filename: `.agents/plans/PLAN-maintainability-stability-audit.md`
+Filename: `.agents/plans/archive/PLAN-maintainability-stability-audit.md`
 
 ## Readiness
 
-- Plan readiness: Approved and in active implementation.
+- Plan readiness: Closed; no further active execution or release-preparation updates are expected.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-24T21:06:43+02:00
 - Open questions: None.
-- Implementation progress: All task packets are implemented, validated, self-reviewed, and committed.
+- Implementation progress: All task packets were implemented, validated, self-reviewed, committed, and archived.
 
 ## Status History
 
@@ -22,6 +24,7 @@ Filename: `.agents/plans/PLAN-maintainability-stability-audit.md`
 - 2026-05-24T21:06:43+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; maintainer explicitly approved with "accept and implement PLAN-maintainability-stability-audit".
 - 2026-05-24T21:06:43+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; orchestrator started approved-plan worker execution.
 - 2026-05-24T22:41:45+02:00: In Progress -> Implemented by OpenAI Codex <codex@openai.com>; all task packets completed with validation evidence.
+- 2026-05-24T22:45:20+02:00: Implemented -> Closed by Kamil Kiewisz <kamkie@outlook.com>; archive-completed-work retired the completed plan.
 
 ## Goal
 
@@ -80,7 +83,7 @@ Initial context budget:
 
 - Read first:
   - Plan header, readiness summary, execution graph, and this task packet.
-  - `docs/proposals/PROP-maintainability-stability-audit-2026-05-24T20-17.md`
+  - `docs/proposals/archive/PROP-maintainability-stability-audit-2026-05-24T20-17.md`
   - `docs/specification.md`
   - `src/main/java/pl/devopssolutions/aicommitall/vcs/GitPushCompletionListener.java`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/GitPushCompletionService.kt`

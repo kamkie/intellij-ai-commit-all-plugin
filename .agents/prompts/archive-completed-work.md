@@ -1,8 +1,10 @@
 # Archive Completed Work
 
-Move completed task entries from `TASKS.md` to `TASKS_ARCHIVE.md`, closed plans from `.agents/plans/` to `.agents/plans/archive/`, or retired proposals from `docs/proposals/` to `docs/proposals/archive/`. When evidence is incomplete, report whether named work is ready to archive.
+Move all completed task entries from `TASKS.md` to `TASKS_ARCHIVE.md`, all closed plans from `.agents/plans/` to `.agents/plans/archive/`, and all retired proposals from `docs/proposals/` to `docs/proposals/archive/`. When the user names specific task, plan, or proposal refs, limit the archive sweep to those refs. When evidence is incomplete, report which candidates are not ready to archive.
 
 Use this prompt when implementation, documentation, planning, or proposal work appears finished and the remaining action is archive readiness review or a mechanical archive edit.
+
+Default scope is a full active-artifact sweep. Do not stop after the most recent plan, proposal, or task unless the user explicitly named only that item.
 
 ## Read First
 
@@ -16,9 +18,11 @@ Use this prompt when implementation, documentation, planning, or proposal work a
 - `TASKS_ARCHIVE.md`
 - the named task refs, plan refs, proposal refs, current diff, validation output, closeout note, plan result summary, proposal tracker status, or completion evidence supplied by the user
 
-When archiving plans, also read `.agents/references/planning.md`, `.agents/plans/README.md`, `.agents/plans/archive/README.md`, and the named plan files.
+If the user does not name specific refs, inspect the active task list, active plan index, and proposal indexes for every archive-ready candidate before editing.
 
-When archiving proposals, also read `docs/proposals/README.md`, `docs/proposals/archive/README.md`, and the named proposal files.
+When archiving plans, also read `.agents/references/planning.md`, `.agents/plans/README.md`, `.agents/plans/archive/README.md`, and every active plan file that appears closed or otherwise archive-ready in the active plan index. For named plan requests, read only the named plan files.
+
+When archiving proposals, also read `docs/proposals/README.md`, `docs/proposals/archive/README.md`, and every completed proposal file listed in `docs/proposals/README.md`. For named proposal requests, read only the named proposal files.
 
 Load related plans, ADRs, proposals, source files, specs, support docs, changelog, validation reports, or `docs/decisions/OPEN_QUESTIONS.md` only when the work entry or supplied evidence references them.
 
@@ -27,7 +31,7 @@ Use `backlog-triage.md` instead when the request is mostly stale, duplicate, blo
 
 ## Archive Rules
 
-- Archive only when the requested work is finished, task-appropriate validation has passed or has an explicit skipped-check reason, and self-review has checked behavior, compatibility, documentation, and validation gaps.
+- Archive only when the candidate work is finished, task-appropriate validation has passed or has an explicit skipped-check reason, and self-review has checked behavior, compatibility, documentation, and validation gaps.
 - Preserve stable `T-AREA-NNN` refs. Do not renumber tasks.
 - Preserve stable `PLAN-<short-kebab-slug>` refs, plan filenames, plan status history, close reasons, and validation history.
 - Preserve stable `PROP-<short-kebab-slug>` refs, proposal filenames, proposal front matter, and finding refs.
@@ -46,7 +50,7 @@ Use `backlog-triage.md` instead when the request is mostly stale, duplicate, blo
 
 If the user asks for report-only output, return an archive-readiness note with:
 
-- task refs, plan refs, and proposal refs reviewed
+- task refs, plan refs, and proposal refs reviewed, including all active-artifact candidates in scope
 - ready-to-archive items and evidence
 - blocked or not-ready items and missing evidence
 - owner artifacts that would change if edits are requested

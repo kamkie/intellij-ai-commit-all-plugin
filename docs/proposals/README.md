@@ -16,8 +16,7 @@ Active proposals still have at least one non-terminal implementation status row 
 
 Completed proposals have no non-terminal implementation status rows and no untriaged findings in their `Progress Tracker`. Keep them listed here until they are moved to `archive/`.
 
-- `PROP-marketplace-realtime-progress-media` - [Marketplace Real-Time Progress Media](PROP-marketplace-realtime-progress-media-2026-05-24T15-07.md) - completed as of 2026-05-24.
-- `PROP-maintainability-stability-audit` - [Maintainability Stability Audit](PROP-maintainability-stability-audit-2026-05-24T20-17.md) - completed as of 2026-05-24.
+- None.
 
 Index entries should include the proposal ref, title, file link, and current status date when applicable.
 
