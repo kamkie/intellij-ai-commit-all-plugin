@@ -2,7 +2,7 @@
 
 Analyze IntelliJ IDE logs for plugin-related errors, warnings, or runtime symptoms.
 Treat a direct user request for this prompt, by title or filename, as permission to inspect the IntelliJ log folder named by the user or the sanitized excerpts the user provides.
-When the user invokes this prompt without naming a folder or providing excerpts, ask for confirmation before inspecting a default local log folder.
+When the user invokes this prompt without naming a folder or providing excerpts, use the default local log folder.
 
 ## Read First
 
