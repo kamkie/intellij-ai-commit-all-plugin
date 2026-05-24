@@ -27,6 +27,7 @@ import com.intellij.vcs.commit.CommitWorkflowUi
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelectionService
 import pl.devopssolutions.aicommitall.vcs.GitVcsSupportStatus
+import java.time.Duration
 import java.util.concurrent.atomic.AtomicReference
 
 @Service(Service.Level.PROJECT)
@@ -90,7 +91,9 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
                 "stagingAreaPaths=${selection.stagingAreaPaths.size}, " +
                 "changeLists=${changeLists.size}, inclusionItems=${inclusionItems.size}",
         )
-        val activated = CommitWorkflowUiThreadAccess.run { input.workflowUi.activate() }
+        val activated = CommitWorkflowActivationRetry.DEFAULT.activate {
+            CommitWorkflowUiThreadAccess.run { input.workflowUi.activate() }
+        }
         logger.info("AI Commit All diagnostic: commit workflow UI activation result, activated=$activated")
 
         return if (activated) {
@@ -141,6 +144,52 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
         private val logger: Logger = Logger.getInstance(CommitWorkflowSelectionService::class.java)
 
         fun getInstance(project: Project): CommitWorkflowSelectionService = project.service()
+    }
+}
+
+internal class CommitWorkflowActivationRetry(
+    private val maxAttempts: Int,
+    private val retryInterval: Duration,
+    private val sleeper: CommitWorkflowActivationSleeper = ThreadCommitWorkflowActivationSleeper,
+) {
+    init {
+        require(maxAttempts > 0) { "Commit workflow activation attempts must be positive." }
+        require(!retryInterval.isNegative) { "Commit workflow activation retry interval must not be negative." }
+    }
+
+    fun activate(activateNow: () -> Boolean): Boolean {
+        repeat(maxAttempts) { attemptIndex ->
+            if (activateNow()) {
+                return true
+            }
+
+            if (attemptIndex < maxAttempts - 1 && !retryInterval.isZero) {
+                sleeper.sleep(retryInterval)
+            }
+        }
+
+        return false
+    }
+
+    companion object {
+        val DEFAULT: CommitWorkflowActivationRetry = CommitWorkflowActivationRetry(
+            maxAttempts = 3,
+            retryInterval = Duration.ofMillis(50),
+        )
+    }
+}
+
+internal fun interface CommitWorkflowActivationSleeper {
+    fun sleep(duration: Duration)
+}
+
+private object ThreadCommitWorkflowActivationSleeper : CommitWorkflowActivationSleeper {
+    override fun sleep(duration: Duration) {
+        try {
+            Thread.sleep(duration.toMillis())
+        } catch (interrupted: InterruptedException) {
+            Thread.currentThread().interrupt()
+        }
     }
 }
 

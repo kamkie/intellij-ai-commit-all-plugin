@@ -138,6 +138,27 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         )
     }
 
+    @Test
+    fun `succeeds when compatible workflow synchronization fails once then settles`() {
+        val handler = TransientThrowingHandler()
+        val changeList = TestChangeList("Default")
+        val items = listOf(Any())
+
+        val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
+            workflowHandler = handler,
+            changeLists = listOf(changeList),
+            unversionedFiles = emptyList(),
+            activeChangeList = changeList,
+            inclusionItems = items,
+        )
+
+        assertTrue(result)
+        assertEquals(2, handler.synchronizeCallCount)
+        assertEquals(1, handler.setCommitStateCallCount)
+        assertEquals(changeList, handler.activeChangeList)
+        assertEquals(items, handler.inclusionItems)
+    }
+
     private open class TestCommitWorkflowHandler : CommitWorkflowHandler {
         override val amendCommitHandler: AmendCommitHandler
             get() = error("Not needed for reflection tests.")
@@ -185,6 +206,26 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
 
         fun setCommitState(changeList: LocalChangeList, items: Collection<Any>, replaceInclusion: Boolean) {
             error("setCommitState should not run for ${changeList.name}, ${items.size}, $replaceInclusion")
+        }
+    }
+
+    private class TransientThrowingHandler : TestCommitWorkflowHandler() {
+        var synchronizeCallCount = 0
+        var setCommitStateCallCount = 0
+        var activeChangeList: LocalChangeList? = null
+        var inclusionItems: Collection<Any>? = null
+
+        fun synchronizeInclusion(changeLists: List<LocalChangeList>, unversionedFiles: List<*>) {
+            synchronizeCallCount++
+            if (synchronizeCallCount == 1) {
+                error("transient synchronization failure")
+            }
+        }
+
+        fun setCommitState(changeList: LocalChangeList, items: Collection<Any>, replaceInclusion: Boolean) {
+            setCommitStateCallCount++
+            activeChangeList = changeList
+            inclusionItems = items
         }
     }
 

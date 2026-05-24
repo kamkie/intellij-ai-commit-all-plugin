@@ -25,6 +25,7 @@ import git4idea.index.GitStageCommitWorkflowHandler
 import git4idea.index.GitStageTracker
 import pl.devopssolutions.aicommitall.vcs.GitStageSelectionItems
 import java.lang.reflect.Method
+import java.time.Duration
 
 private const val GIT_STAGE_CONFIRMATION_ATTEMPTS = 10
 
@@ -36,6 +37,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         activeChangeList: LocalChangeList,
         inclusionItems: Collection<Any>,
         diagnostics: CommitWorkflowCompatibilityDiagnostics = IntelliJCommitWorkflowCompatibilityDiagnostics,
+        synchronizationRetry: CommitWorkflowSynchronizationRetry = CommitWorkflowSynchronizationRetry.DEFAULT,
     ): Boolean = synchronizeGitStageWorkflow(workflowHandler, diagnostics)
         ?: synchronizeCommitWorkflow(
             workflowHandler = workflowHandler,
@@ -44,6 +46,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
             activeChangeList = activeChangeList,
             inclusionItems = inclusionItems,
             diagnostics = diagnostics,
+            synchronizationRetry = synchronizationRetry,
         )
 
     private fun synchronizeCommitWorkflow(
@@ -53,6 +56,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         activeChangeList: LocalChangeList,
         inclusionItems: Collection<Any>,
         diagnostics: CommitWorkflowCompatibilityDiagnostics,
+        synchronizationRetry: CommitWorkflowSynchronizationRetry,
     ): Boolean = inclusionItems.isNotEmpty() &&
         workflowHandler.javaClass.commitWorkflowMethods(diagnostics)?.synchronize(
             workflowHandler = workflowHandler,
@@ -61,6 +65,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
             activeChangeList = activeChangeList,
             inclusionItems = inclusionItems,
             diagnostics = diagnostics,
+            synchronizationRetry = synchronizationRetry,
         ) == true
 
     private fun Class<*>.commitWorkflowMethods(
@@ -178,22 +183,75 @@ private data class CommitWorkflowMethods(
         activeChangeList: LocalChangeList,
         inclusionItems: Collection<Any>,
         diagnostics: CommitWorkflowCompatibilityDiagnostics,
-    ): Boolean = runCatching {
-        CommitWorkflowUiThreadAccess.run {
-            synchronizeInclusion.invoke(workflowHandler, changeLists, unversionedFiles)
-            setCommitState.invoke(workflowHandler, activeChangeList, inclusionItems, true)
+        synchronizationRetry: CommitWorkflowSynchronizationRetry,
+    ): Boolean {
+        val failure = synchronizationRetry.run {
+            CommitWorkflowUiThreadAccess.run {
+                synchronizeInclusion.invoke(workflowHandler, changeLists, unversionedFiles)
+                setCommitState.invoke(workflowHandler, activeChangeList, inclusionItems, true)
+            }
         }
-    }.onFailure { exception ->
-        diagnostics.report(
-            CommitWorkflowCompatibilityDiagnostic(
-                sourceClassName = workflowHandler.javaClass.name,
-                methodName = "synchronize",
-                reason = "method invocation failed",
-                exceptionClassName = exception.javaClass.name,
-                causeClassName = exception.cause?.javaClass?.name,
-            ),
+        if (failure != null) {
+            diagnostics.report(
+                CommitWorkflowCompatibilityDiagnostic(
+                    sourceClassName = workflowHandler.javaClass.name,
+                    methodName = "synchronize",
+                    reason = "method invocation failed",
+                    exceptionClassName = failure.javaClass.name,
+                    causeClassName = failure.cause?.javaClass?.name,
+                ),
+            )
+        }
+        return failure == null
+    }
+}
+
+internal class CommitWorkflowSynchronizationRetry(
+    private val maxAttempts: Int,
+    private val retryInterval: Duration,
+    private val sleeper: CommitWorkflowSynchronizationSleeper = ThreadCommitWorkflowSynchronizationSleeper,
+) {
+    init {
+        require(maxAttempts > 0) { "Commit workflow synchronization attempts must be positive." }
+        require(!retryInterval.isNegative) { "Commit workflow synchronization retry interval must not be negative." }
+    }
+
+    fun run(action: () -> Unit): Throwable? {
+        var lastFailure: Throwable? = null
+        repeat(maxAttempts) { attemptIndex ->
+            val failure = runCatching(action).exceptionOrNull()
+            if (failure == null) {
+                return null
+            }
+
+            lastFailure = failure
+            if (attemptIndex < maxAttempts - 1 && !retryInterval.isZero) {
+                sleeper.sleep(retryInterval)
+            }
+        }
+        return lastFailure
+    }
+
+    companion object {
+        val DEFAULT: CommitWorkflowSynchronizationRetry = CommitWorkflowSynchronizationRetry(
+            maxAttempts = 3,
+            retryInterval = Duration.ofMillis(50),
         )
-    }.isSuccess
+    }
+}
+
+internal fun interface CommitWorkflowSynchronizationSleeper {
+    fun sleep(duration: Duration)
+}
+
+private object ThreadCommitWorkflowSynchronizationSleeper : CommitWorkflowSynchronizationSleeper {
+    override fun sleep(duration: Duration) {
+        try {
+            Thread.sleep(duration.toMillis())
+        } catch (interrupted: InterruptedException) {
+            Thread.currentThread().interrupt()
+        }
+    }
 }
 
 internal fun interface CommitWorkflowCompatibilityDiagnostics {

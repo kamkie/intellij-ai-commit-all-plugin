@@ -16,6 +16,7 @@
 package pl.devopssolutions.aicommitall.workflow
 
 import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.vcs.FilePath
 import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowUi
@@ -257,8 +258,35 @@ internal class AiCommitAllWorkflowRunnerTest {
             AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.EmptySelection),
             result,
         )
-        assertEquals(listOf("readiness", "prepare", "stop:EmptySelection"), dependencies.events)
+        assertEquals(
+            listOf("readiness", "prepare", "prepare", "prepare", "stop:EmptySelection"),
+            dependencies.events,
+        )
         assertEquals(0, dependencies.commitCallCount)
+        assertEquals(0, dependencies.pushCallCount)
+    }
+
+    @Test
+    fun `empty selection is retried before AI generation starts`() {
+        val selection = GitChangeSelection(
+            trackedChanges = emptyList(),
+            unversionedFiles = listOf(testProxy<FilePath>()),
+        )
+        val dependencies = CapturingWorkflowDependencies(
+            selection = selection,
+            selectionResults = listOf(
+                CommitWorkflowSelectionResult.EmptySelection,
+                CommitWorkflowSelectionResult.Prepared(selection),
+            ),
+        )
+
+        val result = runner(dependencies)
+            .start(AiCommitAllWorkflowMode.Commit, testDataContext())
+            .join()
+
+        assertEquals(AiCommitAllWorkflowResult.Started, result)
+        assertEquals(listOf("readiness", "prepare", "prepare", "ai:Ai", "commit"), dependencies.events)
+        assertEquals(1, dependencies.commitCallCount)
         assertEquals(0, dependencies.pushCallCount)
     }
 
@@ -274,7 +302,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             .join()
 
         assertEquals(AiCommitAllWorkflowResult.Started, result)
-        assertEquals(listOf("readiness", "prepare", "pushOnly"), dependencies.events)
+        assertEquals(listOf("readiness", "prepare", "prepare", "prepare", "pushOnly"), dependencies.events)
         assertEquals(
             listOf(AiGenerationActivityPhase.Ai, AiGenerationActivityPhase.Push),
             dependencies.activityPhases,
@@ -451,7 +479,7 @@ internal class AiCommitAllWorkflowRunnerTest {
         scheduler.runNextBackground()
 
         assertFalse(result.isDone)
-        assertEquals(listOf("readiness", "prepare"), dependencies.events)
+        assertEquals(listOf("readiness", "prepare", "prepare", "prepare"), dependencies.events)
         assertEquals(0, dependencies.pushOnlyCallCount)
         assertEquals(1, scheduler.backgroundActionCount)
         assertEquals(0, scheduler.edtActionCount)
@@ -459,7 +487,7 @@ internal class AiCommitAllWorkflowRunnerTest {
         scheduler.runNextBackground()
 
         assertEquals(AiCommitAllWorkflowResult.Started, result.join())
-        assertEquals(listOf("readiness", "prepare", "pushOnly"), dependencies.events)
+        assertEquals(listOf("readiness", "prepare", "prepare", "prepare", "pushOnly"), dependencies.events)
         assertEquals(
             listOf(AiGenerationActivityPhase.Ai, AiGenerationActivityPhase.Push),
             dependencies.activityPhases,
@@ -473,6 +501,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             CompletableFuture.completedFuture(completedAiGeneration()),
         private val selectionResult: CommitWorkflowSelectionResult =
             CommitWorkflowSelectionResult.Prepared(selection),
+        selectionResults: List<CommitWorkflowSelectionResult> = listOf(selectionResult),
         private val aiGenerationResult: AiCommitAllAiGenerationResult? = null,
         private val readinessResult: VcsOperationReadinessResult = VcsOperationReadinessResult.Ready,
         private val commitResult: CommitWorkflowExecutionResult = CommitWorkflowExecutionResult.Started(),
@@ -480,6 +509,8 @@ internal class AiCommitAllWorkflowRunnerTest {
         private val pushOnlyResult: CommitWorkflowExecutionResult = CommitWorkflowExecutionResult.Started(),
         private val hasOutgoingCommitsToPush: Boolean = false,
     ) : AiCommitAllWorkflowDependencies {
+        private val selectionResultQueue = ArrayDeque(selectionResults)
+        private var lastSelectionResult = selectionResult
         val events = mutableListOf<String>()
         var commitCallCount = 0
         var pushCallCount = 0
@@ -514,7 +545,10 @@ internal class AiCommitAllWorkflowRunnerTest {
             workflowUi: CommitWorkflowUi,
         ): CommitWorkflowSelectionResult {
             events += "prepare"
-            return selectionResult
+            if (selectionResultQueue.isNotEmpty()) {
+                lastSelectionResult = selectionResultQueue.removeFirst()
+            }
+            return lastSelectionResult
         }
 
         override fun runAiGeneration(

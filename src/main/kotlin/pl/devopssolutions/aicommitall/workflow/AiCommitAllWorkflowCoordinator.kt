@@ -38,6 +38,7 @@ import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
 import pl.devopssolutions.aicommitall.vcs.GitOutgoingCommitsService
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushService
 import java.awt.event.InputEvent
+import java.time.Duration
 import java.util.concurrent.CompletableFuture
 
 @Service(Service.Level.PROJECT)
@@ -177,9 +178,27 @@ internal class AiCommitAllWorkflowRunner(
         ?.let(AiCommitAllWorkflowPreparationResult::Stopped)
         ?: selectionPreparation(
             mode = mode,
-            selectionResult = dependencies.prepareAllFilesSelection(workflowHandler, workflowUi),
+            selectionResult = prepareAllFilesSelectionWithSettling(workflowHandler, workflowUi),
             hasOutgoingCommitsToPush = dependencies::hasOutgoingCommitsToPush,
         )
+
+    private fun prepareAllFilesSelectionWithSettling(
+        workflowHandler: CommitWorkflowHandler,
+        workflowUi: CommitWorkflowUi,
+    ): CommitWorkflowSelectionResult {
+        var selectionResult: CommitWorkflowSelectionResult = CommitWorkflowSelectionResult.EmptySelection
+        repeat(WORKFLOW_SELECTION_SETTLING_ATTEMPTS) { attemptIndex ->
+            selectionResult = dependencies.prepareAllFilesSelection(workflowHandler, workflowUi)
+            if (selectionResult != CommitWorkflowSelectionResult.EmptySelection || dependencies.isDisposed()) {
+                return selectionResult
+            }
+
+            if (attemptIndex < WORKFLOW_SELECTION_SETTLING_ATTEMPTS - 1 && !dependencies.isDisposed()) {
+                WORKFLOW_SELECTION_SETTLING_SLEEPER.sleep(WORKFLOW_SELECTION_SETTLING_RETRY_INTERVAL)
+            }
+        }
+        return selectionResult
+    }
 
     private fun executePushOnly(
         dataContext: DataContext,
@@ -342,6 +361,28 @@ internal class AiCommitAllWorkflowRunner(
 
     private companion object {
         val logger: Logger = Logger.getInstance(AiCommitAllWorkflowRunner::class.java)
+        private const val WORKFLOW_SELECTION_SETTLING_ATTEMPTS = 3
+        private val WORKFLOW_SELECTION_SETTLING_RETRY_INTERVAL: Duration = Duration.ofMillis(50)
+        private val WORKFLOW_SELECTION_SETTLING_SLEEPER: WorkflowSelectionSettlingSleeper =
+            ThreadWorkflowSelectionSettlingSleeper
+    }
+}
+
+private fun interface WorkflowSelectionSettlingSleeper {
+    fun sleep(duration: Duration)
+}
+
+private object ThreadWorkflowSelectionSettlingSleeper : WorkflowSelectionSettlingSleeper {
+    override fun sleep(duration: Duration) {
+        if (duration.isZero) {
+            return
+        }
+
+        try {
+            Thread.sleep(duration.toMillis())
+        } catch (interrupted: InterruptedException) {
+            Thread.currentThread().interrupt()
+        }
     }
 }
 
@@ -476,6 +517,8 @@ internal interface AiCommitAllWorkflowDependencies {
 
     fun hasOutgoingCommitsToPush(): Boolean = false
 
+    fun isDisposed(): Boolean = false
+
     fun executePushOnly(
         dataContext: DataContext,
         inputEvent: InputEvent?,
@@ -600,6 +643,8 @@ private class ProjectAiCommitAllWorkflowDependencies(private val project: Projec
         val outgoingCommitsService = GitOutgoingCommitsService.getInstance(project)
         return outgoingCommitsService.hasOutgoingCommitsToPush()
     }
+
+    override fun isDisposed(): Boolean = project.isDisposed
 
     override fun executePushOnly(
         dataContext: DataContext,
