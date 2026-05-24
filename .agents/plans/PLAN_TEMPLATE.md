@@ -95,7 +95,9 @@ Dependencies:
 
 Validation:
 
-- List task-specific commands, review checks, manual checks, and self-review expectations.
+- List task-specific commands and manual checks selected through `.agents/references/testing.md`.
+- List self-review checks selected through `.agents/references/reviews.md`.
+- For multi-task plans, state the task or approved parallel-wave commit boundary that must exist before any dependent task or wave starts.
 
 Escalation triggers:
 
@@ -108,7 +110,9 @@ Stop conditions:
 Expected output:
 
 - Changed files or reviewed diff.
-- Validation evidence.
+- Validation evidence from `.agents/references/testing.md`.
+- Self-review evidence from `.agents/references/reviews.md`.
+- Commit identifier for the task or approved parallel wave.
 - Blockers.
 - Review risks.
 - Handoff notes.
@@ -119,7 +123,8 @@ Result summary:
 - Status: pending
 - Worker:
 - Changed files or reviewed diff:
-- Validation evidence:
+- Validation evidence from `.agents/references/testing.md`:
+- Self-review evidence from `.agents/references/reviews.md`:
 - Commit:
 - Blockers:
 - Review risks:
@@ -133,8 +138,8 @@ Result summary:
 - Follow `.agents/references/orchestration.md` for worker lanes, packet dispatch, parallel synchronization, structured worker events, result summaries, branch topology, and plan or changelog handoffs.
 - Dispatch the plan header or readiness summary, execution graph, assigned task packet, and explicitly named governing artifacts or source files. Do not dispatch the full approved plan by default.
 - Record any task that is safe to run in parallel only when it has a disjoint write scope.
-- Finish, validate, self-review, and commit every task in the current approved wave before starting the next dependent task or wave.
-- Before starting the next dependent task or approved parallel wave, confirm every predecessor task result summary records implementation status, validation evidence, self-review or review evidence, and a commit identifier.
+- For multi-task plans, each task or approved parallel wave must be fully implemented, validated through `.agents/references/testing.md`, self-reviewed through `.agents/references/reviews.md`, and committed before the next dependent task or wave starts.
+- Before starting the next dependent task or approved parallel wave, confirm every predecessor task result summary records implementation status, validation evidence from `.agents/references/testing.md`, self-review evidence from `.agents/references/reviews.md`, and a commit identifier.
 - For approved parallel waves, all task commits in the current wave must exist before any dependent wave starts.
 - Use the current branch only unless a later accepted ADR authorizes per-worker git worktrees.
 
