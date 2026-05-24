@@ -163,6 +163,12 @@ Finish the deferred user-facing documentation follow-ups left after ADR 0076 by 
   Shortcut evidence: `src/main/resources/META-INF/plugin.xml` mirrors `CheckinProject` and `Vcs.Push`; JetBrains IntelliJ IDEA 2026.1 Predefined macOS keymap lists global VCS `Commit...` as `Cmd+K` and `Push...` as `Cmd+Shift+K`; JetBrains Main version control shortcuts lists the matching Windows/Linux defaults as `Ctrl+K` and `Ctrl+Shift+K`.
   Validation evidence: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, and `git diff --check` passed.
   Review risks: wording is limited to predefined JetBrains keymap defaults; custom keymaps remain keymap-specific and must be confirmed in the active IDE.
+- `T4-current-ui-visual-assets` completed `T-DOC-020`.
+  Changed `src/test/kotlin/pl/devopssolutions/aicommitall/actions/AiCommitAllControlAssetGeneratorTest.kt`, `docs/assets/user-guide/ai-commit-all-control-light.png`, `docs/assets/user-guide/ai-commit-all-control-dark.png`, `docs/assets/user-guide/ai-commit-all-control-running.gif`, `docs/user-guide.md`, `scripts/generate-intellij-platform-description.ps1`, and `config/intellij-platform/description.html`, then moved only `T-DOC-020` to `TASKS_ARCHIVE.md`.
+  Visual evidence source: the focused generator test instantiates the actual runtime `AiCommitAllThreeSectionControl`, updates real enabled and running states, renders through Swing painting with `JBColor.setDark`, and writes reviewed light and dark PNGs plus a 12-frame GIF; concept graphics were not used.
+  Blocked evidence path recorded: `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` failed before IDE startup because the cached IU layout was Linux and lacked `idea64.exe`, so Starter screenshots were not used.
+  Validation evidence: `$env:AICOMMITALL_GENERATE_USER_GUIDE_ASSETS='true'; .\gradlew.bat test --tests "pl.devopssolutions.aicommitall.actions.AiCommitAllControlAssetGeneratorTest"` passed and generated assets; final repository validation evidence is recorded in the W4 handoff.
+  Review risks: assets prove deterministic runtime Swing control rendering only; they do not close the remaining full manual IDE matrix tracked by `T-VAL-024`.
 
 ## Execution Model
 

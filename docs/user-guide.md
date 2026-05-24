@@ -23,6 +23,16 @@ AI Commit All adds a compact three-section control to the Commit tool window:
 AI | Commit | Push
 ```
 
+Current reviewed control rendering:
+
+| Light theme | Dark theme |
+|-------------|------------|
+| ![AI Commit All control in light theme](assets/user-guide/ai-commit-all-control-light.png) | ![AI Commit All control in dark theme](assets/user-guide/ai-commit-all-control-dark.png) |
+
+Short running-state animation:
+
+![AI Commit All control running animation](assets/user-guide/ai-commit-all-control-running.gif)
+
 The control is available only inside a supported Git commit workflow. It hides outside that context and disables while a plugin-owned workflow is already running.
 
 Eligible changes include:
@@ -146,8 +156,7 @@ The plugin does not add its own confirmation dialog for the safe immediate-push 
 - JetBrains AI Assistant is required; there is no non-AI fallback message generator.
 - The plugin is an unreleased prerelease and is installed from a local build ZIP.
 - Safe immediate push is intentionally conservative.
-- Final screenshots or animation are not published here; [concept graphics](concepts/graphics/README.md) are references only.
-- Full manual visual review across supported IDE products is still tracked as validation work.
+- The screenshots and animation in this guide are generated from the runtime Swing control rendering; full manual visual review across supported IDE products is still tracked as validation work.
 - Shortcut names outside the predefined JetBrains keymaps are keymap-specific unless confirmed in the active IDE.
 
 ## More References

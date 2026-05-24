@@ -11,6 +11,7 @@ $userGuidePath = Join-Path $repoRoot 'docs/user-guide.md'
 $licensePath = Join-Path $repoRoot 'LICENSE'
 $descriptionPath = Join-Path $repoRoot 'config/intellij-platform/description.html'
 $sourceUrl = 'https://github.com/kamkie/intellij-ai-commit-all-plugin'
+$visualAssetsUrl = "$sourceUrl/tree/main/docs/assets/user-guide"
 
 function Get-TextFile {
     param([string] $Path)
@@ -106,6 +107,9 @@ Assert-SourceContains $readmeText 'README.md' 'AI \| Commit \| Push' 'three-sect
 Assert-SourceContains $userGuideText 'docs/user-guide.md' 'JetBrains AI Assistant is required; there is no non-AI fallback message generator\.' 'JetBrains AI Assistant is required'
 Assert-SourceContains $userGuideText 'docs/user-guide.md' 'Git is the only supported VCS\.' 'Git is the only supported VCS'
 Assert-SourceContains $userGuideText 'docs/user-guide.md' 'If JetBrains AI Assistant is missing or disabled, the IDE refuses to load AI Commit All because the AI Assistant dependency is required\.' 'AI Assistant dependency prevents loading when missing or disabled'
+Assert-SourceContains $userGuideText 'docs/user-guide.md' 'assets/user-guide/ai-commit-all-control-light\.png' 'light control screenshot'
+Assert-SourceContains $userGuideText 'docs/user-guide.md' 'assets/user-guide/ai-commit-all-control-dark\.png' 'dark control screenshot'
+Assert-SourceContains $userGuideText 'docs/user-guide.md' 'assets/user-guide/ai-commit-all-control-running\.gif' 'running control animation'
 Assert-SourceContains $readmeText 'README.md' ([regex]::Escape($sourceUrl)) 'official source repository link'
 Assert-SourceContains $licenseText 'LICENSE' 'Apache License\s+Version 2\.0' 'Apache License 2.0'
 
@@ -133,6 +137,8 @@ foreach ($requirement in $requirements) {
 }
 $lines.Add('</ul>') | Out-Null
 $lines.Add("<p>$(Convert-InlineMarkdownToHtml $dependencyNote)</p>") | Out-Null
+$lines.Add('<h3>Visuals</h3>') | Out-Null
+$lines.Add("<p>Reviewed light and dark screenshots plus a short running-state animation are available in the user-guide assets: <a href=""$visualAssetsUrl"">$visualAssetsUrl</a></p>") | Out-Null
 $lines.Add('<h3>Source And License</h3>') | Out-Null
 $lines.Add("<p>Source code: <a href=""$sourceUrl"">$sourceUrl</a></p>") | Out-Null
 $lines.Add('<p>Licensed under the Apache License 2.0.</p>') | Out-Null

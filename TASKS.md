@@ -16,7 +16,6 @@ Notation:
 
 - [ ] T-DOC-017: finish deferred user-facing documentation follow-ups after the ADR 0076 rebuild. Priority order: generation and Marketplace metadata first (T-DOC-025, T-DOC-018, T-DOC-026, T-DOC-019), shortcut confirmation next (T-DOC-023), reviewed visual assets last after current UI validation (T-DOC-020). Plan: `PLAN-documentation-release-followups`.
 - [ ] T-DOC-019: P2; keep the generated Marketplace change notes aligned with the `CHANGELOG.md` `Unreleased` and latest tagged release sections during release preparation. (`config/intellij-platform/change-notes.html`, `CHANGELOG.md`)
-- [ ] T-DOC-020: P4; add reviewed screenshots and a short animation of the current `AI | Commit | Push` control in light and dark themes, then link them from `docs/user-guide.md` and the generated Marketplace description. (`docs/user-guide.md`, `config/intellij-platform/description.html`, `docs/concepts/graphics/`)
 
 ### Validation
 
