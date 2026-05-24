@@ -27,11 +27,13 @@ import com.intellij.ide.starter.ci.NoCIServer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IdeProductProvider
+import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.runner.Starter
 import org.junit.jupiter.api.Assumptions.assumeTrue
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.junit.jupiter.api.io.TempDir
@@ -109,11 +111,12 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     @Test
-    fun startsIdeaWithPluginFakeAiDependencyAndGitFixture() {
+    @Tag(RELEASE_MATRIX_SMOKE_TAG)
+    fun startsIdeWithPluginFakeAiDependencyAndGitFixture() {
         assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
         val fixture = ReleaseMatrixGitFixtureBuilder.create(tempDirectory.resolve("ide-fixture"))
 
-        runIdeaWithFixture(
+        runReleaseMatrixIdeWithFixture(
             testName = "release-matrix-ui-harness",
             fixture = fixture,
         ) {
@@ -132,11 +135,12 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     @Test
+    @Tag(RELEASE_MATRIX_SMOKE_TAG)
     fun commitToolWindowShowsPluginControlAndScreenshots() {
         assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
         val fixture = ReleaseMatrixGitFixtureBuilder.createClean(tempDirectory.resolve("clean-ide-fixture"))
 
-        runIdeaWithFixture(
+        runReleaseMatrixIdeWithFixture(
             testName = "release-matrix-ui-control",
             fixture = fixture,
         ) {
@@ -172,13 +176,9 @@ class ReleaseMatrixUiHarnessTest {
             }
             assertEquals(DISABLED_CONTROL_ACCESSIBLE_DESCRIPTION, probe.aiCommitAllControlAccessibleDescription(project))
 
-            val screenshotDirectory = Path.of(
-                "build",
-                "reports",
-                "releaseMatrixUiTest",
-                "screenshots",
-                "commit-control",
-            ).toAbsolutePath()
+            val screenshotDirectory = releaseMatrixReportDirectory()
+                .resolve("screenshots")
+                .resolve("commit-control")
             val screenshots = probe.writeAiCommitAllControlScreenshots(project, screenshotDirectory.toString())
             assertEquals(2, screenshots.size)
             screenshots.forEach { screenshot ->
@@ -207,11 +207,12 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     @Test
+    @Tag(RELEASE_MATRIX_SMOKE_TAG)
     fun vcsShortcutTakeoverCanBeToggledInReleaseMatrixIde() {
         assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
         val fixture = ReleaseMatrixGitFixtureBuilder.createCommitOnly(tempDirectory.resolve("shortcut-ide-fixture"))
 
-        runIdeaWithFixture(
+        runReleaseMatrixIdeWithFixture(
             testName = "release-matrix-ui-shortcuts",
             fixture = fixture,
         ) {
@@ -245,7 +246,7 @@ class ReleaseMatrixUiHarnessTest {
         val fixture = ReleaseMatrixGitFixtureBuilder.createCommitOnly(tempDirectory.resolve("commit-shortcut-fixture"))
         val initialCommitCount = fixture.primaryRepository.commitCount()
 
-        runIdeaWithFixture(
+        runReleaseMatrixIdeWithFixture(
             testName = "release-matrix-ui-commit-shortcut",
             fixture = fixture,
         ) {
@@ -270,7 +271,7 @@ class ReleaseMatrixUiHarnessTest {
         val initialCommitCount = fixture.primaryRepository.commitCount()
         val initialRemoteHead = fixture.bareRemote.remoteHead()
 
-        runIdeaWithFixture(
+        runReleaseMatrixIdeWithFixture(
             testName = "release-matrix-ui-push-shortcut",
             fixture = fixture,
         ) {
@@ -302,7 +303,7 @@ class ReleaseMatrixUiHarnessTest {
         val fixture = ReleaseMatrixGitFixtureBuilder.createCommitOnly(tempDirectory.resolve("ai-only-flow-fixture"))
         val initialCommitCount = fixture.primaryRepository.commitCount()
 
-        runIdeaWithFixture(
+        runReleaseMatrixIdeWithFixture(
             testName = "release-matrix-ui-ai-only-flow",
             fixture = fixture,
         ) {
@@ -324,7 +325,7 @@ class ReleaseMatrixUiHarnessTest {
         val fixture = ReleaseMatrixGitFixtureBuilder.createClean(tempDirectory.resolve("missing-fake-ai-dependency-fixture"))
         val probePluginPath = createReleaseMatrixProbePlugin(tempDirectory.resolve("release-matrix-probe-plugin.zip"))
 
-        runIdeaWithFixture(
+        runReleaseMatrixIdeWithFixture(
             testName = "release-matrix-ui-missing-fake-ai-dependency",
             fixture = fixture,
             installFakeAiPlugin = false,
@@ -351,6 +352,7 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     @Test
+    @Tag(RELEASE_MATRIX_SMOKE_TAG)
     fun missingAiActionStopsWithoutCommitOrPush() {
         fakeAiStopPathLeavesGitStateUnchanged(
             testNameSuffix = "missing-ai-action",
@@ -434,7 +436,7 @@ class ReleaseMatrixUiHarnessTest {
         )
         val initialCommitCount = fixture.primaryRepository.commitCount()
 
-        runIdeaWithFixture(
+        runReleaseMatrixIdeWithFixture(
             testName = "release-matrix-ui-commit-flow-${if (stagingAreaEnabled) "staging" else "changelists"}",
             fixture = fixture,
         ) {
@@ -461,7 +463,7 @@ class ReleaseMatrixUiHarnessTest {
         val initialCommitCount = fixture.primaryRepository.commitCount()
         val initialRemoteHead = fixture.bareRemote.remoteHead()
 
-        runIdeaWithFixture(
+        runReleaseMatrixIdeWithFixture(
             testName = "release-matrix-ui-push-flow",
             fixture = fixture,
         ) {
@@ -492,7 +494,7 @@ class ReleaseMatrixUiHarnessTest {
         val outgoingHead = fixture.primaryRepository.head()
         val initialRemoteHead = fixture.bareRemote.remoteHead()
 
-        runIdeaWithFixture(
+        runReleaseMatrixIdeWithFixture(
             testName = "release-matrix-ui-outgoing-only-push",
             fixture = fixture,
         ) {
@@ -532,7 +534,7 @@ class ReleaseMatrixUiHarnessTest {
         )
         val initialState = GitStateSnapshot.capture(fixture)
 
-        runIdeaWithFixture(
+        runReleaseMatrixIdeWithFixture(
             testName = "release-matrix-ui-$testNameSuffix-stop",
             fixture = fixture,
         ) {
@@ -693,7 +695,7 @@ class ReleaseMatrixUiHarnessTest {
         fixture: ReleaseMatrixGitFixture,
         details: Map<String, String> = emptyMap(),
     ): Path {
-        val evidenceDirectory = Path.of("build", "reports", "releaseMatrixUiTest", "git-evidence").toAbsolutePath()
+        val evidenceDirectory = releaseMatrixReportDirectory().resolve("git-evidence")
         Files.createDirectories(evidenceDirectory)
         val evidenceFile = evidenceDirectory.resolve("$name.txt")
         val lines = buildList {
@@ -712,7 +714,14 @@ class ReleaseMatrixUiHarnessTest {
         return evidenceFile
     }
 
-    private fun runIdeaWithFixture(
+    private fun releaseMatrixReportDirectory(): Path = Path.of(
+        "build",
+        "reports",
+        "releaseMatrixUiTest",
+        releaseMatrixIdeProductCode(),
+    ).toAbsolutePath()
+
+    private fun runReleaseMatrixIdeWithFixture(
         testName: String,
         fixture: ReleaseMatrixGitFixture,
         installFakeAiPlugin: Boolean = true,
@@ -720,6 +729,7 @@ class ReleaseMatrixUiHarnessTest {
         extraPluginPaths: List<Path> = emptyList(),
         block: Driver.() -> Unit,
     ) {
+        val ideProductCode = releaseMatrixIdeProductCode()
         val ideVersion = requiredSystemProperty("aicommitall.ide.version")
         val pluginPath = Path.of(requiredSystemProperty("path.to.build.plugin"))
         val fakeAiPluginPath = Path.of(requiredSystemProperty("aicommitall.fake.ai.plugin.path"))
@@ -727,7 +737,7 @@ class ReleaseMatrixUiHarnessTest {
         Starter.newContext(
             testName = testName,
             testCase = TestCase(
-                IdeProductProvider.IU,
+                ideProductProvider(ideProductCode),
                 LocalProjectInfo(fixture.projectDirectory),
             ).withVersion(ideVersion),
         ).apply {
@@ -829,6 +839,15 @@ class ReleaseMatrixUiHarnessTest {
         ) {
             probe.isProjectSmart(project)
         }
+    }
+
+    private fun releaseMatrixIdeProductCode(): String = requiredSystemProperty("aicommitall.ide.product")
+
+    private fun ideProductProvider(productCode: String): IdeInfo = when (productCode) {
+        "IU" -> IdeProductProvider.IU
+        "PY" -> IdeProductProvider.PY
+        "WS" -> IdeProductProvider.WS
+        else -> error("Unsupported release-matrix IDE product: $productCode")
     }
 
     private fun requiredSystemProperty(name: String): String {
@@ -940,6 +959,7 @@ private const val GENERATED_COMMIT_MESSAGE = "AI Commit All release matrix messa
 private const val EXISTING_COMMIT_MESSAGE = "Existing release matrix message"
 private const val USER_EDITED_COMMIT_MESSAGE = "User edited release matrix message"
 private const val FAKE_AI_ASSISTANT_PLUGIN_ID = "com.intellij.ml.llm"
+private const val RELEASE_MATRIX_SMOKE_TAG = "releaseMatrixSmoke"
 private const val RELEASE_MATRIX_PROBE_PLUGIN_ID = "pl.devopssolutions.aicommitall.integration.probe"
 private val RELEASE_MATRIX_PROBE_PLUGIN_XML = """
     <idea-plugin>

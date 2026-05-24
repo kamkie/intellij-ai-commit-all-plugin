@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-maintainability-stability-audit.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-24T21:06:43+02:00
 - Open questions: None.
-- Implementation progress: `T1-push-completion-results`, `T2-ci-docs-validator`, and `T3-compatibility-diagnostics` are implemented and validated; `T4-cross-product-release-ui-smoke` is next.
+- Implementation progress: `T1-push-completion-results`, `T2-ci-docs-validator`, `T3-compatibility-diagnostics`, and `T4-cross-product-release-ui-smoke` are implemented and validated; `T5-three-section-control-refactor` is next.
 
 ## Status History
 
@@ -424,13 +424,13 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files and reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: done
+- Worker: Darwin (`019e5b81-fd97-77d3-8099-f69efcde91aa`)
+- Changed files and reviewed diff: Added single-product release-matrix UI task selection where `IU` remains the full harness and `PY`/`WS` run `releaseMatrixSmoke` tests; updated the manual GitHub workflow to build a product matrix; parameterized Starter product selection; updated release-checklist product aliases and gates.
+- Validation evidence: Red-before-fix `.\gradlew.bat releaseMatrixUiTest "-PideProducts=PY"` failed on the old IDEA-only guard; green checks passed with `.\gradlew.bat compileIntegrationTestKotlin`, `.\gradlew.bat releaseMatrixUiTest "-PideProducts=PY"` with 4 smoke tests, `.\gradlew.bat releaseMatrixUiTest "-PideProducts=WS"` with 4 smoke tests, `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.ci.GitHubActionsWorkflowTest"`, `.\gradlew.bat spotlessCheck`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1`, and `git diff --check`.
+- Blockers: None for PyCharm/WebStorm smoke wiring.
+- Review risks: Local full `IU` release-matrix run remained red in pre-existing deeper fake-AI/commit-push action-invocation paths, while the 4 smoke-tagged checks passed inside that run; do not treat this task as a green release gate for full IDEA validation.
+- Handoff notes: `verifyPlugin` was not run because plugin compatibility targets and descriptors were not changed. Proceed to `T5-three-section-control-refactor`.
 
 ### Task Packet: T5-three-section-control-refactor
 

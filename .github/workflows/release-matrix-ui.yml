@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       ide-products:
-        description: "Comma-separated IDE product codes. The Gradle task currently supports IU only."
+        description: "Comma-separated IDE product codes. IU runs the full lane; PY and WS run smoke lanes."
         required: true
-        default: "IU"
+        default: "IU,PY,WS"
       ide-version:
         description: "IDE version to run through the release-matrix UI lane."
         required: true
@@ -17,9 +17,59 @@ permissions:
   contents: read
 
 jobs:
-  idea-ui:
-    name: IDEA release-matrix UI
+  prepare-matrix:
+    name: Prepare release-matrix UI products
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.products.outputs.matrix }}
+    steps:
+      - name: Select products
+        id: products
+        shell: bash
+        env:
+          IDE_PRODUCTS: ${{ inputs.ide-products }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import sys
+
+          aliases = {
+              "IIU": "IU",
+              "PCP": "PY",
+          }
+          products = {
+              "IU": {"code": "IU", "name": "IDEA full", "lane": "full"},
+              "PY": {"code": "PY", "name": "PyCharm smoke", "lane": "smoke"},
+              "WS": {"code": "WS", "name": "WebStorm smoke", "lane": "smoke"},
+          }
+          selected = []
+          for raw_product in os.environ["IDE_PRODUCTS"].split(","):
+              product = raw_product.strip().upper()
+              if not product:
+                  continue
+              product = aliases.get(product, product)
+              if product not in products:
+                  print(f"Unsupported IDE product '{raw_product}'. Supported: IU, PY, WS.", file=sys.stderr)
+                  sys.exit(1)
+              if product not in selected:
+                  selected.append(product)
+
+          if not selected:
+              print("At least one IDE product must be selected.", file=sys.stderr)
+              sys.exit(1)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"matrix={json.dumps({'include': [products[product] for product in selected]})}\n")
+          PY
+
+  release-matrix-ui:
+    name: Release matrix UI (${{ matrix.name }})
+    needs: prepare-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare-matrix.outputs.matrix) }}
     timeout-minutes: 45
     steps:
       - name: Check out repository
@@ -38,17 +88,17 @@ jobs:
         with:
           validate-wrappers: true
 
-      - name: Run IDEA release-matrix UI tests
+      - name: Run release-matrix UI tests
         run: >
           xvfb-run -a ./gradlew releaseMatrixUiTest
-          -PideProducts="${{ inputs.ide-products }}"
+          -PideProducts="${{ matrix.code }}"
           -PideVersion="${{ inputs.ide-version }}"
 
       - name: Publish release-matrix UI test summary
         if: ${{ !cancelled() && hashFiles('build/test-results/releaseMatrixUiTest/*.xml') != '' }}
         uses: dorny/test-reporter@v3
         with:
-          name: Release matrix UI tests
+          name: Release matrix UI tests (${{ matrix.name }})
           path: build/test-results/releaseMatrixUiTest/*.xml
           reporter: java-junit
 
@@ -56,7 +106,7 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
-          name: ai-commit-all-release-matrix-ui-evidence
+          name: ai-commit-all-release-matrix-ui-${{ matrix.code }}-evidence
           path: |
             build/test-results/releaseMatrixUiTest/*.xml
             build/reports/tests/releaseMatrixUiTest/**

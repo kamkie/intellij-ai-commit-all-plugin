@@ -37,13 +37,15 @@ Create or update a dated report before running the manual checklist. Record:
 ## Product Matrix
 
 Use IntelliJ IDEA first, then repeat representative happy-path and failure-path
-coverage in PyCharm and WebStorm where practical.
+coverage in PyCharm and WebStorm where practical. The deterministic
+release-matrix UI automation uses the Gradle and Starter product aliases below:
+`IU` runs the full harness, while `PY` and `WS` run the smoke subset.
 
 | Product       | Code  | Checklist role                                                              |
 |---------------|-------|-----------------------------------------------------------------------------|
-| IntelliJ IDEA | `IIU` | Primary full manual pass and deterministic release-matrix automation lane.  |
-| PyCharm       | `PCP` | Representative non-IDEA Commit tool window, AI Assistant, and VCS behavior. |
-| WebStorm      | `WS`  | Representative non-IDEA Commit tool window, AI Assistant, and VCS behavior. |
+| IntelliJ IDEA | `IU`  | Primary full manual pass and deterministic full automation lane.            |
+| PyCharm       | `PY`  | Deterministic smoke automation plus representative manual coverage.         |
+| WebStorm      | `WS`  | Deterministic smoke automation plus representative manual coverage.         |
 
 When refreshing current builds, query JetBrains product release data and record
 the exact product versions in the dated report:
@@ -59,7 +61,14 @@ matrix work, include:
 ```powershell
 .\gradlew.bat buildPlugin
 .\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=<version>"
+.\gradlew.bat releaseMatrixUiTest "-PideProducts=PY" "-PideVersion=<version>"
+.\gradlew.bat releaseMatrixUiTest "-PideProducts=WS" "-PideVersion=<version>"
 ```
+
+The PyCharm and WebStorm lanes use the fake AI Assistant substitute plugin and
+temporary local Git fixtures. They do not replace manual checks that require the
+real JetBrains AI Assistant state, product-specific visual review, platform
+warnings, or manually observed push behavior.
 
 Use the broader repository validation required by the release task, plan, or
 release workflow. Do not duplicate automated test inventories here; the scenario
@@ -69,15 +78,15 @@ register points to the primary automated evidence targets.
 
 | Gate                                             | Refs                                                                                        | Products                                            | Evidence to record                                                                                                                            |
 |--------------------------------------------------|---------------------------------------------------------------------------------------------|-----------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit tool window startup and control placement | `T-VAL-003`, `T-IDEA-011`                                                                   | `IIU`, plus `PCP` and `WS` where practical          | Product/build, fixture path, screenshot or observation showing plugin control visible and standard `Commit and Push...` absent.               |
-| Eligible file inclusion and staging behavior     | `T-VAL-005..011`, `T-VAL-017`, `SCN-STAGE-MAN-001..008`, `SCN-SELECT-MAN-001..006`          | `IIU`, plus representative non-IDEA IDE             | Commit tool window inclusion state, staging state, changelist/root names, and `git status --porcelain` output.                                |
-| Real JetBrains AI Assistant behavior             | `T-VAL-016`, `T-VAL-023`, `SCN-AI-MAN-004`, `SCN-AI-MAN-006`                                | `IIU`, plus `PCP` and `WS` where practical          | AI Assistant state, generated message, timeout or unavailable UI, and unchanged Git state for stops.                                          |
-| Commit and push execution                        | `T-VAL-012`, `T-VAL-013`, `T-BUG-015`, `SCN-WORKFLOW-MAN-004..006`, `SCN-PUSH-MAN-002..006` | `IIU` first                                         | Resulting commit hash, local and remote branch hashes, fallback or push-error UI, safe-push completion timing, and no real remote contact.     |
-| Visual control review                            | `T-VAL-014`                                                                                 | `IIU`, plus representative non-IDEA IDE             | Light and dark screenshots or observations for passive, hover, clicked, running, disabled, and divider states.                                |
+| Commit tool window startup and control placement | `T-VAL-003`, `T-IDEA-011`                                                                   | `IU`, plus `PY` and `WS` where practical            | Product/build, fixture path, screenshot or observation showing plugin control visible and standard `Commit and Push...` absent.               |
+| Eligible file inclusion and staging behavior     | `T-VAL-005..011`, `T-VAL-017`, `SCN-STAGE-MAN-001..008`, `SCN-SELECT-MAN-001..006`          | `IU`, plus representative non-IDEA IDE              | Commit tool window inclusion state, staging state, changelist/root names, and `git status --porcelain` output.                                |
+| Real JetBrains AI Assistant behavior             | `T-VAL-016`, `T-VAL-023`, `SCN-AI-MAN-004`, `SCN-AI-MAN-006`                                | `IU`, plus `PY` and `WS` where practical            | AI Assistant state, generated message, timeout or unavailable UI, and unchanged Git state for stops.                                          |
+| Commit and push execution                        | `T-VAL-012`, `T-VAL-013`, `T-BUG-015`, `SCN-WORKFLOW-MAN-004..006`, `SCN-PUSH-MAN-002..006` | `IU` first                                          | Resulting commit hash, local and remote branch hashes, fallback or push-error UI, safe-push completion timing, and no real remote contact.     |
+| Visual control review                            | `T-VAL-014`                                                                                 | `IU`, plus representative non-IDEA IDE              | Light and dark screenshots or observations for passive, hover, clicked, running, disabled, and divider states.                                |
 | Marketplace media and listing rendering          | `PROP-marketplace-realtime-progress-media`                                                  | Marketplace web listing and IDE Marketplace view    | Uploaded media filenames, web listing screenshot or observation, IDE Marketplace rendering observation or skip reason, and fallback behavior. |
-| Shortcut and settings behavior                   | `ADR-0054-1..4`, `SCN-SHORTCUT-MAN-004`, `SCN-SETTINGS-MAN-001..002`                        | `IIU`, plus macOS keymap equivalent where practical | Keymap name, setting values, action result, generated message or commit/push evidence, and persistence after restart or reopen.               |
-| Current IDE build representation                 | `T-VAL-018`                                                                                 | `IIU`, `PCP`, `WS`                                  | Product names, product codes, and build numbers.                                                                                              |
-| Platform-owned safeguards                        | `SCN-STAGE-MAN-015..018`, `SCN-WORKFLOW-MAN-007..008`                                       | `IIU` first                                         | Before-commit, commit-error, push-error, unsupported API, frozen VCS, or background VCS observations and unchanged Git state where expected.  |
+| Shortcut and settings behavior                   | `ADR-0054-1..4`, `SCN-SHORTCUT-MAN-004`, `SCN-SETTINGS-MAN-001..002`                        | `IU`, plus macOS keymap equivalent where practical  | Keymap name, setting values, action result, generated message or commit/push evidence, and persistence after restart or reopen.               |
+| Current IDE build representation                 | `T-VAL-018`                                                                                 | `IU`, `PY`, `WS`                                    | Product names, product codes, and build numbers.                                                                                              |
+| Platform-owned safeguards                        | `SCN-STAGE-MAN-015..018`, `SCN-WORKFLOW-MAN-007..008`                                       | `IU` first                                          | Before-commit, commit-error, push-error, unsupported API, frozen VCS, or background VCS observations and unchanged Git state where expected.  |
 
 ## Manual Case Procedures
 

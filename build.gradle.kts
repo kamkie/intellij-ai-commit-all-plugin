@@ -409,36 +409,62 @@ tasks.buildPlugin {
     archiveVersion.set(pluginArchiveVersion)
 }
 
-fun ideaReleaseMatrixProduct(products: String, version: String): IntelliJPlatformType {
+val releaseMatrixSmokeTag = "releaseMatrixSmoke"
+val releaseMatrixSmokeProductCodes = setOf("PY", "WS")
+val releaseMatrixSupportedProductCodes = setOf("IU") + releaseMatrixSmokeProductCodes
+val releaseMatrixLegacyProductAliases = mapOf(
+    "IIU" to "IU",
+    "PCP" to "PY",
+)
+
+fun releaseMatrixProductCode(products: String): String {
     val productCodes = products.split(',')
         .map { product -> product.trim() }
         .filter { product -> product.isNotEmpty() }
-    if (productCodes != listOf("IU")) {
+
+    if (productCodes.size != 1) {
         throw GradleException(
-            "releaseMatrixUiTest currently supports IDEA only. Use -PideProducts=IU, not '$products'.",
+            "releaseMatrixUiTest runs one IDE product per invocation. " +
+                "Use -PideProducts=IU for the full IDEA lane or -PideProducts=PY/-PideProducts=WS for smoke lanes.",
         )
     }
-    return IntelliJPlatformType.fromCode("IU", version)
+
+    val productCode = productCodes.single().uppercase(Locale.ROOT)
+    val canonicalProductCode = releaseMatrixLegacyProductAliases[productCode] ?: productCode
+    if (canonicalProductCode !in releaseMatrixSupportedProductCodes) {
+        throw GradleException(
+            "releaseMatrixUiTest supports IU as the full lane and PY or WS as smoke lanes, not '$products'.",
+        )
+    }
+    return canonicalProductCode
 }
+
+val releaseMatrixIdeProductCode = releaseMatrixIdeProducts.map(::releaseMatrixProductCode)
 
 val releaseMatrixUiTest by intellijPlatformTesting.testIdeUi.registering {
     type.set(
-        releaseMatrixIdeProducts.zip(releaseMatrixIdeVersion) { products, version ->
-            ideaReleaseMatrixProduct(products, version)
+        releaseMatrixIdeProductCode.zip(releaseMatrixIdeVersion) { productCode, version ->
+            IntelliJPlatformType.fromCode(productCode, version)
         },
     )
     version.set(releaseMatrixIdeVersion)
 
     task {
+        val selectedProductCode = releaseMatrixIdeProductCode.get()
         group = "verification"
-        description = "Runs IDEA release-matrix UI automation with Starter and Driver."
+        description = "Runs release-matrix UI automation with Starter and Driver."
         testClassesDirs = integrationTestSourceSet.output.classesDirs
         classpath = integrationTestSourceSet.runtimeClasspath
-        useJUnitPlatform()
+        useJUnitPlatform {
+            if (selectedProductCode in releaseMatrixSmokeProductCodes) {
+                includeTags(releaseMatrixSmokeTag)
+            }
+        }
         exclude("pl/devopssolutions/aicommitall/integration/fakeai/**")
         shouldRunAfter(tasks.test)
         dependsOn(fakeAiAssistantPlugin)
-        systemProperty("aicommitall.ide.products", releaseMatrixIdeProducts.get())
+        systemProperty("aicommitall.ide.product", selectedProductCode)
+        systemProperty("aicommitall.ide.products", selectedProductCode)
         systemProperty("aicommitall.ide.version", releaseMatrixIdeVersion.get())
         systemProperty(
             "aicommitall.fake.ai.plugin.path",

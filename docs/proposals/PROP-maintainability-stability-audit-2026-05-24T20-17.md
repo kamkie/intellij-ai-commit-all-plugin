@@ -52,7 +52,7 @@ Compact overview only. The metadata table inside each finding remains the source
 | Id   | Title                                                                 | Priority | Status       | Decision |
 |------|-----------------------------------------------------------------------|----------|--------------|----------|
 | F001 | Add package-level coverage targets for critical workflow and VCS code | 3        | not-required | rejected |
-| F002 | Extend deterministic release-matrix UI automation beyond IDEA         | 5        | planned      | accepted |
+| F002 | Extend deterministic release-matrix UI automation beyond IDEA         | 5        | done         | accepted |
 | E001 | Pull-request CI does not run the full documentation validator         | 2        | done         | accepted |
 | E002 | Safe immediate push completion ignores the Git push result            | 1        | done         | accepted |
 | E003 | Compatibility-boundary failures are often silent                      | 4        | done         | accepted |
@@ -105,12 +105,12 @@ Add package-level JaCoCo reporting or a small verification task for `pl.devopsso
 
 | Field       | Value                     |
 |-------------|---------------------------|
-| Status      | planned                   |
+| Status      | done                      |
 | Decision    | accepted                  |
 | Decision at | 2026-05-24T20:53:28+02:00 |
 | Priority    | 5                         |
 | Owner       |                           |
-| Updated     | 2026-05-24T21:06:43+02:00 |
+| Updated     | 2026-05-24T22:18:22+02:00 |
 
 ##### Context
 
