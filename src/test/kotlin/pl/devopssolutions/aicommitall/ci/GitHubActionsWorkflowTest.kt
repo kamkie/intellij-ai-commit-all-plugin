@@ -81,20 +81,25 @@ internal class GitHubActionsWorkflowTest {
     }
 
     @Test
-    fun `ci workflow validates repository agent artifacts`() {
-        val content = Files.readString(Path.of(".github", "workflows", "ci.yml"))
+    fun `ci workflow validates repository documentation and agent artifacts`() {
+        val workflow = Files.readString(Path.of(".github", "workflows", "ci.yml"))
+        val docsValidator = Files.readString(Path.of("scripts", "validate-docs.ps1"))
 
         assertTrue(
-            content.contains("Validate documentation and agent artifacts"),
+            workflow.contains("Validate documentation and agent artifacts"),
             "CI workflow must name the combined documentation and agent-artifact validation gate.",
         )
         assertTrue(
-            content.contains("scripts/ai/validate-agent-artifacts.ps1"),
-            "CI workflow must run repository agent-artifact validation.",
+            workflow.contains("scripts/validate-docs.ps1"),
+            "CI workflow must run the full repository documentation validator.",
         )
         assertTrue(
-            content.indexOf("Validate documentation and agent artifacts") <
-                content.indexOf("Run Detekt static analysis"),
+            docsValidator.contains("scripts/ai/validate-agent-artifacts.ps1"),
+            "The full documentation validator must keep repository agent-artifact validation in scope.",
+        )
+        assertTrue(
+            workflow.indexOf("Validate documentation and agent artifacts") <
+                workflow.indexOf("Run Detekt static analysis"),
             "CI workflow must validate repository docs and agent artifacts before static analysis.",
         )
     }

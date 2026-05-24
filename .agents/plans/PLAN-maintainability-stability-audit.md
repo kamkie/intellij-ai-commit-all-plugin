@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-maintainability-stability-audit.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-24T21:06:43+02:00
 - Open questions: None.
-- Implementation progress: `T1-push-completion-results` is implemented and validated; `T2-ci-docs-validator` is next.
+- Implementation progress: `T1-push-completion-results` and `T2-ci-docs-validator` are implemented and validated; `T3-compatibility-diagnostics` is next.
 
 ## Status History
 
@@ -234,13 +234,13 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files and reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: done
+- Worker: Ampere (`019e5b77-32fb-7752-a384-fc05695286f6`)
+- Changed files and reviewed diff: Updated PR CI to run `scripts/validate-docs.ps1`; extended workflow tests to assert the full docs validator runs and still covers `scripts/ai/validate-agent-artifacts.ps1`.
+- Validation evidence: Red-first `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.ci.GitHubActionsWorkflowTest"` failed before the workflow change; green checks passed with the same targeted test, `.\gradlew.bat spotlessCheck`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1`, and `git diff --check`.
+- Blockers: None.
+- Review risks: None identified; release CI already ran the full validator, and PR CI now matches that documentation gate.
+- Handoff notes: Proceed to `T3-compatibility-diagnostics`.
 
 ### Task Packet: T3-compatibility-diagnostics
 

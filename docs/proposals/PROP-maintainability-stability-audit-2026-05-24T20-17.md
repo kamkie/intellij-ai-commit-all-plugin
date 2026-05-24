@@ -53,7 +53,7 @@ Compact overview only. The metadata table inside each finding remains the source
 |------|-----------------------------------------------------------------------|----------|--------------|----------|
 | F001 | Add package-level coverage targets for critical workflow and VCS code | 3        | not-required | rejected |
 | F002 | Extend deterministic release-matrix UI automation beyond IDEA         | 5        | planned      | accepted |
-| E001 | Pull-request CI does not run the full documentation validator         | 2        | planned      | accepted |
+| E001 | Pull-request CI does not run the full documentation validator         | 2        | done         | accepted |
 | E002 | Safe immediate push completion ignores the Git push result            | 1        | done         | accepted |
 | E003 | Compatibility-boundary failures are often silent                      | 4        | planned      | accepted |
 | S001 | Split the three-section Swing control into reviewable units           | 6        | planned      | accepted |
@@ -144,12 +144,12 @@ Add a product-parameterized smoke subset for PyCharm and WebStorm that verifies 
 
 | Field       | Value                     |
 |-------------|---------------------------|
-| Status      | planned                   |
+| Status      | done                      |
 | Decision    | accepted                  |
 | Decision at | 2026-05-24T20:53:28+02:00 |
 | Priority    | 2                         |
 | Owner       |                           |
-| Updated     | 2026-05-24T21:06:43+02:00 |
+| Updated     | 2026-05-24T21:32:42+02:00 |
 
 ##### Context
 
