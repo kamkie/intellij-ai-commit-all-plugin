@@ -126,24 +126,30 @@ internal class GitHubActionsWorkflowTest {
     fun `gradle build enables configuration cache`() {
         val properties = Files.readString(Path.of("gradle.properties"))
         val build = Files.readString(Path.of("build.gradle.kts"))
+        val buildLogic = Files.readString(gradleVerificationTask("VerifyJacocoCoverageReportTask.kt"))
 
         assertTrue(
             properties.contains("org.gradle.configuration-cache=true"),
             "Gradle must enable the configuration cache persistently.",
         )
         assertTrue(
-            build.contains("abstract class VerifyJacocoCoverageReportTask : DefaultTask()"),
-            "Custom verification tasks must avoid script-object closures that break the configuration cache.",
+            buildLogic.contains("abstract class VerifyJacocoCoverageReportTask : DefaultTask()"),
+            "Custom verification tasks must live in buildSrc task types instead of root script implementations.",
         )
         assertTrue(
             build.contains("tasks.registering(VerifyJacocoCoverageReportTask::class)"),
             "JaCoCo coverage verification must use the cache-compatible task type.",
+        )
+        assertFalse(
+            build.contains("abstract class VerifyJacocoCoverageReportTask"),
+            "The root build script must keep custom verification task registration separate from task implementation.",
         )
     }
 
     @Test
     fun `gradle configures detekt static analysis reports`() {
         val content = Files.readString(Path.of("build.gradle.kts"))
+        val buildLogic = Files.readString(gradleVerificationTask("VerifyDetektBaselineTask.kt"))
 
         assertTrue(
             content.contains("id(\"dev.detekt\") version \"2.0.0-alpha.3\""),
@@ -166,12 +172,16 @@ internal class GitHubActionsWorkflowTest {
             "Detekt must read the same checked-in baseline file verified by the guardrail.",
         )
         assertTrue(
-            content.contains("abstract class VerifyDetektBaselineTask : DefaultTask()"),
-            "The build must define a configuration-cache-compatible Detekt baseline guard task.",
+            buildLogic.contains("abstract class VerifyDetektBaselineTask : DefaultTask()"),
+            "The build must define the configuration-cache-compatible Detekt baseline guard task in buildSrc.",
         )
         assertTrue(
             content.contains("tasks.registering(VerifyDetektBaselineTask::class)"),
             "The build must register the Detekt baseline guard through Gradle task registration.",
+        )
+        assertFalse(
+            content.contains("abstract class VerifyDetektBaselineTask"),
+            "The root build script must keep the Detekt baseline task implementation out of the root script.",
         )
         assertTrue(
             content.contains("dependsOn(verifyDetektBaseline)"),
@@ -651,4 +661,6 @@ internal class GitHubActionsWorkflowTest {
             .filter { workflow -> Files.readString(workflow).contains("./gradlew") }
             .toList()
     }
+
+    private fun gradleVerificationTask(fileName: String): Path = Path.of("buildSrc/src/main/kotlin/pl/devopssolutions/aicommitall/gradle").resolve(fileName)
 }

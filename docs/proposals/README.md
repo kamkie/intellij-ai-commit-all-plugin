@@ -10,13 +10,14 @@ Proposals are advisory until accepted through the normal repository flow. A prop
 
 Active proposals still have at least one non-terminal implementation status row or at least one untriaged finding in their `Progress Tracker`.
 
-- `PROP-maintainability-stability-audit` - [Maintainability Stability Audit](PROP-maintainability-stability-audit-2026-05-24T20-17.md) - open as of 2026-05-24.
+- None.
 
 ### Completed Proposals
 
 Completed proposals have no non-terminal implementation status rows and no untriaged findings in their `Progress Tracker`. Keep them listed here until they are moved to `archive/`.
 
 - `PROP-marketplace-realtime-progress-media` - [Marketplace Real-Time Progress Media](PROP-marketplace-realtime-progress-media-2026-05-24T15-07.md) - completed as of 2026-05-24.
+- `PROP-maintainability-stability-audit` - [Maintainability Stability Audit](PROP-maintainability-stability-audit-2026-05-24T20-17.md) - completed as of 2026-05-24.
 
 Index entries should include the proposal ref, title, file link, and current status date when applicable.
 
@@ -28,7 +29,6 @@ Implementation evidence can be a task, approved plan, ADR, changed file, commit,
 
 | Proposal                                                                                         | Finding | Title                                                              | Priority | Status | Evidence                                                                                                                                                |
 |--------------------------------------------------------------------------------------------------|---------|--------------------------------------------------------------------|----------|--------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [PROP-maintainability-stability-audit](PROP-maintainability-stability-audit-2026-05-24T20-17.md) | S002    | Move custom Gradle verification tasks out of the root build script | 6        | planned      | Approved plan [PLAN-maintainability-stability-audit](../../.agents/plans/PLAN-maintainability-stability-audit.md) covers implementation after the control refactor task. |
 
 ## When To Use A Proposal
 

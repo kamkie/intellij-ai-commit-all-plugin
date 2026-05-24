@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-maintainability-stability-audit
 
-Status: In Progress
+Status: Implemented
 
 Workers: 1
 
@@ -14,13 +14,14 @@ Filename: `.agents/plans/PLAN-maintainability-stability-audit.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-24T21:06:43+02:00
 - Open questions: None.
-- Implementation progress: `T1-push-completion-results`, `T2-ci-docs-validator`, `T3-compatibility-diagnostics`, `T4-cross-product-release-ui-smoke`, and `T5-three-section-control-refactor` are implemented and validated; `T6-gradle-verification-build-logic` is next.
+- Implementation progress: All task packets are implemented, validated, self-reviewed, and committed.
 
 ## Status History
 
 - 2026-05-24T21:01:54+02:00: none -> Draft by OpenAI Codex <codex@openai.com>; plan created from accepted proposal findings in `PROP-maintainability-stability-audit`.
 - 2026-05-24T21:06:43+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; maintainer explicitly approved with "accept and implement PLAN-maintainability-stability-audit".
 - 2026-05-24T21:06:43+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; orchestrator started approved-plan worker execution.
+- 2026-05-24T22:41:45+02:00: In Progress -> Implemented by OpenAI Codex <codex@openai.com>; all task packets completed with validation evidence.
 
 ## Goal
 
@@ -597,13 +598,13 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files and reviewed diff:
-- Validation evidence:
-- Blockers:
-- Review risks:
-- Handoff notes:
+- Status: done
+- Worker: Sagan (`019e5bb0-4b9b-74a0-9762-391dad79600c`)
+- Changed files and reviewed diff: Moved custom Detekt baseline and JaCoCo coverage verification task implementations into `buildSrc` with shared secure XML parsing; kept root `build.gradle.kts` task registration, report paths, and thresholds; updated workflow tests to assert root registration and build-logic ownership.
+- Validation evidence: Red-first targeted workflow test failed before extraction because `buildSrc` task implementation files were missing; green checks passed with `.\gradlew.bat spotlessCheck`, `.\gradlew.bat test jacocoTestReport verifyJacocoCoverageReport`, `.\gradlew.bat verifyPluginStructure buildPlugin`, `.\gradlew.bat verifyDetektBaseline verifyJacocoCoverageReport --configuration-cache`, and `git diff --check`.
+- Blockers: None.
+- Review risks: `buildSrc` now has a minimal `kotlin-dsl` build with `mavenCentral()` for the build-logic classpath.
+- Handoff notes: Plan implementation complete.
 
 ## Execution Model
 

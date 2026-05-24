@@ -4,9 +4,9 @@ import dev.detekt.gradle.Detekt
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.w3c.dom.Element
-import java.util.*
-import javax.xml.parsers.DocumentBuilderFactory
+import pl.devopssolutions.aicommitall.gradle.VerifyDetektBaselineTask
+import pl.devopssolutions.aicommitall.gradle.VerifyJacocoCoverageReportTask
+import java.util.Locale
 
 plugins {
     kotlin("jvm") version "2.3.21"
@@ -179,59 +179,6 @@ tasks.withType<Detekt>().configureEach {
     }
 }
 
-abstract class VerifyDetektBaselineTask : DefaultTask() {
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val baselineFile: RegularFileProperty
-
-    @TaskAction
-    fun verify() {
-        val documentBuilderFactory = DocumentBuilderFactory.newInstance()
-        documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
-        documentBuilderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false)
-        documentBuilderFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false)
-
-        val document = documentBuilderFactory
-            .newDocumentBuilder()
-            .parse(baselineFile.get().asFile)
-        val root = document.documentElement
-
-        if (root.tagName != "SmellBaseline") {
-            throw GradleException("Detekt baseline XML root must be SmellBaseline.")
-        }
-
-        val currentIssueCount = root.baselineSection("CurrentIssues").childElementCount()
-        val manualSuppressionCount = root.baselineSection("ManuallySuppressedIssues").childElementCount()
-
-        if (currentIssueCount > 0 || manualSuppressionCount > 0) {
-            throw GradleException(
-                "Detekt baseline must stay empty. Found $currentIssueCount current issues and " +
-                    "$manualSuppressionCount manual suppressions in ${baselineFile.get().asFile}.",
-            )
-        }
-    }
-
-    private fun Element.baselineSection(tagName: String): Element {
-        val sections = childElements(tagName)
-        if (sections.size != 1) {
-            throw GradleException("Detekt baseline XML must contain exactly one $tagName element.")
-        }
-        return sections.single()
-    }
-
-    private fun Element.childElementCount(): Int = childElements().size
-
-    private fun Element.childElements(tagName: String? = null): List<Element> {
-        val children = childNodes
-        return (0 until children.length)
-            .asSequence()
-            .map { index -> children.item(index) }
-            .filterIsInstance<Element>()
-            .filter { child -> tagName == null || child.tagName == tagName }
-            .toList()
-    }
-}
-
 val verifyDetektBaseline by tasks.registering(VerifyDetektBaselineTask::class) {
     group = "verification"
     description = "Verifies the Detekt baseline contains no suppressed issues."
@@ -273,99 +220,6 @@ tasks.jacocoTestReport {
         xml.required.set(true)
         csv.required.set(false)
         html.required.set(true)
-    }
-}
-
-abstract class VerifyJacocoCoverageReportTask : DefaultTask() {
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val reportFile: RegularFileProperty
-
-    @get:Input
-    abstract val minimumLineCoverage: Property<Double>
-
-    @get:Input
-    abstract val minimumBranchCoverage: Property<Double>
-
-    @TaskAction
-    fun verify() {
-        val documentBuilderFactory = DocumentBuilderFactory.newInstance()
-        documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
-        documentBuilderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false)
-        documentBuilderFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false)
-
-        val document = documentBuilderFactory
-            .newDocumentBuilder()
-            .parse(reportFile.get().asFile)
-        val coveredInstructions = counter(document.documentElement, "INSTRUCTION").covered
-
-        if (coveredInstructions <= 0) {
-            throw GradleException(
-                "JaCoCo XML report contains zero covered instructions. " +
-                    "Check the test JaCoCo agent and report class directories.",
-            )
-        }
-
-        verifyMinimumCoverage(
-            label = "line",
-            actual = counter(document.documentElement, "LINE").ratio,
-            minimum = minimumLineCoverage.get(),
-        )
-        verifyMinimumCoverage(
-            label = "branch",
-            actual = counter(document.documentElement, "BRANCH").ratio,
-            minimum = minimumBranchCoverage.get(),
-        )
-    }
-
-    private fun counter(
-        root: Element,
-        type: String,
-    ): CoverageCounter {
-        val rootChildren = root.childNodes
-        val element = (0 until rootChildren.length)
-            .asSequence()
-            .map { index -> rootChildren.item(index) }
-            .filterIsInstance<Element>()
-            .firstOrNull { element ->
-                element.tagName == "counter" &&
-                    element.getAttribute("type") == type
-            }
-            ?: throw GradleException("JaCoCo XML report is missing the $type counter.")
-        return CoverageCounter(
-            covered = element.getAttribute("covered").toLong(),
-            missed = element.getAttribute("missed").toLong(),
-        )
-    }
-
-    private fun verifyMinimumCoverage(
-        label: String,
-        actual: Double,
-        minimum: Double,
-    ) {
-        if (actual < minimum) {
-            throw GradleException(
-                "JaCoCo $label coverage ${actual.asPercentage()} is below the required " +
-                    "${minimum.asPercentage()}.",
-            )
-        }
-    }
-
-    private fun Double.asPercentage(): String = String.format(Locale.ROOT, "%.1f%%", this * 100)
-
-    private data class CoverageCounter(
-        val covered: Long,
-        val missed: Long,
-    ) {
-        val ratio: Double
-            get() {
-                val total = covered + missed
-                return if (total == 0L) {
-                    1.0
-                } else {
-                    covered.toDouble() / total
-                }
-            }
     }
 }
 
@@ -475,13 +329,13 @@ val releaseMatrixUiTest by intellijPlatformTesting.testIdeUi.registering {
 
 spotless {
     kotlin {
-        target("src/**/*.kt")
+        target("src/**/*.kt", "buildSrc/src/**/*.kt")
         ktlint("1.8.0")
         licenseHeaderFile(rootProject.file("config/spotless/apache-kotlin.license"), "package ")
     }
 
     kotlinGradle {
-        target("*.gradle.kts", "gradle/**/*.gradle.kts")
+        target("*.gradle.kts", "gradle/**/*.gradle.kts", "buildSrc/**/*.gradle.kts")
         ktlint("1.8.0")
     }
 }
