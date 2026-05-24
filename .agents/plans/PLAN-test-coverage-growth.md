@@ -2,7 +2,11 @@
 
 Plan-ID: PLAN-test-coverage-growth
 
-Status: Draft
+Status: In Progress
+
+Approved by: Kamil Kiewisz <kamkie@outlook.com>
+
+Approved at: 2026-05-25T01:40:55+02:00
 
 Workers: 1
 
@@ -10,13 +14,15 @@ Filename: `.agents/plans/PLAN-test-coverage-growth.md`
 
 ## Readiness
 
-- Plan readiness: Draft refreshed on 2026-05-25 after `PLAN-premature-stop-reliability` was implemented and plan-template governance changed. Current coverage, residual targets, task packets, and continuity fields are updated from `.\gradlew.bat test jacocoTestReport`; ready for maintainer review, not approved for implementation.
+- Plan readiness: Approved by Kamil Kiewisz <kamkie@outlook.com> on 2026-05-25T01:40:55+02:00 through the implementation request. Current coverage, residual targets, task packets, and continuity fields are updated from `.\gradlew.bat test jacocoTestReport`; implementation is in progress.
 - Open questions: None blocking. Coverage targets are plan assumptions and can be adjusted during approval.
-- Implementation progress: Not started.
+- Implementation progress: T1 dispatch starting; T1 through T5 pending.
 
 ## Status History
 
 - 2026-05-24T23:01:33+02:00: none -> Draft by OpenAI Codex <codex@openai.com>; plan created from whole-codebase coverage analysis.
+- 2026-05-25T01:40:55+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; user requested implementation of `PLAN-test-coverage-growth.md`.
+- 2026-05-25T01:40:55+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; implementation started with approved-plan worker dispatch.
 
 ## Goal
 
