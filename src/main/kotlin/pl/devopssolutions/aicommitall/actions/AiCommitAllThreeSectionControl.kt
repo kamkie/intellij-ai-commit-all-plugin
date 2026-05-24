@@ -195,11 +195,11 @@ internal class AiCommitAllThreeSectionControl(
         )
     }
 
-    private fun controlFont(): Font = (
-        font ?: UIManager.getFont("Button.font")
-            ?: Font(Font.SANS_SERIF, Font.BOLD, JBUI.scale(12))
-        )
-        .deriveFont(Font.BOLD, JBUI.scale(12).toFloat())
+    private fun controlFont(): Font {
+        val fallbackFont = Font(Font.SANS_SERIF, Font.BOLD, JBUI.scale(12))
+        val baseFont = font ?: UIManager.getFont("Button.font") ?: fallbackFont
+        return baseFont.deriveFont(Font.BOLD, JBUI.scale(12).toFloat())
+    }
 
     private fun paintDividers(
         graphics: Graphics2D,
