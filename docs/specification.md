@@ -148,7 +148,7 @@ The selection is the set of files acted on by a workflow run.
 - REQ-PUSH-006: Outgoing-only `Push` MUST NOT open the IDE Push Commits dialog when safe immediate push cannot be prepared; instead the workflow MUST stop. Source: ADR 0069. Validates: SCN-PUSH-*.
 - REQ-PUSH-007: A plugin-owned confirmation dialog MUST NOT be added for the safe immediate push path. Source: ADR 0047. Validates: SCN-PUSH-*.
 - REQ-PUSH-008: When the push executor is unavailable, the workflow MUST stop and MUST report `PushExecutionUnavailable`. Source: ADR 0016. Validates: SCN-WORKFLOW-*.
-- REQ-PUSH-009: The running indicator MUST remain active until the safe immediate push reports completion, success, or failure; it MUST NOT stop immediately after the push request is dispatched. Source: alpha.8 fix. Validates: SCN-CONTROL-AUT-014.
+- REQ-PUSH-009: The running indicator MUST remain active until safe immediate push observes a successful per-repository completion, cancellation, failed push result, or bounded missing-event timeout; it MUST NOT stop immediately after the push request is dispatched or treat a failed completed push as successful. Source: alpha.8 fix, PLAN-maintainability-stability-audit. Validates: SCN-CONTROL-AUT-014, SCN-PUSH-AUT-016..018.
 
 ## 8. Shortcut Takeover
 
@@ -263,6 +263,7 @@ behavior change.
 | PLAN-ai-generation-completion               | REQ-UI-011, REQ-AI-005, REQ-SHC-007, REQ-SET-004                |
 | PLAN-confirm-staged-before-ai-generation    | REQ-SEL-008                                                     |
 | PLAN-include-all-git-files                  | REQ-SEL-007, REQ-COMPAT-002                                     |
+| PLAN-maintainability-stability-audit        | REQ-PUSH-009                                                    |
 | PLAN-three-section-ai-commit-push-control   | REQ-UI-005, REQ-UI-008, REQ-UI-017                              |
 | T-UI-003 (archived)                         | REQ-UI-016                                                      |
 | alpha.6/alpha.8 fixes                       | REQ-PUSH-009, REQ-COMPAT-003                                    |

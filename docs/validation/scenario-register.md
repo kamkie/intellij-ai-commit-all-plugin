@@ -1,6 +1,6 @@
 # Scenario Register
 
-Last updated: 2026-05-23
+Last updated: 2026-05-24
 
 This document owns stable validation scenario IDs across the plugin. Use it for
 feature work, bug fixes, release validation, and coverage planning when a
@@ -24,13 +24,13 @@ release validation run.
 
 | Total scenarios | Automated | Manual | Happy path | Failure path | Edge case |
 |-----------------|-----------|--------|------------|--------------|-----------|
-| 234             | 202       | 32     | 65         | 91           | 78        |
+| 237             | 205       | 32     | 65         | 93           | 79        |
 
 Automated status:
 
 | Status                       | Count |
 |------------------------------|-------|
-| Existing automated coverage  | 202   |
+| Existing automated coverage  | 205   |
 | Known red automated coverage | 0     |
 
 Manual status:
@@ -61,7 +61,7 @@ Manual status:
 | SCN-AI       | AI message generation                | `T-AI-*`, `T-WAIT-*`, `ADR-0012`, `ADR-0014`                         | 43    | 41        | 2      | Covers AI action discovery, invocation context, completion evidence, activity state, and user-edit stops.         |
 | SCN-SELECT   | Change selection and VCS support     | `T-FILES-*`, `ADR-0020`, `ADR-0021`                                  | 21    | 15        | 6      | Covers Git filtering, changelists, roots, resolved conflicts, ignored files, and unsupported VCS states.          |
 | SCN-WORKFLOW | Workflow orchestration and execution | `T-COMMIT-*`, `T-ERROR-*`, `T-VAL-*`, `T-TEST-002`                   | 42    | 37        | 5      | Covers AI, Commit, Push sequencing, executor availability, stop reporting, and VCS readiness.                     |
-| SCN-PUSH     | Safe immediate push and fallback     | `ADR-0047`, `T-COMMIT-007`, `T-VAL-013`                              | 21    | 16        | 5      | Covers safe push policy, fallback reasons, and push error handling.                                               |
+| SCN-PUSH     | Safe immediate push and fallback     | `ADR-0047`, `T-COMMIT-007`, `T-VAL-013`, `PLAN-maintainability-stability-audit` | 24    | 19        | 5      | Covers safe push policy, fallback reasons, and push error handling.                                               |
 | SCN-SETTINGS | Plugin settings                      | `T-WAIT-005`, `T-WAIT-006`, `ADR-0054`                               | 14    | 12        | 2      | Covers persisted settings, validation, defaults, and runtime effect checks.                                       |
 
 ## Scenario Registry
@@ -282,6 +282,9 @@ Manual status:
 | SCN-PUSH-AUT-013     | SCN-PUSH     | Happy path   | Automated | Existing                   | Commit-and-push validation uses only a temporary local bare remote.                                                            | `LocalGitRepositoryValidationTest.commit and push validation uses only temporary local remotes`                                                                                                                                |
 | SCN-PUSH-AUT-014     | SCN-PUSH     | Failure path | Automated | Existing                   | Local repository fixture detects a missing tracked upstream.                                                                   | `LocalGitRepositoryValidationTest.local repository fixture detects a missing tracked upstream`                                                                                                                                 |
 | SCN-PUSH-AUT-015     | SCN-PUSH     | Failure path | Automated | Existing                   | Local repository fixture detects diverged local and upstream hashes.                                                           | `LocalGitRepositoryValidationTest.local repository fixture detects diverged local and upstream hashes`                                                                                                                         |
+| SCN-PUSH-AUT-016     | SCN-PUSH     | Edge case    | Automated | Existing                   | Push completion preserves each repository's platform push result until all awaited repositories complete.                       | `GitPushCompletionServiceTest.await completion preserves successful push results for every repository`                                                                                                                         |
+| SCN-PUSH-AUT-017     | SCN-PUSH     | Failure path | Automated | Existing                   | Safe immediate push reports failed and cancelled platform push completion results as explicit non-success outcomes.             | `GitPushCompletionServiceTest.await completion reports failed push result while preserving per repository state`, `GitPushCompletionServiceTest.await completion reports cancelled push result explicitly`, `SafeImmediatePushServiceTest.immediate push plan completes exceptionally when push completion reports failure`, `SafeImmediatePushServiceTest.immediate push plan completes exceptionally when push completion reports cancellation` |
+| SCN-PUSH-AUT-018     | SCN-PUSH     | Failure path | Automated | Existing                   | Safe immediate push reports a bounded timeout when an expected push completion event is missing.                                | `GitPushCompletionServiceTest.await completion times out with completed results and pending repositories`, `SafeImmediatePushServiceTest.immediate push plan completes exceptionally when push completion times out`           |
 | SCN-PUSH-MAN-001     | SCN-PUSH     | Happy path   | Automated | Existing                   | Safe tracked-upstream local remote push completes without opening a Push window.                                               | `ReleaseMatrixUiHarnessTest.pushSectionCommitsAndPushesToTemporaryBareRemote`                                                                                                                                                  |
 | SCN-PUSH-MAN-002     | SCN-PUSH     | Failure path | Manual    | Manual validation required | Missing upstream falls back to IDE commit-and-push behavior without data loss.                                                 | Push dialog/fallback evidence                                                                                                                                                                                                  |
 | SCN-PUSH-MAN-003     | SCN-PUSH     | Failure path | Manual    | Manual validation required | Diverged local/upstream state falls back instead of immediate push.                                                            | Local/upstream hashes and fallback evidence                                                                                                                                                                                    |

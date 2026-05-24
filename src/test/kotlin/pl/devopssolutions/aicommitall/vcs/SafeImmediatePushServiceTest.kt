@@ -24,10 +24,14 @@ import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.ContentRevision
 import com.intellij.openapi.vcs.history.VcsRevisionNumber
 import com.intellij.openapi.vfs.VirtualFile
+import git4idea.push.GitPushRepoResult
+import git4idea.repo.GitRepository
+import git4idea.update.GitUpdateResult
 import java.io.File
 import java.lang.reflect.Proxy
 import java.nio.charset.Charset
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -161,6 +165,85 @@ internal class SafeImmediatePushServiceTest {
     }
 
     @Test
+    fun `immediate push plan completes exceptionally when push completion reports failure`() {
+        val path = TestFilePath("/repo/modified.txt")
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val failedResult = GitPushCompletionResult.Failed(
+            mapOf(testRepository("repo") to pushResult(GitPushRepoResult.Type.ERROR, error = "remote rejected")),
+        )
+        val environment = CapturingSafeImmediatePushEnvironment(
+            repositoriesByPath = mapOf(path.path to repository),
+            pushStates = mapOf(repository to pushState(SafeImmediatePushSpecHandle("spec"))),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+        val decision = service.prepare(
+            GitChangeSelection(
+                trackedChanges = emptyList(),
+                unversionedFiles = listOf(path),
+            ),
+        )
+
+        val completion = decision.asImmediate().plan.push()
+        environment.completePush(failedResult)
+
+        val thrown = assertCompletionFailsWith<SafeImmediatePushFailedException>(completion)
+        assertSame(failedResult, thrown.result)
+    }
+
+    @Test
+    fun `immediate push plan completes exceptionally when push completion reports cancellation`() {
+        val path = TestFilePath("/repo/modified.txt")
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val cancelledResult = GitPushCompletionResult.Cancelled(
+            mapOf(testRepository("repo") to pushResult(GitPushRepoResult.Type.NOT_PUSHED)),
+        )
+        val environment = CapturingSafeImmediatePushEnvironment(
+            repositoriesByPath = mapOf(path.path to repository),
+            pushStates = mapOf(repository to pushState(SafeImmediatePushSpecHandle("spec"))),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+        val decision = service.prepare(
+            GitChangeSelection(
+                trackedChanges = emptyList(),
+                unversionedFiles = listOf(path),
+            ),
+        )
+
+        val completion = decision.asImmediate().plan.push()
+        environment.completePush(cancelledResult)
+
+        val thrown = assertCompletionFailsWith<SafeImmediatePushCancelledException>(completion)
+        assertSame(cancelledResult, thrown.result)
+    }
+
+    @Test
+    fun `immediate push plan completes exceptionally when push completion times out`() {
+        val path = TestFilePath("/repo/modified.txt")
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val timedOutResult = GitPushCompletionResult.TimedOut(
+            completedResults = emptyMap(),
+            pendingRepositories = setOf(testRepository("repo")),
+        )
+        val environment = CapturingSafeImmediatePushEnvironment(
+            repositoriesByPath = mapOf(path.path to repository),
+            pushStates = mapOf(repository to pushState(SafeImmediatePushSpecHandle("spec"))),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+        val decision = service.prepare(
+            GitChangeSelection(
+                trackedChanges = emptyList(),
+                unversionedFiles = listOf(path),
+            ),
+        )
+
+        val completion = decision.asImmediate().plan.push()
+        environment.completePush(timedOutResult)
+
+        val thrown = assertCompletionFailsWith<SafeImmediatePushTimedOutException>(completion)
+        assertSame(timedOutResult, thrown.result)
+    }
+
+    @Test
     fun `prepare outgoing commits falls back when project is disposed`() {
         val environment = CapturingSafeImmediatePushEnvironment()
         val service = SafeImmediatePushService(testProject(disposed = true), environment)
@@ -227,7 +310,7 @@ internal class SafeImmediatePushServiceTest {
         val pushStateRequests = mutableListOf<SafeImmediatePushRepositoryHandle>()
         val awaitedRepositories = mutableListOf<Collection<SafeImmediatePushRepositoryHandle>>()
         val pushedSpecs = mutableListOf<Map<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>>()
-        val pushCompletion: CompletableFuture<Unit> = CompletableFuture()
+        val pushCompletion: CompletableFuture<GitPushCompletionResult> = CompletableFuture()
         var allRepositoriesCallCount = 0
 
         override fun repositoryForPath(path: FilePath): SafeImmediatePushRepositoryHandle? {
@@ -256,7 +339,7 @@ internal class SafeImmediatePushServiceTest {
 
         override fun awaitPushCompletion(
             repositories: Collection<SafeImmediatePushRepositoryHandle>,
-        ): CompletableFuture<Unit> {
+        ): CompletableFuture<GitPushCompletionResult> {
             awaitedRepositories += repositories
             return pushCompletion
         }
@@ -266,8 +349,10 @@ internal class SafeImmediatePushServiceTest {
             pushFailure?.let { failure -> throw failure }
         }
 
-        fun completePush() {
-            pushCompletion.complete(Unit)
+        fun completePush(
+            result: GitPushCompletionResult = GitPushCompletionResult.Success(emptyMap()),
+        ) {
+            pushCompletion.complete(result)
         }
     }
 
@@ -302,6 +387,17 @@ internal class SafeImmediatePushServiceTest {
     }
 
     private fun SafeImmediatePushDecision.asImmediate() = this as ImmediatePushDecision
+
+    private inline fun <reified T : Throwable> assertCompletionFailsWith(
+        completion: CompletableFuture<Unit>,
+    ): T {
+        val thrown = assertFailsWith<CompletionException> {
+            completion.join()
+        }
+        val cause = thrown.cause
+        assertTrue(cause is T)
+        return cause
+    }
 
     private fun conflictedChange(path: FilePath): Change = Change(
         TestContentRevision(path),
@@ -338,6 +434,45 @@ internal class SafeImmediatePushServiceTest {
         java.lang.Double.TYPE -> 0.0
         java.lang.Void.TYPE -> null
         else -> null
+    }
+
+    private fun testRepository(name: String): GitRepository = Proxy.newProxyInstance(
+        GitRepository::class.java.classLoader,
+        arrayOf(GitRepository::class.java),
+    ) { proxy, method, args ->
+        when (method.name) {
+            "toString" -> name
+            "hashCode" -> System.identityHashCode(proxy)
+            "equals" -> proxy === args?.firstOrNull()
+            else -> method.defaultReturnValue()
+        }
+    } as GitRepository
+
+    private fun pushResult(
+        type: GitPushRepoResult.Type,
+        error: String? = null,
+    ): GitPushRepoResult {
+        val constructor = GitPushRepoResult::class.java.getDeclaredConstructor(
+            GitPushRepoResult.Type::class.java,
+            Int::class.javaPrimitiveType,
+            String::class.java,
+            String::class.java,
+            String::class.java,
+            List::class.java,
+            String::class.java,
+            GitUpdateResult::class.java,
+        )
+        constructor.isAccessible = true
+        return constructor.newInstance(
+            type,
+            1,
+            "refs/heads/main",
+            "refs/remotes/origin/main",
+            "origin",
+            emptyList<String>(),
+            error,
+            null,
+        ) as GitPushRepoResult
     }
 
     private class TestFilePath(private val rawPath: String) : FilePath {

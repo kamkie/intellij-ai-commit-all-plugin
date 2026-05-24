@@ -21,12 +21,12 @@ import git4idea.repo.GitRepository;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 final class GitPushCompletionListener implements GitPushListener {
-    private final Consumer<GitRepository> completionHandler;
+    private final BiConsumer<GitRepository, GitPushRepoResult> completionHandler;
 
-    GitPushCompletionListener(@NotNull Consumer<GitRepository> completionHandler) {
+    GitPushCompletionListener(@NotNull BiConsumer<GitRepository, GitPushRepoResult> completionHandler) {
         this.completionHandler = Objects.requireNonNull(completionHandler);
     }
 
@@ -35,6 +35,6 @@ final class GitPushCompletionListener implements GitPushListener {
             @NotNull GitRepository repository,
             @NotNull GitPushRepoResult pushResult
     ) {
-        completionHandler.accept(repository);
+        completionHandler.accept(repository, pushResult);
     }
 }

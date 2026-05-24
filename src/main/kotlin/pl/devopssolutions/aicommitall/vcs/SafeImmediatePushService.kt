@@ -211,10 +211,13 @@ internal class SafeImmediatePushService @JvmOverloads constructor(
             SafeImmediatePushDecision.Immediate(
                 SafeImmediatePushPlan {
                     val pushCompletion = environment.awaitPushCompletion(pushSpecs.keys)
+                    val completion = pushCompletion.thenApply { result ->
+                        result.toSafeImmediatePushUnit()
+                    }
                     completeExceptionallyOnFailure(pushCompletion) {
                         environment.push(pushSpecs)
                     }
-                    pushCompletion
+                    completion
                 },
             )
         } else {
@@ -257,7 +260,7 @@ internal interface SafeImmediatePushEnvironment {
 
     fun awaitPushCompletion(
         repositories: Collection<SafeImmediatePushRepositoryHandle>,
-    ): CompletableFuture<Unit>
+    ): CompletableFuture<GitPushCompletionResult>
 
     fun push(pushSpecs: Map<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>)
 }
@@ -285,7 +288,7 @@ private class IntellijSafeImmediatePushEnvironment(private val project: Project)
 
     override fun awaitPushCompletion(
         repositories: Collection<SafeImmediatePushRepositoryHandle>,
-    ): CompletableFuture<Unit> = GitPushCompletionService.getInstance(project)
+    ): CompletableFuture<GitPushCompletionResult> = GitPushCompletionService.getInstance(project)
         .awaitCompletion(repositories.map { repository -> repository.gitRepository() })
 
     override fun push(pushSpecs: Map<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>) {
@@ -387,8 +390,32 @@ private val unresolvedConflictStatuses = setOf(
     FileStatus.MERGED_WITH_PROPERTY_CONFLICTS,
 )
 
+internal sealed class SafeImmediatePushCompletionException(
+    message: String,
+    open val result: GitPushCompletionResult,
+) : RuntimeException(message)
+
+internal class SafeImmediatePushFailedException(
+    override val result: GitPushCompletionResult.Failed,
+) : SafeImmediatePushCompletionException("Safe immediate push failed.", result)
+
+internal class SafeImmediatePushCancelledException(
+    override val result: GitPushCompletionResult.Cancelled,
+) : SafeImmediatePushCompletionException("Safe immediate push was cancelled.", result)
+
+internal class SafeImmediatePushTimedOutException(
+    override val result: GitPushCompletionResult.TimedOut,
+) : SafeImmediatePushCompletionException("Safe immediate push completion timed out.", result)
+
+private fun GitPushCompletionResult.toSafeImmediatePushUnit(): Unit = when (this) {
+    is GitPushCompletionResult.Success -> Unit
+    is GitPushCompletionResult.Failed -> throw SafeImmediatePushFailedException(this)
+    is GitPushCompletionResult.Cancelled -> throw SafeImmediatePushCancelledException(this)
+    is GitPushCompletionResult.TimedOut -> throw SafeImmediatePushTimedOutException(this)
+}
+
 private inline fun completeExceptionallyOnFailure(
-    completion: CompletableFuture<Unit>,
+    completion: CompletableFuture<*>,
     action: () -> Unit,
 ) {
     val result = runCatching(action)
