@@ -147,6 +147,49 @@ function Test-PlanCatalogLinks
     }
 
     $readmeText = Get-Content -Raw -LiteralPath $readmePath
+    $activePlansMatch = [regex]::Match($readmeText, '(?ms)^## Active Plans\s*(.*?)(?=^## |\z)')
+    if ($activePlansMatch.Success)
+    {
+        $activePlansText = $activePlansMatch.Groups[1].Value
+        if ($activePlansText -match '(?i)\bready to archive\b')
+        {
+            Add-ValidationError ".agents/plans/README.md Active Plans must not use 'ready to archive'; move archive-ready closed plans to Archived Plans"
+        }
+
+        foreach ($catalogLink in [regex]::Matches($activePlansText, '\[([^\]]+)\]\(([^)]+\.md)\)'))
+        {
+            $target = $catalogLink.Groups[2].Value
+            if ($target.Replace('\', '/') -like 'archive/*')
+            {
+                Add-ValidationError ".agents/plans/README.md Active Plans links to archived plan $target"
+                continue
+            }
+
+            $targetPath = Join-Path $plansRoot $target
+            if (Test-Path -LiteralPath $targetPath -PathType Leaf)
+            {
+                $targetText = Get-Content -Raw -LiteralPath $targetPath
+                if ($targetText -match '(?m)^Status:\s+Closed\s*$')
+                {
+                    Add-ValidationError ".agents/plans/README.md Active Plans lists closed plan $target; move it to Archived Plans"
+                }
+            }
+        }
+    }
+
+    $archivedPlansMatch = [regex]::Match($readmeText, '(?ms)^## Archived Plans\s*(.*?)(?=^## |\z)')
+    if ($archivedPlansMatch.Success)
+    {
+        foreach ($catalogLink in [regex]::Matches($archivedPlansMatch.Groups[1].Value, '\[([^\]]+)\]\(([^)]+\.md)\)'))
+        {
+            $target = $catalogLink.Groups[2].Value
+            if ($target.Replace('\', '/') -notlike 'archive/*')
+            {
+                Add-ValidationError ".agents/plans/README.md Archived Plans links to non-archive plan $target"
+            }
+        }
+    }
+
     foreach ($catalogLink in [regex]::Matches($readmeText, '\[([^\]]+)\]\(([^)]+\.md)\)'))
     {
         $target = $catalogLink.Groups[2].Value
@@ -473,6 +516,16 @@ function Test-AgentPlans
         elseif ($null -ne $status -and $status -ne 'Closed' -and $closeReasonMatch.Success)
         {
             Add-ValidationError "$relative has Close-Reason but Status is '$status'"
+        }
+
+        $isArchivedPlan = $relative -like '.agents/plans/archive/*'
+        if ($status -eq 'Closed' -and -not $isArchivedPlan)
+        {
+            Add-ValidationError "$relative has Status 'Closed' but is not archived under .agents/plans/archive/"
+        }
+        elseif ($isArchivedPlan -and $null -ne $status -and $status -ne 'Closed')
+        {
+            Add-ValidationError "$relative is archived but Status is '$status'"
         }
 
         foreach ($heading in @('Readiness', 'Status History', 'Execution Graph'))

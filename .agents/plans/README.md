@@ -18,6 +18,7 @@ This directory holds task-specific implementation plans for work that is too lar
 - Creating or updating a plan is not approval to implement. Implementation may start only after explicit user review and approval, recorded in `Approved by:` when the plan becomes approved.
 - A plan drafted as a companion to a proposed ADR must stay `Status: Draft`, name the proposed ADR, and state that implementation is blocked until ADR acceptance and later explicit plan approval.
 - Move closed plans to `archive/` only after the plan no longer needs active execution or release-preparation updates. Preserve the `Plan-ID`, filename, and close reason.
+- Do not list closed plans under Active Plans, and do not use "ready to archive" as a catalog state; move archive-ready closed plans to Archived Plans in the same change that archives the file.
 
 ## Active Plans
 

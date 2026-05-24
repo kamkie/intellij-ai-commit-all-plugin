@@ -66,6 +66,7 @@ A useful plan should include:
 - Include `## Execution Graph` in every plan. Sequential plans may use a compact graph; parallel plans must show waves that match `Workers:` and ADR 0080 disjoint write scopes.
 - For approved multi-task plans, include `## Task Packets` with a packet for each worker-owned task, or link to child packet files when the long-plan split rule applies.
 - Use only canonical plan statuses from `.agents/plans/README.md`; `Closed` plans must include a `Close-Reason`.
+- Do not leave `Closed` plans in the active plan directory or Active Plans catalog. If a closed plan is archive-ready, move it to `.agents/plans/archive/` and move its index entry to Archived Plans in the same change; do not invent an intermediate "ready to archive" state.
 - Treat `Approved` as an explicit user approval state, not an agent-assumed readiness label.
 - Do not implement from a plan until the user has reviewed it, explicitly approved it, the plan status is `Approved`, and `Approved by:` records the approver.
 - For approved and post-approval plans, set `Approved by:` to the configured Git identity in `Name <email>` form unless the current user request explicitly supplies another approver name.
