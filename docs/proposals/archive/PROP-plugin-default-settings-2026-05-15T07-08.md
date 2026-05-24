@@ -15,9 +15,9 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 - [Progress Tracker](#progress-tracker)
 - [How To Edit The Trackers](#how-to-edit-the-trackers)
 - [Errors And Mistakes](#errors-and-mistakes)
-    - [E1. Commit message is not cleared before AI generation](#e1-commit-message-is-not-cleared-before-ai-generation)
-    - [E2. Push confirmation window is shown on commit-and-push flow](#e2-push-confirmation-window-is-shown-on-commit-and-push-flow)
-    - [E3. Ctrl+K and Ctrl+Shift+K shortcuts are not taken over by plugin actions](#e3-ctrlk-and-ctrlshiftk-shortcuts-are-not-taken-over-by-plugin-actions)
+  - [E1. Commit message is not cleared before AI generation](#e1-commit-message-is-not-cleared-before-ai-generation)
+  - [E2. Push confirmation window is shown on commit-and-push flow](#e2-push-confirmation-window-is-shown-on-commit-and-push-flow)
+  - [E3. Ctrl+K and Ctrl+Shift+K shortcuts are not taken over by plugin actions](#e3-ctrlk-and-ctrlshiftk-shortcuts-are-not-taken-over-by-plugin-actions)
 - [Duplications To Remove Or Reduce](#duplications-to-remove-or-reduce)
 - [Simplification Opportunities](#simplification-opportunities)
 - [Smaller / Stylistic Items](#smaller--stylistic-items)
@@ -84,8 +84,8 @@ comment: "Consolidated into `PROP-02-pre-release-ux E002`."
 - Evidence: `src/main/resources/META-INF/plugin.xml` registers the `AI Commit All` and `& Push` actions in the Commit tool window but does not declare `<keyboard-shortcut>` entries. Ctrl+K and Ctrl+Shift+K remain bound to IntelliJ's built-in `CheckinProject` (Commit) and `Vcs.Push` actions.
 - Impact: Users who install the plugin still have to click the split button or remap shortcuts manually to get the AI flow on their primary muscle-memory keys. Taking over the shortcuts gives the AI flow first-class status, matching the request.
 - Proposal: Register first/default keyboard shortcuts for the plugin actions:
-    - `AI Commit All` → `ctrl K` (Windows/Linux) and `meta K` (macOS), replacing the default `CheckinProject` binding for users who keep the plugin's keymap.
-    - `& Push` (AI Commit All & Push) → `ctrl shift K` / `meta shift K`, replacing the default `Vcs.Push` binding.
+  - `AI Commit All` → `ctrl K` (Windows/Linux) and `meta K` (macOS), replacing the default `CheckinProject` binding for users who keep the plugin's keymap.
+  - `& Push` (AI Commit All & Push) → `ctrl shift K` / `meta shift K`, replacing the default `Vcs.Push` binding.
       Implement via `<keyboard-shortcut keymap="$default" first-keystroke="…"/>` in `plugin.xml` and provide an override entry that removes the original action's shortcut where the IntelliJ Platform allows it (`<remove-shortcut>` or via a custom `KeymapExtension`). Because this overrides well-established IDE shortcuts, treat acceptance as a user-visible behavioral change that requires an ADR and a `README.md` note, plus an `AiCommitAllSettings` option (e.g., `overrideCommitShortcuts`, default `true`) so users can opt out without manually editing the keymap.
 
 ```yaml

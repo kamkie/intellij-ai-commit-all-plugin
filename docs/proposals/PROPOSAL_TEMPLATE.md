@@ -16,12 +16,12 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 - [Creation Context](#creation-context)
 - [Progress Tracker](#progress-tracker)
 - [Proposal Items](#proposal-items)
-    - [New Features](#new-features)
-    - [Errors And Mistakes](#errors-and-mistakes)
-        - [E001. Example error](#e001-example-error)
-    - [Duplications To Remove Or Reduce](#duplications-to-remove-or-reduce)
-    - [Simplification Opportunities](#simplification-opportunities)
-    - [Smaller / Stylistic Items](#smaller--stylistic-items)
+  - [New Features](#new-features)
+  - [Errors And Mistakes](#errors-and-mistakes)
+    - [E001. Example error](#e001-example-error)
+  - [Duplications To Remove Or Reduce](#duplications-to-remove-or-reduce)
+  - [Simplification Opportunities](#simplification-opportunities)
+  - [Smaller / Stylistic Items](#smaller--stylistic-items)
 - [Suggested Priority Order](#suggested-priority-order)
 - [Out Of Scope](#out-of-scope)
 
@@ -71,10 +71,10 @@ Use this section for `E` findings: wrong, stale, misleading, broken, contract-vi
 - Evidence: Cite exact files, line references, commands, or observable behavior.
 - Impact: Explain the maintainer-visible problem if this stays unchanged.
 - Non-goals:
-    - List anything this item deliberately does not change.
+  - List anything this item deliberately does not change.
 - Acceptance criteria:
-    - State what must be true when this item is done.
-    - State what must remain unchanged.
+  - State what must be true when this item is done.
+  - State what must remain unchanged.
 
 ##### Recommended Change
 

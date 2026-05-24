@@ -15,13 +15,13 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 - [Progress Tracker](#progress-tracker)
 - [How To Edit The Trackers](#how-to-edit-the-trackers)
 - [Errors And Mistakes](#errors-and-mistakes)
-    - [E001. Variable-width point IDs (E1, E10) break visual alignment and sorting](#e001-variable-width-point-ids-e1-e10-break-visual-alignment-and-sorting)
-    - [E002. Markdown formatting drifts between IntelliJ reformat, AI agents, and the validation script](#e002-markdown-formatting-drifts-between-intellij-reformat-ai-agents-and-the-validation-script)
-    - [E003. Nested list indentation is inconsistent across proposals](#e003-nested-list-indentation-is-inconsistent-across-proposals)
-    - [E004. Markdown tables are not consistently column-aligned](#e004-markdown-tables-are-not-consistently-column-aligned)
+  - [E001. Variable-width point IDs (E1, E10) break visual alignment and sorting](#e001-variable-width-point-ids-e1-e10-break-visual-alignment-and-sorting)
+  - [E002. Markdown formatting drifts between IntelliJ reformat, AI agents, and the validation script](#e002-markdown-formatting-drifts-between-intellij-reformat-ai-agents-and-the-validation-script)
+  - [E003. Nested list indentation is inconsistent across proposals](#e003-nested-list-indentation-is-inconsistent-across-proposals)
+  - [E004. Markdown tables are not consistently column-aligned](#e004-markdown-tables-are-not-consistently-column-aligned)
 - [Duplications To Remove Or Reduce](#duplications-to-remove-or-reduce)
 - [Simplification Opportunities](#simplification-opportunities)
-    - [S001. Add a shared `.editorconfig` and IntelliJ code style to anchor markdown rules](#s001-add-a-shared-editorconfig-and-intellij-code-style-to-anchor-markdown-rules)
+  - [S001. Add a shared `.editorconfig` and IntelliJ code style to anchor markdown rules](#s001-add-a-shared-editorconfig-and-intellij-code-style-to-anchor-markdown-rules)
 - [Smaller / Stylistic Items](#smaller--stylistic-items)
 - [Suggested Priority Order](#suggested-priority-order)
 - [Out Of Scope](#out-of-scope)
@@ -58,9 +58,9 @@ Compact overview only. Edit the YAML tracker inside each section below; this tab
 - Evidence: `docs/proposals/PROP-repo-hygiene-automation-2026-05-15T06-45.md` uses `E1` … `E10`, forcing the `Id` column header to be widened only for the last row and producing a lexicographic order where `E10` sorts before `E2`. The Table of Contents anchors mix `e1-...` and `e10-...`. Other active proposals follow the same pattern.
 - Impact: Tables in the Progress Tracker need manual re-padding whenever a two-digit ID appears; AI agents and IntelliJ reformat disagree about how to pad the column; sorting findings (in scripts, in `Compare-Object` in `scripts/validate-docs.ps1`, or visually) is order-by-string and therefore misleading. Cross-references in commits, ADRs, and READMEs become ambiguous (`E1` vs. `E10`).
 - Proposal: Adopt a fixed three-digit, zero-padded width for all finding IDs in proposals:
-    - Errors: `E001`, `E002`, …, `E999`.
-    - Duplications: `D001`, `D002`, ….
-    - Simplifications: `S001`, `S002`, ….
+  - Errors: `E001`, `E002`, …, `E999`.
+  - Duplications: `D001`, `D002`, ….
+  - Simplifications: `S001`, `S002`, ….
 - Update `docs/proposals/PROPOSAL_TEMPLATE.md`, the rules in `docs/proposals/README.md`, and the regex in `scripts/validate-docs.ps1` (currently `(E\d+|D\d+|S\d+)`) to require exactly three digits: `(E\d{3}|D\d{3}|S\d{3})`. Keep existing proposals as-is for history; renumber only when a proposal is materially updated. Record the change as an ADR before implementation per `docs/decisions/README.md`.
 
 ```yaml
@@ -111,10 +111,10 @@ comment: "Consolidated into `PROP-03-repository-quality-lifecycle E003`."
 - Evidence: Progress Tracker tables in different proposals use different column-padding widths; adding a row with a longer title (or moving from `E1` to `E10`) leaves the header separator and other rows un-repadded. `scripts/validate-docs.ps1` validates only the IDs present in the table (regex on `^\|(E\d+|D\d+|S\d+) \|`), not table structure or alignment.
 - Impact: Diffs become noisy because reformatting can re-pad all rows; readers cannot scan the tracker easily; AI agents and IntelliJ reformat disagree on whether to pad to the widest cell or to keep author spacing.
 - Proposal: Define and enforce a single table style:
-    - All pipe tables must have a leading `|` and trailing `|` on every row.
-    - Header separator cells must have at least three `-`.
-    - All cells in a column padded with spaces to the width of the widest cell in that column.
-    - Enable markdownlint `MD055` (table pipe style: `leading_and_trailing`), `MD056` (consistent column count), and `MD058` (blank lines around tables).
+  - All pipe tables must have a leading `|` and trailing `|` on every row.
+  - Header separator cells must have at least three `-`.
+  - All cells in a column padded with spaces to the width of the widest cell in that column.
+  - Enable markdownlint `MD055` (table pipe style: `leading_and_trailing`), `MD056` (consistent column count), and `MD058` (blank lines around tables).
 - Provide an IntelliJ "Reformat Code" action setting that produces the same output, and instruct AI agents in `.agents/references/code-style.md` to follow it.
 
 ```yaml

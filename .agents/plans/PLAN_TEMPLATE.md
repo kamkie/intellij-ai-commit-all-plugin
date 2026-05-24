@@ -69,10 +69,10 @@ Goal:
 Initial context budget:
 
 - Read first:
-    - Plan header, readiness summary, execution graph, and this task packet.
-    - Exact owner artifacts and source files required for this task, for example `AGENTS.md` or `src/main/kotlin/...`.
+  - Plan header, readiness summary, execution graph, and this task packet.
+  - Exact owner artifacts and source files required for this task, for example `AGENTS.md` or `src/main/kotlin/...`.
 - Escalate to:
-    - Exact owner guides, source files, logs, validation output, or docs allowed only when an escalation trigger fires.
+  - Exact owner guides, source files, logs, validation output, or docs allowed only when an escalation trigger fires.
 
 Allowed inputs:
 

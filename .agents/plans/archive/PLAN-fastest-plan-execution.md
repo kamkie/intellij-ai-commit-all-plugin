@@ -426,13 +426,13 @@ The top-level `## Execution Graph` above is the required graph for this archived
 Run these in parallel only with disjoint ownership:
 
 - Track A: Execute `PLAN-include-all-git-files`.
-    - Suggested ownership: VCS selection services and related tests.
+  - Suggested ownership: VCS selection services and related tests.
 - Track B: Execute `PLAN-ai-assistant-message-generation`.
-    - Suggested ownership: AI action discovery, invocation context, and related tests.
+  - Suggested ownership: AI action discovery, invocation context, and related tests.
 - Track C: Execute `PLAN-commit-tool-window-actions` Task 1 only.
-    - Suggested ownership: final SVG icon resources.
+  - Suggested ownership: final SVG icon resources.
 - Track D: Execute early validation infrastructure from `PLAN-validation-coverage` Task 1 only if it does not touch files owned by another active worker.
-    - Suggested ownership: plugin verifier configuration or validation documentation.
+  - Suggested ownership: plugin verifier configuration or validation documentation.
 
 Integration checkpoint:
 

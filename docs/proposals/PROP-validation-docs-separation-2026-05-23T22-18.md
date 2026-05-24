@@ -18,15 +18,15 @@ for maintainer triage only; it does not implement changes by itself.
 - [Creation Context](#creation-context)
 - [Progress Tracker](#progress-tracker)
 - [Proposal Items](#proposal-items)
-    - [New Features](#new-features)
-    - [Errors And Mistakes](#errors-and-mistakes)
-    - [Duplications To Remove Or Reduce](#duplications-to-remove-or-reduce)
-        - [D001. Scenario file mixes registry, snapshots, and procedures](#d001-scenario-file-mixes-registry-snapshots-and-procedures)
-        - [D002. Manual sandbox file duplicates coverage inventory](#d002-manual-sandbox-file-duplicates-coverage-inventory)
-    - [Simplification Opportunities](#simplification-opportunities)
-        - [S001. Add a validation directory map and ownership split](#s001-add-a-validation-directory-map-and-ownership-split)
-        - [S002. Move current-cycle evidence into dated reports](#s002-move-current-cycle-evidence-into-dated-reports)
-    - [Smaller / Stylistic Items](#smaller--stylistic-items)
+  - [New Features](#new-features)
+  - [Errors And Mistakes](#errors-and-mistakes)
+  - [Duplications To Remove Or Reduce](#duplications-to-remove-or-reduce)
+    - [D001. Scenario file mixes registry, snapshots, and procedures](#d001-scenario-file-mixes-registry-snapshots-and-procedures)
+    - [D002. Manual sandbox file duplicates coverage inventory](#d002-manual-sandbox-file-duplicates-coverage-inventory)
+  - [Simplification Opportunities](#simplification-opportunities)
+    - [S001. Add a validation directory map and ownership split](#s001-add-a-validation-directory-map-and-ownership-split)
+    - [S002. Move current-cycle evidence into dated reports](#s002-move-current-cycle-evidence-into-dated-reports)
+  - [Smaller / Stylistic Items](#smaller--stylistic-items)
 - [Suggested Priority Order](#suggested-priority-order)
 - [Out Of Scope](#out-of-scope)
 
@@ -100,16 +100,16 @@ _No tracked findings._
   scenario identity, one release cycle's evidence, a manual execution procedure,
   or a future automation backlog.
 - Non-goals:
-    - Do not renumber or rewrite published scenario refs.
-    - Do not remove existing automated or manual coverage.
-    - Do not change requirements in `docs/specification.md`.
+  - Do not renumber or rewrite published scenario refs.
+  - Do not remove existing automated or manual coverage.
+  - Do not change requirements in `docs/specification.md`.
 - Acceptance criteria:
-    - The renamed scenario register owns only stable scenario identity,
+  - The renamed scenario register owns only stable scenario identity,
       classification, execution mode, status, requirement/source refs, and
       primary evidence target.
-    - Release-specific evidence and dated local results are absent from the
+  - Release-specific evidence and dated local results are absent from the
       scenario register.
-    - Manual execution procedure detail is referenced from the register but
+  - Manual execution procedure detail is referenced from the register but
       owned elsewhere.
 
 ##### Recommended Change
@@ -160,16 +160,16 @@ Details`, and `Remaining Automation Candidates` sections out of the register.
   register, tests, and release reports, while the actual release checklist is
   hard to distinguish from historical notes.
 - Non-goals:
-    - Do not remove the requirement to perform manual validation before release
+  - Do not remove the requirement to perform manual validation before release
       readiness claims.
-    - Do not weaken PyCharm, WebStorm, real AI Assistant, or platform error UI
+  - Do not weaken PyCharm, WebStorm, real AI Assistant, or platform error UI
       manual coverage.
 - Acceptance criteria:
-    - The release checklist owns only the current-cycle validation workflow,
+  - The release checklist owns only the current-cycle validation workflow,
       required inputs, manual gates, result recording shape, and report links.
-    - Automated coverage is referenced by scenario ID or test lane, not copied as
+  - Automated coverage is referenced by scenario ID or test lane, not copied as
       long explanatory sections.
-    - Manual rows point to scenario refs in the scenario register.
+  - Manual rows point to scenario refs in the scenario register.
 
 ##### Recommended Change
 
@@ -218,14 +218,14 @@ Remove the long `Automated Coverage Added` narrative from this file.
 - Impact: maintainers must infer which validation document owns scenario IDs,
   release execution, reports, and automation follow-up.
 - Non-goals:
-    - Do not turn validation docs into user-facing product documentation.
-    - Do not add a broad documentation site.
+  - Do not turn validation docs into user-facing product documentation.
+  - Do not add a broad documentation site.
 - Acceptance criteria:
-    - `docs/validation/README.md` exists and lists the validation artifacts by
+  - `docs/validation/README.md` exists and lists the validation artifacts by
       ownership boundary.
-    - README and user-facing docs either remove maintainer-only validation links
+  - README and user-facing docs either remove maintainer-only validation links
       or label them as maintainer validation artifacts.
-    - `.agents/references/documentation.md` names the new owners.
+  - `.agents/references/documentation.md` names the new owners.
 
 ##### Recommended Change
 
@@ -268,13 +268,13 @@ Introduce this ownership map:
 - Impact: a reusable checklist becomes stale whenever a release cycle completes,
   and historical evidence is hard to archive or compare across cycles.
 - Non-goals:
-    - Do not require a release report for every small local documentation edit.
-    - Do not move CI logs or large generated reports into Git.
+  - Do not require a release report for every small local documentation edit.
+  - Do not move CI logs or large generated reports into Git.
 - Acceptance criteria:
-    - The release checklist is reusable across release cycles.
-    - Dated reports own one cycle's artifact path, IDE builds, commands, manual
+  - The release checklist is reusable across release cycles.
+  - Dated reports own one cycle's artifact path, IDE builds, commands, manual
       observations, skipped checks, and evidence paths.
-    - The latest report can be linked from the release checklist or TASKS entry
+  - The latest report can be linked from the release checklist or TASKS entry
       when release readiness is being claimed.
 
 ##### Recommended Change

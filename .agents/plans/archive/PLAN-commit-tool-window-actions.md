@@ -50,17 +50,17 @@ No open plan questions.
 ## Proposed Changes
 
 - Task 1: Produce final IntelliJ-style action icons.
-    - Covers `T-ACTIONS-001` and `T-ACTIONS-002`.
-    - Convert the generated concept direction into small SVG icon assets, with dark variants only when contrast requires them.
+  - Covers `T-ACTIONS-001` and `T-ACTIONS-002`.
+  - Convert the generated concept direction into small SVG icon assets, with dark variants only when contrast requires them.
 - Task 2: Register the split-button actions.
-    - Covers `T-ACTIONS-004`.
-    - Add action classes, action IDs, group placement, presentation text, icons, and plugin descriptor entries needed for the Commit tool window primary actions group.
+  - Covers `T-ACTIONS-004`.
+  - Add action classes, action IDs, group placement, presentation text, icons, and plugin descriptor entries needed for the Commit tool window primary actions group.
 - Task 3: Route split-button segments into workflow entry points.
-    - Covers `T-ACTIONS-005` and `T-ACTIONS-006`.
-    - Route `AI Commit All` to commit-only mode and `& Push` to commit-and-push mode without duplicating the downstream workflow implementation.
+  - Covers `T-ACTIONS-005` and `T-ACTIONS-006`.
+  - Route `AI Commit All` to commit-only mode and `& Push` to commit-and-push mode without duplicating the downstream workflow implementation.
 - Task 4: Implement visibility and enablement rules.
-    - Covers `T-ACTIONS-007` and `T-ACTIONS-008`.
-    - Hide outside active Git commit workflow contexts and disable when no non-ignored committable files are available.
+  - Covers `T-ACTIONS-007` and `T-ACTIONS-008`.
+  - Hide outside active Git commit workflow contexts and disable when no non-ignored committable files are available.
 
 ## Execution Model
 

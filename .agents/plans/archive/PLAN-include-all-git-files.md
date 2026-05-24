@@ -51,17 +51,17 @@ No open plan questions.
 ## Proposed Changes
 
 - Task 1: Discover tracked Git changes.
-    - Covers `T-FILES-001`, `T-FILES-003`, and part of `T-FILES-006`.
-    - Collect modified, added, deleted, moved or renamed, and other committable changes from `ChangeListManager` across changelists and Git roots.
+  - Covers `T-FILES-001`, `T-FILES-003`, and part of `T-FILES-006`.
+  - Collect modified, added, deleted, moved or renamed, and other committable changes from `ChangeListManager` across changelists and Git roots.
 - Task 2: Discover non-ignored unversioned files.
-    - Covers `T-FILES-002`.
-    - Include non-ignored unversioned paths exposed by IntelliJ VCS APIs without manually parsing ignore files.
+  - Covers `T-FILES-002`.
+  - Include non-ignored unversioned paths exposed by IntelliJ VCS APIs without manually parsing ignore files.
 - Task 3: Activate and synchronize the non-modal commit workflow.
-    - Covers `T-FILES-004` and `T-FILES-005`.
-    - Open or focus the Commit tool window workflow and set commit inclusion state for every eligible file.
+  - Covers `T-FILES-004` and `T-FILES-005`.
+  - Open or focus the Commit tool window workflow and set commit inclusion state for every eligible file.
 - Task 4: Support changelists and staging modes.
-    - Covers `T-FILES-006` and `T-FILES-007`.
-    - Verify behavior when changes are spread across changelists and when Git staging is enabled or disabled.
+  - Covers `T-FILES-006` and `T-FILES-007`.
+  - Verify behavior when changes are spread across changelists and when Git staging is enabled or disabled.
 
 ## Execution Model
 

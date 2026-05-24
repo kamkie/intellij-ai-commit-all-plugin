@@ -15,16 +15,16 @@ This proposal respects `AGENTS.md`, `TASKS.md`, `docs/decisions/OPEN_QUESTIONS.m
 - [Progress Tracker](#progress-tracker)
 - [How To Edit The Trackers](#how-to-edit-the-trackers)
 - [Errors And Mistakes](#errors-and-mistakes)
-    - [E1. No automated code scanning configured](#e1-no-automated-code-scanning-configured)
-    - [E2. No enforced code formatting/linting](#e2-no-enforced-code-formattinglinting)
-    - [E3. No Dependabot configuration](#e3-no-dependabot-configuration)
-    - [E4. Gradle wrapper integrity is not validated in CI](#e4-gradle-wrapper-integrity-is-not-validated-in-ci)
-    - [E5. No secret scanning / push protection guidance](#e5-no-secret-scanning--push-protection-guidance)
-    - [E6. No SECURITY.md disclosure policy](#e6-no-securitymd-disclosure-policy)
-    - [E7. No CONTRIBUTING.md for external contributors](#e7-no-contributingmd-for-external-contributors)
-    - [E8. No CODEOWNERS file](#e8-no-codeowners-file)
-    - [E9. No pull request or issue templates](#e9-no-pull-request-or-issue-templates)
-    - [E10. No license header enforcement on Kotlin sources](#e10-no-license-header-enforcement-on-kotlin-sources)
+  - [E1. No automated code scanning configured](#e1-no-automated-code-scanning-configured)
+  - [E2. No enforced code formatting/linting](#e2-no-enforced-code-formattinglinting)
+  - [E3. No Dependabot configuration](#e3-no-dependabot-configuration)
+  - [E4. Gradle wrapper integrity is not validated in CI](#e4-gradle-wrapper-integrity-is-not-validated-in-ci)
+  - [E5. No secret scanning / push protection guidance](#e5-no-secret-scanning--push-protection-guidance)
+  - [E6. No SECURITY.md disclosure policy](#e6-no-securitymd-disclosure-policy)
+  - [E7. No CONTRIBUTING.md for external contributors](#e7-no-contributingmd-for-external-contributors)
+  - [E8. No CODEOWNERS file](#e8-no-codeowners-file)
+  - [E9. No pull request or issue templates](#e9-no-pull-request-or-issue-templates)
+  - [E10. No license header enforcement on Kotlin sources](#e10-no-license-header-enforcement-on-kotlin-sources)
 - [Duplications To Remove Or Reduce](#duplications-to-remove-or-reduce)
 - [Simplification Opportunities](#simplification-opportunities)
 - [Smaller / Stylistic Items](#smaller--stylistic-items)
@@ -101,9 +101,9 @@ comment: "Consolidated into `PROP-03-repository-quality-lifecycle E003`."
 - Evidence: No `.github/dependabot.yml` exists. `build.gradle.kts` and `gradle.properties` pin IntelliJ Platform and Kotlin/Gradle dependency versions that need periodic updates aligned with the 2026.1 minimum platform target.
 - Impact: Security and compatibility updates for Gradle plugins, GitHub Actions, and the IntelliJ Platform Gradle plugin are not surfaced as PRs. Marketplace publication risk grows as transitive dependencies age.
 - Proposal: Add `.github/dependabot.yml` with at least these ecosystems:
-    - `github-actions` (weekly, grouped minor+patch).
-    - `gradle` (weekly, grouped minor+patch; major updates as separate PRs).
-    - Target branch `main`; default reviewer set from `CODEOWNERS` once E8 is accepted.
+  - `github-actions` (weekly, grouped minor+patch).
+  - `gradle` (weekly, grouped minor+patch; major updates as separate PRs).
+  - Target branch `main`; default reviewer set from `CODEOWNERS` once E8 is accepted.
       Constrain the IntelliJ Platform major version bumps to a separate group so they can be reviewed against ADR-0008 (target platform).
 
 ```yaml

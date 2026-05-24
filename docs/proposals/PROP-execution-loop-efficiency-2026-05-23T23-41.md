@@ -16,17 +16,17 @@ This proposal respects `AGENTS.md`, `docs/decisions/README.md`, `docs/proposals/
 - [Creation Context](#creation-context)
 - [Progress Tracker](#progress-tracker)
 - [Proposal Items](#proposal-items)
-    - [New Features](#new-features)
-        - [F001. Add a read-only exploration lane](#f001-add-a-read-only-exploration-lane)
-        - [F002. Add an orchestrator decision capsule for context-heavy work](#f002-add-an-orchestrator-decision-capsule-for-context-heavy-work)
-    - [Errors And Mistakes](#errors-and-mistakes)
-        - [E001. Parallel plan waves are weakened by sequential task wording](#e001-parallel-plan-waves-are-weakened-by-sequential-task-wording)
-    - [Duplications To Remove Or Reduce](#duplications-to-remove-or-reduce)
-        - [D001. Routing matrix duplication can drift between execution and planning guidance](#d001-routing-matrix-duplication-can-drift-between-execution-and-planning-guidance)
-    - [Simplification Opportunities](#simplification-opportunities)
-        - [S001. Move one-off context and delegation preflight ahead of context loading](#s001-move-one-off-context-and-delegation-preflight-ahead-of-context-loading)
-        - [S002. Define local packet mode when delegation is unavailable](#s002-define-local-packet-mode-when-delegation-is-unavailable)
-    - [Smaller / Stylistic Items](#smaller--stylistic-items)
+  - [New Features](#new-features)
+    - [F001. Add a read-only exploration lane](#f001-add-a-read-only-exploration-lane)
+    - [F002. Add an orchestrator decision capsule for context-heavy work](#f002-add-an-orchestrator-decision-capsule-for-context-heavy-work)
+  - [Errors And Mistakes](#errors-and-mistakes)
+    - [E001. Parallel plan waves are weakened by sequential task wording](#e001-parallel-plan-waves-are-weakened-by-sequential-task-wording)
+  - [Duplications To Remove Or Reduce](#duplications-to-remove-or-reduce)
+    - [D001. Routing matrix duplication can drift between execution and planning guidance](#d001-routing-matrix-duplication-can-drift-between-execution-and-planning-guidance)
+  - [Simplification Opportunities](#simplification-opportunities)
+    - [S001. Move one-off context and delegation preflight ahead of context loading](#s001-move-one-off-context-and-delegation-preflight-ahead-of-context-loading)
+    - [S002. Define local packet mode when delegation is unavailable](#s002-define-local-packet-mode-when-delegation-is-unavailable)
+  - [Smaller / Stylistic Items](#smaller--stylistic-items)
 - [Suggested Priority Order](#suggested-priority-order)
 - [Out Of Scope](#out-of-scope)
 
@@ -76,13 +76,13 @@ Compact overview only. The metadata table inside each finding remains the source
 - Evidence: `.agents/references/orchestration.md:28` defines worker lanes, and `.agents/references/orchestration.md:33` and `.agents/references/orchestration.md:34` currently list `testing` and `review` after `implementation`; `.agents/references/orchestration.md:59` separately recommends read-only sidecars for focused codebase exploration. Exploration is useful but has no lane contract.
 - Impact: Agents must fit codebase discovery into `review` or informal one-off sidecars. That makes exploration output less predictable and can mix fact-finding, validation, and review judgments in one context.
 - Non-goals:
-    - Do not make exploration workers mandatory for small tasks.
-    - Do not allow exploration workers to edit files, update plans, or approve decisions.
-    - Do not replace review or testing lanes.
+  - Do not make exploration workers mandatory for small tasks.
+  - Do not allow exploration workers to edit files, update plans, or approve decisions.
+  - Do not replace review or testing lanes.
 - Acceptance criteria:
-    - `.agents/references/orchestration.md` defines an `exploration` lane as read-only by default.
-    - Exploration briefs require exact read-first inputs, forbidden broad scans, escalation triggers, and output with evidence-backed file or line references.
-    - Planning and execution guidance allow exploration lanes for context-heavy one-off work and approved-plan preflight without dispatching full plans by default.
+  - `.agents/references/orchestration.md` defines an `exploration` lane as read-only by default.
+  - Exploration briefs require exact read-first inputs, forbidden broad scans, escalation triggers, and output with evidence-backed file or line references.
+  - Planning and execution guidance allow exploration lanes for context-heavy one-off work and approved-plan preflight without dispatching full plans by default.
 
 ##### Recommended Change
 
@@ -113,13 +113,13 @@ Add a read-only `exploration` lane for repository fact-finding, source-map disco
 - Evidence: `.agents/references/orchestration.md:11` starts a detailed orchestrator ownership list, including write-scope checks, worker events, output review, and final reconciliation through `.agents/references/orchestration.md:22`. Result summaries are defined later in `.agents/references/orchestration.md:128`, but there is no compact preflight capsule that records route, gate status, read set, delegation decision, write scopes, and validation plan before context-heavy work starts.
 - Impact: The orchestrator role is correct but operationally late. Agents can make route and context decisions implicitly, then report only final evidence. That reduces auditability when a broad one-off task or multi-worker plan later needs to explain why it loaded context locally, delegated, or avoided delegation.
 - Non-goals:
-    - Do not require a verbose capsule for tiny commands or one-file edits.
-    - Do not create durable `.agents/runs/` logs.
-    - Do not duplicate full task packets or plan result summaries.
+  - Do not require a verbose capsule for tiny commands or one-file edits.
+  - Do not create durable `.agents/runs/` logs.
+  - Do not duplicate full task packets or plan result summaries.
 - Acceptance criteria:
-    - Orchestration guidance defines when a capsule is required: delegated work, context-pressure risk, broad audits, parallel waves, or write workers.
-    - The capsule shape is compact: path, gates, read set, delegation plan or local reason, reserved write scopes, validation plan, and current blocker status.
-    - The capsule lives in chat or the plan handoff, not in a new durable run-log tree.
+  - Orchestration guidance defines when a capsule is required: delegated work, context-pressure risk, broad audits, parallel waves, or write workers.
+  - The capsule shape is compact: path, gates, read set, delegation plan or local reason, reserved write scopes, validation plan, and current blocker status.
+  - The capsule lives in chat or the plan handoff, not in a new durable run-log tree.
 
 ##### Recommended Change
 
@@ -152,13 +152,13 @@ Add an optional but recommended "orchestrator decision capsule" before substanti
 - Evidence: `.agents/references/planning.md:90` says each multi-task plan task must be fully implemented, validated, self-reviewed, and committed before the next task starts. `.agents/references/execution.md:78` and `docs/DEVELOPMENT_LIFECYCLE.md:112` repeat similar sequential wording. In contrast, `.agents/references/orchestration.md:103` allows parallel task workers when the plan marks independent tasks, disjoint write scopes, `Workers: N`, and a parallel execution graph, while `.agents/references/orchestration.md:107` defines synchronization for a parallel worker wave.
 - Impact: The repository supports parallel approved-plan waves, but the core planning and execution loops still read as strictly task-by-task. Agents may over-serialize independent plan work, or they may run parallel workers while appearing to violate the "before the next task starts" rule.
 - Non-goals:
-    - Do not remove the one-commit-per-approved-plan-task rule.
-    - Do not permit parallel write work without approved disjoint write scopes.
-    - Do not allow dependent tasks to start before predecessor validation and review gates pass.
+  - Do not remove the one-commit-per-approved-plan-task rule.
+  - Do not permit parallel write work without approved disjoint write scopes.
+  - Do not allow dependent tasks to start before predecessor validation and review gates pass.
 - Acceptance criteria:
-    - Execution and planning guidance define the execution unit as either one task or one approved parallel wave.
-    - Sequential plans still require task completion before the next task starts.
-    - Parallel plans require every task in the current wave to finish, be validated, be self-reviewed or reviewed, and be committed or integrated according to commit rules before a dependent wave starts.
+  - Execution and planning guidance define the execution unit as either one task or one approved parallel wave.
+  - Sequential plans still require task completion before the next task starts.
+  - Parallel plans require every task in the current wave to finish, be validated, be self-reviewed or reviewed, and be committed or integrated according to commit rules before a dependent wave starts.
 
 ##### Recommended Change
 
@@ -191,12 +191,12 @@ Replace strict "before starting the next task" wording with "before starting the
 - Evidence: `.agents/references/execution.md:19` and `.agents/references/planning.md:21` both define a `## Routing Matrix`. The content is currently aligned, and the duplication was useful during ADR 0075 implementation, but future edits must keep the two matrices synchronized.
 - Impact: Routing drift is a high-leverage AI workflow bug. If execution says a task can stay direct while planning says it needs a plan, agents will either over-plan small work or bypass intended plan gates.
 - Non-goals:
-    - Do not remove plan-specific "When To Plan" guidance.
-    - Do not hide the routing decision from agents creating plans.
+  - Do not remove plan-specific "When To Plan" guidance.
+  - Do not hide the routing decision from agents creating plans.
 - Acceptance criteria:
-    - One file is named as the canonical owner for route selection.
-    - The other file keeps only a short pointer plus owner-specific triggers.
-    - Documentation validation or review catches stale concrete links after the edit.
+  - One file is named as the canonical owner for route selection.
+  - The other file keeps only a short pointer plus owner-specific triggers.
+  - Documentation validation or review catches stale concrete links after the edit.
 
 ##### Recommended Change
 
@@ -229,13 +229,13 @@ Make `.agents/references/execution.md` the canonical owner for the route matrix,
 - Evidence: `AGENTS.md:61` says to check thread size and compaction risk before broad exploration or edits. `.agents/references/orchestration.md:54` also says to check context pressure before substantive exploration or edits. However, the direct one-off loop in `.agents/references/execution.md:32` loads the smallest useful context before `.agents/references/execution.md:33` checks delegation triggers.
 - Impact: The direct loop says "before heavy context loading" but places the delegation decision after a context-loading step. That ordering is easy to follow literally, especially during broad audits, and can push context into the main thread before deciding whether a read-only sidecar would be cheaper.
 - Non-goals:
-    - Do not require delegation for tiny direct tasks.
-    - Do not ask the user for delegation permission when local execution is small and safe.
-    - Do not load orchestration guidance for every one-off task.
+  - Do not require delegation for tiny direct tasks.
+  - Do not ask the user for delegation permission when local execution is small and safe.
+  - Do not load orchestration guidance for every one-off task.
 - Acceptance criteria:
-    - The direct one-off loop includes an early preflight before optional owner-doc loading.
-    - The preflight checks route, gates, context-pressure proxies, delegation permission or limits, and likely read set.
-    - Context-pressure proxies are concrete enough to apply when exact token or thread-size metrics are unavailable.
+  - The direct one-off loop includes an early preflight before optional owner-doc loading.
+  - The preflight checks route, gates, context-pressure proxies, delegation permission or limits, and likely read set.
+  - Context-pressure proxies are concrete enough to apply when exact token or thread-size metrics are unavailable.
 
 ##### Recommended Change
 
@@ -266,13 +266,13 @@ Reorder the direct one-off loop so route, gate, context-pressure, and delegation
 - Evidence: `.agents/references/orchestration.md:40` says approved multi-task plans use one orchestrator and one fresh task worker per plan task when the environment supports delegation. `.agents/plans/PLAN_TEMPLATE.md:128` repeats that pattern. `.agents/references/orchestration.md:52` handles one-off tool-contract limits by allowing the agent to ask for permission or keep work local, but the approved-plan path does not explicitly define how to preserve packet boundaries when delegation is unavailable or not authorized.
 - Impact: When subagents are unavailable, disabled, or not permitted by the active tool contract, agents may either ask the user unnecessarily or abandon packet boundaries. The efficient fallback should be obvious: run the same packet locally with the same read-first, escalation, write-scope, stop, validation, and result-summary rules.
 - Non-goals:
-    - Do not pretend local packet execution has the same isolation as a fresh worker.
-    - Do not remove fresh-worker usage when delegation is available and permitted.
-    - Do not change plan approval or commit rules.
+  - Do not pretend local packet execution has the same isolation as a fresh worker.
+  - Do not remove fresh-worker usage when delegation is available and permitted.
+  - Do not change plan approval or commit rules.
 - Acceptance criteria:
-    - Orchestration and plan template guidance define "local packet mode" as the fallback for approved-plan task packets and one-off briefs.
-    - Local packet mode keeps packet-approved context, escalation triggers, write scope, validation, and result summary requirements.
-    - Handoffs state when delegation was unavailable, not authorized, or skipped because local execution was cheaper.
+  - Orchestration and plan template guidance define "local packet mode" as the fallback for approved-plan task packets and one-off briefs.
+  - Local packet mode keeps packet-approved context, escalation triggers, write scope, validation, and result summary requirements.
+  - Handoffs state when delegation was unavailable, not authorized, or skipped because local execution was cheaper.
 
 ##### Recommended Change
 

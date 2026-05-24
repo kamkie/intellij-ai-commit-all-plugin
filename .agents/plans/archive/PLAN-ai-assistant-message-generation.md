@@ -54,14 +54,14 @@ No open plan questions.
 ## Proposed Changes
 
 - Task 1: Discover the AI commit-message action.
-    - Covers `T-AI-001`, `T-AI-002`, and `T-AI-003`.
-    - Prefer known action IDs and fall back to `Vcs.MessageActionGroup` or commit toolbar action presentation text.
+  - Covers `T-AI-001`, `T-AI-002`, and `T-AI-003`.
+  - Prefer known action IDs and fall back to `Vcs.MessageActionGroup` or commit toolbar action presentation text.
 - Task 2: Build the action invocation context.
-    - Covers `T-AI-004`.
-    - Provide project, commit workflow handler, commit UI, and commit message control data through a data context compatible with the target IDEs.
+  - Covers `T-AI-004`.
+  - Provide project, commit workflow handler, commit UI, and commit message control data through a data context compatible with the target IDEs.
 - Task 3: Preserve platform-owned AI failure handling.
-    - Covers `T-AI-006`.
-    - Let AI Assistant surface standard sign-in, unavailable, and generation failure messages when available.
+  - Covers `T-AI-006`.
+  - Let AI Assistant surface standard sign-in, unavailable, and generation failure messages when available.
 
 ## Execution Model
 

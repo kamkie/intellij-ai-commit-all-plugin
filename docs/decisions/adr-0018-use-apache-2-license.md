@@ -21,26 +21,26 @@ This is an engineering proposal, not legal advice.
 Research sources:
 
 - OSI approved license list and license texts:
-    - https://opensource.org/licenses
-    - https://opensource.org/license/mit
-    - https://opensource.org/license/apache-2.0
-    - https://opensource.org/license/gpl-3-0
+  - https://opensource.org/licenses
+  - https://opensource.org/license/mit
+  - https://opensource.org/license/apache-2.0
+  - https://opensource.org/license/gpl-3-0
 - SPDX license identifiers:
-    - https://spdx.org/licenses
+  - https://spdx.org/licenses
 - GitHub open-source licensing guidance:
-    - https://docs.github.com/articles/open-source-licensing
+  - https://docs.github.com/articles/open-source-licensing
 - ChooseALicense practical summaries:
-    - https://choosealicense.com/licenses/mit/
-    - https://choosealicense.com/licenses/gpl-3.0/
+  - https://choosealicense.com/licenses/mit/
+  - https://choosealicense.com/licenses/gpl-3.0/
 - Apache License 2.0 steward text:
-    - https://www.apache.org/licenses/LICENSE-2.0.html
+  - https://www.apache.org/licenses/LICENSE-2.0.html
 - GNU GPLv3 steward text:
-    - https://www.gnu.org/licenses/gpl.en.html
+  - https://www.gnu.org/licenses/gpl.en.html
 - JetBrains Marketplace license requirements:
-    - https://plugins.jetbrains.com/docs/marketplace/uploading-a-new-plugin.html
-    - https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html
+  - https://plugins.jetbrains.com/docs/marketplace/uploading-a-new-plugin.html
+  - https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html
 - IntelliJ Platform license context:
-    - https://plugins.jetbrains.com/docs/intellij/intellij-platform.html
+  - https://plugins.jetbrains.com/docs/intellij/intellij-platform.html
 
 Key constraints found:
 

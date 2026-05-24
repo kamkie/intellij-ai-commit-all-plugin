@@ -50,17 +50,17 @@ No open plan questions.
 ## Proposed Changes
 
 - Task 1: Add Marketplace-ready metadata.
-    - Covers `T-REL-001` and `T-REL-002`.
-    - Add official source code link, publishable description fields, tags, and other Marketplace metadata supported by the IntelliJ Platform Gradle Plugin.
+  - Covers `T-REL-001` and `T-REL-002`.
+  - Add official source code link, publishable description fields, tags, and other Marketplace metadata supported by the IntelliJ Platform Gradle Plugin.
 - Task 2: Configure signing and publishing.
-    - Covers `T-REL-003`, `T-REL-004`, and `T-REL-005`.
-    - Configure signing and `publishPlugin` through local properties or CI secrets, and document any required manual first-upload step.
+  - Covers `T-REL-003`, `T-REL-004`, and `T-REL-005`.
+  - Configure signing and `publishPlugin` through local properties or CI secrets, and document any required manual first-upload step.
 - Task 3: Add pull-request and packaging CI.
-    - Covers `T-REL-006` and `T-REL-009`.
-    - Add CI for build, tests, plugin structure verification, and packaging without requiring or exposing secrets.
+  - Covers `T-REL-006` and `T-REL-009`.
+  - Add CI for build, tests, plugin structure verification, and packaging without requiring or exposing secrets.
 - Task 4: Add verifier and gated release workflow.
-    - Covers `T-REL-007` and `T-REL-008`.
-    - Add Plugin Verifier CI for target IDE versions and a gated/manual signing and Marketplace publishing workflow.
+  - Covers `T-REL-007` and `T-REL-008`.
+  - Add Plugin Verifier CI for target IDE versions and a gated/manual signing and Marketplace publishing workflow.
 
 ## Execution Model
 

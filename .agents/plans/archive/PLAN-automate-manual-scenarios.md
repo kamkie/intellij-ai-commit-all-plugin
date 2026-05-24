@@ -68,39 +68,39 @@ The outcome should be new repository tests for every manual scenario whose invar
 ## Proposed Changes
 
 - Task 1: Triage manual scenarios into automation buckets.
-    - Add a compact automation-triage section to `docs/scenario-coverage.md`.
-    - For each current manual row, classify it as `Automate fully`, `Automated counterpart plus residual manual`, or `Keep manual`.
-    - Record the intended automated evidence target before adding tests.
-    - Do not lower manual counts unless the repository test covers the scenario's primary assertion under the counting rules.
+  - Add a compact automation-triage section to `docs/scenario-coverage.md`.
+  - For each current manual row, classify it as `Automate fully`, `Automated counterpart plus residual manual`, or `Keep manual`.
+  - Record the intended automated evidence target before adding tests.
+  - Do not lower manual counts unless the repository test covers the scenario's primary assertion under the counting rules.
 
 - Task 2: Extract local Git test support.
-    - Move the reusable `LocalGitRepository` and `GitCli` helpers from `LocalGitRepositoryValidationTest` into a small test-support file.
-    - Add fixture helpers for staged-only, mixed staged/unstaged, no staged files, multi-root nested paths, local bare remotes, missing upstream, diverged upstream, and safe push failure setup.
-    - Keep helpers explicit and local to tests; no production Git command execution should be introduced.
+  - Move the reusable `LocalGitRepository` and `GitCli` helpers from `LocalGitRepositoryValidationTest` into a small test-support file.
+  - Add fixture helpers for staged-only, mixed staged/unstaged, no staged files, multi-root nested paths, local bare remotes, missing upstream, diverged upstream, and safe push failure setup.
+  - Keep helpers explicit and local to tests; no production Git command execution should be introduced.
 
 - Task 3: Add VCS, staging, selection, and push automated counterparts.
-    - Add local-repository tests for `SCN-STAGE-MAN-004` through `SCN-STAGE-MAN-007` where the invariant is Git state preservation rather than live UI rendering.
-    - Add local-repository or policy/service tests for `SCN-PUSH-MAN-001` through `SCN-PUSH-MAN-006`, using only temporary bare remotes.
-    - Add selection/filter counterpart tests for `SCN-SELECT-MAN-001` through `SCN-SELECT-MAN-006` where current pure filters or commit-selection items can prove the invariant.
-    - Keep residual manual checks for real Commit tool window visibility, staged-list flicker, and platform push dialogs.
+  - Add local-repository tests for `SCN-STAGE-MAN-004` through `SCN-STAGE-MAN-007` where the invariant is Git state preservation rather than live UI rendering.
+  - Add local-repository or policy/service tests for `SCN-PUSH-MAN-001` through `SCN-PUSH-MAN-006`, using only temporary bare remotes.
+  - Add selection/filter counterpart tests for `SCN-SELECT-MAN-001` through `SCN-SELECT-MAN-006` where current pure filters or commit-selection items can prove the invariant.
+  - Keep residual manual checks for real Commit tool window visibility, staged-list flicker, and platform push dialogs.
 
 - Task 4: Add action, shortcut, settings, and control counterparts.
-    - Extend shortcut tests for no-project delegation, disabled availability delegation, source-action suppression boundaries, and opt-out behavior that does not depend on a real keymap.
-    - Add plugin descriptor tests for required AI Assistant dependency and settings registration where the descriptor is the source of truth.
-    - Add settings-configurable tests for component defaults, reset, validation, and apply behavior if this can be done through a light fixture or a small settings UI model seam.
-    - Add focused control rendering/component tests for state transitions that can be asserted without screenshots; keep theme screenshots manual.
+  - Extend shortcut tests for no-project delegation, disabled availability delegation, source-action suppression boundaries, and opt-out behavior that does not depend on a real keymap.
+  - Add plugin descriptor tests for required AI Assistant dependency and settings registration where the descriptor is the source of truth.
+  - Add settings-configurable tests for component defaults, reset, validation, and apply behavior if this can be done through a light fixture or a small settings UI model seam.
+  - Add focused control rendering/component tests for state transitions that can be asserted without screenshots; keep theme screenshots manual.
 
 - Task 5: Add AI and workflow stop-path counterparts.
-    - Extend workflow runner tests for readiness stops, missing workflow, missing AI action, empty selection, completion failure, timeout, empty/unchanged message, no completion signal, and user edit outcomes where current coverage is not explicit for the manual row.
-    - Extend AI action discovery tests with additional supported-version label/action-id variations that can be represented by fake `ActionManager` lookup data.
-    - Extend stop reporter tests for every plugin-owned or forwarded stop reason where repository assertions can prove the notification policy.
-    - Keep real AI Assistant signed-in, unavailable, and product-specific action discovery checks manual.
+  - Extend workflow runner tests for readiness stops, missing workflow, missing AI action, empty selection, completion failure, timeout, empty/unchanged message, no completion signal, and user edit outcomes where current coverage is not explicit for the manual row.
+  - Extend AI action discovery tests with additional supported-version label/action-id variations that can be represented by fake `ActionManager` lookup data.
+  - Extend stop reporter tests for every plugin-owned or forwarded stop reason where repository assertions can prove the notification policy.
+  - Keep real AI Assistant signed-in, unavailable, and product-specific action discovery checks manual.
 
 - Task 6: Update scenario coverage and validation evidence.
-    - Add new `SCN-*-AUT-*` rows for automated counterparts and update project/set counts.
-    - Move a manual row to `Automated` only when the new test owns the primary assertion under the counting rules.
-    - Update `## Automation Candidates` so future agents know which residual manual checks are intentionally retained.
-    - Run documentation validation and the relevant targeted Gradle tests after each implementation slice.
+  - Add new `SCN-*-AUT-*` rows for automated counterparts and update project/set counts.
+  - Move a manual row to `Automated` only when the new test owns the primary assertion under the counting rules.
+  - Update `## Automation Candidates` so future agents know which residual manual checks are intentionally retained.
+  - Run documentation validation and the relevant targeted Gradle tests after each implementation slice.
 
 ## Execution Model
 

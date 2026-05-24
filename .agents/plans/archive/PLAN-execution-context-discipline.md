@@ -79,12 +79,12 @@ Goal:
 Initial context budget:
 
 - Read first:
-    - `AGENTS.md`
-    - `.agents/references/documentation.md`
-    - `.agents/references/execution.md`
-    - `.agents/references/planning.md`
-    - `docs/DEVELOPMENT_LIFECYCLE.md`
-    - accepted `docs/decisions/adr-0075-calibrate-ai-execution-routing-and-context-discipline.md`
+  - `AGENTS.md`
+  - `.agents/references/documentation.md`
+  - `.agents/references/execution.md`
+  - `.agents/references/planning.md`
+  - `docs/DEVELOPMENT_LIFECYCLE.md`
+  - accepted `docs/decisions/adr-0075-calibrate-ai-execution-routing-and-context-discipline.md`
 
 Allowed inputs:
 
@@ -160,10 +160,10 @@ Goal:
 Initial context budget:
 
 - Read first:
-    - `AGENTS.md`
-    - `.agents/references/documentation.md`
-    - `.agents/references/orchestration.md`
-    - accepted `docs/decisions/adr-0075-calibrate-ai-execution-routing-and-context-discipline.md`
+  - `AGENTS.md`
+  - `.agents/references/documentation.md`
+  - `.agents/references/orchestration.md`
+  - accepted `docs/decisions/adr-0075-calibrate-ai-execution-routing-and-context-discipline.md`
 
 Allowed inputs:
 
@@ -235,12 +235,12 @@ Goal:
 Initial context budget:
 
 - Read first:
-    - `AGENTS.md`
-    - `.agents/references/documentation.md`
-    - `.agents/plans/README.md`
-    - `.agents/plans/PLAN_TEMPLATE.md`
-    - `scripts/ai/validate-agent-artifacts.ps1`
-    - accepted `docs/decisions/adr-0075-calibrate-ai-execution-routing-and-context-discipline.md`
+  - `AGENTS.md`
+  - `.agents/references/documentation.md`
+  - `.agents/plans/README.md`
+  - `.agents/plans/PLAN_TEMPLATE.md`
+  - `scripts/ai/validate-agent-artifacts.ps1`
+  - accepted `docs/decisions/adr-0075-calibrate-ai-execution-routing-and-context-discipline.md`
 
 Allowed inputs:
 
@@ -314,12 +314,12 @@ Goal:
 Initial context budget:
 
 - Read first:
-    - `AGENTS.md`
-    - `.agents/references/documentation.md`
-    - `docs/WORKING_WITH_AI.md`
-    - `docs/DEVELOPMENT_LIFECYCLE.md`
-    - `docs/decisions/README.md`
-    - accepted `docs/decisions/adr-0075-calibrate-ai-execution-routing-and-context-discipline.md`
+  - `AGENTS.md`
+  - `.agents/references/documentation.md`
+  - `docs/WORKING_WITH_AI.md`
+  - `docs/DEVELOPMENT_LIFECYCLE.md`
+  - `docs/decisions/README.md`
+  - accepted `docs/decisions/adr-0075-calibrate-ai-execution-routing-and-context-discipline.md`
 
 Allowed inputs:
 

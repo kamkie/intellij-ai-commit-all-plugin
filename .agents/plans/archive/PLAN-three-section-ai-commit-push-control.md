@@ -57,19 +57,19 @@ The implementation should apply the ADR 0053 selected visual reference, includin
 ## Proposed Changes
 
 - Task 1: Update action registration and routing for `T-ACTIONS-009`, `T-AI-007`, `T-COMMIT-006`, and `T-COMMIT-007`.
-    - Replace the current two-segment action presentation with three cumulative sections.
-    - Keep visibility and enablement tied to the supported Git commit workflow.
-    - Route `AI` to all-file inclusion plus AI message generation only.
-    - Route `Commit` to the `AI` section behavior plus commit.
-    - Route `Push` to the `Commit` section behavior plus ADR 0047 safe push behavior.
+  - Replace the current two-segment action presentation with three cumulative sections.
+  - Keep visibility and enablement tied to the supported Git commit workflow.
+  - Route `AI` to all-file inclusion plus AI message generation only.
+  - Route `Commit` to the `AI` section behavior plus commit.
+  - Route `Push` to the `Commit` section behavior plus ADR 0047 safe push behavior.
 - Task 2: Apply selected styling for `T-UI-001`.
-    - Use `docs/concepts/graphics/split-button-drafts/01-blue-steel-compact-snake-violet-ai.svg` as the reference.
-    - Preserve passive, cumulative hover, clicked/running, disabled, light, and dark state behavior from ADR 0053.
-    - Use snake-loop activity on the active running section.
+  - Use `docs/concepts/graphics/split-button-drafts/01-blue-steel-compact-snake-violet-ai.svg` as the reference.
+  - Preserve passive, cumulative hover, clicked/running, disabled, light, and dark state behavior from ADR 0053.
+  - Use snake-loop activity on the active running section.
 - Task 3: Update tests, manual validation records, and user-facing docs for `T-VAL-023`.
-    - Update automated coverage for AI-only, commit, and push routing.
-    - Update README usage only after the runtime behavior is implemented.
-    - Refresh manual sandbox validation for light/dark rendering, disabled state, running indication, and all three section paths.
+  - Update automated coverage for AI-only, commit, and push routing.
+  - Update README usage only after the runtime behavior is implemented.
+  - Refresh manual sandbox validation for light/dark rendering, disabled state, running indication, and all three section paths.
 
 ## Execution Model
 

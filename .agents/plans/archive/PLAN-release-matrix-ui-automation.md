@@ -70,38 +70,38 @@ The intended result is a deterministic release validation command that covers fi
 ## Proposed Changes
 
 - Task 1: Add the integration-test harness.
-    - Add `src/integrationTest/kotlin` and `src/integrationTest/resources`.
-    - Add Gradle dependencies for Starter/Driver integration tests, JUnit 5, and required runtime helpers under an `integrationTestImplementation` configuration.
-    - Register a `releaseMatrixUiTest` task using `intellijPlatformTesting.testIdeUi`.
-    - Pass the built plugin path and target IDEA version through Gradle properties.
+  - Add `src/integrationTest/kotlin` and `src/integrationTest/resources`.
+  - Add Gradle dependencies for Starter/Driver integration tests, JUnit 5, and required runtime helpers under an `integrationTestImplementation` configuration.
+  - Register a `releaseMatrixUiTest` task using `intellijPlatformTesting.testIdeUi`.
+  - Pass the built plugin path and target IDEA version through Gradle properties.
 
 - Task 2: Add deterministic IDE fixtures.
-    - Add an integration-test fixture builder for temporary Git repositories with modified, deleted, renamed, unversioned, ignored, already staged, multi-root, and local bare remote states.
-    - Add a test-only AI Assistant substitute that satisfies the required plugin dependency and registers the commit-message generation action used by the production discovery service.
-    - Ensure the fake action writes a deterministic non-empty message through IDE commit-message APIs, not by poking production internals.
+  - Add an integration-test fixture builder for temporary Git repositories with modified, deleted, renamed, unversioned, ignored, already staged, multi-root, and local bare remote states.
+  - Add a test-only AI Assistant substitute that satisfies the required plugin dependency and registers the commit-message generation action used by the production discovery service.
+  - Ensure the fake action writes a deterministic non-empty message through IDE commit-message APIs, not by poking production internals.
 
 - Task 3: Automate Commit tool window and control UI checks.
-    - Add stable accessible names to the three control segments if needed.
-    - Drive `AI`, `Commit`, and `Push` segment clicks with Driver.
-    - Assert the plugin control is visible, the standard `Commit and Push...` toolbar action is absent, disabled/running states are observable, and light/dark rendering smoke checks produce nonblank component screenshots.
+  - Add stable accessible names to the three control segments if needed.
+  - Drive `AI`, `Commit`, and `Push` segment clicks with Driver.
+  - Assert the plugin control is visible, the standard `Commit and Push...` toolbar action is absent, disabled/running states are observable, and light/dark rendering smoke checks produce nonblank component screenshots.
 
 - Task 4: Automate staging, shortcut, and commit/push flows.
-    - Run staging-area enabled and disabled cases against temporary Git fixtures.
-    - Trigger default commit and push shortcuts with takeover enabled and disabled.
-    - Verify `AI` generates a message without commit, `Commit` creates one local commit, and `Push` commits and pushes only to a temporary local remote.
-    - Verify outgoing-only push behavior and protected tracked-branch behavior without opening the Push window when safe immediate push is expected.
+  - Run staging-area enabled and disabled cases against temporary Git fixtures.
+  - Trigger default commit and push shortcuts with takeover enabled and disabled.
+  - Verify `AI` generates a message without commit, `Commit` creates one local commit, and `Push` commits and pushes only to a temporary local remote.
+  - Verify outgoing-only push behavior and protected tracked-branch behavior without opening the Push window when safe immediate push is expected.
 
 - Task 5: Automate failure-state checks.
-    - Run a missing fake-AI dependency sandbox to verify dependency failure or plugin disabled behavior.
-    - Run unavailable AI, timeout, unchanged message, empty message, and user-edit stop paths through deterministic fake actions.
-    - Verify unchanged git log or remote hash for every stop path.
-    - Keep real AI Assistant signed-out service behavior as an optional local smoke lane if fake action cannot reproduce the platform-owned message.
+  - Run a missing fake-AI dependency sandbox to verify dependency failure or plugin disabled behavior.
+  - Run unavailable AI, timeout, unchanged message, empty message, and user-edit stop paths through deterministic fake actions.
+  - Verify unchanged git log or remote hash for every stop path.
+  - Keep real AI Assistant signed-out service behavior as an optional local smoke lane if fake action cannot reproduce the platform-owned message.
 
 - Task 6: Add CI workflow and evidence records.
-    - Add a manually triggered GitHub Actions workflow for IDEA release-matrix UI tests.
-    - Upload JUnit XML, IDE logs, screenshots, and local Git evidence as artifacts.
-    - Keep pull-request CI on fast checks until the UI lane has enough stability data.
-    - Update `docs/validation/manual-sandbox.md`, `docs/scenario-coverage.md`, and `TASKS.md` only after the automated evidence is real.
+  - Add a manually triggered GitHub Actions workflow for IDEA release-matrix UI tests.
+  - Upload JUnit XML, IDE logs, screenshots, and local Git evidence as artifacts.
+  - Keep pull-request CI on fast checks until the UI lane has enough stability data.
+  - Update `docs/validation/manual-sandbox.md`, `docs/scenario-coverage.md`, and `TASKS.md` only after the automated evidence is real.
 
 ## Task Packets
 
@@ -353,48 +353,48 @@ flowchart TD
 
 - Task 1 added the `integrationTest` source set, the `releaseMatrixUiTest` `testIdeUi` task, and a packaged test-only AI Assistant substitute plugin.
 - Task 1 local validation:
-    - `.\gradlew.bat spotlessCheck` passed after mechanical ktlint formatting.
-    - `.\gradlew.bat test buildPlugin` passed.
-    - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` passed on Windows after IDEA 2026.1.2 build `261.24374.151` was downloaded and cached by Starter.
-    - `.\gradlew.bat verifyPlugin "-PpluginVerifierIdeVersions=IU-2026.1.2,PY-2026.1.2,WS-2026.1.2"` passed with compatible reports for `IU-261.24374.151`, `PY-261.24374.152`, and `WS-261.24374.125`.
-    - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1` passed after excluding generated IDE test output from Markdown validation.
-    - `git diff --check` passed.
-    - The test installs `build/distributions/ai-commit-all-*.zip` plus `build/integrationTest/plugins/fake-ai-assistant-plugin-0.0.1-test.zip` and verifies the fake plugin registers `Vcs.LLMCommitMessageAction` from the IDE process through Driver.
-    - The initial fake plugin ZIP layout was corrected from `plugins/lib/...jar` to `plugins/fake-ai-assistant-plugin/lib/...jar` after IntelliJ reported `com.intellij.ml.llm` was not installed.
+  - `.\gradlew.bat spotlessCheck` passed after mechanical ktlint formatting.
+  - `.\gradlew.bat test buildPlugin` passed.
+  - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` passed on Windows after IDEA 2026.1.2 build `261.24374.151` was downloaded and cached by Starter.
+  - `.\gradlew.bat verifyPlugin "-PpluginVerifierIdeVersions=IU-2026.1.2,PY-2026.1.2,WS-2026.1.2"` passed with compatible reports for `IU-261.24374.151`, `PY-261.24374.152`, and `WS-261.24374.125`.
+  - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1` passed after excluding generated IDE test output from Markdown validation.
+  - `git diff --check` passed.
+  - The test installs `build/distributions/ai-commit-all-*.zip` plus `build/integrationTest/plugins/fake-ai-assistant-plugin-0.0.1-test.zip` and verifies the fake plugin registers `Vcs.LLMCommitMessageAction` from the IDE process through Driver.
+  - The initial fake plugin ZIP layout was corrected from `plugins/lib/...jar` to `plugins/fake-ai-assistant-plugin/lib/...jar` after IntelliJ reported `com.intellij.ml.llm` was not installed.
 - Task 2 added `ReleaseMatrixGitFixtureBuilder` for temporary local Git repositories covering modified, deleted, renamed, unversioned, ignored, already staged, multi-root, and local bare remote states.
 - Task 2 updated the fake AI Assistant action so `Vcs.LLMCommitMessageAction` writes `AI Commit All release matrix message` through IDE commit-message data keys and exposes a `progressIndicator` field compatible with the production completion observer.
 - Task 2 updates `releaseMatrixUiTest` to open the local Git fixture as an IDEA project, wait for Driver to see the project, and verify the fake AI action writes the deterministic commit message inside an IDE write-action context.
 - Task 2 local validation:
-    - `.\gradlew.bat compileIntegrationTestKotlin` passed.
-    - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` passed on Windows after fixing fake plugin JUnit discovery and EDT action invocation.
-    - `.\gradlew.bat test buildPlugin` passed.
-    - `.\gradlew.bat spotlessCheck` passed.
+  - `.\gradlew.bat compileIntegrationTestKotlin` passed.
+  - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` passed on Windows after fixing fake plugin JUnit discovery and EDT action invocation.
+  - `.\gradlew.bat test buildPlugin` passed.
+  - `.\gradlew.bat spotlessCheck` passed.
 - Task 3 added a stable Swing component name and state-aware accessible descriptions for the AI Commit All three-section control.
 - Task 3 hardened toolbar replacement so the standard `Git.Commit.And.Push.Executor` action is removed by resolved group-child action ID and is also rechecked when the custom component is created.
 - Task 3 added a clean Git fixture variant and a Driver-backed Commit tool window test that opens IDEA, waits for the control, verifies the standard `Commit and Push...` action is absent from the resolved primary commit group, clicks `AI`, `Commit`, and `Push` segments, asserts disabled accessibility state, and writes nonblank light/dark screenshots under `build/reports/releaseMatrixUiTest/screenshots/commit-control/`.
 - Task 3 local validation:
-    - `.\gradlew.bat compileIntegrationTestKotlin` passed.
-    - `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.actions.AiCommitAllCommitToolbarCustomizerTest" --tests "pl.devopssolutions.aicommitall.actions.AiCommitAllThreeSectionControlTest"` passed.
-    - `.\gradlew.bat spotlessCheck test buildPlugin` passed.
-    - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` passed on Windows and produced `ai-commit-all-control-light.png` and `ai-commit-all-control-dark.png`.
-    - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1` passed.
-    - `git diff --check` passed.
+  - `.\gradlew.bat compileIntegrationTestKotlin` passed.
+  - `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.actions.AiCommitAllCommitToolbarCustomizerTest" --tests "pl.devopssolutions.aicommitall.actions.AiCommitAllThreeSectionControlTest"` passed.
+  - `.\gradlew.bat spotlessCheck test buildPlugin` passed.
+  - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` passed on Windows and produced `ai-commit-all-control-light.png` and `ai-commit-all-control-dark.png`.
+  - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1` passed.
+  - `git diff --check` passed.
 - Task 4 added IDEA UI automation for the shortcut takeover execution path: the commit shortcut creates one local commit with the deterministic fake AI message, and the push shortcut commits and pushes to a temporary local bare remote.
 - Task 4 hardened the release-matrix harness by clearing stale `disabled_plugins.txt` content before each IDE launch, resetting AI Commit All and Git staging settings in the IDE process, avoiding OS foreground-focus assertions, replacing a deprecated action-update API, and disabling Docker/Kubernetes/Gateway only in the test sandbox to remove Docker shutdown disposal exceptions from the latest JUnit XML.
 - Task 4 local validation:
-    - `.\gradlew.bat compileIntegrationTestKotlin` passed.
-    - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2" --tests "pl.devopssolutions.aicommitall.integration.ReleaseMatrixUiHarnessTest.startsIdeaWithPluginFakeAiDependencyAndGitFixture"` passed after deterministic disabled-plugin cleanup was added.
-    - `.\gradlew.bat spotlessCheck test` passed.
-    - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` passed with 12 passing tests.
+  - `.\gradlew.bat compileIntegrationTestKotlin` passed.
+  - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2" --tests "pl.devopssolutions.aicommitall.integration.ReleaseMatrixUiHarnessTest.startsIdeaWithPluginFakeAiDependencyAndGitFixture"` passed after deterministic disabled-plugin cleanup was added.
+  - `.\gradlew.bat spotlessCheck test` passed.
+  - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` passed with 12 passing tests.
 - Task 5 added deterministic fake AI behavior modes for generated, empty, unchanged, and never-finishing generation, plus Driver probe controls for AI completion timing, clear-before-generation behavior, fake action replacement, fake action removal, and synthetic commit-message user edits.
 - Task 5 added IDEA UI stop-path coverage for missing `com.intellij.ml.llm` dependency, missing `Vcs.LLMCommitMessageAction`, unavailable completion signal, AI timeout, empty message, unchanged message, and user-edited message. Each stop-path test snapshots local commit count, local HEAD, working-tree status, and temporary bare remote HEAD before the run and verifies they are unchanged after the workflow returns to idle.
 - Task 5 local validation:
-    - `.\gradlew.bat compileIntegrationTestKotlin` passed.
-    - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2" --tests "pl.devopssolutions.aicommitall.integration.ReleaseMatrixUiHarnessTest.missingFakeAiDependencyDisablesAiCommitAllPlugin" --tests "pl.devopssolutions.aicommitall.integration.ReleaseMatrixUiHarnessTest.userEditedMessageStopsWithoutCommitOrPush"` passed.
-    - A full-suite rerun reproduced the IDEA indexing startup/shutdown race in `aiTimeoutStopsWithoutCommitOrPush` and `vcsShortcutTakeoverCanBeToggledInReleaseMatrixIde`; the harness now waits for project smart mode before Commit tool window interaction and before IDE shutdown.
-    - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2" --tests "pl.devopssolutions.aicommitall.integration.ReleaseMatrixUiHarnessTest.aiTimeoutStopsWithoutCommitOrPush" --tests "pl.devopssolutions.aicommitall.integration.ReleaseMatrixUiHarnessTest.vcsShortcutTakeoverCanBeToggledInReleaseMatrixIde"` passed after the indexing-idle fix.
-    - `.\gradlew.bat spotlessCheck test` passed.
-    - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` passed with 19 passing tests.
+  - `.\gradlew.bat compileIntegrationTestKotlin` passed.
+  - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2" --tests "pl.devopssolutions.aicommitall.integration.ReleaseMatrixUiHarnessTest.missingFakeAiDependencyDisablesAiCommitAllPlugin" --tests "pl.devopssolutions.aicommitall.integration.ReleaseMatrixUiHarnessTest.userEditedMessageStopsWithoutCommitOrPush"` passed.
+  - A full-suite rerun reproduced the IDEA indexing startup/shutdown race in `aiTimeoutStopsWithoutCommitOrPush` and `vcsShortcutTakeoverCanBeToggledInReleaseMatrixIde`; the harness now waits for project smart mode before Commit tool window interaction and before IDE shutdown.
+  - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2" --tests "pl.devopssolutions.aicommitall.integration.ReleaseMatrixUiHarnessTest.aiTimeoutStopsWithoutCommitOrPush" --tests "pl.devopssolutions.aicommitall.integration.ReleaseMatrixUiHarnessTest.vcsShortcutTakeoverCanBeToggledInReleaseMatrixIde"` passed after the indexing-idle fix.
+  - `.\gradlew.bat spotlessCheck test` passed.
+  - `.\gradlew.bat releaseMatrixUiTest "-PideProducts=IU" "-PideVersion=2026.1.2"` passed with 19 passing tests.
 - Task 6 added `.github/workflows/release-matrix-ui.yml` as a manually triggered IDEA UI lane using `xvfb-run`, JDK 21, Gradle wrapper validation, JUnit summary publishing, and artifact upload for JUnit XML, Gradle HTML reports, screenshots, local Git evidence, and IDE logs when present.
 - Task 6 updated manual validation and scenario coverage records to show the deterministic IDEA UI automation evidence while retaining manual rows for live AI Assistant, PyCharm/WebStorm, platform commit/push error UI, and full visual review.
 

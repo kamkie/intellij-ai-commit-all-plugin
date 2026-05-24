@@ -76,16 +76,16 @@ Goal:
 Initial context budget:
 
 - Read first:
-    - Plan header, readiness summary, execution graph, and this task packet.
-    - `docs/decisions/adr-0081-allow-unchanged-prefilled-ai-message-after-completion.md`
-    - `docs/specification.md`
-    - `docs/user-guide.md`
-    - `src/main/kotlin/pl/devopssolutions/aicommitall/ai/AiGenerationCompletion.kt`
-    - `src/test/kotlin/pl/devopssolutions/aicommitall/ai/AiGenerationCompletionObserverTest.kt`
+  - Plan header, readiness summary, execution graph, and this task packet.
+  - `docs/decisions/adr-0081-allow-unchanged-prefilled-ai-message-after-completion.md`
+  - `docs/specification.md`
+  - `docs/user-guide.md`
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/ai/AiGenerationCompletion.kt`
+  - `src/test/kotlin/pl/devopssolutions/aicommitall/ai/AiGenerationCompletionObserverTest.kt`
 - Escalate to:
-    - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/AiCommitAllWorkflowCoordinator.kt` only if completion result handling requires workflow changes.
-    - `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/` only if workflow-level regression coverage is needed.
-    - `CHANGELOG.md` only after confirming the public behavior change should be noted.
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/AiCommitAllWorkflowCoordinator.kt` only if completion result handling requires workflow changes.
+  - `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/` only if workflow-level regression coverage is needed.
+  - `CHANGELOG.md` only after confirming the public behavior change should be noted.
 
 Allowed inputs:
 

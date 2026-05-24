@@ -50,14 +50,14 @@ No open plan questions.
 ## Proposed Changes
 
 - Task 1: Configure compatibility and packaging validation.
-    - Covers `T-VAL-002`.
-    - Add or document plugin verifier execution for target IDE versions.
+  - Covers `T-VAL-002`.
+  - Add or document plugin verifier execution for target IDE versions.
 - Task 2: Add local-repository end-to-end coverage.
-    - Covers `T-VAL-019`, `T-VAL-020`, and `T-VAL-021`.
-    - Cover modified, added, deleted, moved or renamed, unversioned, ignored, multi-changelist, multi-root, commit-only, and safe local-remote commit-and-push cases where practical.
+  - Covers `T-VAL-019`, `T-VAL-020`, and `T-VAL-021`.
+  - Cover modified, added, deleted, moved or renamed, unversioned, ignored, multi-changelist, multi-root, commit-only, and safe local-remote commit-and-push cases where practical.
 - Task 3: Keep manual sandbox coverage for non-automated scenarios.
-    - Covers `T-VAL-003`, `T-VAL-004`, `T-VAL-005`, `T-VAL-006`, `T-VAL-007`, `T-VAL-008`, `T-VAL-009`, `T-VAL-010`, `T-VAL-011`, `T-VAL-012`, `T-VAL-013`, `T-VAL-014`, `T-VAL-015`, `T-VAL-016`, `T-VAL-017`, `T-VAL-018`, and `T-VAL-022`.
-    - Record exact current stable JetBrains IDE product names and build numbers available through All Products Pack.
+  - Covers `T-VAL-003`, `T-VAL-004`, `T-VAL-005`, `T-VAL-006`, `T-VAL-007`, `T-VAL-008`, `T-VAL-009`, `T-VAL-010`, `T-VAL-011`, `T-VAL-012`, `T-VAL-013`, `T-VAL-014`, `T-VAL-015`, `T-VAL-016`, `T-VAL-017`, `T-VAL-018`, and `T-VAL-022`.
+  - Record exact current stable JetBrains IDE product names and build numbers available through All Products Pack.
 
 ## Execution Model
 

@@ -50,14 +50,14 @@ No open plan questions.
 ## Proposed Changes
 
 - Task 1: Commit through the current workflow.
-    - Covers `T-COMMIT-001`, `T-COMMIT-003`, and `T-COMMIT-004`.
-    - Trigger the same commit pathway the active Commit tool window would use so before-commit checks and platform errors remain active.
+  - Covers `T-COMMIT-001`, `T-COMMIT-003`, and `T-COMMIT-004`.
+  - Trigger the same commit pathway the active Commit tool window would use so before-commit checks and platform errors remain active.
 - Task 2: Execute commit-and-push through the platform executor.
-    - Covers `T-COMMIT-002`.
-    - Use Git commit-and-push executor behavior when available and fail closed when it is unavailable.
+  - Covers `T-COMMIT-002`.
+  - Use Git commit-and-push executor behavior when available and fail closed when it is unavailable.
 - Task 3: Report unsupported states through standard messages.
-    - Covers `T-COMMIT-005`.
-    - Stop without committing or pushing when the project is unsupported, not Git-backed, or lacks a compatible push executor.
+  - Covers `T-COMMIT-005`.
+  - Stop without committing or pushing when the project is unsupported, not Git-backed, or lacks a compatible push executor.
 
 ## Execution Model
 

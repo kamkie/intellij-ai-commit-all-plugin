@@ -52,11 +52,11 @@ Fix `T-BUG-002` so the `AI` section does not invoke JetBrains AI Assistant until
 ### Task 1: Verify Staged Paths Before AI Invocation
 
 - Update `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/ReflectiveCommitWorkflowSynchronizer.kt` so the Git staging-area branch:
-    - captures the expected committable paths before staging;
-    - stages them through `GitFileUtils.addPaths`;
-    - refreshes `GitStageTracker`;
-    - verifies that the refreshed tracker state contains all expected paths as staged changes;
-    - retries the add/refresh/check loop a small bounded number of times before failing closed.
+  - captures the expected committable paths before staging;
+  - stages them through `GitFileUtils.addPaths`;
+  - refreshes `GitStageTracker`;
+  - verifies that the refreshed tracker state contains all expected paths as staged changes;
+  - retries the add/refresh/check loop a small bounded number of times before failing closed.
 - Keep the existing UI state update only after verification succeeds, so AI generation sees the confirmed staged state.
 - Add focused helper logic in `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/GitStageSelectionItems.kt` if needed to make staged-path verification testable.
 - Update `TASKS.md` to mark `T-BUG-002` complete after implementation and validation.

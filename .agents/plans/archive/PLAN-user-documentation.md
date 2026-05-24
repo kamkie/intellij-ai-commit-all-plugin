@@ -50,14 +50,14 @@ No open plan questions.
 ## Proposed Changes
 
 - Task 1: Update setup, usage, dependency, and sandbox docs.
-    - Covers `T-DOC-001`, `T-DOC-003`, `T-DOC-004`, and `T-DOC-005`.
-    - Update `README.md` with setup, usage, AI Assistant dependency, sandbox IDE command, and known unsupported cases.
+  - Covers `T-DOC-001`, `T-DOC-003`, `T-DOC-004`, and `T-DOC-005`.
+  - Update `README.md` with setup, usage, AI Assistant dependency, sandbox IDE command, and known unsupported cases.
 - Task 2: Document source and release process when release surfaces exist.
-    - Covers `T-DOC-007` and `T-DOC-008`.
-    - Add source code location once Marketplace metadata exists and contributor release/publication process after release automation is configured.
+  - Covers `T-DOC-007` and `T-DOC-008`.
+  - Add source code location once Marketplace metadata exists and contributor release/publication process after release automation is configured.
 - Task 3: Align support and changelog docs.
-    - Covers documentation side effects from the implementation plans.
-    - Update `SUPPORT.md` or `CHANGELOG.md` only when implemented behavior, support scope, or contributor workflow changes make that notable.
+  - Covers documentation side effects from the implementation plans.
+  - Update `SUPPORT.md` or `CHANGELOG.md` only when implemented behavior, support scope, or contributor workflow changes make that notable.
 
 ## Execution Model
 

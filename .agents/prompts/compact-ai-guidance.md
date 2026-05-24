@@ -15,12 +15,12 @@ Target selection:
 - Treat this prompt's own title or filename as prompt invocation, not as the target to compact.
 - If the user names one or more target guidance files or prompts after invoking this prompt, read only those target artifacts and their owner guides.
 - If the user invokes this prompt without a target file, inspect live AI guidance:
-    - `AGENTS.md`
-    - `.agents/references/*.md`
-    - `.agents/prompts/README.md`
-    - `.agents/prompts/*.md`
-    - `.agents/skills/*/SKILL.md`
-    - `docs/DEVELOPMENT_LIFECYCLE.md`
+  - `AGENTS.md`
+  - `.agents/references/*.md`
+  - `.agents/prompts/README.md`
+  - `.agents/prompts/*.md`
+  - `.agents/skills/*/SKILL.md`
+  - `docs/DEVELOPMENT_LIFECYCLE.md`
   - `docs/WORKING_WITH_AI.md` for this broad guidance pass only
 - Do not inspect or compact archive content unless the user names a specific archived artifact.
 

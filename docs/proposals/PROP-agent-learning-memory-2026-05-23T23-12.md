@@ -19,14 +19,14 @@ ADR 0079 and `.agents/references/execution.md`.
 - [Creation Context](#creation-context)
 - [Progress Tracker](#progress-tracker)
 - [Proposal Items](#proposal-items)
-    - [New Features](#new-features)
-        - [F001. Add a governed agent learning capture workflow](#f001-add-a-governed-agent-learning-capture-workflow)
-    - [Errors And Mistakes](#errors-and-mistakes)
-    - [Duplications To Remove Or Reduce](#duplications-to-remove-or-reduce)
-        - [D001. Avoid a parallel `.ai` memory tree](#d001-avoid-a-parallel-ai-memory-tree)
-    - [Simplification Opportunities](#simplification-opportunities)
-        - [S001. Narrow mandatory retrospectives to validated learning candidates](#s001-narrow-mandatory-retrospectives-to-validated-learning-candidates)
-    - [Smaller / Stylistic Items](#smaller--stylistic-items)
+  - [New Features](#new-features)
+    - [F001. Add a governed agent learning capture workflow](#f001-add-a-governed-agent-learning-capture-workflow)
+  - [Errors And Mistakes](#errors-and-mistakes)
+  - [Duplications To Remove Or Reduce](#duplications-to-remove-or-reduce)
+    - [D001. Avoid a parallel `.ai` memory tree](#d001-avoid-a-parallel-ai-memory-tree)
+  - [Simplification Opportunities](#simplification-opportunities)
+    - [S001. Narrow mandatory retrospectives to validated learning candidates](#s001-narrow-mandatory-retrospectives-to-validated-learning-candidates)
+  - [Smaller / Stylistic Items](#smaller--stylistic-items)
 - [Suggested Priority Order](#suggested-priority-order)
 - [Out Of Scope](#out-of-scope)
 
@@ -94,16 +94,16 @@ ADR 0079 and `.agents/references/execution.md`.
 - Impact: without a repo-shaped learning path, agents may either skip useful
   operational lessons or store them in an unmanaged location.
 - Non-goals:
-    - Do not approve a new standing rule without an ADR.
-    - Do not make agents write persistent documentation after every task.
-    - Do not store raw logs, secrets, personal data, or speculative root causes.
+  - Do not approve a new standing rule without an ADR.
+  - Do not make agents write persistent documentation after every task.
+  - Do not store raw logs, secrets, personal data, or speculative root causes.
 - Acceptance criteria:
-    - The learning workflow names the existing owner artifacts for each kind of
+  - The learning workflow names the existing owner artifacts for each kind of
       reusable knowledge.
-    - The workflow requires strong evidence before persisting a lesson.
-    - The workflow preserves the smallest-context rule and avoids broad guidance
+  - The workflow requires strong evidence before persisting a lesson.
+  - The workflow preserves the smallest-context rule and avoids broad guidance
       reads by default.
-    - The workflow states when an ADR, proposal, plan, task, or direct docs edit
+  - The workflow states when an ADR, proposal, plan, task, or direct docs edit
       is required.
 
 ##### Recommended Change
@@ -180,15 +180,15 @@ _No tracked findings._
 - Impact: a second memory tree would fragment governance and make future agents
   decide between overlapping sources.
 - Non-goals:
-    - Do not remove any current `.agents/` artifact.
-    - Do not create new memory files as part of this proposal.
-    - Do not block future dedicated learning documentation if it goes through
+  - Do not remove any current `.agents/` artifact.
+  - Do not create new memory files as part of this proposal.
+  - Do not block future dedicated learning documentation if it goes through
       the repository decision path.
 - Acceptance criteria:
-    - The adapted draft does not introduce `.ai/`.
-    - Each memory category from the scratch draft maps to an existing governed
+  - The adapted draft does not introduce `.ai/`.
+  - Each memory category from the scratch draft maps to an existing governed
       owner or to no persistent artifact.
-    - Temporary debugging observations are not kept as durable documentation
+  - Temporary debugging observations are not kept as durable documentation
       unless they become reusable troubleshooting guidance.
 
 ##### Recommended Change
@@ -235,13 +235,13 @@ Use this owner mapping instead of the scratch draft's `.ai/` files:
 - Impact: a mandatory write-heavy loop could create noisy documentation churn
   and slow small tasks without producing validated reusable knowledge.
 - Non-goals:
-    - Do not remove final self-review or validation obligations.
-    - Do not prevent agents from reporting useful lessons in handoff notes.
-    - Do not persist speculative lessons.
+  - Do not remove final self-review or validation obligations.
+  - Do not prevent agents from reporting useful lessons in handoff notes.
+  - Do not persist speculative lessons.
 - Acceptance criteria:
-    - Retrospectives are lightweight unless a validated reusable lesson exists.
-    - Persistent updates require a clear owner, evidence, and deduplication.
-    - Repository rule changes still stop at the ADR gate.
+  - Retrospectives are lightweight unless a validated reusable lesson exists.
+  - Persistent updates require a clear owner, evidence, and deduplication.
+  - Repository rule changes still stop at the ADR gate.
 
 ##### Recommended Change
 

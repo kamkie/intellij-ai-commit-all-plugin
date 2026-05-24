@@ -50,20 +50,20 @@ No open plan questions.
 ## Proposed Changes
 
 - Task 1: Add the minimum plugin-owned notification surface.
-    - Covers `T-ERROR-001` and `T-ERROR-007`.
-    - Add a notification group and document any unavoidable plugin-owned text introduced by implementation.
+  - Covers `T-ERROR-001` and `T-ERROR-007`.
+  - Add a notification group and document any unavoidable plugin-owned text introduced by implementation.
 - Task 2: Handle VCS busy or frozen states.
-    - Covers `T-ERROR-002` and `T-ERROR-003`.
-    - Detect frozen changelist manager state and background VCS operations already running; stop without committing.
+  - Covers `T-ERROR-002` and `T-ERROR-003`.
+  - Detect frozen changelist manager state and background VCS operations already running; stop without committing.
 - Task 3: Handle workflow stop conditions.
-    - Covers `T-ERROR-004` and `T-ERROR-005`.
-    - Report AI timeout and empty commit state through the best available platform or plugin-owned message.
+  - Covers `T-ERROR-004` and `T-ERROR-005`.
+  - Report AI timeout and empty commit state through the best available platform or plugin-owned message.
 - Task 4: Forward commit and push failures.
-    - Covers `T-ERROR-006`.
-    - Preserve standard failure messages and avoid retry loops.
+  - Covers `T-ERROR-006`.
+  - Preserve standard failure messages and avoid retry loops.
 - Task 5: Record newly discovered uncovered risks.
-    - Covers `T-ERROR-008`.
-    - Add an open question and placeholder task when implementation reveals a risk not covered by standard IDE safeguards.
+  - Covers `T-ERROR-008`.
+  - Add an open question and placeholder task when implementation reveals a risk not covered by standard IDE safeguards.
 
 ## Execution Model
 

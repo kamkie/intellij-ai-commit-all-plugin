@@ -50,17 +50,17 @@ No open plan questions.
 ## Proposed Changes
 
 - Task 1: Capture message state and observe completion.
-    - Covers `T-WAIT-001`, `T-WAIT-002`, `T-WAIT-003`, and `T-WAIT-004`.
-    - Capture the original message, prefer reliable completion signals, and use message-field polling only as supporting evidence.
+  - Covers `T-WAIT-001`, `T-WAIT-002`, `T-WAIT-003`, and `T-WAIT-004`.
+  - Capture the original message, prefer reliable completion signals, and use message-field polling only as supporting evidence.
 - Task 2: Add settings for timeout and completion checks.
-    - Covers `T-WAIT-005` and `T-WAIT-006`.
-    - Add persistent Settings UI/state for timeout and completion-check interval with accepted defaults and validation.
+  - Covers `T-WAIT-005` and `T-WAIT-006`.
+  - Add persistent Settings UI/state for timeout and completion-check interval with accepted defaults and validation.
 - Task 3: Handle user edits during generation.
-    - Covers `T-WAIT-007`.
-    - Stop without committing or pushing when the user edits or clears the commit message while generation is running.
+  - Covers `T-WAIT-007`.
+  - Stop without committing or pushing when the user edits or clears the commit message while generation is running.
 - Task 4: Show split-button activity while running.
-    - Covers `T-AI-005`.
-    - Surface running state in the action presentation or compatible UI layer without blocking the IDE UI thread.
+  - Covers `T-AI-005`.
+  - Surface running state in the action presentation or compatible UI layer without blocking the IDE UI thread.
 
 ## Execution Model
 

@@ -78,17 +78,17 @@ Goal:
 Initial context budget:
 
 - Read first:
-    - Plan header, readiness summary, execution graph, and this task packet.
-    - `docs/decisions/adr-0076-separate-user-docs-intent-specification-and-validation.md`
-    - `.agents/references/documentation.md`
-    - `README.md`
-    - `CONTRIBUTING.md`
-    - `SUPPORT.md`
-    - `docs/specification.md`
-    - `docs/requested-features.md`
+  - Plan header, readiness summary, execution graph, and this task packet.
+  - `docs/decisions/adr-0076-separate-user-docs-intent-specification-and-validation.md`
+  - `.agents/references/documentation.md`
+  - `README.md`
+  - `CONTRIBUTING.md`
+  - `SUPPORT.md`
+  - `docs/specification.md`
+  - `docs/requested-features.md`
 - Escalate to:
-    - `TASKS.md` only when task refs need wording updates.
-    - `docs/validation/manual-sandbox.md` and `docs/scenario-coverage.md` only when links or validation-owner text must be aligned.
+  - `TASKS.md` only when task refs need wording updates.
+  - `docs/validation/manual-sandbox.md` and `docs/scenario-coverage.md` only when links or validation-owner text must be aligned.
 
 Allowed inputs:
 
@@ -163,16 +163,16 @@ Goal:
 Initial context budget:
 
 - Read first:
-    - Plan header, readiness summary, execution graph, and this task packet.
-    - `docs/decisions/adr-0076-separate-user-docs-intent-specification-and-validation.md`
-    - `README.md`
-    - `docs/user-guide.md`
-    - `docs/specification.md`
-    - `docs/concepts/graphics/README.md`
-    - `src/main/resources/META-INF/plugin.xml`
+  - Plan header, readiness summary, execution graph, and this task packet.
+  - `docs/decisions/adr-0076-separate-user-docs-intent-specification-and-validation.md`
+  - `README.md`
+  - `docs/user-guide.md`
+  - `docs/specification.md`
+  - `docs/concepts/graphics/README.md`
+  - `src/main/resources/META-INF/plugin.xml`
 - Escalate to:
-    - `docs/validation/manual-sandbox.md` only to avoid claiming visual validation beyond current evidence.
-    - `TASKS.md` only for `T-DOC-020` or `T-DOC-023` wording updates.
+  - `docs/validation/manual-sandbox.md` only to avoid claiming visual validation beyond current evidence.
+  - `TASKS.md` only for `T-DOC-020` or `T-DOC-023` wording updates.
 
 Allowed inputs:
 
@@ -247,15 +247,15 @@ Goal:
 Initial context budget:
 
 - Read first:
-    - Plan header, readiness summary, execution graph, and this task packet.
-    - `docs/decisions/adr-0076-separate-user-docs-intent-specification-and-validation.md`
-    - `docs/troubleshooting.md`
-    - `SUPPORT.md`
-    - `README.md`
-    - `docs/specification.md`
+  - Plan header, readiness summary, execution graph, and this task packet.
+  - `docs/decisions/adr-0076-separate-user-docs-intent-specification-and-validation.md`
+  - `docs/troubleshooting.md`
+  - `SUPPORT.md`
+  - `README.md`
+  - `docs/specification.md`
 - Escalate to:
-    - `docs/validation/manual-sandbox.md` only when troubleshooting text needs current manual coverage status.
-    - `TASKS.md` only for `T-DOC-022` wording updates.
+  - `docs/validation/manual-sandbox.md` only when troubleshooting text needs current manual coverage status.
+  - `TASKS.md` only for `T-DOC-022` wording updates.
 
 Allowed inputs:
 
@@ -331,15 +331,15 @@ Goal:
 Initial context budget:
 
 - Read first:
-    - Plan header, readiness summary, execution graph, and this task packet.
-    - `docs/decisions/adr-0076-separate-user-docs-intent-specification-and-validation.md`
-    - `docs/specification.md`
-    - `docs/requested-features.md`
-    - `docs/scenario-coverage.md`
-    - `docs/validation/manual-sandbox.md`
+  - Plan header, readiness summary, execution graph, and this task packet.
+  - `docs/decisions/adr-0076-separate-user-docs-intent-specification-and-validation.md`
+  - `docs/specification.md`
+  - `docs/requested-features.md`
+  - `docs/scenario-coverage.md`
+  - `docs/validation/manual-sandbox.md`
 - Escalate to:
-    - Specific ADR files only when requirement source wording is unclear.
-    - `TASKS_ARCHIVE.md` only when existing `Implements:` refs must be preserved or checked.
+  - Specific ADR files only when requirement source wording is unclear.
+  - `TASKS_ARCHIVE.md` only when existing `Implements:` refs must be preserved or checked.
 
 Allowed inputs:
 
@@ -417,17 +417,17 @@ Goal:
 Initial context budget:
 
 - Read first:
-    - Plan header, readiness summary, execution graph, all task result summaries, and this task packet.
-    - `CONTRIBUTING.md`
-    - `README.md`
-    - `docs/user-guide.md`
-    - `docs/troubleshooting.md`
-    - `docs/specification.md`
-    - `docs/SUPPORT.md`
-    - `TASKS.md`
+  - Plan header, readiness summary, execution graph, all task result summaries, and this task packet.
+  - `CONTRIBUTING.md`
+  - `README.md`
+  - `docs/user-guide.md`
+  - `docs/troubleshooting.md`
+  - `docs/specification.md`
+  - `docs/SUPPORT.md`
+  - `TASKS.md`
 - Escalate to:
-    - `.agents/references/documentation.md` if owner mappings changed.
-    - `CHANGELOG.md` only if public plugin docs changed in a way the release notes should mention.
+  - `.agents/references/documentation.md` if owner mappings changed.
+  - `CHANGELOG.md` only if public plugin docs changed in a way the release notes should mention.
 
 Allowed inputs:
 
