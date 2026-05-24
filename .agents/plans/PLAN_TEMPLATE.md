@@ -152,6 +152,7 @@ Result summary:
 - For approved parallel waves, all task commits in the current wave must exist before any dependent wave starts.
 - Use `Project-Source: plan-task`, `Project-Plan: <Plan-ID>`, and `Project-Plan-Task: <task id>` metadata for approved plan-task commits.
 - Include `Project-Worker:`, `Project-Orchestrator:`, and `Project-Agent-Mode:` metadata for orchestrated multi-agent commits.
+- Keep all commit trailers contiguous with no blank lines between trailer lines. Use a commit-message file or one final message paragraph for all trailer lines; do not pass each trailer as a separate `git commit -m` argument.
 - Keep compact evidence in the plan. Do not paste raw test output, raw worker transcripts, or bulky run logs.
 - Use the current branch only unless a later accepted ADR authorizes per-worker git worktrees.
 
