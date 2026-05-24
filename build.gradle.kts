@@ -24,103 +24,76 @@ data class PluginBuildVersion(
     val archiveVersion: String,
 )
 
-object PluginVersionFormatter {
-    private val semanticVersionPattern =
-        Regex("""^v?((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?)$""")
+val semanticVersionTagPattern =
+    Regex("""^v?((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?)$""")
 
-    fun formatPluginBuildVersion(
-        tag: String,
-        commitDistance: Int,
-        gitHash: String,
-        dirty: Boolean,
-        forceMetadata: Boolean = false,
-    ): PluginBuildVersion {
-        val baseVersion = semanticVersionFromTag(tag)
-        val hash = normalizedGitHash(gitHash)
-        val includeBuildMetadata = forceMetadata || commitDistance > 0 || dirty
-        if (!includeBuildMetadata) {
-            return PluginBuildVersion(
-                pluginVersion = baseVersion,
-                archiveVersion = baseVersion,
-            )
-        }
-
-        val pluginMetadata = listOfNotNull(
-            commitDistance.toString(),
-            "g$hash",
-            "dirty".takeIf { dirty },
-        ).joinToString(".")
-        val archiveMetadata = listOfNotNull(
-            commitDistance.toString(),
-            hash,
-            "dirty".takeIf { dirty },
-        ).joinToString(".")
+fun pluginBuildVersion(
+    baseVersion: String,
+    commitDistance: Int,
+    gitHash: String,
+    dirty: Boolean,
+): PluginBuildVersion {
+    val hash = normalizedGitHash(gitHash)
+    if (commitDistance == 0 && !dirty) {
         return PluginBuildVersion(
-            pluginVersion = "$baseVersion+$pluginMetadata",
-            archiveVersion = "$baseVersion+$archiveMetadata",
+            pluginVersion = baseVersion,
+            archiveVersion = baseVersion,
         )
     }
 
-    fun normalizePluginVersionOverride(rawVersion: String): String = rawVersion.trim().removePrefix("v")
+    val pluginMetadata = listOfNotNull(
+        commitDistance.toString(),
+        "g$hash",
+        "dirty".takeIf { dirty },
+    ).joinToString(".")
+    val archiveMetadata = listOfNotNull(
+        commitDistance.toString(),
+        hash,
+        "dirty".takeIf { dirty },
+    ).joinToString(".")
+    return PluginBuildVersion(
+        pluginVersion = "$baseVersion+$pluginMetadata",
+        archiveVersion = "$baseVersion+$archiveMetadata",
+    )
+}
 
-    fun normalizeArchiveVersionOverride(rawVersion: String): String {
-        val pluginVersion = normalizePluginVersionOverride(rawVersion)
-        val baseVersion = pluginVersion.substringBefore("+")
-        val metadata = pluginVersion.substringAfter("+", missingDelimiterValue = "")
-        if (metadata.isBlank()) {
-            return pluginVersion
-        }
-
-        val archiveMetadata = metadata
-            .split(".")
-            .joinToString(".") { identifier ->
-                if (identifier.matches(Regex("""g[0-9A-Fa-f]+"""))) identifier.drop(1) else identifier
-            }
-        return "$baseVersion+$archiveMetadata"
-    }
-
-    fun formatVersionDetails(details: VersionDetails): PluginBuildVersion {
-        val tag = details.lastTag?.takeIf { lastTag -> lastTag.isNotBlank() }
-        val dirty = details.version.endsWith(".dirty")
-        if (tag == null) {
-            return formatPluginBuildVersion(
-                tag = "v0.0.0",
-                commitDistance = details.commitDistance,
-                gitHash = details.gitHash,
-                dirty = dirty,
-                forceMetadata = true,
-            )
-        }
-
-        return formatPluginBuildVersion(
-            tag = tag,
-            commitDistance = details.commitDistance,
+fun formatVersionDetails(details: VersionDetails): PluginBuildVersion {
+    val tag = details.lastTag?.takeIf { lastTag -> lastTag.isNotBlank() }
+    val dirty = details.version.endsWith(".dirty")
+    if (tag == null) {
+        return pluginBuildVersion(
+            baseVersion = "0.0.0",
+            commitDistance = details.commitDistance.takeIf { distance -> distance > 0 } ?: 1,
             gitHash = details.gitHash,
             dirty = dirty,
         )
     }
 
-    private fun semanticVersionFromTag(tag: String): String {
-        val match = semanticVersionPattern.matchEntire(tag)
-            ?: throw GradleException("Git tag '$tag' must use vMAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH-PRERELEASE.")
-        return match.groupValues[1]
-    }
-
-    private fun normalizedGitHash(gitHash: String): String {
-        val hash = gitHash.removePrefix("g")
-        if (hash.isBlank()) {
-            throw GradleException("Git hash must not be blank.")
-        }
-        return hash
-    }
+    return pluginBuildVersion(
+        baseVersion = semanticVersionFromTag(tag),
+        commitDistance = details.commitDistance,
+        gitHash = details.gitHash,
+        dirty = dirty,
+    )
 }
-val gitDerivedBuildVersion = providers.provider { PluginVersionFormatter.formatVersionDetails(versionDetails()) }
-val pluginVersion = providers.environmentVariable("GIT_VERSION")
-    .map(PluginVersionFormatter::normalizePluginVersionOverride)
-    .orElse(gitDerivedBuildVersion.map { buildVersion -> buildVersion.pluginVersion })
-val pluginArchiveVersion = providers.environmentVariable("GIT_VERSION")
-    .map(PluginVersionFormatter::normalizeArchiveVersionOverride)
-    .orElse(gitDerivedBuildVersion.map { buildVersion -> buildVersion.archiveVersion })
+
+fun semanticVersionFromTag(tag: String): String {
+    val match = semanticVersionTagPattern.matchEntire(tag)
+        ?: throw GradleException("Git tag '$tag' must use vMAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH-PRERELEASE.")
+    return match.groupValues[1]
+}
+
+fun normalizedGitHash(gitHash: String): String {
+    val hash = gitHash.removePrefix("g")
+    if (hash.isBlank()) {
+        throw GradleException("Git hash must not be blank.")
+    }
+    return hash
+}
+
+val gitDerivedBuildVersion = providers.provider { formatVersionDetails(versionDetails()) }
+val pluginVersion = gitDerivedBuildVersion.map { buildVersion -> buildVersion.pluginVersion }
+val pluginArchiveVersion = gitDerivedBuildVersion.map { buildVersion -> buildVersion.archiveVersion }
 val jdkVersion = JavaVersion.VERSION_21
 val jdkVersionTarget = jdkVersion.majorVersion
 
