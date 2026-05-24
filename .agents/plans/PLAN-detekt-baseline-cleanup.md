@@ -2,7 +2,9 @@
 
 Plan-ID: PLAN-detekt-baseline-cleanup
 
-Status: Implemented
+Status: Closed
+
+Close-Reason: Archived
 
 Workers: 1
 
@@ -10,11 +12,11 @@ Filename: `.agents/plans/PLAN-detekt-baseline-cleanup.md`
 
 ## Readiness
 
-- Plan readiness: Implemented; release-preparation review may still remain.
+- Plan readiness: Closed; implementation and release-preparation validation are complete.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-24T16:40:56+02:00
 - Open questions: None.
-- Implementation progress: Tasks 1, 2, 3, and 4 complete.
+- Implementation progress: Tasks 1, 2, 3, and 4 complete; no further plan work is expected.
 
 ## Status History
 
@@ -22,6 +24,7 @@ Filename: `.agents/plans/PLAN-detekt-baseline-cleanup.md`
 - 2026-05-24T16:40:56+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
 - 2026-05-24T16:40:56+02:00: Approved -> In Progress by Kamil Kiewisz <kamkie@outlook.com>; implementation requested with approval.
 - 2026-05-24T17:28:14+02:00: In Progress -> Implemented by Codex <codex@openai.com>; W4 completed the baseline guardrail and Detekt task closeout.
+- 2026-05-24T23:16:16+02:00: Implemented -> Closed by Kamil Kiewisz <kamkie@outlook.com>; current validation confirmed implementation complete and ready for archive closeout.
 
 ## Goal
 

@@ -44,7 +44,9 @@ internal class GitPushCompletionService @JvmOverloads constructor(
             )
     }
 
-    fun awaitCompletion(repositories: Collection<GitRepository>): CompletableFuture<GitPushCompletionResult> = tracker.awaitCompletion(
+    fun awaitCompletion(
+        repositories: Collection<GitRepository>,
+    ): CompletableFuture<GitPushCompletionResult> = tracker.awaitCompletion(
         repositories = repositories,
         timeoutMillis = DEFAULT_PUSH_COMPLETION_TIMEOUT_MILLIS,
     )

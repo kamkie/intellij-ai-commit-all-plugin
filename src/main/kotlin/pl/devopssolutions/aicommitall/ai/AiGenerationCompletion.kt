@@ -27,6 +27,7 @@ import com.intellij.vcs.commit.CommitMessageUi
 import pl.devopssolutions.aicommitall.settings.AiCommitAllSettings
 import java.awt.KeyboardFocusManager
 import java.lang.reflect.Field
+import java.lang.reflect.InaccessibleObjectException
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicReference
@@ -335,55 +336,45 @@ internal class ReflectiveActionProgressRunningSignal(
 ) : AiGenerationRunningSignal {
     override fun state(): AiGenerationRunningState {
         val actionClass = action.javaClass
-        val progressIndicatorField = try {
-            actionClass.findField(PROGRESS_INDICATOR_FIELD)
-        } catch (exception: Throwable) {
+        return when (val fieldLookup = actionClass.findField(PROGRESS_INDICATOR_FIELD)) {
+            is ProgressIndicatorFieldLookup.Found -> fieldLookup.field.state(actionClass)
+
+            is ProgressIndicatorFieldLookup.Failed -> unavailable(
+                sourceClass = actionClass,
+                reason = "field lookup failed",
+                exception = fieldLookup.exception,
+            )
+
+            ProgressIndicatorFieldLookup.Missing -> unavailable(
+                sourceClass = actionClass,
+                reason = "field missing",
+            )
+        }
+    }
+
+    private fun Field.state(actionClass: Class<*>): AiGenerationRunningState = when (val fieldValue = readValue()) {
+        is ProgressIndicatorFieldValue.Read -> fieldValue.value.state(actionClass)
+
+        is ProgressIndicatorFieldValue.Failed -> unavailable(
+            sourceClass = actionClass,
+            reason = "field read failed",
+            exception = fieldValue.exception,
+        )
+    }
+
+    private fun Any?.state(actionClass: Class<*>): AiGenerationRunningState = when (this) {
+        null -> AiGenerationRunningState.NotRunning
+
+        is ProgressIndicator -> state(actionClass)
+
+        else -> {
             diagnostics.report(
                 diagnostic(
                     sourceClass = actionClass,
-                    reason = "field lookup failed",
-                    exception = exception,
+                    reason = "field value has incompatible type",
                 ),
             )
-            return AiGenerationRunningState.Unavailable
-        }
-        if (progressIndicatorField == null) {
-            diagnostics.report(
-                diagnostic(
-                    sourceClass = actionClass,
-                    reason = "field missing",
-                ),
-            )
-            return AiGenerationRunningState.Unavailable
-        }
-
-        val progressIndicator = try {
-            progressIndicatorField.get(action)
-        } catch (exception: Throwable) {
-            diagnostics.report(
-                diagnostic(
-                    sourceClass = actionClass,
-                    reason = "field read failed",
-                    exception = exception,
-                ),
-            )
-            return AiGenerationRunningState.Unavailable
-        }
-
-        return when (progressIndicator) {
-            null -> AiGenerationRunningState.NotRunning
-
-            is ProgressIndicator -> progressIndicator.state(actionClass)
-
-            else -> {
-                diagnostics.report(
-                    diagnostic(
-                        sourceClass = actionClass,
-                        reason = "field value has incompatible type",
-                    ),
-                )
-                AiGenerationRunningState.Unavailable
-            }
+            AiGenerationRunningState.Unavailable
         }
     }
 
@@ -393,16 +384,37 @@ internal class ReflectiveActionProgressRunningSignal(
         } else {
             AiGenerationRunningState.NotRunning
         }
-    } catch (exception: Throwable) {
+    } catch (exception: IllegalStateException) {
+        unavailable(
+            sourceClass = actionClass,
+            memberName = PROGRESS_INDICATOR_RUNNING_MEMBER,
+            reason = "progress indicator state read failed",
+            exception = exception,
+        )
+    } catch (exception: UnsupportedOperationException) {
+        unavailable(
+            sourceClass = actionClass,
+            memberName = PROGRESS_INDICATOR_RUNNING_MEMBER,
+            reason = "progress indicator state read failed",
+            exception = exception,
+        )
+    }
+
+    private fun unavailable(
+        sourceClass: Class<*>,
+        memberName: String = PROGRESS_INDICATOR_FIELD,
+        reason: String,
+        exception: Throwable? = null,
+    ): AiGenerationRunningState {
         diagnostics.report(
             diagnostic(
-                sourceClass = actionClass,
-                memberName = PROGRESS_INDICATOR_RUNNING_MEMBER,
-                reason = "progress indicator state read failed",
+                sourceClass = sourceClass,
+                memberName = memberName,
+                reason = reason,
                 exception = exception,
             ),
         )
-        AiGenerationRunningState.Unavailable
+        return AiGenerationRunningState.Unavailable
     }
 
     private fun diagnostic(
@@ -419,22 +431,61 @@ internal class ReflectiveActionProgressRunningSignal(
         causeClassName = exception?.cause?.javaClass?.name,
     )
 
-    private fun Class<*>.findField(name: String): Field? {
+    private fun Class<*>.findField(name: String): ProgressIndicatorFieldLookup {
         var currentClass: Class<*>? = this
         while (currentClass != null) {
-            currentClass.declaredFields.firstOrNull { field -> field.name == name }?.let { field ->
-                field.isAccessible = true
-                return field
+            when (val lookup = currentClass.findDeclaredField(name)) {
+                is ProgressIndicatorFieldLookup.Found,
+                is ProgressIndicatorFieldLookup.Failed,
+                -> return lookup
+
+                ProgressIndicatorFieldLookup.Missing -> currentClass = currentClass.superclass
             }
-            currentClass = currentClass.superclass
         }
-        return null
+        return ProgressIndicatorFieldLookup.Missing
+    }
+
+    private fun Class<*>.findDeclaredField(name: String): ProgressIndicatorFieldLookup = try {
+        val field = declaredFields.firstOrNull { candidate -> candidate.name == name }
+        if (field == null) {
+            ProgressIndicatorFieldLookup.Missing
+        } else {
+            field.isAccessible = true
+            ProgressIndicatorFieldLookup.Found(field)
+        }
+    } catch (exception: SecurityException) {
+        ProgressIndicatorFieldLookup.Failed(exception)
+    } catch (exception: InaccessibleObjectException) {
+        ProgressIndicatorFieldLookup.Failed(exception)
+    }
+
+    private fun Field.readValue(): ProgressIndicatorFieldValue = try {
+        ProgressIndicatorFieldValue.Read(get(action))
+    } catch (exception: IllegalAccessException) {
+        ProgressIndicatorFieldValue.Failed(exception)
+    } catch (exception: IllegalArgumentException) {
+        ProgressIndicatorFieldValue.Failed(exception)
+    } catch (exception: SecurityException) {
+        ProgressIndicatorFieldValue.Failed(exception)
+    } catch (exception: InaccessibleObjectException) {
+        ProgressIndicatorFieldValue.Failed(exception)
     }
 
     private companion object {
         private const val STATE_METHOD = "state"
         private const val PROGRESS_INDICATOR_FIELD = "progressIndicator"
         private const val PROGRESS_INDICATOR_RUNNING_MEMBER = "ProgressIndicator.isRunning"
+    }
+
+    private sealed interface ProgressIndicatorFieldLookup {
+        data class Found(val field: Field) : ProgressIndicatorFieldLookup
+        data class Failed(val exception: Throwable) : ProgressIndicatorFieldLookup
+        object Missing : ProgressIndicatorFieldLookup
+    }
+
+    private sealed interface ProgressIndicatorFieldValue {
+        data class Read(val value: Any?) : ProgressIndicatorFieldValue
+        data class Failed(val exception: Throwable) : ProgressIndicatorFieldValue
     }
 }
 

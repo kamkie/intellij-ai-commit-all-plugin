@@ -2,7 +2,9 @@
 
 Plan-ID: PLAN-unchanged-prefilled-ai-message
 
-Status: Implemented
+Status: Closed
+
+Close-Reason: Archived
 
 Workers: 1
 
@@ -10,11 +12,11 @@ Filename: `.agents/plans/PLAN-unchanged-prefilled-ai-message.md`
 
 ## Readiness
 
-- Plan readiness: Implemented; ADR 0081 is accepted and T1 is complete.
+- Plan readiness: Closed; ADR 0081 is accepted, implemented, and validated.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-24T01:41:51+02:00
 - Open questions: None.
-- Implementation progress: T1-unchanged-prefilled-ai-message is implemented and validated with the recorded documentation-validation caveat.
+- Implementation progress: T1-unchanged-prefilled-ai-message is complete; the previous documentation-validation caveat is resolved by current validation.
 
 ## Status History
 
@@ -22,6 +24,7 @@ Filename: `.agents/plans/PLAN-unchanged-prefilled-ai-message.md`
 - 2026-05-24T01:41:51+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded for ADR 0081 and this companion plan.
 - 2026-05-24T01:41:51+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; implementation started for ADR 0081.
 - 2026-05-24T01:56:16+02:00: In Progress -> Implemented by OpenAI Codex <codex@openai.com>; T1 implementation, validation, review, and tracker updates completed.
+- 2026-05-24T23:16:16+02:00: Implemented -> Closed by Kamil Kiewisz <kamkie@outlook.com>; current validation confirmed implementation complete and ready for archive closeout.
 
 ## Goal
 

@@ -23,6 +23,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+private const val GRADLE_TASK_ROOT = "buildSrc/src/main/kotlin/pl/devopssolutions/aicommitall/gradle"
+
 internal class GitHubActionsWorkflowTest {
     @Test
     fun `gradle workflows use setup gradle wrapper validation`() {
@@ -662,5 +664,5 @@ internal class GitHubActionsWorkflowTest {
             .toList()
     }
 
-    private fun gradleVerificationTask(fileName: String): Path = Path.of("buildSrc/src/main/kotlin/pl/devopssolutions/aicommitall/gradle").resolve(fileName)
+    private fun gradleVerificationTask(fileName: String): Path = Path.of(GRADLE_TASK_ROOT).resolve(fileName)
 }

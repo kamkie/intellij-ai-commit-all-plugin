@@ -2,7 +2,9 @@
 
 Plan-ID: PLAN-user-documentation-rebuild
 
-Status: Implemented
+Status: Closed
+
+Close-Reason: Archived
 
 Workers: 3 (parallel, tasks: T2-readme-user-guide, T3-troubleshooting-support, T4-specification-and-retirement)
 
@@ -10,11 +12,11 @@ Filename: `.agents/plans/PLAN-user-documentation-rebuild.md`
 
 ## Readiness
 
-- Plan readiness: Approved; implementation may start in a separate execution pass.
+- Plan readiness: Closed; ADR 0076 documentation rebuild is implemented and validated.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-23T21:12:25+02:00
 - Open questions: None.
-- Implementation progress: Implemented.
+- Implementation progress: Implemented; no further plan work is expected.
 
 ## Status History
 
@@ -22,6 +24,7 @@ Filename: `.agents/plans/PLAN-user-documentation-rebuild.md`
 - 2026-05-23T21:12:25+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded for ADR 0076 and this companion plan.
 - 2026-05-23T21:18:46+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; implementation started for ADR 0076 documentation rebuild.
 - 2026-05-23T21:43:09+02:00: In Progress -> Implemented by OpenAI Codex <codex@openai.com>; ADR 0076 documentation ownership rebuild implemented and validated.
+- 2026-05-24T23:16:16+02:00: Implemented -> Closed by Kamil Kiewisz <kamkie@outlook.com>; current validation confirmed implementation complete and ready for archive closeout.
 
 ## Goal
 

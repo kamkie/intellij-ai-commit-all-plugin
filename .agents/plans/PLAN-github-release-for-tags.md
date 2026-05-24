@@ -2,7 +2,9 @@
 
 Plan-ID: PLAN-github-release-for-tags
 
-Status: Implemented
+Status: Closed
+
+Close-Reason: Archived
 
 Workers: 1
 
@@ -10,11 +12,11 @@ Filename: `.agents/plans/PLAN-github-release-for-tags.md`
 
 ## Readiness
 
-- Plan readiness: Implemented; task validation and closeout are complete.
+- Plan readiness: Closed; task validation and closeout are complete.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-24T17:56:31+02:00
 - Open questions: None.
-- Implementation progress: Worker W1 completed `T1-github-release-for-tags`; validation and task closeout are recorded in the result summary.
+- Implementation progress: Worker W1 completed `T1-github-release-for-tags`; no further plan work is expected.
 
 ## Status History
 
@@ -22,6 +24,7 @@ Filename: `.agents/plans/PLAN-github-release-for-tags.md`
 - 2026-05-24T17:56:31+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
 - 2026-05-24T17:56:31+02:00: Approved -> In Progress by Codex <codex@openai.com>; approved-plan implementation started through worker W1.
 - 2026-05-24T18:06:24+02:00: In Progress -> Implemented by Codex <codex@openai.com>; worker W1 completed `T1-github-release-for-tags`.
+- 2026-05-24T23:16:16+02:00: Implemented -> Closed by Kamil Kiewisz <kamkie@outlook.com>; current validation confirmed implementation complete and ready for archive closeout.
 
 ## Goal
 

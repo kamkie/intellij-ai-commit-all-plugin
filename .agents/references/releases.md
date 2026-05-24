@@ -58,12 +58,24 @@ Do not start release work until all applicable items are true:
 - GitHub secret scanning and push protection are enabled for the repository where available, or the release handoff records why the repository cannot enable them.
 - The `jetbrains-marketplace` environment still protects `CERTIFICATE_CHAIN`, `PRIVATE_KEY`, `PRIVATE_KEY_PASSWORD`, and `PUBLISH_TOKEN`.
 
+## Completed-Work Archive Sweep
+
+During release preparation, run a full completed-work archive sweep before final release handoff, tagging, or publication.
+
+- Use `.agents/prompts/archive-completed-work.md` as the archive mechanics and readiness owner.
+- Cover completed `TASKS.md` entries, closed plans in `.agents/plans/`, completed or retired proposals in `docs/proposals/`, and the matching active and archive indexes.
+- Preserve stable task refs, plan refs, proposal refs, finding refs, filenames, status history, close reasons, validation evidence, and archive locations.
+- Archive only candidates that satisfy the existing archive-readiness gates: tasks need completion, task-appropriate validation, and self-review evidence; plans need `Status: Closed`, `Close-Reason`, and no remaining active execution or release-preparation updates; proposals need terminal implementation rows and no untriaged findings.
+- Resolve completed-looking items that fail archive readiness before release, or record them in the release handoff as release blockers or explicit skipped archives with the missing evidence.
+- After archive edits, run the validation required by `.agents/prompts/archive-completed-work.md`.
+
 ## Release Handoff
 
 Release preparation should cover:
 
 - Full cross-task review.
 - Broader manual checks and tests.
+- Completed-work archive sweep.
 - Documentation update pass.
 - Changelog update.
 - Support-policy update if supported versions or channels changed.
