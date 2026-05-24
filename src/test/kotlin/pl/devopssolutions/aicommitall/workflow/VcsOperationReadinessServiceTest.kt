@@ -15,8 +15,10 @@
  */
 package pl.devopssolutions.aicommitall.workflow
 
+import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 internal class VcsOperationReadinessServiceTest {
     @Test
@@ -82,6 +84,66 @@ internal class VcsOperationReadinessServiceTest {
         assertEquals(2, state.backgroundCheckCount)
     }
 
+    @Test
+    fun `stops settling after first transient result when state is disposed`() {
+        val state = SequencedVcsOperationState(
+            frozenResults = listOf(true, false),
+            disposed = true,
+        )
+        val reporter = CapturingReporter()
+        val sleeper = CapturingSleeper()
+
+        val result = VcsOperationReadinessGuard(
+            state = state,
+            reporter = reporter,
+            settling = VcsOperationReadinessSettling(
+                maxAttempts = 3,
+                retryInterval = Duration.ofMillis(50),
+                sleeper = sleeper,
+            ),
+        ).checkAndReport()
+
+        assertEquals(VcsOperationReadinessResult.Frozen, result)
+        assertEquals(1, state.frozenCheckCount)
+        assertEquals(0, state.backgroundCheckCount)
+        assertEquals(emptyList(), sleeper.delays)
+    }
+
+    @Test
+    fun `settling does not sleep when retry interval is zero`() {
+        val state = SequencedVcsOperationState(
+            backgroundResults = listOf(true, true, true),
+        )
+        val reporter = CapturingReporter()
+        val sleeper = CapturingSleeper()
+
+        val result = VcsOperationReadinessGuard(
+            state = state,
+            reporter = reporter,
+            settling = VcsOperationReadinessSettling(
+                maxAttempts = 3,
+                retryInterval = Duration.ZERO,
+                sleeper = sleeper,
+            ),
+        ).checkAndReport()
+
+        assertEquals(VcsOperationReadinessResult.BackgroundOperationRunning, result)
+        assertEquals(3, state.frozenCheckCount)
+        assertEquals(3, state.backgroundCheckCount)
+        assertEquals(emptyList(), sleeper.delays)
+        assertEquals(1, reporter.backgroundNotificationCount)
+    }
+
+    @Test
+    fun `settling rejects invalid settings`() {
+        assertFailsWith<IllegalArgumentException> {
+            VcsOperationReadinessSettling(maxAttempts = 0, retryInterval = Duration.ZERO)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            VcsOperationReadinessSettling(maxAttempts = 1, retryInterval = Duration.ofMillis(-1))
+        }
+    }
+
     private class TestVcsOperationState(
         private val frozen: Boolean = false,
         private val backgroundOperationRunning: Boolean = false,
@@ -94,6 +156,7 @@ internal class VcsOperationReadinessServiceTest {
     private class SequencedVcsOperationState(
         private val frozenResults: List<Boolean> = listOf(false),
         private val backgroundResults: List<Boolean> = listOf(false),
+        private val disposed: Boolean = false,
     ) : VcsOperationState {
         var frozenCheckCount = 0
         var backgroundCheckCount = 0
@@ -110,6 +173,8 @@ internal class VcsOperationReadinessServiceTest {
             return result
         }
 
+        override fun isDisposed(): Boolean = disposed
+
         private fun List<Boolean>.valueAt(index: Int): Boolean = getOrElse(index) { last() }
     }
 
@@ -118,6 +183,14 @@ internal class VcsOperationReadinessServiceTest {
 
         override fun notifyBackgroundOperationRunning() {
             backgroundNotificationCount++
+        }
+    }
+
+    private class CapturingSleeper : VcsOperationReadinessSleeper {
+        val delays = mutableListOf<Duration>()
+
+        override fun sleep(duration: Duration) {
+            delays += duration
         }
     }
 }

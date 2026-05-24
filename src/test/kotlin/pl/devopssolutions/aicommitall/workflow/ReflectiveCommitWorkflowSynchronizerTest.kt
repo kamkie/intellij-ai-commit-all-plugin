@@ -15,11 +15,19 @@
  */
 package pl.devopssolutions.aicommitall.workflow
 
+import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.fileTypes.PlainTextFileType
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.vcs.FilePath
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.CommitExecutor
 import com.intellij.openapi.vcs.changes.LocalChangeList
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.vcs.commit.AmendCommitHandler
 import com.intellij.vcs.commit.CommitWorkflowHandler
+import java.io.File
+import java.nio.charset.Charset
+import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -46,6 +54,27 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         assertEquals(changeList, handler.activeChangeList)
         assertEquals(items, handler.inclusionItems)
         assertTrue(handler.replaceInclusion)
+    }
+
+    @Test
+    fun `synchronizes compatible commit workflow handlers with unversioned files`() {
+        val handler = CompatibleHandler()
+        val changeList = TestChangeList("Default")
+        val unversionedFile = TestFilePath("/repo/new.txt")
+        val items = listOf(unversionedFile)
+
+        val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
+            workflowHandler = handler,
+            changeLists = listOf(changeList),
+            unversionedFiles = listOf(unversionedFile),
+            activeChangeList = changeList,
+            inclusionItems = items,
+        )
+
+        assertTrue(result)
+        assertEquals(listOf(changeList), handler.synchronizedChangeLists)
+        assertEquals(1, handler.synchronizedUnversionedCount)
+        assertEquals(items, handler.inclusionItems)
     }
 
     @Test
@@ -96,6 +125,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
 
     @Test
     fun `fails closed when workflow handler has only synchronize inclusion method`() {
+        val diagnostics = CapturingCommitWorkflowCompatibilityDiagnostics()
         val changeList = TestChangeList("Default")
 
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
@@ -104,9 +134,49 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = listOf(Any()),
+            diagnostics = diagnostics,
         )
 
         assertFalse(result)
+        assertEquals(
+            listOf(
+                CommitWorkflowCompatibilityDiagnostic(
+                    sourceClassName = MissingSetCommitStateHandler::class.java.name,
+                    methodName = "commitWorkflowMethods",
+                    reason = "required methods missing",
+                    missingMethodNames = listOf("setCommitState"),
+                ),
+            ),
+            diagnostics.events,
+        )
+    }
+
+    @Test
+    fun `fails closed when workflow handler has only set commit state method`() {
+        val diagnostics = CapturingCommitWorkflowCompatibilityDiagnostics()
+        val changeList = TestChangeList("Default")
+
+        val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
+            workflowHandler = MissingSynchronizeInclusionHandler(),
+            changeLists = listOf(changeList),
+            unversionedFiles = emptyList(),
+            activeChangeList = changeList,
+            inclusionItems = listOf(Any()),
+            diagnostics = diagnostics,
+        )
+
+        assertFalse(result)
+        assertEquals(
+            listOf(
+                CommitWorkflowCompatibilityDiagnostic(
+                    sourceClassName = MissingSynchronizeInclusionHandler::class.java.name,
+                    methodName = "commitWorkflowMethods",
+                    reason = "required methods missing",
+                    missingMethodNames = listOf("synchronizeInclusion"),
+                ),
+            ),
+            diagnostics.events,
+        )
     }
 
     @Test
@@ -128,6 +198,36 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             listOf(
                 CommitWorkflowCompatibilityDiagnostic(
                     sourceClassName = ThrowingHandler::class.java.name,
+                    methodName = "synchronize",
+                    reason = "method invocation failed",
+                    exceptionClassName = java.lang.reflect.InvocationTargetException::class.java.name,
+                    causeClassName = IllegalStateException::class.java.name,
+                ),
+            ),
+            diagnostics.events,
+        )
+    }
+
+    @Test
+    fun `fails closed when set commit state invocation throws`() {
+        val diagnostics = CapturingCommitWorkflowCompatibilityDiagnostics()
+        val changeList = TestChangeList("Default")
+
+        val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
+            workflowHandler = SetCommitStateThrowingHandler(),
+            changeLists = listOf(changeList),
+            unversionedFiles = emptyList(),
+            activeChangeList = changeList,
+            inclusionItems = listOf(Any()),
+            diagnostics = diagnostics,
+            synchronizationRetry = singleAttemptRetry(),
+        )
+
+        assertFalse(result)
+        assertEquals(
+            listOf(
+                CommitWorkflowCompatibilityDiagnostic(
+                    sourceClassName = SetCommitStateThrowingHandler::class.java.name,
                     methodName = "synchronize",
                     reason = "method invocation failed",
                     exceptionClassName = java.lang.reflect.InvocationTargetException::class.java.name,
@@ -199,6 +299,12 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         }
     }
 
+    private class MissingSynchronizeInclusionHandler : TestCommitWorkflowHandler() {
+        fun setCommitState(changeList: LocalChangeList, items: Collection<Any>, replaceInclusion: Boolean) {
+            error("setCommitState should not run for ${changeList.name}, ${items.size}, $replaceInclusion")
+        }
+    }
+
     private class ThrowingHandler : TestCommitWorkflowHandler() {
         fun synchronizeInclusion(changeLists: List<LocalChangeList>, unversionedFiles: List<*>) {
             error("synchronization failed for ${changeLists.size} lists and ${unversionedFiles.size} files")
@@ -206,6 +312,14 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
 
         fun setCommitState(changeList: LocalChangeList, items: Collection<Any>, replaceInclusion: Boolean) {
             error("setCommitState should not run for ${changeList.name}, ${items.size}, $replaceInclusion")
+        }
+    }
+
+    private class SetCommitStateThrowingHandler : TestCommitWorkflowHandler() {
+        fun synchronizeInclusion(changeLists: List<LocalChangeList>, unversionedFiles: List<*>) = Unit
+
+        fun setCommitState(changeList: LocalChangeList, items: Collection<Any>, replaceInclusion: Boolean) {
+            error("set commit state failed for ${changeList.name}, ${items.size}, $replaceInclusion")
         }
     }
 
@@ -251,5 +365,40 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         override fun getData(): Any? = null
 
         override fun copy(): LocalChangeList = TestChangeList(listName)
+    }
+
+    private class TestFilePath(private val rawPath: String) : FilePath {
+        override fun getVirtualFile(): VirtualFile? = null
+
+        override fun getVirtualFileParent(): VirtualFile? = null
+
+        override fun getIOFile(): File = File(rawPath)
+
+        override fun getName(): String = ioFile.name
+
+        override fun getPresentableUrl(): String = rawPath
+
+        override fun getCharset(): Charset = Charsets.UTF_8
+
+        override fun getCharset(project: Project?): Charset = Charsets.UTF_8
+
+        override fun getFileType(): FileType = PlainTextFileType.INSTANCE
+
+        override fun getPath(): String = rawPath
+
+        override fun isDirectory(): Boolean = false
+
+        override fun isUnder(parent: FilePath, strict: Boolean): Boolean = false
+
+        override fun getParentPath(): FilePath? = null
+
+        override fun isNonLocal(): Boolean = false
+    }
+
+    private companion object {
+        private fun singleAttemptRetry(): CommitWorkflowSynchronizationRetry = CommitWorkflowSynchronizationRetry(
+            maxAttempts = 1,
+            retryInterval = Duration.ZERO,
+        )
     }
 }

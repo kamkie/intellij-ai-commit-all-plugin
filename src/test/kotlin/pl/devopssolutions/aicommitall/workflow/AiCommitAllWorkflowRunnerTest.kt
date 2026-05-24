@@ -28,10 +28,13 @@ import java.awt.event.InputEvent
 import java.lang.reflect.Proxy
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 internal class AiCommitAllWorkflowRunnerTest {
     @Test
@@ -210,9 +213,16 @@ internal class AiCommitAllWorkflowRunnerTest {
     fun `push mode stops without pushing when AI completion future fails`() {
         val completion = CompletableFuture<AiGenerationCompletionResult>()
         completion.completeExceptionally(IllegalStateException("AI completion failed"))
-        val dependencies = CapturingWorkflowDependencies(aiCompletion = completion)
+        val dependencies = CapturingWorkflowDependencies(
+            aiCompletion = completion,
+            aiCompletions = listOf(
+                completion,
+                CompletableFuture.completedFuture(completedAiGeneration()),
+            ),
+        )
+        val runner = runner(dependencies)
 
-        val result = runner(dependencies)
+        val result = runner
             .start(AiCommitAllWorkflowMode.Push, testDataContext())
             .join()
 
@@ -223,6 +233,12 @@ internal class AiCommitAllWorkflowRunnerTest {
         assertEquals(listOf("readiness", "prepare", "ai:Ai", "stop:AiCompletionFailed"), dependencies.events)
         assertEquals(0, dependencies.commitCallCount)
         assertEquals(0, dependencies.pushCallCount)
+        assertEquals(1, dependencies.activityFinishCount)
+
+        val restart = runner.start(AiCommitAllWorkflowMode.Ai, testDataContext())
+
+        assertEquals(AiCommitAllWorkflowResult.Started, restart.join())
+        assertEquals(2, dependencies.activityFinishCount)
     }
 
     @Test
@@ -495,10 +511,121 @@ internal class AiCommitAllWorkflowRunnerTest {
         assertEquals(1, dependencies.pushOnlyCallCount)
     }
 
+    @Test
+    fun `workflow activity closes and active workflow resets when preparation fails exceptionally`() {
+        val failure = IllegalStateException("preparation failed")
+        val dependencies = CapturingWorkflowDependencies(
+            prepareFailures = listOf(failure),
+        )
+
+        assertExceptionalWorkflowClosesAndCanRestart(
+            dependencies = dependencies,
+            mode = AiCommitAllWorkflowMode.Commit,
+            expectedFailure = failure,
+        )
+    }
+
+    @Test
+    fun `workflow activity closes and active workflow resets when AI invocation fails exceptionally`() {
+        val failure = IllegalStateException("AI invocation failed")
+        val dependencies = CapturingWorkflowDependencies(
+            aiGenerationFailures = listOf(failure),
+        )
+
+        assertExceptionalWorkflowClosesAndCanRestart(
+            dependencies = dependencies,
+            mode = AiCommitAllWorkflowMode.Commit,
+            expectedFailure = failure,
+        )
+    }
+
+    @Test
+    fun `workflow activity closes and active workflow resets when commit completion fails exceptionally`() {
+        val failure = IllegalStateException("commit completion failed")
+        val dependencies = CapturingWorkflowDependencies(
+            commitResults = listOf(
+                CommitWorkflowExecutionResult.Started(failedUnitFuture(failure)),
+                CommitWorkflowExecutionResult.Started(),
+            ),
+        )
+
+        assertExceptionalWorkflowClosesAndCanRestart(
+            dependencies = dependencies,
+            mode = AiCommitAllWorkflowMode.Commit,
+            expectedFailure = failure,
+        )
+    }
+
+    @Test
+    fun `workflow activity closes and active workflow resets when commit and push completion fails exceptionally`() {
+        val failure = IllegalStateException("push completion failed")
+        val dependencies = CapturingWorkflowDependencies(
+            pushResults = listOf(
+                CommitWorkflowExecutionResult.Started(failedUnitFuture(failure)),
+                CommitWorkflowExecutionResult.Started(),
+            ),
+        )
+
+        assertExceptionalWorkflowClosesAndCanRestart(
+            dependencies = dependencies,
+            mode = AiCommitAllWorkflowMode.Push,
+            expectedFailure = failure,
+        )
+    }
+
+    @Test
+    fun `push only unavailable result stops and closes workflow activity`() {
+        val dependencies = CapturingWorkflowDependencies(
+            selectionResult = CommitWorkflowSelectionResult.EmptySelection,
+            hasOutgoingCommitsToPush = true,
+            pushOnlyResult = CommitWorkflowExecutionResult.UnsupportedExecutor,
+        )
+        val runner = runner(dependencies)
+
+        val first = runner.start(AiCommitAllWorkflowMode.Push, testDataContext())
+
+        assertEquals(
+            AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.PushExecutionUnavailable),
+            first.join(),
+        )
+        assertEquals(1, dependencies.activityFinishCount)
+
+        val second = runner.start(AiCommitAllWorkflowMode.Push, testDataContext())
+
+        assertFalse(first === second)
+        assertEquals(
+            AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.PushExecutionUnavailable),
+            second.join(),
+        )
+        assertEquals(2, dependencies.activityFinishCount)
+        assertEquals(2, dependencies.pushOnlyCallCount)
+    }
+
+    @Test
+    fun `workflow activity closes and active workflow resets when push only completion fails exceptionally`() {
+        val failure = IllegalStateException("push-only completion failed")
+        val dependencies = CapturingWorkflowDependencies(
+            selectionResult = CommitWorkflowSelectionResult.EmptySelection,
+            hasOutgoingCommitsToPush = true,
+            pushOnlyResults = listOf(
+                CommitWorkflowExecutionResult.Started(failedUnitFuture(failure)),
+                CommitWorkflowExecutionResult.Started(),
+            ),
+        )
+
+        assertExceptionalWorkflowClosesAndCanRestart(
+            dependencies = dependencies,
+            mode = AiCommitAllWorkflowMode.Push,
+            expectedFailure = failure,
+            restartMode = AiCommitAllWorkflowMode.Push,
+        )
+    }
+
     private class CapturingWorkflowDependencies(
         val selection: GitChangeSelection = GitChangeSelection(emptyList()),
         private val aiCompletion: CompletableFuture<AiGenerationCompletionResult> =
             CompletableFuture.completedFuture(completedAiGeneration()),
+        aiCompletions: List<CompletableFuture<AiGenerationCompletionResult>> = listOf(aiCompletion),
         private val selectionResult: CommitWorkflowSelectionResult =
             CommitWorkflowSelectionResult.Prepared(selection),
         selectionResults: List<CommitWorkflowSelectionResult> = listOf(selectionResult),
@@ -507,10 +634,25 @@ internal class AiCommitAllWorkflowRunnerTest {
         private val commitResult: CommitWorkflowExecutionResult = CommitWorkflowExecutionResult.Started(),
         private val pushResult: CommitWorkflowExecutionResult = CommitWorkflowExecutionResult.Started(),
         private val pushOnlyResult: CommitWorkflowExecutionResult = CommitWorkflowExecutionResult.Started(),
+        commitResults: List<CommitWorkflowExecutionResult> = listOf(commitResult),
+        pushResults: List<CommitWorkflowExecutionResult> = listOf(pushResult),
+        pushOnlyResults: List<CommitWorkflowExecutionResult> = listOf(pushOnlyResult),
         private val hasOutgoingCommitsToPush: Boolean = false,
+        prepareFailures: List<RuntimeException> = emptyList(),
+        aiGenerationFailures: List<RuntimeException> = emptyList(),
     ) : AiCommitAllWorkflowDependencies {
         private val selectionResultQueue = ArrayDeque(selectionResults)
         private var lastSelectionResult = selectionResult
+        private val aiCompletionQueue = ArrayDeque(aiCompletions)
+        private var lastAiCompletion = aiCompletion
+        private val commitResultQueue = ArrayDeque(commitResults)
+        private var lastCommitResult = commitResult
+        private val pushResultQueue = ArrayDeque(pushResults)
+        private var lastPushResult = pushResult
+        private val pushOnlyResultQueue = ArrayDeque(pushOnlyResults)
+        private var lastPushOnlyResult = pushOnlyResult
+        private val prepareFailureQueue = ArrayDeque(prepareFailures)
+        private val aiGenerationFailureQueue = ArrayDeque(aiGenerationFailures)
         val events = mutableListOf<String>()
         var commitCallCount = 0
         var pushCallCount = 0
@@ -545,6 +687,7 @@ internal class AiCommitAllWorkflowRunnerTest {
             workflowUi: CommitWorkflowUi,
         ): CommitWorkflowSelectionResult {
             events += "prepare"
+            prepareFailureQueue.removeFirstOrNull()?.let { failure -> throw failure }
             if (selectionResultQueue.isNotEmpty()) {
                 lastSelectionResult = selectionResultQueue.removeFirst()
             }
@@ -559,13 +702,20 @@ internal class AiCommitAllWorkflowRunnerTest {
             inputEvent: InputEvent?,
         ): AiCommitAllAiGenerationResult {
             events += "ai:${phase.name}"
-            return aiGenerationResult ?: AiCommitAllAiGenerationResult.AwaitingCompletion(aiCompletion)
+            aiGenerationFailureQueue.removeFirstOrNull()?.let { failure -> throw failure }
+            if (aiCompletionQueue.isNotEmpty()) {
+                lastAiCompletion = aiCompletionQueue.removeFirst()
+            }
+            return aiGenerationResult ?: AiCommitAllAiGenerationResult.AwaitingCompletion(lastAiCompletion)
         }
 
         override fun executeCommit(workflowHandler: CommitWorkflowHandler): CommitWorkflowExecutionResult {
             events += "commit"
             commitCallCount++
-            return commitResult
+            if (commitResultQueue.isNotEmpty()) {
+                lastCommitResult = commitResultQueue.removeFirst()
+            }
+            return lastCommitResult
         }
 
         override fun executeCommitAndPush(
@@ -577,7 +727,10 @@ internal class AiCommitAllWorkflowRunnerTest {
             pushCallCount++
             pushedSelection = selection
             this.onPushStarted = onPushStarted
-            return pushResult
+            if (pushResultQueue.isNotEmpty()) {
+                lastPushResult = pushResultQueue.removeFirst()
+            }
+            return lastPushResult
         }
 
         override fun hasOutgoingCommitsToPush(): Boolean = hasOutgoingCommitsToPush
@@ -588,7 +741,10 @@ internal class AiCommitAllWorkflowRunnerTest {
         ): CommitWorkflowExecutionResult {
             events += "pushOnly"
             pushOnlyCallCount++
-            return pushOnlyResult
+            if (pushOnlyResultQueue.isNotEmpty()) {
+                lastPushOnlyResult = pushOnlyResultQueue.removeFirst()
+            }
+            return lastPushOnlyResult
         }
 
         override fun reportStop(reason: AiCommitAllWorkflowStopReason) {
@@ -600,6 +756,36 @@ internal class AiCommitAllWorkflowRunnerTest {
         private fun runner(dependencies: CapturingWorkflowDependencies): AiCommitAllWorkflowRunner {
             val scheduler = ImmediateWorkflowScheduler
             return AiCommitAllWorkflowRunner(dependencies, scheduler)
+        }
+
+        private fun assertExceptionalWorkflowClosesAndCanRestart(
+            dependencies: CapturingWorkflowDependencies,
+            mode: AiCommitAllWorkflowMode,
+            expectedFailure: RuntimeException,
+            restartMode: AiCommitAllWorkflowMode = mode,
+        ) {
+            val runner = runner(dependencies)
+
+            val first = runner.start(mode, testDataContext())
+            val thrown = assertFailsWith<CompletionException> {
+                first.join()
+            }
+
+            assertSame(expectedFailure, thrown.cause)
+            assertEquals(1, dependencies.activityFinishCount)
+
+            val second = runner.start(restartMode, testDataContext())
+
+            assertFalse(first === second)
+            assertEquals(AiCommitAllWorkflowResult.Started, second.join())
+            assertEquals(2, dependencies.activityFinishCount)
+            assertTrue(dependencies.activityStarts.size >= 2)
+        }
+
+        private fun failedUnitFuture(failure: RuntimeException): CompletableFuture<Unit> {
+            val future = CompletableFuture<Unit>()
+            future.completeExceptionally(failure)
+            return future
         }
 
         private fun completedAiGeneration(): AiGenerationCompletionResult = AiGenerationCompletionResult.Completed(

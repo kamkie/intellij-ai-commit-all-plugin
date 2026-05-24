@@ -153,6 +153,72 @@ internal class CommitWorkflowExecutionServiceTest {
     }
 
     @Test
+    fun `registered default commit completion completes on success`() {
+        val scheduler = CapturingScheduler()
+        val registrar = CapturingCommitResultRegistrar()
+        val service = CommitWorkflowExecutionService(
+            scheduler = scheduler,
+            commitResultRegistrar = registrar,
+        )
+        val workflowHandler = CapturingCommitWorkflowHandler()
+
+        val result = service.executeCommit(workflowHandler).asStarted()
+
+        scheduler.runScheduledActions()
+
+        assertFalse(result.completion.isDone)
+        assertEquals(1, workflowHandler.executorCallCount)
+
+        registrar.resultHandler?.onSuccess()
+
+        assertTrue(result.completion.isDone)
+    }
+
+    @Test
+    fun `disposes registered default commit listener when executor throws`() {
+        val failure = IllegalStateException("commit failed")
+        val scheduler = CapturingScheduler()
+        val registrar = CapturingCommitResultRegistrar()
+        val workflowHandler = CapturingCommitWorkflowHandler(defaultCommitFailure = failure)
+        val service = CommitWorkflowExecutionService(
+            scheduler = scheduler,
+            commitResultRegistrar = registrar,
+        )
+
+        val result = service.executeCommit(workflowHandler).asStarted()
+
+        val thrown = assertFailsWith<IllegalStateException> {
+            scheduler.runScheduledActions()
+        }
+
+        assertSame(failure, thrown)
+        assertTrue(result.completion.isCompletedExceptionally)
+        assertEquals(1, registrar.disposeCallCount)
+    }
+
+    @Test
+    fun `default commit completion fails when readiness gate throws before listener registration`() {
+        val failure = IllegalStateException("readiness gate failed")
+        val scheduler = CapturingScheduler()
+        val registrar = CapturingCommitResultRegistrar()
+        val service = CommitWorkflowExecutionService(
+            scheduler = scheduler,
+            commitResultRegistrar = registrar,
+            defaultCommitExecutionGate = ThrowingDefaultCommitExecutionGate(failure),
+        )
+
+        val result = service.executeCommit(CapturingCommitWorkflowHandler()).asStarted()
+
+        val thrown = assertFailsWith<IllegalStateException> {
+            scheduler.runScheduledActions()
+        }
+
+        assertSame(failure, thrown)
+        assertTrue(result.completion.isCompletedExceptionally)
+        assertEquals(0, registrar.registerCallCount)
+    }
+
+    @Test
     fun `starts commit and push through Git commit and push executor`() {
         val scheduler = CapturingScheduler()
         val service = CommitWorkflowExecutionService(scheduler)
@@ -246,6 +312,136 @@ internal class CommitWorkflowExecutionServiceTest {
     }
 
     @Test
+    fun `safe immediate push does not start after post-commit cancel or failure`() {
+        val cases = listOf<CommitWorkflowResultHandler.() -> Unit>(
+            CommitWorkflowResultHandler::onCancel,
+            CommitWorkflowResultHandler::onFailure,
+        )
+
+        cases.forEach { completeCommit ->
+            val scheduler = CapturingScheduler()
+            val postCommitPushScheduler = CapturingScheduler()
+            val defaultCommitExecutionGate = CapturingDefaultCommitExecutionGate()
+            val pushPlan = CapturingSafeImmediatePushPlan()
+            val immediatePushExecutor = CapturingImmediatePushExecutor()
+            val registrar = CapturingCommitResultRegistrar()
+            var pushStartedCount = 0
+            val service = CommitWorkflowExecutionService(
+                scheduler = scheduler,
+                postCommitPushScheduler = postCommitPushScheduler,
+                safeImmediatePushSupport = TestSafeImmediatePushSupport(
+                    SafeImmediatePushDecision.Immediate(pushPlan),
+                ),
+                immediatePushExecutor = immediatePushExecutor,
+                commitResultRegistrar = registrar,
+                defaultCommitExecutionGate = defaultCommitExecutionGate,
+            )
+            val workflowHandler = CapturingCommitWorkflowHandler(
+                commitAndPushExecutor = TestCommitAndPushExecutor,
+                commitAndPushEnabled = true,
+            )
+
+            val result = service.executeCommitAndPush(
+                workflowHandler = workflowHandler,
+                selection = GitChangeSelection(emptyList()),
+                onPushStarted = { pushStartedCount++ },
+            ).asStarted()
+
+            scheduler.runScheduledActions()
+            defaultCommitExecutionGate.runReadyActions()
+
+            registrar.resultHandler?.completeCommit()
+
+            assertTrue(result.completion.isDone)
+            assertEquals(0, pushStartedCount)
+            assertEquals(0, postCommitPushScheduler.scheduledActionCount)
+            assertEquals(0, immediatePushExecutor.pushCallCount)
+            assertEquals(0, pushPlan.pushCallCount)
+        }
+    }
+
+    @Test
+    fun `safe immediate push completion fails when push executor throws synchronously`() {
+        val failure = IllegalStateException("push failed")
+        val scheduler = CapturingScheduler()
+        val postCommitPushScheduler = CapturingScheduler()
+        val defaultCommitExecutionGate = CapturingDefaultCommitExecutionGate()
+        val registrar = CapturingCommitResultRegistrar()
+        var pushStartedCount = 0
+        val service = CommitWorkflowExecutionService(
+            scheduler = scheduler,
+            postCommitPushScheduler = postCommitPushScheduler,
+            safeImmediatePushSupport = TestSafeImmediatePushSupport(
+                SafeImmediatePushDecision.Immediate(CapturingSafeImmediatePushPlan()),
+            ),
+            immediatePushExecutor = ThrowingImmediatePushExecutor(failure),
+            commitResultRegistrar = registrar,
+            defaultCommitExecutionGate = defaultCommitExecutionGate,
+        )
+        val workflowHandler = CapturingCommitWorkflowHandler(
+            commitAndPushExecutor = TestCommitAndPushExecutor,
+            commitAndPushEnabled = true,
+        )
+
+        val result = service.executeCommitAndPush(
+            workflowHandler = workflowHandler,
+            selection = GitChangeSelection(emptyList()),
+            onPushStarted = { pushStartedCount++ },
+        ).asStarted()
+
+        scheduler.runScheduledActions()
+        defaultCommitExecutionGate.runReadyActions()
+        registrar.resultHandler?.onSuccess()
+
+        val thrown = assertFailsWith<IllegalStateException> {
+            postCommitPushScheduler.runScheduledActions()
+        }
+
+        assertSame(failure, thrown)
+        assertEquals(1, pushStartedCount)
+        assertTrue(result.completion.isCompletedExceptionally)
+    }
+
+    @Test
+    fun `safe immediate push completion fails when push future fails asynchronously`() {
+        val scheduler = CapturingScheduler()
+        val postCommitPushScheduler = CapturingScheduler()
+        val defaultCommitExecutionGate = CapturingDefaultCommitExecutionGate()
+        val pushPlan = CapturingSafeImmediatePushPlan()
+        val registrar = CapturingCommitResultRegistrar()
+        val immediatePushExecutor = CapturingImmediatePushExecutor()
+        val service = CommitWorkflowExecutionService(
+            scheduler = scheduler,
+            postCommitPushScheduler = postCommitPushScheduler,
+            safeImmediatePushSupport = TestSafeImmediatePushSupport(
+                SafeImmediatePushDecision.Immediate(pushPlan),
+            ),
+            immediatePushExecutor = immediatePushExecutor,
+            commitResultRegistrar = registrar,
+            defaultCommitExecutionGate = defaultCommitExecutionGate,
+        )
+        val workflowHandler = CapturingCommitWorkflowHandler(
+            commitAndPushExecutor = TestCommitAndPushExecutor,
+            commitAndPushEnabled = true,
+        )
+
+        val result = service.executeCommitAndPush(
+            workflowHandler = workflowHandler,
+            selection = GitChangeSelection(emptyList()),
+        ).asStarted()
+
+        scheduler.runScheduledActions()
+        defaultCommitExecutionGate.runReadyActions()
+        registrar.resultHandler?.onSuccess()
+        postCommitPushScheduler.runScheduledActions()
+
+        pushPlan.failPush(IllegalStateException("push failed"))
+
+        assertEquals(1, immediatePushExecutor.pushCallCount)
+        assertTrue(result.completion.isCompletedExceptionally)
+    }
+
+    @Test
     fun `falls back to Git commit and push executor when safe immediate push is unavailable`() {
         val scheduler = CapturingScheduler()
         val service = CommitWorkflowExecutionService(
@@ -308,6 +504,43 @@ internal class CommitWorkflowExecutionServiceTest {
         registrar.resultHandler?.onAfterRefresh()
 
         assertTrue(started.completion.isDone)
+    }
+
+    @Test
+    fun `fallback commit and push completes on cancel or failure before workflow refresh`() {
+        val cases = listOf<CommitWorkflowResultHandler.() -> Unit>(
+            CommitWorkflowResultHandler::onCancel,
+            CommitWorkflowResultHandler::onFailure,
+        )
+
+        cases.forEach { completeCommit ->
+            val scheduler = CapturingScheduler()
+            val registrar = CapturingCommitResultRegistrar()
+            var pushStartedCount = 0
+            val service = CommitWorkflowExecutionService(
+                scheduler = scheduler,
+                safeImmediatePushSupport = TestSafeImmediatePushSupport(
+                    SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.MissingTrackedUpstream),
+                ),
+                commitResultRegistrar = registrar,
+            )
+            val workflowHandler = CapturingCommitWorkflowHandler(
+                commitAndPushExecutor = TestCommitAndPushExecutor,
+                commitAndPushEnabled = true,
+            )
+
+            val result = service.executeCommitAndPush(
+                workflowHandler = workflowHandler,
+                selection = GitChangeSelection(emptyList()),
+                onPushStarted = { pushStartedCount++ },
+            ).asStarted()
+
+            scheduler.runScheduledActions()
+            registrar.resultHandler?.completeCommit()
+
+            assertTrue(result.completion.isDone)
+            assertEquals(0, pushStartedCount)
+        }
     }
 
     @Test
@@ -425,7 +658,9 @@ internal class CommitWorkflowExecutionServiceTest {
         }
 
         fun runScheduledActions() {
-            actions.forEach { action -> action() }
+            val scheduledActions = actions.toList()
+            actions.clear()
+            scheduledActions.forEach { action -> action() }
         }
     }
 
@@ -443,8 +678,19 @@ internal class CommitWorkflowExecutionServiceTest {
         }
 
         fun runReadyActions() {
-            actions.forEach { action -> action() }
+            val readyActions = actions.toList()
+            actions.clear()
+            readyActions.forEach { action -> action() }
         }
+    }
+
+    private class ThrowingDefaultCommitExecutionGate(
+        private val failure: RuntimeException,
+    ) : DefaultCommitExecutionGate {
+        override fun runWhenReady(
+            workflowHandler: CommitWorkflowHandler,
+            action: () -> Unit,
+        ): Unit = throw failure
     }
 
     private class TestSafeImmediatePushSupport(
@@ -465,6 +711,10 @@ internal class CommitWorkflowExecutionServiceTest {
         fun completePush() {
             completion.complete(Unit)
         }
+
+        fun failPush(failure: RuntimeException) {
+            completion.completeExceptionally(failure)
+        }
     }
 
     private class CapturingImmediatePushExecutor : ImmediatePushExecutor {
@@ -476,11 +726,21 @@ internal class CommitWorkflowExecutionServiceTest {
         }
     }
 
+    private class ThrowingImmediatePushExecutor(
+        private val failure: RuntimeException,
+    ) : ImmediatePushExecutor {
+        override fun push(pushPlan: SafeImmediatePushPlan): CompletableFuture<Unit> = throw failure
+    }
+
     private class CapturingCommitResultRegistrar(
         private val registered: Boolean = true,
     ) : CommitWorkflowResultRegistrar {
         var registerCallCount = 0
         var resultHandler: CommitWorkflowResultHandler? = null
+        private val registrations = mutableListOf<CapturingCommitWorkflowResultRegistration>()
+
+        val disposeCallCount: Int
+            get() = registrations.sumOf { registration -> registration.disposeCallCount }
 
         override fun register(
             workflowHandler: CommitWorkflowHandler,
@@ -489,10 +749,19 @@ internal class CommitWorkflowExecutionServiceTest {
             registerCallCount++
             this.resultHandler = resultHandler
             return if (registered) {
-                CommitWorkflowResultRegistration { }
+                CapturingCommitWorkflowResultRegistration()
+                    .also(registrations::add)
             } else {
                 null
             }
+        }
+    }
+
+    private class CapturingCommitWorkflowResultRegistration : CommitWorkflowResultRegistration {
+        var disposeCallCount = 0
+
+        override fun dispose() {
+            disposeCallCount += 1
         }
     }
 

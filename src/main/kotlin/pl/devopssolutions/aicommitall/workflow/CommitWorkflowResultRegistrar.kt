@@ -18,6 +18,7 @@ package pl.devopssolutions.aicommitall.workflow
 import com.intellij.openapi.util.Disposer
 import com.intellij.vcs.commit.AbstractCommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowHandler
+import com.intellij.vcs.commit.CommitterResultHandler
 
 internal fun interface CommitWorkflowResultRegistrar {
     fun register(
@@ -66,45 +67,61 @@ internal object IntellijCommitWorkflowResultRegistrar : CommitWorkflowResultRegi
         listenerDisposable: com.intellij.openapi.Disposable,
         resultHandler: CommitWorkflowResultHandler,
     ): CommitWorkflowResultRegistration {
-        var listenerDisposed = false
-
-        fun disposeListener() {
-            if (!listenerDisposed) {
-                listenerDisposed = true
-                Disposer.dispose(listenerDisposable)
-            }
+        val registration = DisposableCommitWorkflowResultRegistration {
+            Disposer.dispose(listenerDisposable)
         }
-
-        var successPendingAfterRefresh = false
         workflow.addVcsCommitListener(
-            object : com.intellij.vcs.commit.CommitterResultHandler {
-                override fun onSuccess() {
-                    if (!resultHandler.waitForAfterRefreshOnSuccess) {
-                        disposeListener()
-                    }
-                    successPendingAfterRefresh = resultHandler.waitForAfterRefreshOnSuccess
-                    resultHandler.onSuccess()
-                }
-
-                override fun onCancel() {
-                    disposeListener()
-                    resultHandler.onCancel()
-                }
-
-                override fun onFailure() {
-                    disposeListener()
-                    resultHandler.onFailure()
-                }
-
-                override fun onAfterRefresh() {
-                    if (successPendingAfterRefresh) {
-                        disposeListener()
-                        resultHandler.onAfterRefresh()
-                    }
-                }
-            },
+            DisposableCommitWorkflowResultListener(
+                resultHandler = resultHandler,
+                disposeListener = registration::dispose,
+            ),
             listenerDisposable,
         )
-        return CommitWorkflowResultRegistration(::disposeListener)
+        return registration
+    }
+}
+
+internal class DisposableCommitWorkflowResultRegistration(
+    private val disposeListener: () -> Unit,
+) : CommitWorkflowResultRegistration {
+    private var disposed = false
+
+    override fun dispose() {
+        if (!disposed) {
+            disposed = true
+            disposeListener()
+        }
+    }
+}
+
+internal class DisposableCommitWorkflowResultListener(
+    private val resultHandler: CommitWorkflowResultHandler,
+    private val disposeListener: () -> Unit,
+) : CommitterResultHandler {
+    private var successPendingAfterRefresh = false
+
+    override fun onSuccess() {
+        if (!resultHandler.waitForAfterRefreshOnSuccess) {
+            disposeListener()
+        }
+        successPendingAfterRefresh = resultHandler.waitForAfterRefreshOnSuccess
+        resultHandler.onSuccess()
+    }
+
+    override fun onCancel() {
+        disposeListener()
+        resultHandler.onCancel()
+    }
+
+    override fun onFailure() {
+        disposeListener()
+        resultHandler.onFailure()
+    }
+
+    override fun onAfterRefresh() {
+        if (successPendingAfterRefresh) {
+            disposeListener()
+            resultHandler.onAfterRefresh()
+        }
     }
 }

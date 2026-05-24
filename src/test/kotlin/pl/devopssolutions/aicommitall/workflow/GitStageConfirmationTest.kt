@@ -206,6 +206,20 @@ internal class GitStageConfirmationTest {
     }
 
     @Test
+    fun `does not stage reload or refresh when attempts are exhausted before starting`() {
+        val root = LightVirtualFile("repo")
+        val modified = TestFilePath("/repo/modified.txt")
+        val confirmed = stageState(root, gitStatus('M', ' ', modified))
+        val operations = CapturingOperations(confirmed)
+
+        val result = confirmation(operations, attempts = 0)
+            .confirm(mapOf(root to listOf(modified)))
+
+        assertNull(result)
+        assertEquals(emptyList(), operations.events)
+    }
+
+    @Test
     fun `stages every root on every retry before refreshing the tracker`() {
         val firstRoot = LightVirtualFile("repo-a")
         val secondRoot = LightVirtualFile("repo-b")
@@ -286,6 +300,28 @@ internal class GitStageConfirmationTest {
     }
 
     @Test
+    fun `stages each path only once by normalized path`() {
+        val root = LightVirtualFile("repo")
+        val slashPath = TestFilePath("/repo/products/idea/plugin/src/Main.kt")
+        val backslashPath = TestFilePath("\\repo\\products\\idea\\plugin\\src\\Main.kt")
+        val confirmed = stageState(root, gitStatus('M', ' ', slashPath))
+        val operations = CapturingOperations(confirmed)
+
+        val result = confirmation(operations, attempts = 1)
+            .confirm(mapOf(root to listOf(slashPath, backslashPath)))
+
+        assertSame(confirmed, result)
+        assertEquals(
+            listOf(
+                "stage:repo:/repo/products/idea/plugin/src/Main.kt",
+                "reload:/repo/products/idea/plugin/src/Main.kt",
+                "refresh",
+            ),
+            operations.events,
+        )
+    }
+
+    @Test
     fun `retries after staging command failure before invoking AI generation`() {
         val root = LightVirtualFile("repo")
         val modified = TestFilePath("/repo/modified.txt")
@@ -351,6 +387,24 @@ internal class GitStageConfirmationTest {
         assertEquals(1, operations.stageCallCount)
         assertEquals(1, operations.reloadCallCount)
         assertEquals(1, operations.refreshCallCount)
+    }
+
+    @Test
+    fun `does not wait after the final failed confirmation attempt`() {
+        val root = LightVirtualFile("repo")
+        val modified = TestFilePath("/repo/modified.txt")
+        val notStaged = stageState(root, gitStatus(' ', 'M', modified))
+        val operations = CapturingOperations(notStaged, notStaged)
+        val sleeper = CapturingSleeper()
+
+        val result = confirmation(
+            operations = operations,
+            attempts = 2,
+            sleeper = sleeper,
+        ).confirm(mapOf(root to listOf(modified)))
+
+        assertNull(result)
+        assertEquals(listOf(RETRY_DELAY), sleeper.delays)
     }
 
     private fun confirmation(

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package pl.devopssolutions.aicommitall.workflow
+
 import pl.devopssolutions.aicommitall.vcs.SafeImmediateOutgoingPushSupport
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushDecision
 import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushFallbackReason
@@ -80,6 +81,25 @@ internal class PushOnlyWorkflowExecutionServiceTest {
         assertSame(failure, thrown)
     }
 
+    @Test
+    fun `immediate outgoing push completion fails when push future fails`() {
+        val pushPlan = CapturingSafeImmediatePushPlan()
+        val immediatePushExecutor = CapturingImmediatePushExecutor()
+        val service = PushOnlyWorkflowExecutionService(
+            outgoingPushSupport = TestOutgoingPushSupport(
+                SafeImmediatePushDecision.Immediate(pushPlan),
+            ),
+            immediatePushExecutor = immediatePushExecutor,
+        )
+
+        val result = service.executePush().asStarted()
+
+        pushPlan.failPush(IllegalStateException("push failed"))
+
+        assertEquals(1, immediatePushExecutor.pushCallCount)
+        assertTrue(result.completion.isCompletedExceptionally)
+    }
+
     private class TestOutgoingPushSupport(
         private val decision: SafeImmediatePushDecision,
     ) : SafeImmediateOutgoingPushSupport {
@@ -97,6 +117,10 @@ internal class PushOnlyWorkflowExecutionServiceTest {
 
         fun completePush() {
             completion.complete(Unit)
+        }
+
+        fun failPush(failure: RuntimeException) {
+            completion.completeExceptionally(failure)
         }
     }
 
