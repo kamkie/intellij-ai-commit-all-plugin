@@ -10,7 +10,7 @@ Filename: `.agents/plans/PLAN-test-coverage-growth.md`
 
 ## Readiness
 
-- Plan readiness: Drafted from a full current JaCoCo coverage pass and source/test layout review; ready for maintainer review, not approved for implementation.
+- Plan readiness: Drafted from a full current JaCoCo coverage pass and source/test layout review; extended with staged and unstaged move/rename coverage targets; ready for maintainer review, not approved for implementation.
 - Open questions: None blocking. Coverage targets are plan assumptions and can be adjusted during approval.
 - Implementation progress: Not started.
 
@@ -69,7 +69,7 @@ Target outcome for this plan:
 ## Proposed Changes
 
 1. Add or extend workflow tests for selection preparation and commit result registration.
-2. Add or extend VCS tests for outgoing-commit status, safe immediate push decisions, push completion tracking, and Git selection service behavior.
+2. Add or extend VCS tests for outgoing-commit status, safe immediate push decisions, push completion tracking, Git selection service behavior, and staged/unstaged file move or rename states, including moves or renames with destination content changes.
 3. Add AI integration-boundary tests for commit-message invocation data, completion service wiring, text access, and completion edge states.
 4. Add action and UI branch tests for availability, data context fallback, and section-state behavior that currently remains partially covered.
 5. Run the full coverage gate and record the achieved coverage in the plan result summary before any optional threshold follow-up.
@@ -78,6 +78,7 @@ Expected write areas:
 
 - `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/`
 - `src/test/kotlin/pl/devopssolutions/aicommitall/vcs/`
+- `src/test/kotlin/pl/devopssolutions/aicommitall/validation/`
 - `src/test/kotlin/pl/devopssolutions/aicommitall/ai/`
 - `src/test/kotlin/pl/devopssolutions/aicommitall/actions/`
 - Narrow internal production seams under matching `src/main/kotlin/...` files only when needed for deterministic tests.
@@ -181,7 +182,7 @@ Required skills:
 
 Goal:
 
-- Add behavior tests for the VCS package branch clusters: `SafeImmediatePushService`, `GitOutgoingCommitsStatus`, `GitPushCompletionTracker`, and selection collection boundaries.
+- Add behavior tests for the VCS package branch clusters: `SafeImmediatePushService`, `GitOutgoingCommitsStatus`, `GitPushCompletionTracker`, selection collection boundaries, and staged/unstaged move or rename selection states.
 
 Initial context budget:
 
@@ -192,9 +193,13 @@ Initial context budget:
   - `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/GitPushCompletionService.kt`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/GitChangeSelection.kt`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/GitChangeSelectionService.kt`
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/GitStageSelectionItems.kt`
   - Existing VCS tests in `src/test/kotlin/pl/devopssolutions/aicommitall/vcs/`
+  - `src/test/kotlin/pl/devopssolutions/aicommitall/validation/LocalGitRepositoryValidationTest.kt`
+  - `src/test/kotlin/pl/devopssolutions/aicommitall/validation/LocalGitTestSupport.kt`
 - Escalate to:
-  - `src/test/kotlin/pl/devopssolutions/aicommitall/validation/LocalGitTestSupport.kt` for local-repository coverage only if fakes cannot prove the behavior.
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/ReflectiveCommitWorkflowSynchronizer.kt` only if move/rename staging behavior cannot be proven at the VCS selection boundary.
+  - `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/GitStageConfirmationTest.kt` only if staged rename confirmation needs workflow-level coverage in addition to VCS selection coverage.
 
 Allowed inputs:
 
@@ -214,6 +219,8 @@ Write scope:
 - `src/test/kotlin/pl/devopssolutions/aicommitall/vcs/GitOutgoingCommitsServiceTest.kt`
 - `src/test/kotlin/pl/devopssolutions/aicommitall/vcs/GitPushCompletionServiceTest.kt`
 - `src/test/kotlin/pl/devopssolutions/aicommitall/vcs/GitChangeSelectionServiceTest.kt`
+- `src/test/kotlin/pl/devopssolutions/aicommitall/vcs/GitStageSelectionItemsTest.kt`
+- `src/test/kotlin/pl/devopssolutions/aicommitall/validation/LocalGitRepositoryValidationTest.kt`
 - Narrow internal production seams in matching VCS services only if deterministic tests need them.
 
 Dependencies:
@@ -229,7 +236,7 @@ Validation:
 Escalation triggers:
 
 - A coverage target requires exercising private IntelliJ environment adapters instead of the existing injected environment interfaces.
-- A local Git fixture is needed to prove path, staged-state, or upstream behavior that fakes cannot model safely.
+- A local Git fixture is needed to prove path, staged-state, rename detection, move-with-content-change, or upstream behavior that fakes cannot model safely.
 
 Stop conditions:
 
@@ -242,6 +249,8 @@ Expected output:
 - Tests for loader-failure, unchanged-cache, throttle, pending-refresh, and action-refresh branches in `GitOutgoingCommitsStatus`.
 - Tests for empty repository waits, listener registration/removal, dispose cancellation, irrelevant repository events, duplicate completion events, and every successful push result type in `GitPushCompletionTracker`.
 - Tests for affected-path extraction from before/after revisions, resolved conflicts, staging-area paths, duplicates, outgoing-only filtering, null push specs, unsafe filtered states, and push invocation failure propagation in `SafeImmediatePushService`.
+- Tests for staged rename, unstaged rename, staged move, unstaged move, staged rename with additional work-tree content changes, and unstaged move or rename with destination content changes. Cover both old and new path handling where IntelliJ or Git exposes both paths, and document the exact local Git short-status shapes used to map those scenarios into deterministic unit fixtures.
+- Tests for `GitStageSelectionItems` that prove already-staged renames are not re-staged, partially staged renames or moves with content changes are staged by the destination path, committable path collection keeps rename destinations, and missing-staged-path confirmation fails closed when a rename destination remains unstaged.
 - Coverage result delta for VCS package.
 
 Result summary:
