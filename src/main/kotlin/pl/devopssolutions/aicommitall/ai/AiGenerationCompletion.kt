@@ -20,6 +20,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.vcs.commit.CommitMessageUi
@@ -328,19 +329,95 @@ internal fun interface AiGenerationUserEditSignal {
     }
 }
 
-internal class ReflectiveActionProgressRunningSignal(private val action: AnAction) : AiGenerationRunningSignal {
-    override fun state(): AiGenerationRunningState = runCatching {
-        val progressIndicatorField = action.javaClass.findField("progressIndicator")
-            ?: return AiGenerationRunningState.Unavailable
-        val progressIndicator = progressIndicatorField.get(action) as? ProgressIndicator
-            ?: return AiGenerationRunningState.NotRunning
+internal class ReflectiveActionProgressRunningSignal(
+    private val action: AnAction,
+    private val diagnostics: AiCompletionCompatibilityDiagnostics = IntelliJAiCompletionCompatibilityDiagnostics,
+) : AiGenerationRunningSignal {
+    override fun state(): AiGenerationRunningState {
+        val actionClass = action.javaClass
+        val progressIndicatorField = try {
+            actionClass.findField(PROGRESS_INDICATOR_FIELD)
+        } catch (exception: Throwable) {
+            diagnostics.report(
+                diagnostic(
+                    sourceClass = actionClass,
+                    reason = "field lookup failed",
+                    exception = exception,
+                ),
+            )
+            return AiGenerationRunningState.Unavailable
+        }
+        if (progressIndicatorField == null) {
+            diagnostics.report(
+                diagnostic(
+                    sourceClass = actionClass,
+                    reason = "field missing",
+                ),
+            )
+            return AiGenerationRunningState.Unavailable
+        }
 
-        if (progressIndicator.isRunning) {
+        val progressIndicator = try {
+            progressIndicatorField.get(action)
+        } catch (exception: Throwable) {
+            diagnostics.report(
+                diagnostic(
+                    sourceClass = actionClass,
+                    reason = "field read failed",
+                    exception = exception,
+                ),
+            )
+            return AiGenerationRunningState.Unavailable
+        }
+
+        return when (progressIndicator) {
+            null -> AiGenerationRunningState.NotRunning
+
+            is ProgressIndicator -> progressIndicator.state(actionClass)
+
+            else -> {
+                diagnostics.report(
+                    diagnostic(
+                        sourceClass = actionClass,
+                        reason = "field value has incompatible type",
+                    ),
+                )
+                AiGenerationRunningState.Unavailable
+            }
+        }
+    }
+
+    private fun ProgressIndicator.state(actionClass: Class<*>): AiGenerationRunningState = try {
+        if (isRunning) {
             AiGenerationRunningState.Running
         } else {
             AiGenerationRunningState.NotRunning
         }
-    }.getOrDefault(AiGenerationRunningState.Unavailable)
+    } catch (exception: Throwable) {
+        diagnostics.report(
+            diagnostic(
+                sourceClass = actionClass,
+                memberName = PROGRESS_INDICATOR_RUNNING_MEMBER,
+                reason = "progress indicator state read failed",
+                exception = exception,
+            ),
+        )
+        AiGenerationRunningState.Unavailable
+    }
+
+    private fun diagnostic(
+        sourceClass: Class<*>,
+        memberName: String = PROGRESS_INDICATOR_FIELD,
+        reason: String,
+        exception: Throwable? = null,
+    ): AiCompletionCompatibilityDiagnostic = AiCompletionCompatibilityDiagnostic(
+        sourceClassName = sourceClass.name,
+        methodName = STATE_METHOD,
+        memberName = memberName,
+        reason = reason,
+        exceptionClassName = exception?.javaClass?.name,
+        causeClassName = exception?.cause?.javaClass?.name,
+    )
 
     private fun Class<*>.findField(name: String): Field? {
         var currentClass: Class<*>? = this
@@ -352,6 +429,47 @@ internal class ReflectiveActionProgressRunningSignal(private val action: AnActio
             currentClass = currentClass.superclass
         }
         return null
+    }
+
+    private companion object {
+        private const val STATE_METHOD = "state"
+        private const val PROGRESS_INDICATOR_FIELD = "progressIndicator"
+        private const val PROGRESS_INDICATOR_RUNNING_MEMBER = "ProgressIndicator.isRunning"
+    }
+}
+
+internal fun interface AiCompletionCompatibilityDiagnostics {
+    fun report(diagnostic: AiCompletionCompatibilityDiagnostic)
+}
+
+internal data class AiCompletionCompatibilityDiagnostic(
+    val sourceClassName: String,
+    val methodName: String,
+    val memberName: String,
+    val reason: String,
+    val exceptionClassName: String? = null,
+    val causeClassName: String? = null,
+)
+
+private object IntelliJAiCompletionCompatibilityDiagnostics : AiCompletionCompatibilityDiagnostics {
+    private val logger = Logger.getInstance(ReflectiveActionProgressRunningSignal::class.java)
+
+    override fun report(diagnostic: AiCompletionCompatibilityDiagnostic) {
+        logger.warn(diagnostic.toLogMessage())
+    }
+
+    private fun AiCompletionCompatibilityDiagnostic.toLogMessage(): String = buildString {
+        append("AI completion compatibility diagnostic: ")
+        append("class=").append(sourceClassName)
+        append(", method=").append(methodName)
+        append(", member=").append(memberName)
+        append(", reason=").append(reason)
+        exceptionClassName?.let { exceptionClass ->
+            append(", exception=").append(exceptionClass)
+        }
+        causeClassName?.let { causeClass ->
+            append(", cause=").append(causeClass)
+        }
     }
 }
 

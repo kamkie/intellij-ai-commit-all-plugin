@@ -79,12 +79,10 @@ internal class GitChangeSelectionService(private val project: Project) {
 
     private fun collectStagingAreaPaths(
         vcsManager: ProjectLevelVcsManager,
-    ) = runCatching {
-        GitStageSelectionItems.committablePaths(
-            state = GitStageTracker.getInstance(project).state,
-            isGitPath = { path -> GitChangeSelectionFilters.isGitPath(path, vcsManager) },
-        )
-    }.getOrDefault(emptyList())
+    ) = GitStagingAreaSelectionCollector.collect(
+        stateProvider = { GitStageTracker.getInstance(project).state },
+        isGitPath = { path -> GitChangeSelectionFilters.isGitPath(path, vcsManager) },
+    )
 
     private fun isEligibleGitChange(
         change: Change,

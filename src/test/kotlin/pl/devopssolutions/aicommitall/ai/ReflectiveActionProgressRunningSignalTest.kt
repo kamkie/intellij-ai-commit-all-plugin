@@ -49,10 +49,70 @@ internal class ReflectiveActionProgressRunningSignalTest {
     }
 
     @Test
-    fun `reports unavailable when action has no progress indicator field`() {
-        val signal = ReflectiveActionProgressRunningSignal(ActionWithoutProgressIndicator())
+    fun `reports unavailable when progress indicator state cannot be read`() {
+        val diagnostics = CapturingAiCompletionCompatibilityDiagnostics()
+        val signal = ReflectiveActionProgressRunningSignal(
+            action = TestAction(throwingProgressIndicator()),
+            diagnostics = diagnostics,
+        )
 
         assertEquals(AiGenerationRunningState.Unavailable, signal.state())
+        assertEquals(
+            listOf(
+                AiCompletionCompatibilityDiagnostic(
+                    sourceClassName = TestAction::class.java.name,
+                    methodName = "state",
+                    memberName = "ProgressIndicator.isRunning",
+                    reason = "progress indicator state read failed",
+                    exceptionClassName = IllegalStateException::class.java.name,
+                ),
+            ),
+            diagnostics.events,
+        )
+    }
+
+    @Test
+    fun `reports unavailable when action has no progress indicator field`() {
+        val diagnostics = CapturingAiCompletionCompatibilityDiagnostics()
+        val signal = ReflectiveActionProgressRunningSignal(
+            action = ActionWithoutProgressIndicator(),
+            diagnostics = diagnostics,
+        )
+
+        assertEquals(AiGenerationRunningState.Unavailable, signal.state())
+        assertEquals(
+            listOf(
+                AiCompletionCompatibilityDiagnostic(
+                    sourceClassName = ActionWithoutProgressIndicator::class.java.name,
+                    methodName = "state",
+                    memberName = "progressIndicator",
+                    reason = "field missing",
+                ),
+            ),
+            diagnostics.events,
+        )
+    }
+
+    @Test
+    fun `reports unavailable when action progress indicator field has incompatible type`() {
+        val diagnostics = CapturingAiCompletionCompatibilityDiagnostics()
+        val signal = ReflectiveActionProgressRunningSignal(
+            action = ActionWithIncompatibleProgressIndicator(),
+            diagnostics = diagnostics,
+        )
+
+        assertEquals(AiGenerationRunningState.Unavailable, signal.state())
+        assertEquals(
+            listOf(
+                AiCompletionCompatibilityDiagnostic(
+                    sourceClassName = ActionWithIncompatibleProgressIndicator::class.java.name,
+                    methodName = "state",
+                    memberName = "progressIndicator",
+                    reason = "field value has incompatible type",
+                ),
+            ),
+            diagnostics.events,
+        )
     }
 
     private class TestAction(
@@ -66,6 +126,21 @@ internal class ReflectiveActionProgressRunningSignalTest {
         override fun actionPerformed(event: AnActionEvent) = Unit
     }
 
+    private class ActionWithIncompatibleProgressIndicator(
+        @Suppress("unused")
+        private val progressIndicator: Any = "not a progress indicator",
+    ) : AnAction() {
+        override fun actionPerformed(event: AnActionEvent) = Unit
+    }
+
+    private class CapturingAiCompletionCompatibilityDiagnostics : AiCompletionCompatibilityDiagnostics {
+        val events = mutableListOf<AiCompletionCompatibilityDiagnostic>()
+
+        override fun report(diagnostic: AiCompletionCompatibilityDiagnostic) {
+            events += diagnostic
+        }
+    }
+
     private fun progressIndicator(running: Boolean): ProgressIndicator = Proxy.newProxyInstance(
         ProgressIndicator::class.java.classLoader,
         arrayOf(ProgressIndicator::class.java),
@@ -74,6 +149,19 @@ internal class ReflectiveActionProgressRunningSignalTest {
             "isRunning" -> running
             "toString" -> "Test ProgressIndicator"
             "hashCode" -> running.hashCode()
+            "equals" -> false
+            else -> method.defaultReturnValue()
+        }
+    } as ProgressIndicator
+
+    private fun throwingProgressIndicator(): ProgressIndicator = Proxy.newProxyInstance(
+        ProgressIndicator::class.java.classLoader,
+        arrayOf(ProgressIndicator::class.java),
+    ) { _, method, _ ->
+        when (method.name) {
+            "isRunning" -> error("Progress state unavailable")
+            "toString" -> "Throwing ProgressIndicator"
+            "hashCode" -> 1
             "equals" -> false
             else -> method.defaultReturnValue()
         }

@@ -15,6 +15,7 @@
  */
 package pl.devopssolutions.aicommitall.workflow
 
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.FilePath
 import com.intellij.openapi.vcs.changes.LocalChangeList
@@ -34,13 +35,15 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         unversionedFiles: List<FilePath>,
         activeChangeList: LocalChangeList,
         inclusionItems: Collection<Any>,
-    ): Boolean = synchronizeGitStageWorkflow(workflowHandler)
+        diagnostics: CommitWorkflowCompatibilityDiagnostics = IntelliJCommitWorkflowCompatibilityDiagnostics,
+    ): Boolean = synchronizeGitStageWorkflow(workflowHandler, diagnostics)
         ?: synchronizeCommitWorkflow(
             workflowHandler = workflowHandler,
             changeLists = changeLists,
             unversionedFiles = unversionedFiles,
             activeChangeList = activeChangeList,
             inclusionItems = inclusionItems,
+            diagnostics = diagnostics,
         )
 
     private fun synchronizeCommitWorkflow(
@@ -49,16 +52,20 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         unversionedFiles: List<FilePath>,
         activeChangeList: LocalChangeList,
         inclusionItems: Collection<Any>,
+        diagnostics: CommitWorkflowCompatibilityDiagnostics,
     ): Boolean = inclusionItems.isNotEmpty() &&
-        workflowHandler.javaClass.commitWorkflowMethods()?.synchronize(
+        workflowHandler.javaClass.commitWorkflowMethods(diagnostics)?.synchronize(
             workflowHandler = workflowHandler,
             changeLists = changeLists,
             unversionedFiles = unversionedFiles,
             activeChangeList = activeChangeList,
             inclusionItems = inclusionItems,
+            diagnostics = diagnostics,
         ) == true
 
-    private fun Class<*>.commitWorkflowMethods(): CommitWorkflowMethods? {
+    private fun Class<*>.commitWorkflowMethods(
+        diagnostics: CommitWorkflowCompatibilityDiagnostics,
+    ): CommitWorkflowMethods? {
         val synchronizeInclusion = findMethod("synchronizeInclusion", List::class.java, List::class.java)
         val setCommitState = findMethod(
             "setCommitState",
@@ -66,14 +73,29 @@ internal object ReflectiveCommitWorkflowSynchronizer {
             Collection::class.java,
             java.lang.Boolean.TYPE,
         )
-        return if (synchronizeInclusion != null && setCommitState != null) {
-            CommitWorkflowMethods(synchronizeInclusion, setCommitState)
-        } else {
-            null
+        if (synchronizeInclusion != null && setCommitState != null) {
+            return CommitWorkflowMethods(synchronizeInclusion, setCommitState)
         }
+
+        val missingMethods = listOfNotNull(
+            "synchronizeInclusion".takeIf { synchronizeInclusion == null },
+            "setCommitState".takeIf { setCommitState == null },
+        )
+        diagnostics.report(
+            CommitWorkflowCompatibilityDiagnostic(
+                sourceClassName = name,
+                methodName = "commitWorkflowMethods",
+                reason = "required methods missing",
+                missingMethodNames = missingMethods,
+            ),
+        )
+        return null
     }
 
-    private fun synchronizeGitStageWorkflow(workflowHandler: CommitWorkflowHandler): Boolean? {
+    private fun synchronizeGitStageWorkflow(
+        workflowHandler: CommitWorkflowHandler,
+        diagnostics: CommitWorkflowCompatibilityDiagnostics,
+    ): Boolean? {
         val gitStageHandler = workflowHandler as? GitStageCommitWorkflowHandler ?: return null
 
         return runCatching {
@@ -92,7 +114,16 @@ internal object ReflectiveCommitWorkflowSynchronizer {
                 tracker = tracker,
                 pathsByRoot = pathsToStageByRoot,
                 expectedPaths = expectedPathsByRoot.values.flatten(),
-            ) ?: return@runCatching false
+            ) ?: run {
+                diagnostics.report(
+                    CommitWorkflowCompatibilityDiagnostic(
+                        sourceClassName = gitStageHandler.javaClass.name,
+                        methodName = "synchronizeGitStageWorkflow",
+                        reason = "staging state confirmation failed",
+                    ),
+                )
+                return@runCatching false
+            }
             val includedRoots = expectedPathsByRoot.keys
             CommitWorkflowUiThreadAccess.run {
                 gitStageHandler.state = refreshedState
@@ -100,7 +131,18 @@ internal object ReflectiveCommitWorkflowSynchronizer {
                 gitStageHandler.ui.setIncludedRoots(includedRoots)
             }
             true
-        }.getOrDefault(false)
+        }.getOrElse { exception ->
+            diagnostics.report(
+                CommitWorkflowCompatibilityDiagnostic(
+                    sourceClassName = gitStageHandler.javaClass.name,
+                    methodName = "synchronizeGitStageWorkflow",
+                    reason = "git stage workflow synchronization failed",
+                    exceptionClassName = exception.javaClass.name,
+                    causeClassName = exception.cause?.javaClass?.name,
+                ),
+            )
+            false
+        }
     }
 
     private fun confirmStagedState(
@@ -135,10 +177,58 @@ private data class CommitWorkflowMethods(
         unversionedFiles: List<FilePath>,
         activeChangeList: LocalChangeList,
         inclusionItems: Collection<Any>,
+        diagnostics: CommitWorkflowCompatibilityDiagnostics,
     ): Boolean = runCatching {
         CommitWorkflowUiThreadAccess.run {
             synchronizeInclusion.invoke(workflowHandler, changeLists, unversionedFiles)
             setCommitState.invoke(workflowHandler, activeChangeList, inclusionItems, true)
         }
+    }.onFailure { exception ->
+        diagnostics.report(
+            CommitWorkflowCompatibilityDiagnostic(
+                sourceClassName = workflowHandler.javaClass.name,
+                methodName = "synchronize",
+                reason = "method invocation failed",
+                exceptionClassName = exception.javaClass.name,
+                causeClassName = exception.cause?.javaClass?.name,
+            ),
+        )
     }.isSuccess
+}
+
+internal fun interface CommitWorkflowCompatibilityDiagnostics {
+    fun report(diagnostic: CommitWorkflowCompatibilityDiagnostic)
+}
+
+internal data class CommitWorkflowCompatibilityDiagnostic(
+    val sourceClassName: String,
+    val methodName: String,
+    val reason: String,
+    val missingMethodNames: List<String> = emptyList(),
+    val exceptionClassName: String? = null,
+    val causeClassName: String? = null,
+)
+
+private object IntelliJCommitWorkflowCompatibilityDiagnostics : CommitWorkflowCompatibilityDiagnostics {
+    private val logger = Logger.getInstance(ReflectiveCommitWorkflowSynchronizer::class.java)
+
+    override fun report(diagnostic: CommitWorkflowCompatibilityDiagnostic) {
+        logger.warn(diagnostic.toLogMessage())
+    }
+
+    private fun CommitWorkflowCompatibilityDiagnostic.toLogMessage(): String = buildString {
+        append("Commit workflow compatibility diagnostic: ")
+        append("class=").append(sourceClassName)
+        append(", method=").append(methodName)
+        append(", reason=").append(reason)
+        if (missingMethodNames.isNotEmpty()) {
+            append(", missingMethods=").append(missingMethodNames.joinToString(","))
+        }
+        exceptionClassName?.let { exceptionClass ->
+            append(", exception=").append(exceptionClass)
+        }
+        causeClassName?.let { causeClass ->
+            append(", cause=").append(causeClass)
+        }
+    }
 }

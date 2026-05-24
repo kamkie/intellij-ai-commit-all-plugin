@@ -50,6 +50,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
 
     @Test
     fun `fails closed when workflow handler has no inclusion methods`() {
+        val diagnostics = CapturingCommitWorkflowCompatibilityDiagnostics()
         val changeList = TestChangeList("Default")
 
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
@@ -57,10 +58,22 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             changeLists = listOf(changeList),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
-            inclusionItems = emptyList(),
+            inclusionItems = listOf(Any()),
+            diagnostics = diagnostics,
         )
 
         assertFalse(result)
+        assertEquals(
+            listOf(
+                CommitWorkflowCompatibilityDiagnostic(
+                    sourceClassName = IncompatibleHandler::class.java.name,
+                    methodName = "commitWorkflowMethods",
+                    reason = "required methods missing",
+                    missingMethodNames = listOf("synchronizeInclusion", "setCommitState"),
+                ),
+            ),
+            diagnostics.events,
+        )
     }
 
     @Test
@@ -98,6 +111,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
 
     @Test
     fun `fails closed when workflow synchronization throws`() {
+        val diagnostics = CapturingCommitWorkflowCompatibilityDiagnostics()
         val changeList = TestChangeList("Default")
 
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
@@ -106,9 +120,22 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = listOf(Any()),
+            diagnostics = diagnostics,
         )
 
         assertFalse(result)
+        assertEquals(
+            listOf(
+                CommitWorkflowCompatibilityDiagnostic(
+                    sourceClassName = ThrowingHandler::class.java.name,
+                    methodName = "synchronize",
+                    reason = "method invocation failed",
+                    exceptionClassName = java.lang.reflect.InvocationTargetException::class.java.name,
+                    causeClassName = IllegalStateException::class.java.name,
+                ),
+            ),
+            diagnostics.events,
+        )
     }
 
     private open class TestCommitWorkflowHandler : CommitWorkflowHandler {
@@ -158,6 +185,14 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
 
         fun setCommitState(changeList: LocalChangeList, items: Collection<Any>, replaceInclusion: Boolean) {
             error("setCommitState should not run for ${changeList.name}, ${items.size}, $replaceInclusion")
+        }
+    }
+
+    private class CapturingCommitWorkflowCompatibilityDiagnostics : CommitWorkflowCompatibilityDiagnostics {
+        val events = mutableListOf<CommitWorkflowCompatibilityDiagnostic>()
+
+        override fun report(diagnostic: CommitWorkflowCompatibilityDiagnostic) {
+            events += diagnostic
         }
     }
 
