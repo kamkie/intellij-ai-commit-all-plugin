@@ -6,49 +6,6 @@ Preserve `T-AREA-NNN` task refs, wording, grouping, and evidence links when movi
 
 ### Documentation
 
-Archived as of 2026-05-24 Marketplace change-notes release-preparation confirmation.
-
-- [x] T-DOC-019: keep the generated Marketplace change notes aligned with the `CHANGELOG.md` `Unreleased` and latest tagged release sections during release preparation. (`config/intellij-platform/change-notes.html`, `CHANGELOG.md`; evidence: latest local release tag is `v0.1.0-alpha.10`; generated change notes include the current `Unreleased` entry labeled as not yet included in a Marketplace release and the latest `v0.1.0-alpha.10` changelog section; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-change-notes.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-description.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
-
-Archived as of 2026-05-24 documentation release follow-ups closeout.
-
-- [x] T-DOC-017: finish deferred user-facing documentation follow-ups after the ADR 0076 rebuild. Priority order: generation and Marketplace metadata first (T-DOC-025, T-DOC-018, T-DOC-026, T-DOC-019), shortcut confirmation next (T-DOC-023), reviewed visual assets last after current UI validation (T-DOC-020). Plan: `PLAN-documentation-release-followups`. (`T-DOC-018`, `T-DOC-020`, `T-DOC-023`, `T-DOC-025`, and `T-DOC-026` archived during the plan closeout; `T-DOC-019` archived in the later Marketplace change-notes release-preparation confirmation; validation: Marketplace generator checks, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
-
-Archived as of 2026-05-24 current UI visual assets.
-
-- [x] T-DOC-020: add reviewed screenshots and a short animation of the current `AI | Commit | Push` control in light and dark themes, then link them from `docs/user-guide.md` and the generated Marketplace description. (`docs/assets/user-guide/ai-commit-all-control-light.png`, `docs/assets/user-guide/ai-commit-all-control-dark.png`, `docs/assets/user-guide/ai-commit-all-control-running.gif`, `docs/user-guide.md`, `config/intellij-platform/description.html`, `scripts/generate-intellij-platform-description.ps1`, `src/test/kotlin/pl/devopssolutions/aicommitall/actions/AiCommitAllControlAssetGeneratorTest.kt`; evidence: generated from the actual runtime `AiCommitAllThreeSectionControl` Swing paint path with `JBColor.setDark`; validation: `$env:AICOMMITALL_GENERATE_USER_GUIDE_ASSETS='true'; .\gradlew.bat test --tests "pl.devopssolutions.aicommitall.actions.AiCommitAllControlAssetGeneratorTest"`, plus final T4 handoff validation)
-
-Archived as of 2026-05-24 shortcut keymap documentation.
-
-- [x] T-DOC-023: confirm macOS keymap equivalents for the plugin commit and push shortcuts, then update the user guide shortcut table. (`docs/user-guide.md`, `src/main/resources/META-INF/plugin.xml`; evidence: JetBrains IntelliJ IDEA 2026.1 Predefined macOS keymap global VCS actions list `Commit...` as `Cmd+K` and `Push...` as `Cmd+Shift+K`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check`)
-
-Archived as of 2026-05-24 Marketplace change-notes generation.
-
-- [x] T-DOC-026: generate `config/intellij-platform/change-notes.html` from `CHANGELOG.md` so release notes do not drift. (`scripts/generate-intellij-platform-change-notes.ps1`, `config/intellij-platform/change-notes.html`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-change-notes.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
-
-Archived as of 2026-05-24 marketplace description generation.
-
-- [x] T-DOC-025: generate `config/intellij-platform/description.html` from stable user-facing source docs, primarily `docs/user-guide.md`, so Marketplace text does not drift. (`scripts/generate-intellij-platform-description.ps1`, `config/intellij-platform/description.html`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-description.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
-- [x] T-DOC-018: expand the generated Marketplace description with feature summary, requirements, AI Assistant dependency, source link, and license note. (`config/intellij-platform/description.html`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-description.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
-
-Archived as of 2026-05-24 documentation priority triage.
-
-- [x] T-DOC-024: update the plugin README with the [user-guide.md](docs/user-guide.md) reference. (`README.md`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check`)
-
-Archived as of 2026-05-23 user documentation rebuild.
-
-- [x] T-DOC-022: add troubleshooting and FAQ guidance for missing or disabled AI Assistant, AI generation timeout, hidden or disabled controls, push fallback to the IDE dialog, outgoing-only push stops, unresolved conflicts, and background VCS operations. (`docs/troubleshooting.md`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check`)
-
-Archived as of 2026-05-20 backlog triage.
-
-- [x] T-DOC-021: add a Settings reference table in `README.md` covering timeout, completion-check interval, clear-message default, and shortcut takeover. (`README.md`)
-
-Archived as of 2026-05-20 README refresh.
-
-- [x] T-DOC-016: update README. (`README.md`, `CHANGELOG.md`; validation: `scripts\validate-docs.ps1`)
-
-Archived as of orchestrated `AI Commit All` workflow implementation.
-
 - [x] T-DOC-001: Update `README.md` with setup and usage instructions. (Plan `PLAN-user-documentation`, Task 1)
 - [x] T-DOC-002: Document supported IDE versions. (ADR 0008)
 - [x] T-DOC-003: Document AI Assistant dependency and limitations. (Plan `PLAN-user-documentation`, Task 1)
@@ -64,41 +21,31 @@ Archived as of orchestrated `AI Commit All` workflow implementation.
 - [x] T-DOC-013: Add `docs/proposals/` with proposal rules, template, and archive marker. (ADR 0033)
 - [x] T-DOC-014: Add proposal refs. (ADR 0034)
 - [x] T-DOC-015: Archive completed plans, proposals, and tasks.
+- [x] T-DOC-016: update README. (`README.md`, `CHANGELOG.md`; validation: `scripts\validate-docs.ps1`)
+- [x] T-DOC-017: finish deferred user-facing documentation follow-ups after the ADR 0076 rebuild. Priority order: generation and Marketplace metadata first (T-DOC-025, T-DOC-018, T-DOC-026, T-DOC-019), shortcut confirmation next (T-DOC-023), reviewed visual assets last after current UI validation (T-DOC-020). Plan: `PLAN-documentation-release-followups`. (`T-DOC-018`, `T-DOC-020`, `T-DOC-023`, `T-DOC-025`, and `T-DOC-026` archived during the plan closeout; `T-DOC-019` archived in the later Marketplace change-notes release-preparation confirmation; validation: Marketplace generator checks, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
+- [x] T-DOC-018: expand the generated Marketplace description with feature summary, requirements, AI Assistant dependency, source link, and license note. (`config/intellij-platform/description.html`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-description.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
+- [x] T-DOC-019: keep the generated Marketplace change notes aligned with the `CHANGELOG.md` `Unreleased` and latest tagged release sections during release preparation. (`config/intellij-platform/change-notes.html`, `CHANGELOG.md`; evidence: latest local release tag is `v0.1.0-alpha.10`; generated change notes include the current `Unreleased` entry labeled as not yet included in a Marketplace release and the latest `v0.1.0-alpha.10` changelog section; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-change-notes.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-description.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
+- [x] T-DOC-020: add reviewed screenshots and a short animation of the current `AI | Commit | Push` control in light and dark themes, then link them from `docs/user-guide.md` and the generated Marketplace description. (`docs/assets/user-guide/ai-commit-all-control-light.png`, `docs/assets/user-guide/ai-commit-all-control-dark.png`, `docs/assets/user-guide/ai-commit-all-control-running.gif`, `docs/user-guide.md`, `config/intellij-platform/description.html`, `scripts/generate-intellij-platform-description.ps1`, `src/test/kotlin/pl/devopssolutions/aicommitall/actions/AiCommitAllControlAssetGeneratorTest.kt`; evidence: generated from the actual runtime `AiCommitAllThreeSectionControl` Swing paint path with `JBColor.setDark`; validation: `$env:AICOMMITALL_GENERATE_USER_GUIDE_ASSETS='true'; .\gradlew.bat test --tests "pl.devopssolutions.aicommitall.actions.AiCommitAllControlAssetGeneratorTest"`, plus final T4 handoff validation)
+- [x] T-DOC-021: add a Settings reference table in `README.md` covering timeout, completion-check interval, clear-message default, and shortcut takeover. (`README.md`)
+- [x] T-DOC-022: add troubleshooting and FAQ guidance for missing or disabled AI Assistant, AI generation timeout, hidden or disabled controls, push fallback to the IDE dialog, outgoing-only push stops, unresolved conflicts, and background VCS operations. (`docs/troubleshooting.md`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check`)
+- [x] T-DOC-023: confirm macOS keymap equivalents for the plugin commit and push shortcuts, then update the user guide shortcut table. (`docs/user-guide.md`, `src/main/resources/META-INF/plugin.xml`; evidence: JetBrains IntelliJ IDEA 2026.1 Predefined macOS keymap global VCS actions list `Commit...` as `Cmd+K` and `Push...` as `Cmd+Shift+K`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check`)
+- [x] T-DOC-024: update the plugin README with the [user-guide.md](docs/user-guide.md) reference. (`README.md`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check`)
+- [x] T-DOC-025: generate `config/intellij-platform/description.html` from stable user-facing source docs, primarily `docs/user-guide.md`, so Marketplace text does not drift. (`scripts/generate-intellij-platform-description.ps1`, `config/intellij-platform/description.html`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-description.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
+- [x] T-DOC-026: generate `config/intellij-platform/change-notes.html` from `CHANGELOG.md` so release notes do not drift. (`scripts/generate-intellij-platform-change-notes.ps1`, `config/intellij-platform/change-notes.html`; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/generate-intellij-platform-change-notes.ps1 -Check`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `.\gradlew.bat verifyPluginStructure`, `git diff --check`)
 
 ### Testing
 
-Archived as of 2026-05-20 workflow coverage and JaCoCo gate.
-
-- [x] T-TEST-003: increase test coverage (umbrella completed by T-TEST-004 through T-TEST-009). Current JaCoCo line coverage is 68.2% overall; weakest packages are `aicommitall` root (0%), `vcs` (54.7%), `workflow` (56.9%), and `notifications` (68.4%). (validation: `.\gradlew.bat test jacocoTestReport`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
-- [x] T-TEST-007: increase coverage in the `workflow` package, targeting `AiCommitAllWorkflowCoordinator`, `CommitWorkflowExecutionService`, and `CommitMessageUserEditSignal` running, timeout, and user-edit branches. (`src/test/kotlin/.../workflow/AiCommitAllWorkflowCoordinatorTest.kt`, `src/test/kotlin/.../workflow/CommitWorkflowExecutionServiceTest.kt`, `src/test/kotlin/.../ai/CommitMessageUserEditSignalTest.kt`; validation: red `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowCoordinatorTest" --tests "pl.devopssolutions.aicommitall.ai.CommitMessageUserEditSignalTest" --tests "pl.devopssolutions.aicommitall.workflow.CommitWorkflowExecutionServiceTest"` failed on missing `AiCommitAllWorkflowStarter`; green same command, `.\gradlew.bat test jacocoTestReport`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
-- [x] T-TEST-009: raise the Gradle JaCoCo coverage verification thresholds in `build.gradle.kts` once T-TEST-007 lands, and document the new floor in `README.md`. (`build.gradle.kts`, `README.md`; floor: 68% overall line coverage and 62% overall branch coverage; validation: `.\gradlew.bat verifyJacocoCoverageReport`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
-
-Archived as of 2026-05-20 VCS coverage.
-
-- [x] T-TEST-006: increase coverage in the `vcs` package, targeting `ReflectiveCommitWorkflowSynchronizer`, `SafeImmediatePushService`, `GitOutgoingCommitsService`, and `GitStageConfirmation` happy and fallback branches. (`src/test/kotlin/.../vcs/SafeImmediatePushServiceTest.kt`, `src/test/kotlin/.../vcs/GitOutgoingCommitsServiceTest.kt`, `src/test/kotlin/.../workflow/ReflectiveCommitWorkflowSynchronizerTest.kt`; validation: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.vcs.SafeImmediatePushServiceTest"`, `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.vcs.GitOutgoingCommitsServiceTest"`, `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.workflow.ReflectiveCommitWorkflowSynchronizerTest"`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
-
-Archived as of 2026-05-20 notification service coverage.
-
-- [x] T-TEST-005: add tests for `AiCommitAllNotificationService` notification routing and group registration so the `notifications` package leaves 0% coverage. (`src/test/kotlin/.../notifications/AiCommitAllNotificationServiceTest.kt`; validation: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.notifications.AiCommitAllNotificationServiceTest"`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
-
-Archived as of 2026-05-20 settings configurable coverage.
-
-- [x] T-TEST-004: add unit tests for `AiCommitAllConfigurable` covering `createComponent`, `isModified`, `apply`, and `reset` for every setting field, including invalid input paths. (`src/test/kotlin/.../settings/AiCommitAllConfigurableTest.kt`; validation: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.settings.AiCommitAllConfigurableTest"`, `.\gradlew.bat test`, `.\gradlew.bat jacocoTestReport`)
-
-Archived as of 2026-05-20 backlog triage.
-
-- [x] T-TEST-008: add branch-coverage tests for `AiGenerationCompletionObserver` for empty message, unchanged message, focus-loss, and user-edit-during-generation paths. (`src/test/kotlin/.../ai/AiGenerationCompletionObserverTest.kt`)
-
-Archived as of 2026-05-18 backlog cleanup.
-
 - [x] T-TEST-001: we need many more test cases for the three-section AI commit push control.
 - [x] T-TEST-002: we need to automate the test cases for the three-section AI commit push control as much as possible.
-
-Archived as of 2026-05-18 backlog cleanup.
+- [x] T-TEST-003: increase test coverage (umbrella completed by T-TEST-004 through T-TEST-009). Current JaCoCo line coverage is 68.2% overall; weakest packages are `aicommitall` root (0%), `vcs` (54.7%), `workflow` (56.9%), and `notifications` (68.4%). (validation: `.\gradlew.bat test jacocoTestReport`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
+- [x] T-TEST-004: add unit tests for `AiCommitAllConfigurable` covering `createComponent`, `isModified`, `apply`, and `reset` for every setting field, including invalid input paths. (`src/test/kotlin/.../settings/AiCommitAllConfigurableTest.kt`; validation: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.settings.AiCommitAllConfigurableTest"`, `.\gradlew.bat test`, `.\gradlew.bat jacocoTestReport`)
+- [x] T-TEST-005: add tests for `AiCommitAllNotificationService` notification routing and group registration so the `notifications` package leaves 0% coverage. (`src/test/kotlin/.../notifications/AiCommitAllNotificationServiceTest.kt`; validation: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.notifications.AiCommitAllNotificationServiceTest"`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
+- [x] T-TEST-006: increase coverage in the `vcs` package, targeting `ReflectiveCommitWorkflowSynchronizer`, `SafeImmediatePushService`, `GitOutgoingCommitsService`, and `GitStageConfirmation` happy and fallback branches. (`src/test/kotlin/.../vcs/SafeImmediatePushServiceTest.kt`, `src/test/kotlin/.../vcs/GitOutgoingCommitsServiceTest.kt`, `src/test/kotlin/.../workflow/ReflectiveCommitWorkflowSynchronizerTest.kt`; validation: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.vcs.SafeImmediatePushServiceTest"`, `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.vcs.GitOutgoingCommitsServiceTest"`, `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.workflow.ReflectiveCommitWorkflowSynchronizerTest"`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
+- [x] T-TEST-007: increase coverage in the `workflow` package, targeting `AiCommitAllWorkflowCoordinator`, `CommitWorkflowExecutionService`, and `CommitMessageUserEditSignal` running, timeout, and user-edit branches. (`src/test/kotlin/.../workflow/AiCommitAllWorkflowCoordinatorTest.kt`, `src/test/kotlin/.../workflow/CommitWorkflowExecutionServiceTest.kt`, `src/test/kotlin/.../ai/CommitMessageUserEditSignalTest.kt`; validation: red `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowCoordinatorTest" --tests "pl.devopssolutions.aicommitall.ai.CommitMessageUserEditSignalTest" --tests "pl.devopssolutions.aicommitall.workflow.CommitWorkflowExecutionServiceTest"` failed on missing `AiCommitAllWorkflowStarter`; green same command, `.\gradlew.bat test jacocoTestReport`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
+- [x] T-TEST-008: add branch-coverage tests for `AiGenerationCompletionObserver` for empty message, unchanged message, focus-loss, and user-edit-during-generation paths. (`src/test/kotlin/.../ai/AiGenerationCompletionObserverTest.kt`)
+- [x] T-TEST-009: raise the Gradle JaCoCo coverage verification thresholds in `build.gradle.kts` once T-TEST-007 lands, and document the new floor in `README.md`. (`build.gradle.kts`, `README.md`; floor: 68% overall line coverage and 62% overall branch coverage; validation: `.\gradlew.bat verifyJacocoCoverageReport`, `.\gradlew.bat spotlessCheck detekt test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin`)
 
 ### Detekt Plugin
-
-Archived as of 2026-05-24 Detekt baseline cleanup.
 
 - [x] T-DETEKT-001: clean detekt findings (umbrella for T-DETEKT-002..T-DETEKT-008). The baseline at `config/detekt/baseline.xml` listed 118 suppressed findings to retire. (Plan `PLAN-detekt-baseline-cleanup`; validation: `.\gradlew.bat spotlessCheck`, `.\gradlew.bat detekt`, `.\gradlew.bat verifyDetektBaseline`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check HEAD^ HEAD`)
 - [x] T-DETEKT-002: extract named constants for non-color `MagicNumber` findings in `AiCommitAllThreeSectionControl.kt` (geometry, scale factors, animation counts). (`src/main/kotlin/.../actions/AiCommitAllThreeSectionControl.kt`; Plan `PLAN-detekt-baseline-cleanup`, Task 1)
@@ -122,8 +69,6 @@ Archived as of 2026-05-24 Detekt baseline cleanup.
 
 - [x] T-UI-002: move button to the right of the `Commit and Push...` button.
 - [x] T-UI-003: button corners do not match the rest of the buttons.
-
-Archived as of orchestrated `AI Commit All` workflow implementation.
 
 ### Register Commit Tool Window Actions
 
@@ -210,10 +155,6 @@ Archived as of orchestrated `AI Commit All` workflow implementation.
 
 ### Publishing, Signing, Marketplace, And CI
 
-Archived as of 2026-05-24 GitHub Release automation.
-
-- [x] T-REL-017: make GitHub release for pushed tags. Release notes are generated automatically from the matching `CHANGELOG.md` release section for the pushed semantic version tag, covering the changes recorded for that release since the previous release. (`.github/workflows/github-release.yml`, `scripts/generate-github-release-notes.ps1`, `src/test/kotlin/pl/devopssolutions/aicommitall/ci/GitHubActionsWorkflowTest.kt`, `CHANGELOG.md`; validation: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.ci.GitHubActionsWorkflowTest"`, `.\gradlew.bat spotlessCheck`, `.\gradlew.bat detekt`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check`)
-
 - [x] T-REL-001: Add Marketplace-ready plugin metadata. (Plan `PLAN-marketplace-ci-release`, Task 1)
 - [x] T-REL-002: Add official source code link to plugin and Marketplace metadata. (Plan `PLAN-marketplace-ci-release`, Task 1)
 - [x] T-REL-003: Configure plugin signing through IntelliJ Platform Gradle Plugin 2.x using local properties or CI secrets. (Plan `PLAN-marketplace-ci-release`, Task 2)
@@ -230,8 +171,8 @@ Archived as of 2026-05-24 GitHub Release automation.
 - [x] T-REL-014: Add a `ci` workflow to run the plugin verifier on the latest stable IDE build.
 - [x] T-REL-015: Add Gradle dependency submission to GitHub Actions.
 - [x] T-REL-016: publish test results to GitHub Actions.
-
-Archived as of `v0.1.0-alpha.1` release preparation.
+- [x] T-REL-017: make GitHub release for pushed tags. Release notes are generated automatically from the matching `CHANGELOG.md` release section for the pushed semantic version tag, covering the changes recorded for that release since the previous release. (`.github/workflows/github-release.yml`, `scripts/generate-github-release-notes.ps1`, `src/test/kotlin/pl/devopssolutions/aicommitall/ci/GitHubActionsWorkflowTest.kt`, `CHANGELOG.md`; validation: `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.ci.GitHubActionsWorkflowTest"`, `.\gradlew.bat spotlessCheck`, `.\gradlew.bat detekt`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1`, `git diff --check`)
+- [x] T-REL-019: clean TASKS_ARCHIVE.md. remove `Archived as of`. all tasks should be sorted by ref. (evidence: removed standalone archive marker lines and sorted archived task bullets by stable ref within each existing archive section; validation: `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1`, `git diff --check`)
 
 ### Confirmed Decisions
 
