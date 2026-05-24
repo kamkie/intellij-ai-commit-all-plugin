@@ -10,7 +10,7 @@ Filename: `.agents/plans/PLAN-test-coverage-growth.md`
 
 ## Readiness
 
-- Plan readiness: Drafted from a full current JaCoCo coverage pass and source/test layout review; extended with staged and unstaged move/rename coverage targets; ready for maintainer review, not approved for implementation.
+- Plan readiness: Drafted from a full current JaCoCo coverage pass and source/test layout review; extended with staged and unstaged move/rename coverage targets plus a current source/test scan for complex uncovered workflow, VCS, AI, and UI edge cases; ready for maintainer review, not approved for implementation.
 - Open questions: None blocking. Coverage targets are plan assumptions and can be adjusted during approval.
 - Implementation progress: Not started.
 
@@ -68,11 +68,19 @@ Target outcome for this plan:
 
 ## Proposed Changes
 
-1. Add or extend workflow tests for selection preparation and commit result registration.
-2. Add or extend VCS tests for outgoing-commit status, safe immediate push decisions, push completion tracking, Git selection service behavior, and staged/unstaged file move or rename states, including moves or renames with destination content changes.
-3. Add AI integration-boundary tests for commit-message invocation data, completion service wiring, text access, and completion edge states.
-4. Add action and UI branch tests for availability, data context fallback, and section-state behavior that currently remains partially covered.
+1. Add or extend workflow tests for selection preparation, execution lifecycle, post-commit push handling, push-only execution, and commit result registration.
+2. Add or extend VCS tests for outgoing-commit status, safe immediate push decisions, push completion tracking, Git selection service behavior, staged/unstaged file move or rename states, including moves or renames with destination content changes, and listener/dispose races.
+3. Add AI integration-boundary tests for commit-message invocation data, full action-event construction, completion service wiring, text access, completion edge states, and user-edit precedence.
+4. Add action and UI branch tests for availability, data context fallback, shortcut takeover boundaries, accessibility, geometry hit-testing, and section-state behavior that currently remains partially covered.
 5. Run the full coverage gate and record the achieved coverage in the plan result summary before any optional threshold follow-up.
+
+Additional complex cases identified from the current source/test scan:
+
+- Workflow orchestration has tests for ordinary stop reasons, but not for activity cleanup, active-workflow reset, and phase transitions when background preparation, EDT AI invocation, commit completion, push completion, or push-only completion fails exceptionally.
+- Commit execution tests cover happy paths and some invocation failures, but not every registered result-handler path: default commit success with a registered listener, listener disposal on executor/gate failure, post-commit immediate-push cancel/failure/no-success paths, asynchronous immediate-push failures, and fallback commit-and-push cancel/failure before after-refresh.
+- Push completion tracking covers core success/failure/cancel/timeout results, but not empty repository waits, irrelevant repository events, duplicate completion events after a waiter is done, listener removal by parent disposal, dispose-time cancellation with partial results, or timeout-handle cancellation races.
+- AI invocation context tests mostly cover collected data, leaving full `AnActionEvent` construction, cloned presentation isolation, input-event propagation, child data-context override versus stale parent data, and missing commit-message control/document combinations as higher-risk gaps.
+- Action and control tests cover main routing and rendering smoke cases, but not boundary hit testing at dividers and outside bounds, no-enabled-section keyboard movement, animation start/stop on displayability changes, custom accessible-name override behavior, and shortcut promoter behavior when both plugin shortcut actions and source IDE actions are present in mixed order.
 
 Expected write areas:
 
@@ -85,9 +93,9 @@ Expected write areas:
 
 ## Task Packets
 
-### Task Packet: T1-workflow-selection-and-result-registration
+### Task Packet: T1-workflow-selection-execution-and-result-registration
 
-Task id: T1-workflow-selection-and-result-registration
+Task id: T1-workflow-selection-execution-and-result-registration
 
 Lane: testing
 
@@ -98,7 +106,7 @@ Required skills:
 
 Goal:
 
-- Add focused tests for `CommitWorkflowSelectionService` and `IntellijCommitWorkflowResultRegistrar`, the workflow files with the weakest current direct coverage.
+- Add focused tests for `CommitWorkflowSelectionService`, `AiCommitAllWorkflowRunner`, `CommitWorkflowExecutionService`, `PushOnlyWorkflowExecutionService`, and `IntellijCommitWorkflowResultRegistrar`, the workflow files with the weakest current direct coverage and highest orchestration risk.
 
 Initial context budget:
 
@@ -108,6 +116,10 @@ Initial context budget:
   - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowSelectionResult.kt`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowSelectionItems.kt`
   - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowResultRegistrar.kt`
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/AiCommitAllWorkflowCoordinator.kt`
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowExecutionService.kt`
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/PushOnlyWorkflowExecutionService.kt`
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/ReflectiveCommitWorkflowSynchronizer.kt`
   - Existing workflow tests in `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/`
 - Escalate to:
   - `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/GitChangeSelectionService.kt` only if a selection-service seam is needed.
@@ -128,9 +140,14 @@ Write scope:
 
 - `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowSelectionServiceTest.kt`
 - `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowResultRegistrarTest.kt`
+- `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/AiCommitAllWorkflowRunnerTest.kt`
+- `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowExecutionServiceTest.kt`
+- `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/PushOnlyWorkflowExecutionServiceTest.kt`
+- `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/ReflectiveCommitWorkflowSynchronizerTest.kt`
 - Existing workflow test helpers only if duplication becomes material.
 - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowSelectionService.kt` only for a narrow internal seam.
 - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowResultRegistrar.kt` only for a narrow internal seam.
+- Matching workflow production files only for narrow internal seams that expose deterministic collaborators without changing execution order or platform safeguards.
 
 Dependencies:
 
@@ -147,6 +164,7 @@ Escalation triggers:
 - Static IntelliJ service access prevents deterministic unit coverage.
 - A fake `AbstractCommitWorkflowHandler` cannot be built without relying on unstable platform internals.
 - Added seams would change observable commit workflow behavior.
+- A test would need to bypass the default commit gate, before-commit checks, or platform commit executor semantics instead of observing the existing service boundary.
 
 Stop conditions:
 
@@ -157,6 +175,10 @@ Expected output:
 
 - Tests for missing workflow, unsupported VCS, empty selection, no owning changelist, activation failure, synchronization failure, and prepared selection paths where feasible.
 - Tests for commit result listener success, success-after-refresh, cancel, failure, disposal idempotence, and failed registration where feasible.
+- Tests proving workflow activity closes and the active-workflow lock resets when preparation, AI invocation, AI completion, commit completion, commit-and-push completion, or push-only completion fails exceptionally; include a repeated-start-after-failure case.
+- Tests for push-only unavailable execution after empty selection with outgoing commits, so `PushExecutionUnavailable` is reported and activity still closes.
+- Tests for default commit success through a registered result listener, result-listener disposal when the default executor or readiness gate throws, safe immediate push not starting on post-commit cancel/failure, synchronous and asynchronous immediate-push failures, and fallback commit-and-push cancel/failure before after-refresh.
+- Tests for reflective workflow synchronization with unversioned files included, missing only `synchronizeInclusion`, missing only `setCommitState`, invocation failure from `setCommitState`, and diagnostic contents for each missing-method combination.
 - Coverage result delta for workflow package.
 
 Result summary:
@@ -247,8 +269,10 @@ Stop conditions:
 Expected output:
 
 - Tests for loader-failure, unchanged-cache, throttle, pending-refresh, and action-refresh branches in `GitOutgoingCommitsStatus`.
-- Tests for empty repository waits, listener registration/removal, dispose cancellation, irrelevant repository events, duplicate completion events, and every successful push result type in `GitPushCompletionTracker`.
+- Tests for empty repository waits, listener registration/removal by parent disposal, dispose cancellation with partial results, irrelevant repository events, duplicate completion events after completion, timeout-handle cancellation after immediate completion, and every successful push result type in `GitPushCompletionTracker`.
 - Tests for affected-path extraction from before/after revisions, resolved conflicts, staging-area paths, duplicates, outgoing-only filtering, null push specs, unsafe filtered states, and push invocation failure propagation in `SafeImmediatePushService`.
+- Tests for multi-repository affected selections that deduplicate repeated paths per repository, stop at the first missing repository without loading push states, and preserve stable push-spec ordering across multiple roots.
+- Tests for outgoing-only push preparation when some repositories have null push specs, some have outgoing commits, and some throw while checking outgoing commits; unsafe or unavailable repositories must not be silently pushed.
 - Tests for staged rename, unstaged rename, staged move, unstaged move, staged rename with additional work-tree content changes, and unstaged move or rename with destination content changes. Cover both old and new path handling where IntelliJ or Git exposes both paths, and document the exact local Git short-status shapes used to map those scenarios into deterministic unit fixtures.
 - Tests for `GitStageSelectionItems` that prove already-staged renames are not re-staged, partially staged renames or moves with content changes are staged by the destination path, committable path collection keeps rename destinations, and missing-staged-path confirmation fails closed when a rename destination remains unstaged.
 - Coverage result delta for VCS package.
@@ -331,6 +355,9 @@ Stop conditions:
 Expected output:
 
 - Tests for service wrapper wiring, default option normalization, text cleaner branches, focus inactive handling, user-edit signal fallback, unavailable running-signal diagnostics, parent data-context fallback, and input-event propagation.
+- Tests for `createInvocationContext` that assert the AI action event place, input event, cloned presentation isolation, project/workflow/UI data override stale parent data, and optional commit-message control/document keys are omitted when neither workflow UI nor parent context can provide them.
+- Tests where user-edit detection wins over a simultaneously changed generated message, unavailable running signal with blank and nonblank messages returns the expected fail-closed result, focus returns after an inactive stopped-signal window, zero stopped-signal grace period completes immediately after a stable stop, and timeout boundary behavior is deterministic at exactly the configured timeout.
+- Tests for `AiGenerationCompletionService.awaitCompletionAsync` that prove the user-edit signal is closed after normal, stopped, timeout, and exceptional observer paths if a lightweight injectable seam is needed.
 - Coverage result delta for AI package.
 
 Result summary:
@@ -410,6 +437,10 @@ Stop conditions:
 Expected output:
 
 - Tests for action update branches with missing or partial providers, unknown running mode, mixed enabled/disabled availability, component fallback, keyboard/mouse paths not already covered, settings validation branch gaps, and small marker/notification lines where useful.
+- Tests for toolbar custom component fallback when the presentation has no control state, non-control component update no-op, custom component data-context lookup using the actual clicked component, and workflow start receiving the original input event from mouse activation.
+- Tests for shortcut takeover when commit and push plugin actions are both present with their source IDE actions in mixed order, source-action absence in the IntelliJ delegate, workflow-running actionPerformed no-op, project-missing update fallback, and setting toggles changing promoter suppress/promote results without stale state.
+- Tests for control boundary hit-testing at section divider pixels and outside bounds, no-enabled-section keyboard movement no-op, focus request on mouse press, animation timer start/stop across `addNotify`, running-state removal, and `removeNotify`, custom accessible name/description overrides, and geometry behavior under very narrow or zero-size bounds.
+- Tests for settings configurable after `disposeUIResources`, `apply` before `createComponent`, reset after rejected apply, max spinner values, and independent persistence when one checkbox component is absent.
 - Coverage result delta for actions and smaller packages.
 
 Result summary:
@@ -516,7 +547,7 @@ Result summary:
 ```mermaid
 flowchart TD
     O1["O1[code]<br/>orchestrator"]
-    W1["W1[code]<br/>T1 workflow selection/result"]
+  W1["W1[code]<br/>T1 workflow selection/execution/result"]
     W2["W2[code]<br/>T2 VCS push/outgoing"]
     W3["W3[code]<br/>T3 AI boundary"]
     W4["W4[code]<br/>T4 actions/small packages"]
@@ -556,4 +587,5 @@ Implementation validation:
 
 - Current high-value coverage targets by missed lines are `AiCommitAllWorkflowCoordinator.kt` (91), `AiGenerationCompletion.kt` (66), `CommitWorkflowSelectionService.kt` (58), `SafeImmediatePushService.kt` (55), `GitPushCompletionService.kt` (52), `ReflectiveCommitWorkflowSynchronizer.kt` (47), `GitOutgoingCommitsService.kt` (46), `GitStageConfirmation.kt` (45), `AiCommitAllActions.kt` (39), `AiCommitMessageActionInvocationContext.kt` (39), `GitChangeSelectionService.kt` (39), and `CommitWorkflowResultRegistrar.kt` (32).
 - The current suite has broad workflow behavior coverage already (`287` passing, `1` pending), so avoid duplicating existing happy paths.
-- The best expected return is from service edge cases, scheduler/timeout behavior, failure branches, and deterministic fakes around existing injection points.
+- A 2026-05-24 source/test scan found the best additional return in cross-phase exceptional paths, listener lifecycle races, parent/child data-context override behavior, and UI boundary conditions rather than more happy-path assertions.
+- The best expected return is from service edge cases, scheduler/timeout behavior, failure branches, lifecycle cleanup, and deterministic fakes around existing injection points.
