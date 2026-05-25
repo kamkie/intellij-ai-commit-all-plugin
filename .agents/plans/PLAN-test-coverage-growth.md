@@ -602,18 +602,21 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Worker events:
-- Orchestrator reconciliation:
-- Changelog/docs/spec/tasks updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: completed; final coverage validation passed and plan targets were met.
+- Worker: W5.
+- Changed files or reviewed diff: `.agents/plans/PLAN-test-coverage-growth.md` T5 result summary and compact coverage handoff notes only.
+- Final coverage from `build/reports/jacoco/test/jacocoTestReport.xml`: line `2673 / 3408` (`78.4%`, baseline `2525 / 3400`, `74.3%`); branch `1008 / 1404` (`71.8%`, baseline `926 / 1404`, `66.0%`); instruction `12525 / 16290` (`76.9%`, baseline `11829 / 16282`, `72.7%`).
+- Coverage target comparison: plan targets met (`>= 78%` line and `>= 70%` branch); stretch targets not met (`80%` line and `72%` branch).
+- Validation evidence: `.\gradlew.bat test jacocoTestReport verifyJacocoCoverageReport` passed (`410` passing, `1` pending; coverage gate passed); `.\gradlew.bat spotlessCheck` passed; `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1` passed; `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` passed; `git diff --check` passed.
+- Self-review evidence from `.agents/references/reviews.md`: no behavior or build configuration changed; no `build.gradle.kts`, `README.md`, changelog, spec, task, or threshold edits; residual risk remains in live IDE/AI Assistant, manual release validation, and local IntelliJ fake coverage rather than unintended commit/push behavior.
+- Threshold recommendation: do not change gates in T5; a later maintainer-approved validation-policy follow-up is justified after CI confirms the deterministic result, with any new line gate kept below the measured `78.4%` result and any branch gate kept below the measured `71.8%` result.
+- Commit: W5 plan-evidence commit to be reported in worker handoff.
+- Worker events: W5 started 2026-05-25T02:50:43+02:00; stopped 2026-05-25T02:53:15+02:00.
+- Orchestrator reconciliation: pending O1 reconciliation; W5 evidence confirms T1, T2, T3, T4, and T5 completed with no skipped plan task.
+- Changelog/docs/spec/tasks updates: plan evidence only; no public plugin-facing behavior, release artifact, specification, task, README, changelog, or support-policy update required.
+- Blockers: none.
+- Review risks: coverage meets the approved plan targets but misses stretch targets; threshold changes still require explicit maintainer approval and should not be folded into this plan commit.
+- Handoff notes and next action: commit the T5 plan evidence, then return to O1 for whole-plan reconciliation and any separate threshold-policy decision.
 
 ## Execution Model
 
@@ -689,5 +692,6 @@ Implementation validation:
 - Current high-value coverage targets by missed lines are `CommitWorkflowSelectionService.kt` (54), `AiCommitAllWorkflowCoordinator.kt` project dependency adapter (46), `SafeImmediatePushService.kt` (45), `ReflectiveCommitWorkflowSynchronizer.kt` (44), `GitChangeSelectionService.kt` (38), `AiCommitMessageActionInvocationContext.kt` (36), `GitStageConfirmation.kt` adapter operations (35), `GitOutgoingCommitsService.kt` IntelliJ environment (33), `GitPushCompletionService.kt` tracker/service paths (27 and 19), `SafeImmediatePushService.kt` IntelliJ environment (24), and `ReflectiveActionProgressRunningSignal` (22).
 - The current suite has broad workflow behavior coverage already (`308` passing, `1` pending), so avoid duplicating existing happy paths or ADR 0084 settling regressions.
 - The 2026-05-25 coverage refresh shows line coverage improved from 72.5% to 74.3% and branch coverage from 65.2% to 66.0%, but total missed line and branch counts increased because the reliability implementation added production retry paths.
+- T5 final verification after T1 through T4 reports line `2673 / 3408` (`78.4%`), branch `1008 / 1404` (`71.8%`), and instruction `12525 / 16290` (`76.9%`); keep coverage thresholds unchanged in this plan and consider any gate increase only as a separate approved follow-up.
 - `PLAN-premature-stop-reliability` implemented the earlier premature-abandonment targets for late AI action discovery, transient progress-signal unavailability, VCS readiness, empty selection, Commit tool window activation/synchronization, safe-push metadata, and stale toolbar availability. This plan should now focus on residual branches around those boundaries.
 - The best expected return is from service edge cases, scheduler/timeout behavior, listener lifecycle cleanup, path and rename state coverage, parent/child data-context override behavior, UI boundary conditions, and deterministic fakes around existing injection points.
