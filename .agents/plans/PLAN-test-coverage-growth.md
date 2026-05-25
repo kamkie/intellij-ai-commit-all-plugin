@@ -4,10 +4,6 @@ Plan-ID: PLAN-test-coverage-growth
 
 Status: Implemented
 
-Approved by: Kamil Kiewisz <kamkie@outlook.com>
-
-Approved at: 2026-05-25T01:40:55+02:00
-
 Workers: 1
 
 Filename: `.agents/plans/PLAN-test-coverage-growth.md`

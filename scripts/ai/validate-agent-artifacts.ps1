@@ -523,6 +523,14 @@ function Test-AgentPlans
             }
         }
 
+        foreach ($metadataName in @('Approved by', 'Approved at'))
+        {
+            if ([regex]::IsMatch($text, "(?m)^$([regex]::Escape($metadataName)):\s+"))
+            {
+                Add-ValidationError "$relative has top-level $metadataName metadata; keep approval metadata in ## Readiness"
+            }
+        }
+
         $workersValue = $null
         $workersMatches = [regex]::Matches($text, '(?m)^Workers:\s+(.+?)\s*$')
         if ($workersMatches.Count -ne 1)
