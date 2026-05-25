@@ -62,7 +62,7 @@ When instructions overlap, apply this project-specific order:
 - After context compaction, resume, or summarized handoff, reread the latest user request, this file, and the most specific governing artifact needed for the next action before continuing. Reconcile the resumed task with local file changes, in-progress validation, active ADR or plan gates, and newer user instructions; do not bulk-load every guidance file after compaction.
 - Identify the behavior and governing artifact before editing.
 - Never bulk-load AI guidance by default. Start from this file, then read only the mapped owner docs needed for the current task; broaden only for explicit broad audits, cross-document consistency checks, or validation failures that require it.
-- For reusable operational lessons, follow `.agents/references/execution.md` Learning Capture before adding persistent guidance.
+- Run the `.agents/references/execution.md` Learning Capture checkpoint before handoff when work completes, validation fails, retries repeat, CI fails, or the user corrects the agent; follow that workflow before adding persistent guidance.
 - Do not read `docs/WORKING_WITH_AI.md` during normal agent workflow; it owns human-facing guidance for asking AI to work here.
 - Follow `docs/decisions/README.md` for ADR requirements, project decisions, and repository rule changes.
 - When a requested change requires creating an ADR, create the ADR and stop. If the request clearly also requires a later implementation plan, create the proposed ADR and companion draft plan in the same step, then stop. Continue only after the user reviews and explicitly accepts the ADR; implementation from the plan still requires explicit plan approval.
@@ -72,5 +72,5 @@ When instructions overlap, apply this project-specific order:
 - Update specs or docs before or alongside behavior changes when behavior changes.
 - Run validation that matches the diff and risk.
 - Review for bugs, missing validation, and API or IDE compatibility risk before handing off.
-- Before handoff, confirm the requested change is complete; specs, docs, tasks, plans, changelog, and support updates are done or explicitly not applicable; validation evidence is current; skipped checks have reasons; and self-review is done.
+- Before handoff, confirm the requested change is complete; specs, docs, tasks, plans, changelog, and support updates are done or explicitly not applicable; validation evidence is current; skipped checks have reasons; the Learning Capture checkpoint has been applied when triggered; and self-review is done.
 - Commit completed work only when the user asks for commits or the task scope explicitly requires it; when committing, follow `.gitmessage` and `.agents/references/execution.md`.

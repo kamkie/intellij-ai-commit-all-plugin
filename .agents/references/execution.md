@@ -43,7 +43,15 @@ Direct one-off worker results are summarized in chat. Do not create durable `.ag
 
 ## Learning Capture
 
-Treat learning capture as an intake check, not a mandatory persistent write after every task. After task completion, validation failure, repeated retry, CI failure, or user correction, check whether the work produced reusable repository knowledge.
+Treat learning capture as an intake check, not a mandatory persistent write after every task. Run the checkpoint before handoff when work completes, validation fails, retries repeat, CI fails, or the user corrects the agent.
+
+Use this checkpoint:
+
+1. Name the observed fact, failure mode, or workflow adjustment in one sentence.
+2. Decide whether it is only task-local, reusable but not yet validated, or reusable and validated.
+3. Search the likely owner artifact for duplicate or overlapping guidance.
+4. Choose the owner before editing, or keep the note in the handoff when no durable owner is justified.
+5. If a persistent edit is made, run the validation required for that owner and report the artifact path in the handoff.
 
 Persist a lesson only when all of these are true:
 
