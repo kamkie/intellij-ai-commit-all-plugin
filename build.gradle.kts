@@ -147,7 +147,7 @@ dependencies {
     integrationTestImplementation(kotlin("test"))
     integrationTestImplementation("org.junit.jupiter:junit-jupiter:6.1.0")
     integrationTestImplementation("org.kodein.di:kodein-di-jvm:7.32.0")
-    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.1")
+    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.11.0")
 }
 
 kotlin {
