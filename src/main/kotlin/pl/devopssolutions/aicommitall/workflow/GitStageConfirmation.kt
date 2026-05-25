@@ -45,7 +45,7 @@ internal class GitStageConfirmation(
     ): GitStageTracker.State? {
         val distinctExpectedPaths = expectedPaths
             .distinctBy { path -> path.normalizedPath() }
-        val pathsToStageByRoot = pathsByRoot
+        var pathsToStageByRoot = pathsByRoot
             .mapValues { (_, paths) ->
                 paths.distinctBy { path -> path.normalizedPath() }
             }
@@ -83,6 +83,8 @@ internal class GitStageConfirmation(
             )
             if (expectedPathsAreStaged) {
                 confirmedState = refreshedState
+            } else if (refreshedState != null && refreshedState.hasStatusEntries()) {
+                pathsToStageByRoot = refreshedState.pathsToStageByRoot(distinctExpectedPaths)
             }
 
             if (confirmedState == null && attempt < attempts - 1 && retryDelay.isPositive()) {
@@ -97,6 +99,20 @@ internal class GitStageConfirmation(
         )
         return confirmedState
     }
+
+    private fun GitStageTracker.State.pathsToStageByRoot(
+        expectedPaths: Collection<FilePath>,
+    ): Map<VirtualFile, List<FilePath>> {
+        val expectedPathTexts = expectedPaths.map { path -> path.normalizedPath() }.toSet()
+        return GitStageSelectionItems.pathsToStageByRoot(this)
+            .mapValues { (_, paths) ->
+                paths.filter { path -> path.normalizedPath() in expectedPathTexts }
+            }
+            .filterValues { paths -> paths.isNotEmpty() }
+    }
+
+    private fun GitStageTracker.State.hasStatusEntries(): Boolean = rootStates.values
+        .any { rootState -> rootState.statuses.isNotEmpty() }
 
     private fun refreshAfterStaging(
         pathsToStageByRoot: Map<VirtualFile, List<FilePath>>,

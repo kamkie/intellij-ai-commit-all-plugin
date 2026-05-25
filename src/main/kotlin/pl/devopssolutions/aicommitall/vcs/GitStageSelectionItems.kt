@@ -60,7 +60,7 @@ internal object GitStageSelectionItems {
         val stagedPaths = state.rootStates.values
             .asSequence()
             .flatMap { rootState -> rootState.statuses.values.asSequence() }
-            .mapNotNull { status -> status.stagedPath() }
+            .flatMap { status -> status.stagedPaths().asSequence() }
             .map { path -> path.normalizedPath() }
             .toSet()
 
@@ -82,10 +82,10 @@ private fun GitFileStatus.pathToStage(): FilePath? = if (isExcludedFromStageMuta
     path
 }
 
-private fun GitFileStatus.stagedPath(): FilePath? = if (canConfirmStagedPath()) {
-    path
+private fun GitFileStatus.stagedPaths(): List<FilePath> = if (canConfirmStagedPath()) {
+    listOfNotNull(path, origPath.takeIf { isStagedRename() })
 } else {
-    null
+    emptyList()
 }
 
 private fun GitFileStatus.isExcludedFromStageMutation(): Boolean = isIgnored() || isNotChanged() || isConflicted()
@@ -95,5 +95,7 @@ private fun GitFileStatus.isAlreadyFullyStaged(): Boolean = hasStagedIndex() && 
 private fun GitFileStatus.canConfirmStagedPath(): Boolean = !isExcludedFromStageMutation() && hasStagedIndex()
 
 private fun GitFileStatus.hasStagedIndex(): Boolean = index != ' ' && index != '?'
+
+private fun GitFileStatus.isStagedRename(): Boolean = index == 'R'
 
 private fun FilePath.normalizedPath(): String = path.replace('\\', '/')

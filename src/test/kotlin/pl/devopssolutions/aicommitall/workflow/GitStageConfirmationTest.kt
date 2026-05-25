@@ -220,7 +220,7 @@ internal class GitStageConfirmationTest {
     }
 
     @Test
-    fun `stages every root on every retry before refreshing the tracker`() {
+    fun `retries only remaining unstaged roots after refreshed tracker state`() {
         val firstRoot = LightVirtualFile("repo-a")
         val secondRoot = LightVirtualFile("repo-b")
         val firstPath = TestFilePath("/repo-a/modified.txt")
@@ -270,9 +270,46 @@ internal class GitStageConfirmationTest {
                 "stage:repo-b:/repo-b/added.txt",
                 "reload:/repo-a/modified.txt,/repo-b/added.txt",
                 "refresh",
-                "stage:repo-a:/repo-a/modified.txt",
                 "stage:repo-b:/repo-b/added.txt",
                 "reload:/repo-a/modified.txt,/repo-b/added.txt",
+                "refresh",
+            ),
+            operations.events,
+        )
+    }
+
+    @Test
+    fun `refreshes paths to stage after a staged move source becomes stale`() {
+        val root = LightVirtualFile("repo")
+        val moveSource = TestFilePath("/repo/proposals/draft.md")
+        val moveTarget = TestFilePath("/repo/proposals/archive/draft.md")
+        val remaining = TestFilePath("/repo/PLANNING.md")
+        val partiallyConfirmed = stageState(
+            root,
+            gitStatus('R', ' ', moveTarget, moveSource),
+            gitStatus(' ', 'M', remaining),
+        )
+        val confirmed = stageState(
+            root,
+            gitStatus('R', ' ', moveTarget, moveSource),
+            gitStatus('M', ' ', remaining),
+        )
+        val operations = CapturingOperations(partiallyConfirmed, confirmed)
+
+        val result = confirmation(operations, attempts = 2)
+            .confirm(
+                pathsByRoot = mapOf(root to listOf(moveSource, moveTarget, remaining)),
+                expectedPaths = listOf(moveSource, moveTarget, remaining),
+            )
+
+        assertSame(confirmed, result)
+        assertEquals(
+            listOf(
+                "stage:repo:/repo/proposals/draft.md,/repo/proposals/archive/draft.md,/repo/PLANNING.md",
+                "reload:/repo/proposals/draft.md,/repo/proposals/archive/draft.md,/repo/PLANNING.md",
+                "refresh",
+                "stage:repo:/repo/PLANNING.md",
+                "reload:/repo/proposals/draft.md,/repo/proposals/archive/draft.md,/repo/PLANNING.md",
                 "refresh",
             ),
             operations.events,
@@ -496,7 +533,8 @@ internal class GitStageConfirmationTest {
         index: Char,
         workTree: Char,
         path: FilePath,
-    ): GitFileStatus = GitFileStatus(index, workTree, path, null)
+        origPath: FilePath? = null,
+    ): GitFileStatus = GitFileStatus(index, workTree, path, origPath)
 
     private companion object {
         val RETRY_DELAY: Duration = Duration.ofMillis(250)

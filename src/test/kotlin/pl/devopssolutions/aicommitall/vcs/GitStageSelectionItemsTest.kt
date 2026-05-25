@@ -240,6 +240,19 @@ internal class GitStageSelectionItemsTest {
     }
 
     @Test
+    fun `staged move confirms both source and destination paths`() {
+        val moveSource = TestFilePath("/repo/proposals/draft.md")
+        val moveTarget = TestFilePath("/repo/proposals/archive/draft.md")
+        val state = stageState(gitStatus('R', ' ', moveTarget, moveSource))
+
+        assertTrue(GitStageSelectionItems.containsAllStagedPaths(state, listOf(moveSource, moveTarget)))
+        assertEquals(
+            emptyList(),
+            GitStageSelectionItems.missingStagedPaths(state, listOf(moveSource, moveTarget)),
+        )
+    }
+
+    @Test
     fun `unstaged move destination remains committable and selected for staging`() {
         val root = LightVirtualFile("repo")
         val moveSource = TestFilePath("/repo/old/location/Config.kt")
