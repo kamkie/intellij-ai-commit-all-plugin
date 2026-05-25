@@ -25,8 +25,10 @@ import com.intellij.vcs.commit.CommitMessageUi
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowUi
 import java.awt.event.InputEvent
+import java.awt.event.MouseEvent
 import java.lang.reflect.Proxy
 import java.time.Duration
+import javax.swing.JButton
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -66,6 +68,30 @@ internal class AiCommitMessageActionInvokerTest {
     }
 
     @Test
+    fun `passes input event through to the action system invoker`() {
+        val actionReference = AiCommitMessageActionReference(
+            action = TestAction(),
+            actionId = "Vcs.LLMCommitMessageAction",
+            source = AiCommitMessageActionSource.KnownActionId,
+        )
+        val actionSystemInvoker = CapturingActionSystemInvoker()
+        val inputEvent = testInputEvent()
+
+        AiCommitMessageActionInvoker(
+            actionFinder = StaticActionFinder(actionReference),
+            actionSystemInvoker = actionSystemInvoker,
+            dataContextFactory = TestDataContextFactory,
+        ).invokeCommitMessageGeneration(
+            project = testProxy(),
+            workflowHandler = testProxy(),
+            workflowUi = testWorkflowUi(),
+            inputEvent = inputEvent,
+        )
+
+        assertSame(inputEvent, actionSystemInvoker.inputEvent)
+    }
+
+    @Test
     fun `invokes action discovered after transient missing lookup`() {
         val actionReference = AiCommitMessageActionReference(
             action = TestAction(),
@@ -79,6 +105,7 @@ internal class AiCommitMessageActionInvokerTest {
             actionFinder = actionFinder,
             actionSystemInvoker = actionSystemInvoker,
             dataContextFactory = TestDataContextFactory,
+            actionDiscoveryRetry = immediateDiscoveryRetry(),
         ).invokeCommitMessageGeneration(
             project = testProxy(),
             workflowHandler = testProxy(),
@@ -87,6 +114,62 @@ internal class AiCommitMessageActionInvokerTest {
 
         val invoked = assertIs<AiCommitMessageActionInvocationResult.Invoked>(result)
         assertEquals("Vcs.LLMCommitMessageAction", invoked.actionId)
+        assertEquals(2, actionFinder.callCount)
+        assertSame(actionReference, actionSystemInvoker.actionReference)
+    }
+
+    @Test
+    fun `invokes prefixed fallback action discovered after transient missing lookup`() {
+        val actionReference = AiCommitMessageActionReference(
+            action = TestAction(),
+            actionId = "Vcs.LLMGenerateCommitMessageAction",
+            source = AiCommitMessageActionSource.ActionIdPrefix,
+        )
+        val actionFinder = SequenceActionFinder(null, actionReference)
+        val actionSystemInvoker = CapturingActionSystemInvoker()
+
+        val result = AiCommitMessageActionInvoker(
+            actionFinder = actionFinder,
+            actionSystemInvoker = actionSystemInvoker,
+            dataContextFactory = TestDataContextFactory,
+            actionDiscoveryRetry = immediateDiscoveryRetry(),
+        ).invokeCommitMessageGeneration(
+            project = testProxy(),
+            workflowHandler = testProxy(),
+            workflowUi = testWorkflowUi(),
+        )
+
+        val invoked = assertIs<AiCommitMessageActionInvocationResult.Invoked>(result)
+        assertEquals("Vcs.LLMGenerateCommitMessageAction", invoked.actionId)
+        assertEquals(AiCommitMessageActionSource.ActionIdPrefix, invoked.source)
+        assertEquals(2, actionFinder.callCount)
+        assertSame(actionReference, actionSystemInvoker.actionReference)
+    }
+
+    @Test
+    fun `invokes presentation fallback action discovered after transient missing lookup`() {
+        val actionReference = AiCommitMessageActionReference(
+            action = TestAction(),
+            actionId = "Vcs.GeneratedCommitMessageFallback",
+            source = AiCommitMessageActionSource.PresentationText,
+        )
+        val actionFinder = SequenceActionFinder(null, actionReference)
+        val actionSystemInvoker = CapturingActionSystemInvoker()
+
+        val result = AiCommitMessageActionInvoker(
+            actionFinder = actionFinder,
+            actionSystemInvoker = actionSystemInvoker,
+            dataContextFactory = TestDataContextFactory,
+            actionDiscoveryRetry = immediateDiscoveryRetry(),
+        ).invokeCommitMessageGeneration(
+            project = testProxy(),
+            workflowHandler = testProxy(),
+            workflowUi = testWorkflowUi(),
+        )
+
+        val invoked = assertIs<AiCommitMessageActionInvocationResult.Invoked>(result)
+        assertEquals("Vcs.GeneratedCommitMessageFallback", invoked.actionId)
+        assertEquals(AiCommitMessageActionSource.PresentationText, invoked.source)
         assertEquals(2, actionFinder.callCount)
         assertSame(actionReference, actionSystemInvoker.actionReference)
     }
@@ -110,6 +193,7 @@ internal class AiCommitMessageActionInvokerTest {
             actionFinder = actionFinder,
             actionSystemInvoker = actionSystemInvoker,
             dataContextFactory = TestDataContextFactory,
+            actionDiscoveryRetry = immediateDiscoveryRetry(),
         ).invokeCommitMessageGeneration(
             project = testProxy(),
             workflowHandler = testProxy(),
@@ -283,6 +367,22 @@ internal class AiCommitMessageActionInvokerTest {
             else -> answers[method.name] ?: method.defaultReturnValue()
         }
     } as T
+
+    private fun immediateDiscoveryRetry(): AiCommitMessageActionDiscoveryRetry = AiCommitMessageActionDiscoveryRetry(
+        maxAttempts = 3,
+        retryInterval = Duration.ZERO,
+    )
+
+    private fun testInputEvent(): InputEvent = MouseEvent(
+        JButton("AI"),
+        MouseEvent.MOUSE_CLICKED,
+        0L,
+        0,
+        1,
+        1,
+        1,
+        false,
+    )
 
     private fun java.lang.reflect.Method.defaultReturnValue(): Any? = when (returnType) {
         java.lang.Boolean.TYPE -> false

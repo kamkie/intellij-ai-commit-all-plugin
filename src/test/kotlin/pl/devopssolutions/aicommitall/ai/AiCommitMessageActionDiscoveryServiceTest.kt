@@ -111,6 +111,28 @@ internal class AiCommitMessageActionDiscoveryServiceTest {
     }
 
     @Test
+    fun `uses registered VCS action description for presentation fallback`() {
+        val fallbackAction = TestAction(
+            text = "Localized Action",
+            description = "AI Assistant can create a commit message",
+        )
+        val lookup = TestActionLookup(
+            actionsById = mapOf(
+                "Vcs.LocalizedAssistantTextAction" to fallbackAction,
+            ),
+            idsByPrefix = mapOf(
+                "Vcs." to listOf("Vcs.LocalizedAssistantTextAction"),
+            ),
+        )
+
+        val result = AiCommitMessageActionDiscovery(lookup).findCommitMessageAction()
+
+        assertSame(fallbackAction, result?.action)
+        assertEquals("Vcs.LocalizedAssistantTextAction", result?.actionId)
+        assertEquals(AiCommitMessageActionSource.PresentationText, result?.source)
+    }
+
+    @Test
     fun `uses matching action ids in presentation search before presentation text`() {
         val idMatchedAction = TestAction("Unexpected Localized Text")
         val textMatchedAction = TestAction("Generate Commit Message")
@@ -165,7 +187,14 @@ internal class AiCommitMessageActionDiscoveryServiceTest {
         assertNull(result)
     }
 
-    private class TestAction(text: String) : AnAction(text) {
+    private class TestAction(
+        text: String,
+        description: String? = null,
+    ) : AnAction(text) {
+        init {
+            templatePresentation.description = description
+        }
+
         override fun actionPerformed(event: AnActionEvent) = Unit
     }
 

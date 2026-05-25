@@ -18,6 +18,7 @@ package pl.devopssolutions.aicommitall.ai
 import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 
 internal class AiGenerationCompletionObserverTest {
@@ -69,6 +70,33 @@ internal class AiGenerationCompletionObserverTest {
             snapshot = AiCommitMessageSnapshot("old message"),
             messageReader = AiCommitMessageReader {
                 if (signal.callCount >= 3) "generated message" else "old message"
+            },
+            runningSignal = signal,
+            options = testOptions(),
+        )
+
+        val completed = assertIs<AiGenerationCompletionResult.Completed>(result)
+        assertEquals("generated message", completed.generatedMessage)
+    }
+
+    @Test
+    fun `ignores repeated initial not running signals until action starts`() {
+        val timeSource = MutableTimeSource()
+        val signal = SequenceRunningSignal(
+            AiGenerationRunningState.NotRunning,
+            AiGenerationRunningState.NotRunning,
+            AiGenerationRunningState.Running,
+            AiGenerationRunningState.NotRunning,
+        )
+        val observer = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+        )
+
+        val result = observer.awaitCompletion(
+            snapshot = AiCommitMessageSnapshot("old message"),
+            messageReader = AiCommitMessageReader {
+                if (signal.callCount >= 4) "generated message" else "old message"
             },
             runningSignal = signal,
             options = testOptions(),
@@ -134,6 +162,34 @@ internal class AiGenerationCompletionObserverTest {
     }
 
     @Test
+    fun `completes when generated text appears after a stopped signal before grace expires`() {
+        val timeSource = MutableTimeSource()
+        val signal = SequenceRunningSignal(
+            AiGenerationRunningState.Running,
+            AiGenerationRunningState.NotRunning,
+            AiGenerationRunningState.NotRunning,
+        )
+        val observer = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+            focusState = AiCompletionFocusState.Focused,
+        )
+
+        val result = observer.awaitCompletion(
+            snapshot = AiCommitMessageSnapshot("old message"),
+            messageReader = AiCommitMessageReader {
+                if (signal.callCount >= 3) "generated message" else "old message"
+            },
+            runningSignal = signal,
+            options = testOptions(),
+        )
+
+        val completed = assertIs<AiGenerationCompletionResult.Completed>(result)
+        assertEquals("generated message", completed.generatedMessage)
+        assertEquals(1_000, timeSource.nowMillis)
+    }
+
+    @Test
     fun `does not fail closed on stopped unchanged signal while application is inactive`() {
         val timeSource = MutableTimeSource()
         val signal = SequenceRunningSignal(
@@ -159,6 +215,86 @@ internal class AiGenerationCompletionObserverTest {
 
         val completed = assertIs<AiGenerationCompletionResult.Completed>(result)
         assertEquals("generated message", completed.generatedMessage)
+    }
+
+    @Test
+    fun `starts stopped signal grace period only after application focus returns`() {
+        val timeSource = MutableTimeSource()
+        val signal = SequenceRunningSignal(
+            AiGenerationRunningState.Running,
+            AiGenerationRunningState.NotRunning,
+            AiGenerationRunningState.NotRunning,
+            AiGenerationRunningState.NotRunning,
+            AiGenerationRunningState.NotRunning,
+        )
+        val focusState = SequenceFocusState(false, true, true, true)
+        val observer = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+            focusState = focusState,
+        )
+
+        val result = observer.awaitCompletion(
+            snapshot = AiCommitMessageSnapshot("old message"),
+            messageReader = AiCommitMessageReader { "old message" },
+            runningSignal = signal,
+            options = testOptions(),
+        )
+
+        assertEquals(AiGenerationCompletionResult.UnchangedMessage("old message"), result)
+        assertEquals(2_000, timeSource.nowMillis)
+    }
+
+    @Test
+    fun `zero stopped signal grace period completes on the next stable stopped poll`() {
+        val timeSource = MutableTimeSource()
+        val signal = SequenceRunningSignal(
+            AiGenerationRunningState.Running,
+            AiGenerationRunningState.NotRunning,
+            AiGenerationRunningState.NotRunning,
+        )
+        val observer = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+            focusState = AiCompletionFocusState.Focused,
+        )
+
+        val result = observer.awaitCompletion(
+            snapshot = AiCommitMessageSnapshot("old message"),
+            messageReader = AiCommitMessageReader { "old message" },
+            runningSignal = signal,
+            options = testOptions(stoppedSignalGracePeriod = Duration.ZERO),
+        )
+
+        assertEquals(AiGenerationCompletionResult.UnchangedMessage("old message"), result)
+        assertEquals(1_000, timeSource.nowMillis)
+    }
+
+    @Test
+    fun `checks completion evidence at exactly the configured timeout boundary`() {
+        val timeSource = MutableTimeSource()
+        val signal = SequenceRunningSignal(
+            AiGenerationRunningState.Running,
+            AiGenerationRunningState.Running,
+            AiGenerationRunningState.NotRunning,
+        )
+        val observer = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+        )
+
+        val result = observer.awaitCompletion(
+            snapshot = AiCommitMessageSnapshot("old message"),
+            messageReader = AiCommitMessageReader {
+                if (signal.callCount >= 3) "generated message" else "old message"
+            },
+            runningSignal = signal,
+            options = testOptions(timeout = Duration.ofMillis(1_000)),
+        )
+
+        val completed = assertIs<AiGenerationCompletionResult.Completed>(result)
+        assertEquals("generated message", completed.generatedMessage)
+        assertEquals(1_000, timeSource.nowMillis)
     }
 
     @Test
@@ -337,6 +473,23 @@ internal class AiGenerationCompletionObserverTest {
     }
 
     @Test
+    fun `returns no completion signal with blank latest message when unavailable signal settles`() {
+        val timeSource = MutableTimeSource()
+
+        val result = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+        ).awaitCompletion(
+            snapshot = AiCommitMessageSnapshot("old message"),
+            messageReader = AiCommitMessageReader { "" },
+            runningSignal = ConstantRunningSignal(AiGenerationRunningState.Unavailable),
+            options = testOptions(),
+        )
+
+        assertEquals(AiGenerationCompletionResult.NoCompletionSignal(""), result)
+    }
+
+    @Test
     fun `user edit wins while running signal is unavailable`() {
         val result = AiGenerationCompletionObserver().awaitCompletion(
             snapshot = AiCommitMessageSnapshot("old message"),
@@ -350,6 +503,19 @@ internal class AiGenerationCompletionObserverTest {
     }
 
     @Test
+    fun `user edit wins over simultaneously completed generated message`() {
+        val result = AiGenerationCompletionObserver().awaitCompletion(
+            snapshot = AiCommitMessageSnapshot("old message"),
+            messageReader = AiCommitMessageReader { "generated message" },
+            runningSignal = ConstantRunningSignal(AiGenerationRunningState.NotRunning),
+            userEditSignal = AiGenerationUserEditSignal { true },
+            options = testOptions(),
+        )
+
+        assertEquals(AiGenerationCompletionResult.UserEditedMessage("generated message"), result)
+    }
+
+    @Test
     fun `fails closed when user edits message during generation`() {
         val result = AiGenerationCompletionObserver().awaitCompletion(
             snapshot = AiCommitMessageSnapshot("old message"),
@@ -360,6 +526,26 @@ internal class AiGenerationCompletionObserverTest {
         )
 
         assertEquals(AiGenerationCompletionResult.UserEditedMessage("user message"), result)
+    }
+
+    @Test
+    fun `accepts zero stopped signal grace period`() {
+        val options = testOptions(stoppedSignalGracePeriod = Duration.ZERO)
+
+        assertEquals(Duration.ZERO, options.stoppedSignalGracePeriod)
+    }
+
+    @Test
+    fun `rejects nonpositive timeout and check interval`() {
+        assertFailsWith<IllegalArgumentException> {
+            testOptions(timeout = Duration.ZERO)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            testOptions(checkInterval = Duration.ZERO)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            testOptions(stoppedSignalGracePeriod = Duration.ofMillis(-1))
+        }
     }
 
     private class SequenceRunningSignal(
@@ -382,6 +568,18 @@ internal class AiGenerationCompletionObserverTest {
         override fun state(): AiGenerationRunningState {
             callCount++
             return state
+        }
+    }
+
+    private class SequenceFocusState(
+        private vararg val focusedStates: Boolean,
+    ) : AiCompletionFocusState {
+        private var callCount = 0
+
+        override fun isApplicationFocused(): Boolean {
+            val focused = focusedStates.getOrElse(callCount) { focusedStates.last() }
+            callCount++
+            return focused
         }
     }
 
