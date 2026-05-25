@@ -349,14 +349,9 @@ internal class AiCommitAllWorkflowRunner(
     }
 
     private fun stopped(reason: AiCommitAllWorkflowStopReason): CompletableFuture<AiCommitAllWorkflowResult> {
-        val result = stoppedResult(reason)
-        return CompletableFuture.completedFuture(result)
-    }
-
-    private fun stoppedResult(reason: AiCommitAllWorkflowStopReason): AiCommitAllWorkflowResult {
         logger.info("AI Commit All diagnostic: workflow stopped, reason=$reason")
         dependencies.reportStop(reason)
-        return AiCommitAllWorkflowResult.Stopped(reason)
+        return CompletableFuture.completedFuture(AiCommitAllWorkflowResult.Stopped(reason))
     }
 
     private companion object {

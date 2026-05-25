@@ -471,7 +471,9 @@ internal class SafeImmediatePushServiceTest {
         val thrown = assertCompletionFailsWith<SafeImmediatePushTimedOutException>(completion)
         assertSame(timedOutResult, thrown.result)
     }
+}
 
+internal class SafeImmediateOutgoingPushServiceTest {
     @Test
     fun `prepare outgoing commits falls back when project is disposed`() {
         val environment = CapturingSafeImmediatePushEnvironment()
@@ -672,236 +674,236 @@ internal class SafeImmediatePushServiceTest {
 
         assertFallback(SafeImmediatePushFallbackReason.NoAffectedRepositories, decision)
     }
+}
 
-    private class CapturingSafeImmediatePushEnvironment(
-        private val pushSupportAvailable: Boolean = true,
-        private val repositoriesByPath: Map<String, SafeImmediatePushRepositoryHandle> = emptyMap(),
-        private val allRepositories: List<SafeImmediatePushRepositoryHandle> = emptyList(),
-        private val pushStates: Map<SafeImmediatePushRepositoryHandle, SafeImmediatePushRepositoryPushState> =
-            emptyMap(),
-        private val pushStateSequences: Map<
-            SafeImmediatePushRepositoryHandle,
-            List<SafeImmediatePushRepositoryPushState>,
-            > = emptyMap(),
-        private val outgoingCommits: Map<SafeImmediatePushRepositoryHandle, Boolean> = emptyMap(),
-        private val outgoingFailures: Map<SafeImmediatePushRepositoryHandle, RuntimeException> = emptyMap(),
-        private val pushFailure: RuntimeException? = null,
-    ) : SafeImmediatePushEnvironment {
-        val pathLookups = mutableListOf<FilePath>()
-        val pushStateRequests = mutableListOf<SafeImmediatePushRepositoryHandle>()
-        val outgoingCommitRequests =
-            mutableListOf<Pair<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>>()
-        val awaitedRepositories = mutableListOf<Collection<SafeImmediatePushRepositoryHandle>>()
-        val pushedSpecs = mutableListOf<Map<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>>()
-        val pushCompletion: CompletableFuture<GitPushCompletionResult> = CompletableFuture()
-        var allRepositoriesCallCount = 0
+private class CapturingSafeImmediatePushEnvironment(
+    private val pushSupportAvailable: Boolean = true,
+    private val repositoriesByPath: Map<String, SafeImmediatePushRepositoryHandle> = emptyMap(),
+    private val allRepositories: List<SafeImmediatePushRepositoryHandle> = emptyList(),
+    private val pushStates: Map<SafeImmediatePushRepositoryHandle, SafeImmediatePushRepositoryPushState> =
+        emptyMap(),
+    private val pushStateSequences: Map<
+        SafeImmediatePushRepositoryHandle,
+        List<SafeImmediatePushRepositoryPushState>,
+        > = emptyMap(),
+    private val outgoingCommits: Map<SafeImmediatePushRepositoryHandle, Boolean> = emptyMap(),
+    private val outgoingFailures: Map<SafeImmediatePushRepositoryHandle, RuntimeException> = emptyMap(),
+    private val pushFailure: RuntimeException? = null,
+) : SafeImmediatePushEnvironment {
+    val pathLookups = mutableListOf<FilePath>()
+    val pushStateRequests = mutableListOf<SafeImmediatePushRepositoryHandle>()
+    val outgoingCommitRequests =
+        mutableListOf<Pair<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>>()
+    val awaitedRepositories = mutableListOf<Collection<SafeImmediatePushRepositoryHandle>>()
+    val pushedSpecs = mutableListOf<Map<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>>()
+    val pushCompletion: CompletableFuture<GitPushCompletionResult> = CompletableFuture()
+    var allRepositoriesCallCount = 0
 
-        override fun repositoryForPath(path: FilePath): SafeImmediatePushRepositoryHandle? {
-            pathLookups += path
-            return repositoriesByPath[path.path]
-        }
-
-        override fun repositories(): List<SafeImmediatePushRepositoryHandle> {
-            allRepositoriesCallCount += 1
-            return allRepositories
-        }
-
-        override fun isPushSupportAvailable(): Boolean = pushSupportAvailable
-
-        override fun pushState(
-            repository: SafeImmediatePushRepositoryHandle,
-        ): SafeImmediatePushRepositoryPushState {
-            pushStateRequests += repository
-            val stateSequence = pushStateSequences[repository]
-            if (stateSequence != null) {
-                val sequenceIndex = pushStateRequests.count { request -> request == repository } - 1
-                return stateSequence.getOrElse(sequenceIndex) { stateSequence.last() }
-            }
-            return pushStates.getValue(repository)
-        }
-
-        override fun hasOutgoingCommits(
-            repository: SafeImmediatePushRepositoryHandle,
-            pushSpec: SafeImmediatePushSpecHandle,
-        ): Boolean {
-            outgoingCommitRequests += repository to pushSpec
-            outgoingFailures[repository]?.let { failure -> throw failure }
-            return outgoingCommits.getValue(repository)
-        }
-
-        override fun awaitPushCompletion(
-            repositories: Collection<SafeImmediatePushRepositoryHandle>,
-        ): CompletableFuture<GitPushCompletionResult> {
-            awaitedRepositories += repositories
-            return pushCompletion
-        }
-
-        override fun push(pushSpecs: Map<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>) {
-            pushedSpecs += pushSpecs
-            pushFailure?.let { failure -> throw failure }
-        }
-
-        fun completePush(
-            result: GitPushCompletionResult = GitPushCompletionResult.Success(emptyMap()),
-        ) {
-            pushCompletion.complete(result)
-        }
+    override fun repositoryForPath(path: FilePath): SafeImmediatePushRepositoryHandle? {
+        pathLookups += path
+        return repositoriesByPath[path.path]
     }
 
-    private fun pushState(
-        pushSpec: SafeImmediatePushSpecHandle?,
-        hasTrackedUpstream: Boolean = true,
-        localMatchesTrackedUpstream: Boolean = true,
-        targetIsTrackingBranch: Boolean = true,
-        targetMatchesTrackedUpstream: Boolean = true,
-        targetIsNewBranch: Boolean = false,
-        targetIsSpecialRef: Boolean = false,
-        repositoryStateIsNormal: Boolean = true,
-    ): SafeImmediatePushRepositoryPushState = SafeImmediatePushRepositoryPushState(
-        repositoryState = SafeImmediatePushRepositoryState(
-            hasTrackedUpstream = hasTrackedUpstream,
-            localMatchesTrackedUpstream = localMatchesTrackedUpstream,
-            targetIsTrackingBranch = targetIsTrackingBranch,
-            targetMatchesTrackedUpstream = targetMatchesTrackedUpstream,
-            pushSpecAvailable = pushSpec != null,
-            targetIsNewBranch = targetIsNewBranch,
-            targetIsSpecialRef = targetIsSpecialRef,
-            repositoryStateIsNormal = repositoryStateIsNormal,
-        ),
-        pushSpec = pushSpec,
-    )
+    override fun repositories(): List<SafeImmediatePushRepositoryHandle> {
+        allRepositoriesCallCount += 1
+        return allRepositories
+    }
 
-    private fun assertFallback(
-        reason: SafeImmediatePushFallbackReason,
-        decision: SafeImmediatePushDecision,
+    override fun isPushSupportAvailable(): Boolean = pushSupportAvailable
+
+    override fun pushState(
+        repository: SafeImmediatePushRepositoryHandle,
+    ): SafeImmediatePushRepositoryPushState {
+        pushStateRequests += repository
+        val stateSequence = pushStateSequences[repository]
+        if (stateSequence != null) {
+            val sequenceIndex = pushStateRequests.count { request -> request == repository } - 1
+            return stateSequence.getOrElse(sequenceIndex) { stateSequence.last() }
+        }
+        return pushStates.getValue(repository)
+    }
+
+    override fun hasOutgoingCommits(
+        repository: SafeImmediatePushRepositoryHandle,
+        pushSpec: SafeImmediatePushSpecHandle,
+    ): Boolean {
+        outgoingCommitRequests += repository to pushSpec
+        outgoingFailures[repository]?.let { failure -> throw failure }
+        return outgoingCommits.getValue(repository)
+    }
+
+    override fun awaitPushCompletion(
+        repositories: Collection<SafeImmediatePushRepositoryHandle>,
+    ): CompletableFuture<GitPushCompletionResult> {
+        awaitedRepositories += repositories
+        return pushCompletion
+    }
+
+    override fun push(pushSpecs: Map<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>) {
+        pushedSpecs += pushSpecs
+        pushFailure?.let { failure -> throw failure }
+    }
+
+    fun completePush(
+        result: GitPushCompletionResult = GitPushCompletionResult.Success(emptyMap()),
     ) {
-        assertEquals(reason, (decision as SafeImmediatePushDecision.Fallback).reason)
+        pushCompletion.complete(result)
     }
+}
 
-    private fun SafeImmediatePushDecision.asImmediate() = this as ImmediatePushDecision
+private fun pushState(
+    pushSpec: SafeImmediatePushSpecHandle?,
+    hasTrackedUpstream: Boolean = true,
+    localMatchesTrackedUpstream: Boolean = true,
+    targetIsTrackingBranch: Boolean = true,
+    targetMatchesTrackedUpstream: Boolean = true,
+    targetIsNewBranch: Boolean = false,
+    targetIsSpecialRef: Boolean = false,
+    repositoryStateIsNormal: Boolean = true,
+): SafeImmediatePushRepositoryPushState = SafeImmediatePushRepositoryPushState(
+    repositoryState = SafeImmediatePushRepositoryState(
+        hasTrackedUpstream = hasTrackedUpstream,
+        localMatchesTrackedUpstream = localMatchesTrackedUpstream,
+        targetIsTrackingBranch = targetIsTrackingBranch,
+        targetMatchesTrackedUpstream = targetMatchesTrackedUpstream,
+        pushSpecAvailable = pushSpec != null,
+        targetIsNewBranch = targetIsNewBranch,
+        targetIsSpecialRef = targetIsSpecialRef,
+        repositoryStateIsNormal = repositoryStateIsNormal,
+    ),
+    pushSpec = pushSpec,
+)
 
-    private inline fun <reified T : Throwable> assertCompletionFailsWith(
-        completion: CompletableFuture<Unit>,
-    ): T {
-        val thrown = assertFailsWith<CompletionException> {
-            completion.join()
-        }
-        val cause = thrown.cause
-        assertTrue(cause is T)
-        return cause
+private fun assertFallback(
+    reason: SafeImmediatePushFallbackReason,
+    decision: SafeImmediatePushDecision,
+) {
+    assertEquals(reason, (decision as SafeImmediatePushDecision.Fallback).reason)
+}
+
+private fun SafeImmediatePushDecision.asImmediate() = this as ImmediatePushDecision
+
+private inline fun <reified T : Throwable> assertCompletionFailsWith(
+    completion: CompletableFuture<Unit>,
+): T {
+    val thrown = assertFailsWith<CompletionException> {
+        completion.join()
     }
+    val cause = thrown.cause
+    assertTrue(cause is T)
+    return cause
+}
 
-    private fun trackedChange(
-        beforePath: FilePath,
-        afterPath: FilePath,
-        status: FileStatus = FileStatus.MODIFIED,
-    ): Change = Change(
-        TestContentRevision(beforePath),
-        TestContentRevision(afterPath),
-        status,
+private fun trackedChange(
+    beforePath: FilePath,
+    afterPath: FilePath,
+    status: FileStatus = FileStatus.MODIFIED,
+): Change = Change(
+    TestContentRevision(beforePath),
+    TestContentRevision(afterPath),
+    status,
+)
+
+private fun conflictedChange(path: FilePath): Change = Change(
+    TestContentRevision(path),
+    TestContentRevision(path),
+    FileStatus.MERGED_WITH_CONFLICTS,
+)
+
+private class TestContentRevision(private val filePath: FilePath) : ContentRevision {
+    override fun getContent(): String? = null
+
+    override fun getFile(): FilePath = filePath
+
+    override fun getRevisionNumber(): VcsRevisionNumber = VcsRevisionNumber.NULL
+}
+
+private fun testProject(disposed: Boolean = false): Project = Proxy.newProxyInstance(
+    Project::class.java.classLoader,
+    arrayOf(Project::class.java),
+) { proxy, method, args ->
+    when (method.name) {
+        "isDisposed" -> disposed
+        "toString" -> "Test Project"
+        "hashCode" -> System.identityHashCode(proxy)
+        "equals" -> proxy === args?.firstOrNull()
+        else -> method.defaultReturnValue()
+    }
+} as Project
+
+private fun java.lang.reflect.Method.defaultReturnValue(): Any? = when (returnType) {
+    java.lang.Boolean.TYPE -> false
+    java.lang.Integer.TYPE -> 0
+    java.lang.Long.TYPE -> 0L
+    java.lang.Float.TYPE -> 0f
+    java.lang.Double.TYPE -> 0.0
+    java.lang.Void.TYPE -> null
+    else -> null
+}
+
+private fun testRepository(name: String): GitRepository = Proxy.newProxyInstance(
+    GitRepository::class.java.classLoader,
+    arrayOf(GitRepository::class.java),
+) { proxy, method, args ->
+    when (method.name) {
+        "toString" -> name
+        "hashCode" -> System.identityHashCode(proxy)
+        "equals" -> proxy === args?.firstOrNull()
+        else -> method.defaultReturnValue()
+    }
+} as GitRepository
+
+private fun pushResult(
+    type: GitPushRepoResult.Type,
+    error: String? = null,
+): GitPushRepoResult {
+    val constructor = GitPushRepoResult::class.java.getDeclaredConstructor(
+        GitPushRepoResult.Type::class.java,
+        Int::class.javaPrimitiveType,
+        String::class.java,
+        String::class.java,
+        String::class.java,
+        List::class.java,
+        String::class.java,
+        GitUpdateResult::class.java,
     )
+    constructor.isAccessible = true
+    return constructor.newInstance(
+        type,
+        1,
+        "refs/heads/main",
+        "refs/remotes/origin/main",
+        "origin",
+        emptyList<String>(),
+        error,
+        null,
+    ) as GitPushRepoResult
+}
 
-    private fun conflictedChange(path: FilePath): Change = Change(
-        TestContentRevision(path),
-        TestContentRevision(path),
-        FileStatus.MERGED_WITH_CONFLICTS,
-    )
+private class TestFilePath(private val rawPath: String) : FilePath {
+    override fun getVirtualFile(): VirtualFile? = null
 
-    private class TestContentRevision(private val filePath: FilePath) : ContentRevision {
-        override fun getContent(): String? = null
+    override fun getVirtualFileParent(): VirtualFile? = null
 
-        override fun getFile(): FilePath = filePath
+    override fun getIOFile(): File = File(rawPath)
 
-        override fun getRevisionNumber(): VcsRevisionNumber = VcsRevisionNumber.NULL
-    }
+    override fun getName(): String = ioFile.name
 
-    private fun testProject(disposed: Boolean = false): Project = Proxy.newProxyInstance(
-        Project::class.java.classLoader,
-        arrayOf(Project::class.java),
-    ) { proxy, method, args ->
-        when (method.name) {
-            "isDisposed" -> disposed
-            "toString" -> "Test Project"
-            "hashCode" -> System.identityHashCode(proxy)
-            "equals" -> proxy === args?.firstOrNull()
-            else -> method.defaultReturnValue()
-        }
-    } as Project
+    override fun getPresentableUrl(): String = rawPath
 
-    private fun java.lang.reflect.Method.defaultReturnValue(): Any? = when (returnType) {
-        java.lang.Boolean.TYPE -> false
-        java.lang.Integer.TYPE -> 0
-        java.lang.Long.TYPE -> 0L
-        java.lang.Float.TYPE -> 0f
-        java.lang.Double.TYPE -> 0.0
-        java.lang.Void.TYPE -> null
-        else -> null
-    }
+    override fun getCharset(): Charset = Charsets.UTF_8
 
-    private fun testRepository(name: String): GitRepository = Proxy.newProxyInstance(
-        GitRepository::class.java.classLoader,
-        arrayOf(GitRepository::class.java),
-    ) { proxy, method, args ->
-        when (method.name) {
-            "toString" -> name
-            "hashCode" -> System.identityHashCode(proxy)
-            "equals" -> proxy === args?.firstOrNull()
-            else -> method.defaultReturnValue()
-        }
-    } as GitRepository
+    override fun getCharset(project: Project?): Charset = Charsets.UTF_8
 
-    private fun pushResult(
-        type: GitPushRepoResult.Type,
-        error: String? = null,
-    ): GitPushRepoResult {
-        val constructor = GitPushRepoResult::class.java.getDeclaredConstructor(
-            GitPushRepoResult.Type::class.java,
-            Int::class.javaPrimitiveType,
-            String::class.java,
-            String::class.java,
-            String::class.java,
-            List::class.java,
-            String::class.java,
-            GitUpdateResult::class.java,
-        )
-        constructor.isAccessible = true
-        return constructor.newInstance(
-            type,
-            1,
-            "refs/heads/main",
-            "refs/remotes/origin/main",
-            "origin",
-            emptyList<String>(),
-            error,
-            null,
-        ) as GitPushRepoResult
-    }
+    override fun getFileType(): FileType = PlainTextFileType.INSTANCE
 
-    private class TestFilePath(private val rawPath: String) : FilePath {
-        override fun getVirtualFile(): VirtualFile? = null
+    override fun getPath(): String = rawPath
 
-        override fun getVirtualFileParent(): VirtualFile? = null
+    override fun isDirectory(): Boolean = false
 
-        override fun getIOFile(): File = File(rawPath)
+    override fun isUnder(parent: FilePath, strict: Boolean): Boolean = false
 
-        override fun getName(): String = ioFile.name
+    override fun getParentPath(): FilePath? = null
 
-        override fun getPresentableUrl(): String = rawPath
-
-        override fun getCharset(): Charset = Charsets.UTF_8
-
-        override fun getCharset(project: Project?): Charset = Charsets.UTF_8
-
-        override fun getFileType(): FileType = PlainTextFileType.INSTANCE
-
-        override fun getPath(): String = rawPath
-
-        override fun isDirectory(): Boolean = false
-
-        override fun isUnder(parent: FilePath, strict: Boolean): Boolean = false
-
-        override fun getParentPath(): FilePath? = null
-
-        override fun isNonLocal(): Boolean = false
-    }
+    override fun isNonLocal(): Boolean = false
 }

@@ -518,4 +518,5 @@ private inline fun completeExceptionallyOnFailure(
     result.getOrThrow()
 }
 
-private fun Throwable.diagnosticOutcome(): String = "exception=${javaClass.name}, cause=${cause?.javaClass?.name ?: "<none>"}"
+private fun Throwable.diagnosticOutcome(): String = "exception=${javaClass.name}, " +
+    "cause=${cause?.javaClass?.name ?: "<none>"}"

@@ -436,7 +436,9 @@ internal class AiCommitAllThreeSectionControlTest {
         return getToolTipText(event)
     }
 
-    private fun AiCommitAllThreeSectionControl.firstXForSection(section: AiCommitAllControlSection): Int = (0 until width).first { x -> sectionAtPoint(x, height / 2) == section }
+    private fun AiCommitAllThreeSectionControl.firstXForSection(
+        section: AiCommitAllControlSection,
+    ): Int = (0 until width).first { x -> sectionAtPoint(x, height / 2) == section }
 
     private fun AiCommitAllThreeSectionControl.sectionAtPoint(
         x: Int,

@@ -68,23 +68,11 @@ internal class GitStageConfirmation(
         var confirmedState: GitStageTracker.State? = null
         var attempt = 0
         while (attempt < attempts && confirmedState == null) {
-            val refreshedState = runCatching {
-                pathsToStageByRoot.forEach { (root, paths) ->
-                    operations.stagePaths(root, paths)
-                }
-                operations.reloadExternalFiles(distinctExpectedPaths)
-                operations.markPathsDirty(distinctExpectedPaths)
-                operations.waitForStatusRefresh()
-                operations.refreshTrackerState()
-            }.getOrElse { exception ->
-                logger.info(
-                    "AI Commit All diagnostic: staging confirmation attempt failed, " +
-                        "attempt=${attempt + 1}/$attempts, " +
-                        "exception=${exception.javaClass.name}, " +
-                        "cause=${exception.cause?.javaClass?.name ?: "<none>"}",
-                )
-                null
-            }
+            val refreshedState = refreshAfterStaging(
+                pathsToStageByRoot = pathsToStageByRoot,
+                distinctExpectedPaths = distinctExpectedPaths,
+                attempt = attempt,
+            )
 
             val expectedPathsAreStaged = refreshedState != null &&
                 GitStageSelectionItems.containsAllStagedPaths(refreshedState, distinctExpectedPaths)
@@ -108,6 +96,28 @@ internal class GitStageConfirmation(
                 "confirmed=${confirmedState != null}, attemptsUsed=$attempt",
         )
         return confirmedState
+    }
+
+    private fun refreshAfterStaging(
+        pathsToStageByRoot: Map<VirtualFile, List<FilePath>>,
+        distinctExpectedPaths: Collection<FilePath>,
+        attempt: Int,
+    ): GitStageTracker.State? = runCatching {
+        pathsToStageByRoot.forEach { (root, paths) ->
+            operations.stagePaths(root, paths)
+        }
+        operations.reloadExternalFiles(distinctExpectedPaths)
+        operations.markPathsDirty(distinctExpectedPaths)
+        operations.waitForStatusRefresh()
+        operations.refreshTrackerState()
+    }.getOrElse { exception ->
+        logger.info(
+            "AI Commit All diagnostic: staging confirmation attempt failed, " +
+                "attempt=${attempt + 1}/$attempts, " +
+                "exception=${exception.javaClass.name}, " +
+                "cause=${exception.cause?.javaClass?.name ?: "<none>"}",
+        )
+        null
     }
 
     private fun FilePath.normalizedPath(): String = path.replace('\\', '/')

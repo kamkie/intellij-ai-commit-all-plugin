@@ -490,7 +490,9 @@ internal class AiCommitAllActionsTest {
             val dataContext = testDataContext(project)
             val event = testEvent(dataContext)
             action.update(event)
-            val control = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).asControl()
+            val control = action
+                .createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR)
+                .asControl()
             control.setSize(control.preferredSize)
             dataManager.contexts[control] = dataContext
 
@@ -709,7 +711,9 @@ internal class AiCommitAllActionsTest {
 
         override fun getDataContext(): DataContext = DataContext.EMPTY_CONTEXT
 
-        override fun getDataContextFromFocusAsync(): Promise<DataContext> = error("Focus data context is not needed for action tests.")
+        override fun getDataContextFromFocusAsync(): Promise<DataContext> {
+            error("Focus data context is not needed for action tests.")
+        }
 
         override fun getDataContext(component: Component): DataContext {
             requestedComponents += component

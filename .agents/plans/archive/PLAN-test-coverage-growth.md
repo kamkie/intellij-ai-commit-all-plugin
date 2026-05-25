@@ -2,19 +2,21 @@
 
 Plan-ID: PLAN-test-coverage-growth
 
-Status: Implemented
+Status: Closed
+
+Close-Reason: Archived
 
 Workers: 1
 
-Filename: `.agents/plans/PLAN-test-coverage-growth.md`
+Filename: `.agents/plans/archive/PLAN-test-coverage-growth.md`
 
 ## Readiness
 
-- Plan readiness: Implemented. Approved by Kamil Kiewisz <kamkie@outlook.com> on 2026-05-25T01:40:55+02:00 through the implementation request; final coverage verification passed on 2026-05-25 and met the approved line and branch targets.
+- Plan readiness: Closed and archived during release preparation. Approved by Kamil Kiewisz <kamkie@outlook.com> on 2026-05-25T01:40:55+02:00 through the implementation request; final coverage verification passed on 2026-05-25 and met the approved line and branch targets.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-25T01:40:55+02:00
 - Open questions: None blocking. Coverage targets are plan assumptions and can be adjusted during approval.
-- Implementation progress: T1 completed in commit `dea114f`; T2 completed in commit `c91d0a8`; T3 completed in commit `d01c5b3`; T4 completed in commit `6ff4c35`; T5 completed in commit `d2b5664`.
+- Implementation progress: T1 completed in commit `dea114f`; T2 completed in commit `c91d0a8`; T3 completed in commit `d01c5b3`; T4 completed in commit `6ff4c35`; T5 completed in commit `d2b5664`; no further active execution or release-preparation updates are expected.
 
 ## Status History
 
@@ -22,6 +24,7 @@ Filename: `.agents/plans/PLAN-test-coverage-growth.md`
 - 2026-05-25T01:40:55+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; user requested implementation of `PLAN-test-coverage-growth.md`.
 - 2026-05-25T01:40:55+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; implementation started with approved-plan worker dispatch.
 - 2026-05-25T02:55:49+02:00: In Progress -> Implemented by OpenAI Codex <codex@openai.com>; all task packets completed and final coverage validation met the approved targets.
+- 2026-05-25T03:03:42+02:00: Implemented -> Closed by OpenAI Codex <codex@openai.com>; release archive sweep retired the completed plan.
 
 ## Goal
 
@@ -601,7 +604,7 @@ Result summary:
 
 - Status: completed; final coverage validation passed and plan targets were met.
 - Worker: W5 (`019e5c9b-61ef-70d1-9448-475c3bc6e7aa`).
-- Changed files or reviewed diff: `.agents/plans/PLAN-test-coverage-growth.md` T5 result summary and compact coverage handoff notes only.
+- Changed files or reviewed diff: `.agents/plans/archive/PLAN-test-coverage-growth.md` T5 result summary and compact coverage handoff notes only.
 - Final coverage from `build/reports/jacoco/test/jacocoTestReport.xml`: line `2673 / 3408` (`78.4%`, baseline `2525 / 3400`, `74.3%`); branch `1008 / 1404` (`71.8%`, baseline `926 / 1404`, `66.0%`); instruction `12525 / 16290` (`76.9%`, baseline `11829 / 16282`, `72.7%`).
 - Coverage target comparison: plan targets met (`>= 78%` line and `>= 70%` branch); stretch targets not met (`80%` line and `72%` branch).
 - Validation evidence: `.\gradlew.bat test jacocoTestReport verifyJacocoCoverageReport` passed (`410` passing, `1` pending; coverage gate passed); `.\gradlew.bat spotlessCheck` passed; `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1` passed; `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` passed; `git diff --check` passed.

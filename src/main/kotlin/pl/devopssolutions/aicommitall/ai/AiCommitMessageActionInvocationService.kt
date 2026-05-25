@@ -195,22 +195,17 @@ internal class AiCommitMessageActionDiscoveryRetry(
         project: Project,
         actionFinder: AiCommitMessageActionFinder,
     ): AiCommitMessageActionReference? {
-        repeat(maxAttempts) { attemptIndex ->
-            if (project.isDisposed) {
-                return null
-            }
-
-            val actionReference = actionFinder.findCommitMessageAction()
-            if (actionReference != null) {
-                return actionReference
-            }
-
-            if (attemptIndex < maxAttempts - 1 && !project.isDisposed) {
+        var attemptIndex = 0
+        var actionReference: AiCommitMessageActionReference? = null
+        while (attemptIndex < maxAttempts && !project.isDisposed && actionReference == null) {
+            actionReference = actionFinder.findCommitMessageAction()
+            if (actionReference == null && attemptIndex < maxAttempts - 1 && !project.isDisposed) {
                 sleeper.sleep(retryInterval)
             }
+            attemptIndex += 1
         }
 
-        return null
+        return actionReference
     }
 
     companion object {

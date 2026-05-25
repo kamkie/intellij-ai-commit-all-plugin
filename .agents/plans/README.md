@@ -22,11 +22,12 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- `PLAN-premature-stop-reliability` - Premature Stop Reliability ([PLAN-premature-stop-reliability.md](PLAN-premature-stop-reliability.md)), implemented as of 2026-05-25.
-- `PLAN-test-coverage-growth` - Test Coverage Growth ([PLAN-test-coverage-growth.md](PLAN-test-coverage-growth.md)), implemented as of 2026-05-25.
+- None.
 
 ## Archived Plans
 
+- `PLAN-test-coverage-growth` - Test Coverage Growth ([archive/PLAN-test-coverage-growth.md](archive/PLAN-test-coverage-growth.md)), archived as of 2026-05-25.
+- `PLAN-premature-stop-reliability` - Premature Stop Reliability ([archive/PLAN-premature-stop-reliability.md](archive/PLAN-premature-stop-reliability.md)), archived as of 2026-05-25.
 - `PLAN-user-documentation-rebuild` - User Documentation Rebuild ([archive/PLAN-user-documentation-rebuild.md](archive/PLAN-user-documentation-rebuild.md)), archived as of 2026-05-24.
 - `PLAN-unchanged-prefilled-ai-message` - Unchanged Prefilled AI Message ([archive/PLAN-unchanged-prefilled-ai-message.md](archive/PLAN-unchanged-prefilled-ai-message.md)), archived as of 2026-05-24.
 - `PLAN-markdown-list-indent-two-spaces` - Markdown List Indent Two Spaces ([archive/PLAN-markdown-list-indent-two-spaces.md](archive/PLAN-markdown-list-indent-two-spaces.md)), archived as of 2026-05-24.

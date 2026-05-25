@@ -83,71 +83,25 @@ internal class AiGenerationCompletionObserver(
         options: AiGenerationCompletionOptions = AiGenerationCompletionOptions.DEFAULT,
     ): AiGenerationCompletionResult {
         val startedAtMillis = timeSource.nowMillis()
-        var observedRunning = false
-        var stoppedWithUnusableMessageAtMillis: Long? = null
-        var unavailableSignalStartedAtMillis: Long? = null
+        val observation = AiGenerationCompletionObservation()
         var result: AiGenerationCompletionResult? = null
 
         while (result == null && timeSource.nowMillis() - startedAtMillis <= options.timeout.toMillis()) {
-            val signalState = runningSignal.state()
-            val currentMessage = messageReader.readMessage()
-            if (userEditSignal.isUserEdited()) {
-                result = AiGenerationCompletionResult.UserEditedMessage(
-                    latestMessage = currentMessage,
-                )
-            }
-
-            if (result == null) {
-                when (signalState) {
-                    AiGenerationRunningState.Running -> {
-                        observedRunning = true
-                        stoppedWithUnusableMessageAtMillis = null
-                        unavailableSignalStartedAtMillis = null
-                    }
-
-                    AiGenerationRunningState.NotRunning -> {
-                        unavailableSignalStartedAtMillis = null
-                        if (shouldCompleteAfterStoppedSignal(
-                                observedRunning = observedRunning,
-                                currentMessage = currentMessage,
-                                snapshot = snapshot,
-                                stoppedWithUnusableMessageAtMillis = stoppedWithUnusableMessageAtMillis,
-                                options = options,
-                            )
-                        ) {
-                            result = completionResult(
-                                snapshot = snapshot,
-                                currentMessage = currentMessage,
-                            )
-                        } else {
-                            stoppedWithUnusableMessageAtMillis = stoppedWithUnusableMessageAtMillisAfter(
-                                observedRunning = observedRunning,
-                                currentMessage = currentMessage,
-                                snapshot = snapshot,
-                                stoppedWithUnusableMessageAtMillis = stoppedWithUnusableMessageAtMillis,
-                            )
-                        }
-                    }
-
-                    AiGenerationRunningState.Unavailable -> {
-                        val unavailableStartedAtMillis = unavailableSignalStartedAtMillis
-                            ?: timeSource.nowMillis()
-                                .also { nowMillis -> unavailableSignalStartedAtMillis = nowMillis }
-                        if (isUnavailableSignalSettled(unavailableStartedAtMillis, options)) {
-                            result = AiGenerationCompletionResult.NoCompletionSignal(
-                                latestMessage = currentMessage,
-                            )
-                        }
-                    }
-                }
-            }
+            result = observeCompletionResult(
+                snapshot = snapshot,
+                messageReader = messageReader,
+                runningSignal = runningSignal,
+                userEditSignal = userEditSignal,
+                options = options,
+                observation = observation,
+            )
 
             if (result == null) {
                 sleeper.sleep(options.checkInterval)
             }
         }
 
-        val unavailableSignalResult = unavailableSignalStartedAtMillis
+        val unavailableSignalResult = observation.unavailableSignalStartedAtMillis
             ?.takeIf { unavailableStartedAtMillis ->
                 isUnavailableSignalSettled(unavailableStartedAtMillis, options)
             }
@@ -161,6 +115,65 @@ internal class AiGenerationCompletionObserver(
             timeout = options.timeout,
             latestMessage = messageReader.readMessage(),
         )
+    }
+
+    private fun observeCompletionResult(
+        snapshot: AiCommitMessageSnapshot,
+        messageReader: AiCommitMessageReader,
+        runningSignal: AiGenerationRunningSignal,
+        userEditSignal: AiGenerationUserEditSignal,
+        options: AiGenerationCompletionOptions,
+        observation: AiGenerationCompletionObservation,
+    ): AiGenerationCompletionResult? {
+        val signalState = runningSignal.state()
+        val currentMessage = messageReader.readMessage()
+        if (userEditSignal.isUserEdited()) {
+            return AiGenerationCompletionResult.UserEditedMessage(
+                latestMessage = currentMessage,
+            )
+        }
+
+        return when (signalState) {
+            AiGenerationRunningState.Running -> {
+                observation.observedRunning = true
+                observation.stoppedWithUnusableMessageAtMillis = null
+                observation.unavailableSignalStartedAtMillis = null
+                null
+            }
+
+            AiGenerationRunningState.NotRunning -> {
+                observation.unavailableSignalStartedAtMillis = null
+                if (shouldCompleteAfterStoppedSignal(
+                        observedRunning = observation.observedRunning,
+                        currentMessage = currentMessage,
+                        snapshot = snapshot,
+                        stoppedWithUnusableMessageAtMillis = observation.stoppedWithUnusableMessageAtMillis,
+                        options = options,
+                    )
+                ) {
+                    completionResult(snapshot = snapshot, currentMessage = currentMessage)
+                } else {
+                    observation.stoppedWithUnusableMessageAtMillis = stoppedWithUnusableMessageAtMillisAfter(
+                        observedRunning = observation.observedRunning,
+                        currentMessage = currentMessage,
+                        snapshot = snapshot,
+                        stoppedWithUnusableMessageAtMillis = observation.stoppedWithUnusableMessageAtMillis,
+                    )
+                    null
+                }
+            }
+
+            AiGenerationRunningState.Unavailable -> {
+                val unavailableStartedAtMillis = observation.unavailableSignalStartedAtMillis
+                    ?: timeSource.nowMillis()
+                        .also { nowMillis -> observation.unavailableSignalStartedAtMillis = nowMillis }
+                if (isUnavailableSignalSettled(unavailableStartedAtMillis, options)) {
+                    AiGenerationCompletionResult.NoCompletionSignal(latestMessage = currentMessage)
+                } else {
+                    null
+                }
+            }
+        }
     }
 
     private fun shouldCompleteAfterStoppedSignal(
@@ -200,7 +213,8 @@ internal class AiGenerationCompletionObserver(
     private fun isUnavailableSignalSettled(
         unavailableSignalStartedAtMillis: Long,
         options: AiGenerationCompletionOptions,
-    ): Boolean = timeSource.nowMillis() - unavailableSignalStartedAtMillis >= unavailableSignalSettlingBudgetMillis(options)
+    ): Boolean = timeSource.nowMillis() - unavailableSignalStartedAtMillis >=
+        unavailableSignalSettlingBudgetMillis(options)
 
     private fun unavailableSignalSettlingBudgetMillis(options: AiGenerationCompletionOptions): Long = minOf(
         options.stoppedSignalGracePeriod.toMillis(),
@@ -240,6 +254,12 @@ internal class AiGenerationCompletionObserver(
             evidence = AiGenerationCompletionEvidence.ActionNoLongerRunningAndMessageChanged,
         )
     }
+
+    private data class AiGenerationCompletionObservation(
+        var observedRunning: Boolean = false,
+        var stoppedWithUnusableMessageAtMillis: Long? = null,
+        var unavailableSignalStartedAtMillis: Long? = null,
+    )
 }
 
 internal data class AiCommitMessageSnapshot(

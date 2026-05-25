@@ -2,19 +2,21 @@
 
 Plan-ID: PLAN-premature-stop-reliability
 
-Status: Implemented
+Status: Closed
+
+Close-Reason: Archived
 
 Workers: 1
 
-Filename: `.agents/plans/PLAN-premature-stop-reliability.md`
+Filename: `.agents/plans/archive/PLAN-premature-stop-reliability.md`
 
 ## Readiness
 
-- Plan readiness: Implemented; release preparation may still archive the completed plan later.
+- Plan readiness: Closed and archived during release preparation.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-25T00:16:33+02:00
 - Open questions: None.
-- Implementation progress: Complete.
+- Implementation progress: Complete; no further active execution or release-preparation updates are expected.
 
 ## Status History
 
@@ -22,6 +24,7 @@ Filename: `.agents/plans/PLAN-premature-stop-reliability.md`
 - 2026-05-25T00:16:33+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; user explicitly approved ADR 0084 and PLAN-premature-stop-reliability.
 - 2026-05-25T00:16:33+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; implementation started after approval.
 - 2026-05-25T01:04:18+02:00: In Progress -> Implemented by OpenAI Codex <codex@openai.com>; implementation, validation, review, and retrospective task-shaped commits completed.
+- 2026-05-25T03:03:42+02:00: Implemented -> Closed by OpenAI Codex <codex@openai.com>; release archive sweep retired the completed plan.
 
 ## Goal
 
@@ -135,7 +138,7 @@ Result summary:
 
 - Status: complete
 - Worker: W1
-- Changed files or reviewed diff: `docs/specification.md`; `docs/user-guide.md`; `.agents/plans/PLAN-premature-stop-reliability.md` T1 result summary
+- Changed files or reviewed diff: `docs/specification.md`; `docs/user-guide.md`; `.agents/plans/archive/PLAN-premature-stop-reliability.md` T1 result summary
 - Validation evidence: initial `pwsh -NoProfile -File scripts/validate-docs.ps1` failed because `validate-agent-artifacts` reported plan-packet metadata errors outside T1 write scope; after orchestrator metadata fixes, `pwsh -NoProfile -File scripts/validate-docs.ps1` and `pwsh -NoProfile -File scripts/ai/validate-agent-artifacts.ps1` passed.
 - Commit: `79208d6` (`docs(spec): define bounded transient settling`).
 - Blockers: None.
@@ -213,7 +216,7 @@ Result summary:
 
 - Status: complete
 - Worker: W2
-- Changed files or reviewed diff: `src/main/kotlin/pl/devopssolutions/aicommitall/ai/AiCommitMessageActionInvocationService.kt`; `src/main/kotlin/pl/devopssolutions/aicommitall/ai/AiGenerationCompletion.kt`; `src/test/kotlin/pl/devopssolutions/aicommitall/ai/AiCommitMessageActionInvokerTest.kt`; `src/test/kotlin/pl/devopssolutions/aicommitall/ai/AiGenerationCompletionObserverTest.kt`; `.agents/plans/PLAN-premature-stop-reliability.md` T2 result summary
+- Changed files or reviewed diff: `src/main/kotlin/pl/devopssolutions/aicommitall/ai/AiCommitMessageActionInvocationService.kt`; `src/main/kotlin/pl/devopssolutions/aicommitall/ai/AiGenerationCompletion.kt`; `src/test/kotlin/pl/devopssolutions/aicommitall/ai/AiCommitMessageActionInvokerTest.kt`; `src/test/kotlin/pl/devopssolutions/aicommitall/ai/AiGenerationCompletionObserverTest.kt`; `.agents/plans/archive/PLAN-premature-stop-reliability.md` T2 result summary
 - Validation evidence: red-first `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.ai.AiCommitMessageActionInvokerTest" --tests "pl.devopssolutions.aicommitall.ai.AiGenerationCompletionObserverTest"` failed with 4 expected new failures: transient missing action returned `MissingAction`, bounded missing-action retry attempted once instead of 3 times, transient `Unavailable` returned `NoCompletionSignal`, and persistent `Unavailable` settled after one read instead of 3 reads. Green rerun of the same command passed with 20 tests. `.\gradlew.bat spotlessCheck` passed. `git diff --check` passed. `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` passed.
 - Commit: `f6de9f8` (`fix(ai): settle transient assistant availability`).
 - Blockers: None.

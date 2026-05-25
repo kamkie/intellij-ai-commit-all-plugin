@@ -108,4 +108,4 @@ routing, plus the full test suite and formatting checks.
 ## More Information
 
 This ADR was implemented by
-[`PLAN-premature-stop-reliability`](../../.agents/plans/PLAN-premature-stop-reliability.md).
+[`PLAN-premature-stop-reliability`](../../.agents/plans/archive/PLAN-premature-stop-reliability.md).

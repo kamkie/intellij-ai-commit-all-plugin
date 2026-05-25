@@ -301,7 +301,9 @@ internal class AiGenerationCompletionServiceTest {
         override fun getOldTimeStamp(): Long = oldStamp
     }
 
-    private fun testInvocation(progressIndicator: Any?): AiCommitMessageActionInvocationResult.Invoked = AiCommitMessageActionInvocationResult.Invoked(
+    private fun testInvocation(
+        progressIndicator: Any?,
+    ): AiCommitMessageActionInvocationResult.Invoked = AiCommitMessageActionInvocationResult.Invoked(
         action = TestAction(progressIndicator),
         actionId = "Vcs.LLMCommitMessageAction",
         source = AiCommitMessageActionSource.KnownActionId,

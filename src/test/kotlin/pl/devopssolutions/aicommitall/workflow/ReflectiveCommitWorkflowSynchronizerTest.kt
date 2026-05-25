@@ -316,7 +316,11 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
     }
 
     private class SetCommitStateThrowingHandler : TestCommitWorkflowHandler() {
-        fun synchronizeInclusion(changeLists: List<LocalChangeList>, unversionedFiles: List<*>) = Unit
+        var synchronizedInputCount = 0
+
+        fun synchronizeInclusion(changeLists: List<LocalChangeList>, unversionedFiles: List<*>) {
+            synchronizedInputCount = changeLists.size + unversionedFiles.size
+        }
 
         fun setCommitState(changeList: LocalChangeList, items: Collection<Any>, replaceInclusion: Boolean) {
             error("set commit state failed for ${changeList.name}, ${items.size}, $replaceInclusion")
@@ -328,9 +332,12 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         var setCommitStateCallCount = 0
         var activeChangeList: LocalChangeList? = null
         var inclusionItems: Collection<Any>? = null
+        var synchronizedInputCount = 0
+        var replaceInclusion = false
 
         fun synchronizeInclusion(changeLists: List<LocalChangeList>, unversionedFiles: List<*>) {
             synchronizeCallCount++
+            synchronizedInputCount = changeLists.size + unversionedFiles.size
             if (synchronizeCallCount == 1) {
                 error("transient synchronization failure")
             }
@@ -340,6 +347,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             setCommitStateCallCount++
             activeChangeList = changeList
             inclusionItems = items
+            this.replaceInclusion = replaceInclusion
         }
     }
 

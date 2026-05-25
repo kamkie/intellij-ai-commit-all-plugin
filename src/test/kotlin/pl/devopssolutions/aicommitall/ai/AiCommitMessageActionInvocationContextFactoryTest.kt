@@ -297,7 +297,9 @@ internal class AiCommitMessageActionInvocationContextFactoryTest {
     private class TestDataManager : DataManager() {
         override fun getDataContext(): DataContext = DataContext.EMPTY_CONTEXT
 
-        override fun getDataContextFromFocusAsync(): Promise<DataContext> = error("Focus data context is not needed for invocation context tests.")
+        override fun getDataContextFromFocusAsync(): Promise<DataContext> {
+            error("Focus data context is not needed for invocation context tests.")
+        }
 
         override fun getDataContext(component: java.awt.Component): DataContext = DataContext.EMPTY_CONTEXT
 

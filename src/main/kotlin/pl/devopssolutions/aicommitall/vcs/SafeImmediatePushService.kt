@@ -397,16 +397,16 @@ private class IntellijSafeImmediatePushEnvironment(private val project: Project)
     override fun hasOutgoingCommits(
         repository: SafeImmediatePushRepositoryHandle,
         pushSpec: SafeImmediatePushSpecHandle,
-    ): Boolean = repository.gitRepository().hasOutgoingCommits(pushSupport(), pushSpec.pushSpec())
+    ): Boolean = repository.gitRepository.hasOutgoingCommits(pushSupport(), pushSpec.pushSpec)
 
     override fun awaitPushCompletion(
         repositories: Collection<SafeImmediatePushRepositoryHandle>,
     ): CompletableFuture<GitPushCompletionResult> = GitPushCompletionService.getInstance(project)
-        .awaitCompletion(repositories.map { repository -> repository.gitRepository() })
+        .awaitCompletion(repositories.map { repository -> repository.gitRepository })
 
     override fun push(pushSpecs: Map<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>) {
         val gitPushSpecs = pushSpecs.entries.associate { (repository, pushSpec) ->
-            repository.gitRepository() to pushSpec.pushSpec()
+            repository.gitRepository to pushSpec.pushSpec
         }
         pushSupport().pusher.push(gitPushSpecs, null, false)
     }
@@ -420,7 +420,7 @@ private class IntellijSafeImmediatePushEnvironment(private val project: Project)
         .filterIsInstance<GitPushSupport>()
         .firstOrNull { pushSupport -> pushSupport.vcs === GitVcs.getInstance(project) }
 
-    private fun stateOf(repo: SafeImmediatePushRepositoryHandle) = repo.gitRepository().pushState(pushSupport())
+    private fun stateOf(repo: SafeImmediatePushRepositoryHandle) = repo.gitRepository.pushState(pushSupport())
 
     private fun projectRepositories(): List<SafeImmediatePushRepositoryHandle> {
         val repositoryManager = GitRepositoryManager.getInstance(project)
@@ -499,10 +499,12 @@ private fun GitRepository.localMatchesTrackedUpstream(
     return localHash != null && localHash == remoteHash
 }
 
-private fun SafeImmediatePushRepositoryHandle.gitRepository(): GitRepository = value as GitRepository
+private val SafeImmediatePushRepositoryHandle.gitRepository: GitRepository
+    get() = value as GitRepository
 
 @Suppress("UNCHECKED_CAST")
-private fun SafeImmediatePushSpecHandle.pushSpec(): GitPushSpec = value as GitPushSpec
+private val SafeImmediatePushSpecHandle.pushSpec: GitPushSpec
+    get() = value as GitPushSpec
 
 private fun GitChangeSelection.affectedPaths(): List<FilePath> = buildList {
     trackedChanges.forEach { change ->
