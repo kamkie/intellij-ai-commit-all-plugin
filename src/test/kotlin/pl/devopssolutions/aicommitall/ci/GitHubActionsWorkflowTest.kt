@@ -461,6 +461,20 @@ internal class GitHubActionsWorkflowTest {
     }
 
     @Test
+    fun `release matrix UI workflow runs on semantic version tag pushes`() {
+        val content = Files.readString(Path.of(".github", "workflows", "release-matrix-ui.yml"))
+
+        listOf(
+            "push:\n    tags:\n      - 'v*.*.*'",
+            "workflow_dispatch:",
+            "IDE_PRODUCTS: \${{ inputs.ide-products || 'IU,PY,WS' }}",
+            "-PideVersion=\"\${{ inputs.ide-version || '2026.1.2' }}\"",
+        ).forEach { snippet ->
+            assertTrue(content.contains(snippet), "Release matrix UI workflow is missing: $snippet")
+        }
+    }
+
+    @Test
     fun `release workflow validates full release gate before publishing`() {
         val content = Files.readString(Path.of(".github", "workflows", "release.yml"))
 

@@ -1,6 +1,9 @@
 name: Release Matrix UI
 
 on:
+  push:
+    tags:
+      - 'v*.*.*'
   workflow_dispatch:
     inputs:
       ide-products:
@@ -27,7 +30,7 @@ jobs:
         id: products
         shell: bash
         env:
-          IDE_PRODUCTS: ${{ inputs.ide-products }}
+          IDE_PRODUCTS: ${{ inputs.ide-products || 'IU,PY,WS' }}
         run: |
           python - <<'PY'
           import json
@@ -92,7 +95,7 @@ jobs:
         run: >
           xvfb-run -a ./gradlew releaseMatrixUiTest
           -PideProducts="${{ matrix.code }}"
-          -PideVersion="${{ inputs.ide-version }}"
+          -PideVersion="${{ inputs.ide-version || '2026.1.2' }}"
 
       - name: Publish release-matrix UI test summary
         if: ${{ !cancelled() && hashFiles('build/test-results/releaseMatrixUiTest/*.xml') != '' }}

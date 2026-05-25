@@ -10,6 +10,10 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ## [Unreleased]
 
+### Fixed
+
+- Run Release Matrix UI validation automatically for semantic version tag pushes, using the manual defaults for tag-triggered runs.
+
 ## [v0.1.0-beta.2] - 2026-05-25
 
 ### Fixed
