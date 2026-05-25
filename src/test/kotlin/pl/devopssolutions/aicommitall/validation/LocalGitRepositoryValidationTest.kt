@@ -129,6 +129,40 @@ internal class LocalGitRepositoryValidationTest {
     }
 
     @Test
+    fun `local repository fixture documents rename and move porcelain shapes`() {
+        assumeTrue(GitCli.isAvailable(), "git executable is required for local-repository validation")
+        val stagedRename = LocalGitRepository.init(tempDirectory.resolve("staged-rename"))
+        stagedRename.write("docs/old-name.md", "line one\nline two\n")
+        stagedRename.git("add", ".")
+        stagedRename.git("commit", "-m", "initial")
+        stagedRename.git("mv", "docs/old-name.md", "docs/new-name.md")
+
+        val partialRename = LocalGitRepository.init(tempDirectory.resolve("partial-rename"))
+        partialRename.write("docs/old-name.md", "line one\nline two\n")
+        partialRename.git("add", ".")
+        partialRename.git("commit", "-m", "initial")
+        partialRename.git("mv", "docs/old-name.md", "docs/new-name.md")
+        partialRename.write("docs/new-name.md", "line one\nline two\nworktree edit\n")
+
+        val unstagedMove = LocalGitRepository.init(tempDirectory.resolve("unstaged-move"))
+        unstagedMove.write("docs/old-location.md", "line one\nline two\n")
+        unstagedMove.git("add", ".")
+        unstagedMove.git("commit", "-m", "initial")
+        unstagedMove.delete("docs/old-location.md")
+        unstagedMove.write("docs/new-location.md", "line one\nline two\n")
+
+        assertEquals(listOf("R  docs/old-name.md -> docs/new-name.md"), stagedRename.statusLines("-M"))
+        assertEquals(listOf("RM docs/old-name.md -> docs/new-name.md"), partialRename.statusLines("-M"))
+        assertEquals(
+            listOf(
+                " D docs/old-location.md",
+                "?? docs/new-location.md",
+            ),
+            unstagedMove.statusLines("-M"),
+        )
+    }
+
+    @Test
     fun `unstaged fixture can stage all eligible paths without ignored files`() {
         assumeTrue(GitCli.isAvailable(), "git executable is required for local-repository validation")
         val repository = LocalGitRepository.init(tempDirectory.resolve("unstaged-to-staged"))

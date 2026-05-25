@@ -55,6 +55,87 @@ internal class SafeImmediatePushServiceTest {
     }
 
     @Test
+    fun `prepare extracts before and after revision paths from moved changes`() {
+        val beforePath = TestFilePath("/repo/src/OldName.kt")
+        val afterPath = TestFilePath("/repo/src/NewName.kt")
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            repositoriesByPath = mapOf(
+                beforePath.path to repository,
+                afterPath.path to repository,
+            ),
+            pushStates = mapOf(repository to pushState(SafeImmediatePushSpecHandle("spec"))),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepare(
+            GitChangeSelection(
+                trackedChanges = listOf(trackedChange(beforePath, afterPath)),
+            ),
+        )
+        decision.asImmediate().plan.push()
+
+        assertEquals(listOf<FilePath>(beforePath, afterPath), environment.pathLookups)
+        assertEquals(
+            mapOf(repository to SafeImmediatePushSpecHandle("spec")),
+            environment.pushedSpecs.single(),
+        )
+    }
+
+    @Test
+    fun `prepare includes resolved conflict and staging area paths in affected repositories`() {
+        val resolvedConflictPath = TestFilePath("/repo/resolved-conflict.txt")
+        val stagingAreaPath = TestFilePath("/repo/staged-only.txt")
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val pushSpec = SafeImmediatePushSpecHandle("spec")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            repositoriesByPath = mapOf(
+                resolvedConflictPath.path to repository,
+                stagingAreaPath.path to repository,
+            ),
+            pushStates = mapOf(repository to pushState(pushSpec)),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepare(
+            GitChangeSelection(
+                trackedChanges = emptyList(),
+                resolvedConflictPaths = listOf(resolvedConflictPath),
+                stagingAreaPaths = listOf(stagingAreaPath),
+            ),
+        )
+        decision.asImmediate().plan.push()
+
+        assertEquals(listOf<FilePath>(resolvedConflictPath, stagingAreaPath), environment.pathLookups)
+        assertEquals(mapOf(repository to pushSpec), environment.pushedSpecs.single())
+    }
+
+    @Test
+    fun `prepare deduplicates repeated affected paths before resolving repositories`() {
+        val path = TestFilePath("/repo/duplicated.txt")
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val pushSpec = SafeImmediatePushSpecHandle("spec")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            repositoriesByPath = mapOf(path.path to repository),
+            pushStates = mapOf(repository to pushState(pushSpec)),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepare(
+            GitChangeSelection(
+                trackedChanges = listOf(trackedChange(path, path)),
+                unversionedFiles = listOf(TestFilePath(path.path)),
+                resolvedConflictPaths = listOf(TestFilePath(path.path)),
+                stagingAreaPaths = listOf(TestFilePath(path.path)),
+            ),
+        )
+        decision.asImmediate().plan.push()
+
+        assertEquals(listOf<FilePath>(path), environment.pathLookups)
+        assertEquals(mapOf(repository to pushSpec), environment.pushedSpecs.single())
+    }
+
+    @Test
     fun `prepare falls back when an affected path has no repository`() {
         val environment = CapturingSafeImmediatePushEnvironment()
         val service = SafeImmediatePushService(testProject(), environment)
@@ -69,6 +150,33 @@ internal class SafeImmediatePushServiceTest {
 
         assertFallback(SafeImmediatePushFallbackReason.MissingAffectedRepository, decision)
         assertEquals(listOf<FilePath>(path), environment.pathLookups)
+    }
+
+    @Test
+    fun `prepare stops at first missing affected repository before loading push states`() {
+        val firstPath = TestFilePath("/repo/known.txt")
+        val missingPath = TestFilePath("/outside/missing.txt")
+        val skippedPath = TestFilePath("/repo/skipped.txt")
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            repositoriesByPath = mapOf(
+                firstPath.path to repository,
+                skippedPath.path to repository,
+            ),
+            pushStates = mapOf(repository to pushState(SafeImmediatePushSpecHandle("spec"))),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepare(
+            GitChangeSelection(
+                trackedChanges = emptyList(),
+                unversionedFiles = listOf(firstPath, missingPath, skippedPath),
+            ),
+        )
+
+        assertFallback(SafeImmediatePushFallbackReason.MissingAffectedRepository, decision)
+        assertEquals(listOf<FilePath>(firstPath, missingPath), environment.pathLookups)
+        assertEquals(emptyList(), environment.pushStateRequests)
     }
 
     @Test
@@ -90,6 +198,42 @@ internal class SafeImmediatePushServiceTest {
 
         assertFallback(SafeImmediatePushFallbackReason.UnsupportedPushApi, decision)
         assertEquals(emptyList(), environment.pushStateRequests)
+    }
+
+    @Test
+    fun `prepare preserves stable push spec ordering across multiple affected roots`() {
+        val firstPath = TestFilePath("/repo-a/modified.txt")
+        val secondPath = TestFilePath("/repo-b/modified.txt")
+        val duplicateFirstPath = TestFilePath(firstPath.path)
+        val firstRepository = SafeImmediatePushRepositoryHandle("first")
+        val secondRepository = SafeImmediatePushRepositoryHandle("second")
+        val firstSpec = SafeImmediatePushSpecHandle("first-spec")
+        val secondSpec = SafeImmediatePushSpecHandle("second-spec")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            repositoriesByPath = mapOf(
+                firstPath.path to firstRepository,
+                secondPath.path to secondRepository,
+            ),
+            pushStates = mapOf(
+                firstRepository to pushState(firstSpec),
+                secondRepository to pushState(secondSpec),
+            ),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepare(
+            GitChangeSelection(
+                trackedChanges = emptyList(),
+                unversionedFiles = listOf(firstPath, secondPath, duplicateFirstPath),
+            ),
+        )
+        decision.asImmediate().plan.push()
+
+        assertEquals(listOf<FilePath>(firstPath, secondPath), environment.pathLookups)
+        assertEquals(
+            listOf(firstRepository, secondRepository),
+            environment.pushedSpecs.single().keys.toList(),
+        )
     }
 
     @Test
@@ -370,6 +514,102 @@ internal class SafeImmediatePushServiceTest {
     }
 
     @Test
+    fun `prepare outgoing commits does not push a safe subset while another repository has unavailable metadata`() {
+        val outgoingRepository = SafeImmediatePushRepositoryHandle("outgoing")
+        val unavailableRepository = SafeImmediatePushRepositoryHandle("unavailable")
+        val outgoingSpec = SafeImmediatePushSpecHandle("outgoing-spec")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            allRepositories = listOf(outgoingRepository, unavailableRepository),
+            pushStates = mapOf(
+                outgoingRepository to pushState(outgoingSpec, localMatchesTrackedUpstream = false),
+                unavailableRepository to pushState(pushSpec = null),
+            ),
+            outgoingCommits = mapOf(outgoingRepository to true),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepareOutgoingCommits()
+
+        assertFallback(SafeImmediatePushFallbackReason.UnsupportedPushApi, decision)
+        assertEquals(
+            listOf(
+                outgoingRepository,
+                unavailableRepository,
+                outgoingRepository,
+                unavailableRepository,
+                outgoingRepository,
+                unavailableRepository,
+            ),
+            environment.pushStateRequests,
+        )
+        assertEquals(
+            listOf(
+                outgoingRepository to outgoingSpec,
+                outgoingRepository to outgoingSpec,
+                outgoingRepository to outgoingSpec,
+            ),
+            environment.outgoingCommitRequests,
+        )
+        assertEquals(emptyList(), environment.pushedSpecs)
+    }
+
+    @Test
+    fun `prepare outgoing commits falls back when an outgoing repository state is unsafe`() {
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            allRepositories = listOf(repository),
+            pushStates = mapOf(
+                repository to pushState(
+                    SafeImmediatePushSpecHandle("spec"),
+                    localMatchesTrackedUpstream = false,
+                    repositoryStateIsNormal = false,
+                ),
+            ),
+            outgoingCommits = mapOf(repository to true),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepareOutgoingCommits()
+
+        assertFallback(SafeImmediatePushFallbackReason.UnsafeRepositoryState, decision)
+        assertEquals(emptyList(), environment.pushedSpecs)
+    }
+
+    @Test
+    fun `prepare outgoing commits propagates outgoing checks that fail before push planning completes`() {
+        val outgoingRepository = SafeImmediatePushRepositoryHandle("outgoing")
+        val failingRepository = SafeImmediatePushRepositoryHandle("failing")
+        val failure = IllegalStateException("outgoing commits unavailable")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            allRepositories = listOf(outgoingRepository, failingRepository),
+            pushStates = mapOf(
+                outgoingRepository to pushState(
+                    SafeImmediatePushSpecHandle("outgoing-spec"),
+                    localMatchesTrackedUpstream = false,
+                ),
+                failingRepository to pushState(SafeImmediatePushSpecHandle("failing-spec")),
+            ),
+            outgoingCommits = mapOf(outgoingRepository to true),
+            outgoingFailures = mapOf(failingRepository to failure),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val thrown = assertFailsWith<IllegalStateException> {
+            service.prepareOutgoingCommits()
+        }
+
+        assertSame(failure, thrown)
+        assertEquals(
+            listOf(
+                outgoingRepository to SafeImmediatePushSpecHandle("outgoing-spec"),
+                failingRepository to SafeImmediatePushSpecHandle("failing-spec"),
+            ),
+            environment.outgoingCommitRequests,
+        )
+        assertEquals(emptyList(), environment.pushedSpecs)
+    }
+
+    @Test
     fun `prepare outgoing commits retries refreshable unavailable push metadata before stopping`() {
         val repository = SafeImmediatePushRepositoryHandle("repo")
         val pushSpec = SafeImmediatePushSpecHandle("spec")
@@ -444,10 +684,13 @@ internal class SafeImmediatePushServiceTest {
             List<SafeImmediatePushRepositoryPushState>,
             > = emptyMap(),
         private val outgoingCommits: Map<SafeImmediatePushRepositoryHandle, Boolean> = emptyMap(),
+        private val outgoingFailures: Map<SafeImmediatePushRepositoryHandle, RuntimeException> = emptyMap(),
         private val pushFailure: RuntimeException? = null,
     ) : SafeImmediatePushEnvironment {
         val pathLookups = mutableListOf<FilePath>()
         val pushStateRequests = mutableListOf<SafeImmediatePushRepositoryHandle>()
+        val outgoingCommitRequests =
+            mutableListOf<Pair<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>>()
         val awaitedRepositories = mutableListOf<Collection<SafeImmediatePushRepositoryHandle>>()
         val pushedSpecs = mutableListOf<Map<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>>()
         val pushCompletion: CompletableFuture<GitPushCompletionResult> = CompletableFuture()
@@ -480,7 +723,11 @@ internal class SafeImmediatePushServiceTest {
         override fun hasOutgoingCommits(
             repository: SafeImmediatePushRepositoryHandle,
             pushSpec: SafeImmediatePushSpecHandle,
-        ): Boolean = outgoingCommits.getValue(repository)
+        ): Boolean {
+            outgoingCommitRequests += repository to pushSpec
+            outgoingFailures[repository]?.let { failure -> throw failure }
+            return outgoingCommits.getValue(repository)
+        }
 
         override fun awaitPushCompletion(
             repositories: Collection<SafeImmediatePushRepositoryHandle>,
@@ -543,6 +790,16 @@ internal class SafeImmediatePushServiceTest {
         assertTrue(cause is T)
         return cause
     }
+
+    private fun trackedChange(
+        beforePath: FilePath,
+        afterPath: FilePath,
+        status: FileStatus = FileStatus.MODIFIED,
+    ): Change = Change(
+        TestContentRevision(beforePath),
+        TestContentRevision(afterPath),
+        status,
+    )
 
     private fun conflictedChange(path: FilePath): Change = Change(
         TestContentRevision(path),

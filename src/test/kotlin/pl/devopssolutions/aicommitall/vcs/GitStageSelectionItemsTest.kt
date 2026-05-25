@@ -155,6 +155,119 @@ internal class GitStageSelectionItemsTest {
     }
 
     @Test
+    fun `committable paths keep staged rename destination instead of source`() {
+        val renameSource = TestFilePath("/repo/docs/old.md")
+        val renameTarget = TestFilePath("/repo/docs/new.md")
+        val state = stageState(gitStatus('R', ' ', renameTarget, renameSource))
+
+        val result = GitStageSelectionItems.committablePaths(
+            state = state,
+            isGitPath = { true },
+        )
+
+        assertEquals(listOf(renameTarget), result)
+    }
+
+    @Test
+    fun `already staged renames are not staged again`() {
+        val root = LightVirtualFile("repo")
+        val renameSource = TestFilePath("/repo/docs/old.md")
+        val renameTarget = TestFilePath("/repo/docs/new.md")
+        val state = GitStageTracker.State(
+            mapOf(
+                root to GitStageTracker.RootState(
+                    root,
+                    true,
+                    mapOf(renameTarget to gitStatus('R', ' ', renameTarget, renameSource)),
+                ),
+            ),
+        )
+
+        assertEquals(emptyMap(), GitStageSelectionItems.pathsToStageByRoot(state))
+    }
+
+    @Test
+    fun `partially staged rename with destination content changes stages destination path`() {
+        val root = LightVirtualFile("repo")
+        val renameSource = TestFilePath("/repo/docs/old.md")
+        val renameTarget = TestFilePath("/repo/docs/new.md")
+        val state = GitStageTracker.State(
+            mapOf(
+                root to GitStageTracker.RootState(
+                    root,
+                    true,
+                    mapOf(renameTarget to gitStatus('R', 'M', renameTarget, renameSource)),
+                ),
+            ),
+        )
+
+        val result = GitStageSelectionItems.pathsToStageByRoot(state)
+
+        assertEquals(mapOf<VirtualFile, List<FilePath>>(root to listOf(renameTarget)), result)
+    }
+
+    @Test
+    fun `partially staged move with destination content changes stages destination path`() {
+        val root = LightVirtualFile("repo")
+        val moveSource = TestFilePath("/repo/old/location/Config.kt")
+        val moveTarget = TestFilePath("/repo/new/location/Config.kt")
+        val state = GitStageTracker.State(
+            mapOf(
+                root to GitStageTracker.RootState(
+                    root,
+                    true,
+                    mapOf(moveTarget to gitStatus('R', 'M', moveTarget, moveSource)),
+                ),
+            ),
+        )
+
+        val result = GitStageSelectionItems.pathsToStageByRoot(state)
+
+        assertEquals(mapOf<VirtualFile, List<FilePath>>(root to listOf(moveTarget)), result)
+    }
+
+    @Test
+    fun `unstaged rename destination remains missing until it is staged`() {
+        val renameSource = TestFilePath("/repo/docs/old.md")
+        val renameTarget = TestFilePath("/repo/docs/new.md")
+        val state = stageState(gitStatus(' ', 'R', renameTarget, renameSource))
+
+        assertFalse(GitStageSelectionItems.containsAllStagedPaths(state, listOf(renameTarget)))
+        assertEquals(
+            listOf(renameTarget),
+            GitStageSelectionItems.missingStagedPaths(state, listOf(renameTarget)),
+        )
+    }
+
+    @Test
+    fun `unstaged move destination remains committable and selected for staging`() {
+        val root = LightVirtualFile("repo")
+        val moveSource = TestFilePath("/repo/old/location/Config.kt")
+        val moveTarget = TestFilePath("/repo/new/location/Config.kt")
+        val state = GitStageTracker.State(
+            mapOf(
+                root to GitStageTracker.RootState(
+                    root,
+                    true,
+                    mapOf(moveTarget to gitStatus(' ', 'R', moveTarget, moveSource)),
+                ),
+            ),
+        )
+
+        assertEquals(
+            mapOf<VirtualFile, List<FilePath>>(root to listOf(moveTarget)),
+            GitStageSelectionItems.pathsToStageByRoot(state),
+        )
+        assertEquals(
+            listOf(moveTarget),
+            GitStageSelectionItems.committablePaths(
+                state = state,
+                isGitPath = { true },
+            ),
+        )
+    }
+
+    @Test
     fun `groups nested Gradle module and IntelliJ product paths by git root`() {
         val firstRoot = LightVirtualFile("repo-a")
         val secondRoot = LightVirtualFile("repo-b")

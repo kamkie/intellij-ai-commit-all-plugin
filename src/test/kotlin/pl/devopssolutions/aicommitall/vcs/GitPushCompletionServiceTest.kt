@@ -15,6 +15,7 @@
  */
 package pl.devopssolutions.aicommitall.vcs
 
+import com.intellij.openapi.util.Disposer
 import git4idea.push.GitPushRepoResult
 import git4idea.repo.GitRepository
 import git4idea.update.GitUpdateResult
@@ -26,6 +27,20 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 internal class GitPushCompletionServiceTest {
+    @Test
+    fun `await completion immediately succeeds for empty repository set`() {
+        val timeoutScheduler = ManualGitPushCompletionTimeoutScheduler()
+        val tracker = GitPushCompletionTracker(timeoutScheduler)
+
+        val completion = tracker.awaitCompletion(
+            repositories = emptyList(),
+            timeoutMillis = 1_000L,
+        )
+
+        assertEquals(GitPushCompletionResult.Success(emptyMap()), completion.join())
+        assertEquals(emptyList(), timeoutScheduler.scheduled)
+    }
+
     @Test
     fun `await completion preserves successful push results for every repository`() {
         val timeoutScheduler = ManualGitPushCompletionTimeoutScheduler()
@@ -56,6 +71,36 @@ internal class GitPushCompletionServiceTest {
             completion.join(),
         )
         assertTrue(timeoutScheduler.scheduled.single().cancelled)
+    }
+
+    @Test
+    fun `await completion treats every successful push result type as success`() {
+        val timeoutScheduler = ManualGitPushCompletionTimeoutScheduler()
+        val tracker = GitPushCompletionTracker(timeoutScheduler)
+        val successfulTypes = listOf(
+            GitPushRepoResult.Type.SUCCESS,
+            GitPushRepoResult.Type.NEW_BRANCH,
+            GitPushRepoResult.Type.UP_TO_DATE,
+            GitPushRepoResult.Type.FORCED,
+        )
+
+        successfulTypes.forEachIndexed { index, type ->
+            val repository = testRepository("repository-$index")
+            val result = pushResult(type)
+
+            val completion = tracker.awaitCompletion(
+                repositories = listOf(repository),
+                timeoutMillis = 1_000L,
+            )
+            tracker.completeRepositoryPush(repository, result)
+
+            assertEquals(
+                GitPushCompletionResult.Success(mapOf(repository to result)),
+                completion.join(),
+            )
+        }
+
+        assertTrue(timeoutScheduler.scheduled.all { handle -> handle.cancelled })
     }
 
     @Test
@@ -107,6 +152,32 @@ internal class GitPushCompletionServiceTest {
     }
 
     @Test
+    fun `await completion ignores irrelevant and duplicate repository events for completed waiters`() {
+        val timeoutScheduler = ManualGitPushCompletionTimeoutScheduler()
+        val tracker = GitPushCompletionTracker(timeoutScheduler)
+        val watchedRepository = testRepository("watched")
+        val irrelevantRepository = testRepository("irrelevant")
+        val watchedResult = pushResult(GitPushRepoResult.Type.SUCCESS)
+
+        val completion = tracker.awaitCompletion(
+            repositories = listOf(watchedRepository),
+            timeoutMillis = 1_000L,
+        )
+
+        tracker.completeRepositoryPush(irrelevantRepository, pushResult(GitPushRepoResult.Type.ERROR))
+
+        assertFalse(completion.isDone)
+
+        tracker.completeRepositoryPush(watchedRepository, watchedResult)
+        tracker.completeRepositoryPush(watchedRepository, pushResult(GitPushRepoResult.Type.ERROR))
+
+        assertEquals(
+            GitPushCompletionResult.Success(mapOf(watchedRepository to watchedResult)),
+            completion.join(),
+        )
+    }
+
+    @Test
     fun `await completion times out with completed results and pending repositories`() {
         val timeoutScheduler = ManualGitPushCompletionTimeoutScheduler()
         val tracker = GitPushCompletionTracker(timeoutScheduler)
@@ -131,6 +202,78 @@ internal class GitPushCompletionServiceTest {
         )
     }
 
+    @Test
+    fun `await completion cancels timeout handle when push completes while timeout is being scheduled`() {
+        val repository = testRepository("repository")
+        val result = pushResult(GitPushRepoResult.Type.SUCCESS)
+        lateinit var tracker: GitPushCompletionTracker
+        val timeoutScheduler = CompletionDuringScheduleTimeoutScheduler {
+            tracker.completeRepositoryPush(repository, result)
+        }
+        tracker = GitPushCompletionTracker(timeoutScheduler)
+
+        val completion = tracker.awaitCompletion(
+            repositories = listOf(repository),
+            timeoutMillis = 1_000L,
+        )
+
+        assertEquals(
+            GitPushCompletionResult.Success(mapOf(repository to result)),
+            completion.join(),
+        )
+        assertTrue(timeoutScheduler.handle.cancelled)
+    }
+
+    @Test
+    fun `completion listeners are removed when parent disposable is disposed`() {
+        val timeoutScheduler = ManualGitPushCompletionTimeoutScheduler()
+        val tracker = GitPushCompletionTracker(timeoutScheduler)
+        val parentDisposable = Disposer.newDisposable()
+        var callbackCount = 0
+
+        tracker.addCompletionListener(parentDisposable) {
+            callbackCount += 1
+        }
+        tracker.completeRepositoryPush(
+            testRepository("before-dispose"),
+            pushResult(GitPushRepoResult.Type.SUCCESS),
+        )
+
+        Disposer.dispose(parentDisposable)
+        tracker.completeRepositoryPush(
+            testRepository("after-dispose"),
+            pushResult(GitPushRepoResult.Type.SUCCESS),
+        )
+
+        assertEquals(1, callbackCount)
+    }
+
+    @Test
+    fun `dispose cancels pending waiters with partial push results`() {
+        val timeoutScheduler = ManualGitPushCompletionTimeoutScheduler()
+        val tracker = GitPushCompletionTracker(timeoutScheduler)
+        val completedRepository = testRepository("completed")
+        val pendingRepository = testRepository("pending")
+        val completedResult = pushResult(GitPushRepoResult.Type.SUCCESS)
+
+        val completion = tracker.awaitCompletion(
+            repositories = listOf(completedRepository, pendingRepository),
+            timeoutMillis = 1_000L,
+        )
+
+        tracker.completeRepositoryPush(completedRepository, completedResult)
+        tracker.dispose()
+
+        assertEquals(
+            GitPushCompletionResult.Cancelled(
+                completedResults = mapOf(completedRepository to completedResult),
+                pendingRepositories = setOf(pendingRepository),
+            ),
+            completion.join(),
+        )
+        assertTrue(timeoutScheduler.scheduled.single().cancelled)
+    }
+
     private class ManualGitPushCompletionTimeoutScheduler : GitPushCompletionTimeoutScheduler {
         val scheduled = mutableListOf<ManualGitPushCompletionTimeoutHandle>()
 
@@ -145,6 +288,21 @@ internal class GitPushCompletionServiceTest {
 
         fun runNextTimeout() {
             scheduled.first { handle -> !handle.cancelled }.run()
+        }
+    }
+
+    private class CompletionDuringScheduleTimeoutScheduler(
+        private val onSchedule: () -> Unit,
+    ) : GitPushCompletionTimeoutScheduler {
+        lateinit var handle: ManualGitPushCompletionTimeoutHandle
+
+        override fun schedule(
+            timeoutMillis: Long,
+            onTimeout: () -> Unit,
+        ): GitPushCompletionTimeoutHandle {
+            handle = ManualGitPushCompletionTimeoutHandle(timeoutMillis, onTimeout)
+            onSchedule()
+            return handle
         }
     }
 

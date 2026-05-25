@@ -59,6 +59,75 @@ internal class GitOutgoingCommitsStatusTest {
     }
 
     @Test
+    fun `cached status throttles refreshes until interval elapses`() {
+        var now = 0L
+        val scheduler = CapturingRefreshScheduler()
+        val actionRefresh = CountingActionRefresh()
+        val status = GitOutgoingCommitsStatus(
+            loader = { true },
+            scheduler = scheduler,
+            actionRefresh = actionRefresh,
+            refreshIntervalMillis = 2_000L,
+            nowMillis = { now },
+        )
+
+        status.cachedHasOutgoingCommitsToPush()
+        scheduler.runNext()
+
+        now = 1_999L
+        assertTrue(status.cachedHasOutgoingCommitsToPush())
+        assertEquals(0, scheduler.pendingCount)
+
+        now = 2_000L
+        assertTrue(status.cachedHasOutgoingCommitsToPush())
+
+        assertEquals(1, scheduler.pendingCount)
+        assertEquals(1, actionRefresh.count)
+    }
+
+    @Test
+    fun `background refresh keeps cached value when loader fails`() {
+        val scheduler = CapturingRefreshScheduler()
+        val actionRefresh = CountingActionRefresh()
+        var loadCalls = 0
+        val status = GitOutgoingCommitsStatus(
+            loader = {
+                loadCalls += 1
+                error("outgoing commits unavailable")
+            },
+            scheduler = scheduler,
+            actionRefresh = actionRefresh,
+            nowMillis = { 0L },
+        )
+
+        status.cachedHasOutgoingCommitsToPush()
+        scheduler.runNext()
+
+        assertFalse(status.cachedHasOutgoingCommitsToPush())
+        assertEquals(1, loadCalls)
+        assertEquals(0, actionRefresh.count)
+        assertEquals(0, scheduler.pendingCount)
+    }
+
+    @Test
+    fun `background refresh does not refresh actions when cache is unchanged`() {
+        val scheduler = CapturingRefreshScheduler()
+        val actionRefresh = CountingActionRefresh()
+        val status = GitOutgoingCommitsStatus(
+            loader = { false },
+            scheduler = scheduler,
+            actionRefresh = actionRefresh,
+            nowMillis = { 0L },
+        )
+
+        status.cachedHasOutgoingCommitsToPush()
+        scheduler.runNext()
+
+        assertFalse(status.cachedHasOutgoingCommitsToPush())
+        assertEquals(0, actionRefresh.count)
+    }
+
+    @Test
     fun `synchronous status refreshes cache without scheduling background work`() {
         val scheduler = CapturingRefreshScheduler()
         val status = GitOutgoingCommitsStatus(
@@ -71,6 +140,26 @@ internal class GitOutgoingCommitsStatusTest {
         assertTrue(status.hasOutgoingCommitsToPush())
         assertTrue(status.cachedHasOutgoingCommitsToPush())
 
+        assertEquals(0, scheduler.pendingCount)
+    }
+
+    @Test
+    fun `synchronous status refreshes actions only when cache changes`() {
+        val scheduler = CapturingRefreshScheduler()
+        val actionRefresh = CountingActionRefresh()
+        val values = ArrayDeque(listOf(false, false, true))
+        val status = GitOutgoingCommitsStatus(
+            loader = { values.removeFirst() },
+            scheduler = scheduler,
+            actionRefresh = actionRefresh,
+            nowMillis = { 0L },
+        )
+
+        assertFalse(status.hasOutgoingCommitsToPush())
+        assertFalse(status.hasOutgoingCommitsToPush())
+        assertTrue(status.hasOutgoingCommitsToPush())
+
+        assertEquals(1, actionRefresh.count)
         assertEquals(0, scheduler.pendingCount)
     }
 
@@ -95,6 +184,40 @@ internal class GitOutgoingCommitsStatusTest {
 
         assertFalse(status.cachedHasOutgoingCommitsToPush())
         assertEquals(2, actionRefresh.count)
+    }
+
+    @Test
+    fun `pending refresh runs after an in progress refresh loader failure`() {
+        val scheduler = CapturingRefreshScheduler()
+        val actionRefresh = CountingActionRefresh()
+        val values = ArrayDeque<() -> Boolean>(
+            listOf(
+                { error("outgoing commits unavailable") },
+                { true },
+            ),
+        )
+        val status = GitOutgoingCommitsStatus(
+            loader = { values.removeFirst().invoke() },
+            scheduler = scheduler,
+            actionRefresh = actionRefresh,
+            nowMillis = { 0L },
+        )
+
+        status.cachedHasOutgoingCommitsToPush()
+        status.requestRefresh()
+
+        assertEquals(1, scheduler.pendingCount)
+
+        scheduler.runNext()
+
+        assertFalse(status.cachedHasOutgoingCommitsToPush())
+        assertEquals(1, scheduler.pendingCount)
+        assertEquals(0, actionRefresh.count)
+
+        scheduler.runNext()
+
+        assertTrue(status.cachedHasOutgoingCommitsToPush())
+        assertEquals(1, actionRefresh.count)
     }
 
     @Test
