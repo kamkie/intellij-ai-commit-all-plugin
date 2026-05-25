@@ -25,6 +25,8 @@ import java.awt.image.BufferedImage
 import javax.swing.KeyStroke
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 internal class AiCommitAllThreeSectionControlTest {
@@ -36,6 +38,44 @@ internal class AiCommitAllThreeSectionControlTest {
         control.dispatchClick(AiCommitAllControlSection.Push)
 
         assertEquals(listOf(AiCommitAllControlSection.Push), activations)
+    }
+
+    @Test
+    fun `mouse click passes original mouse event to activation handler`() {
+        val events = mutableListOf<java.awt.event.InputEvent?>()
+        val control = testControl { _, event -> events += event }
+
+        val inputEvent = control.dispatchClick(AiCommitAllControlSection.Commit)
+
+        assertSame(inputEvent, events.single())
+    }
+
+    @Test
+    fun `hit testing switches sections at divider pixels and ignores outside bounds`() {
+        val activations = mutableListOf<AiCommitAllControlSection>()
+        val control = testControl { section, _ -> activations += section }
+        val y = control.height / 2
+        val aiCommitBoundary = control.firstXForSection(AiCommitAllControlSection.Commit)
+        val commitPushBoundary = control.firstXForSection(AiCommitAllControlSection.Push)
+
+        control.dispatchClickAt(aiCommitBoundary - 1, y)
+        control.dispatchClickAt(aiCommitBoundary, y)
+        control.dispatchClickAt(commitPushBoundary - 1, y)
+        control.dispatchClickAt(commitPushBoundary, y)
+        control.dispatchClickAt(-1, y)
+        control.dispatchClickAt(control.width + 1, y)
+
+        assertEquals(
+            listOf(
+                AiCommitAllControlSection.Ai,
+                AiCommitAllControlSection.Commit,
+                AiCommitAllControlSection.Commit,
+                AiCommitAllControlSection.Push,
+            ),
+            activations,
+        )
+        assertNull(control.sectionAtPoint(-1, y))
+        assertNull(control.sectionAtPoint(control.width + 1, y))
     }
 
     @Test
@@ -160,6 +200,24 @@ internal class AiCommitAllThreeSectionControlTest {
     }
 
     @Test
+    fun `keyboard movement is a no-op when no sections are enabled`() {
+        val activations = mutableListOf<AiCommitAllControlSection>()
+        val control = testControl(
+            state = testState(
+                AiCommitAllControlSection.Ai to AiCommitAllWorkflowActionAvailability.Disabled,
+                AiCommitAllControlSection.Commit to AiCommitAllWorkflowActionAvailability.Disabled,
+                AiCommitAllControlSection.Push to AiCommitAllWorkflowActionAvailability.Disabled,
+            ),
+        ) { section, _ -> activations += section }
+
+        control.performKey(KeyEvent.VK_LEFT)
+        control.performKey(KeyEvent.VK_RIGHT)
+
+        assertTrue(activations.isEmpty())
+        assertEquals(emptySet(), control.highlightedSectionsForTest())
+    }
+
+    @Test
     fun `keyboard activation is ignored while a section is running`() {
         val activations = mutableListOf<AiCommitAllControlSection>()
         val control = testControl(
@@ -204,11 +262,41 @@ internal class AiCommitAllThreeSectionControlTest {
     }
 
     @Test
+    fun `accessibility keeps custom name and description overrides`() {
+        val control = testControl()
+        control.accessibleContext.accessibleName = "Custom AI control"
+        control.accessibleContext.accessibleDescription = "Custom segmented action"
+
+        assertEquals("Custom AI control", control.accessibleContext.accessibleName)
+        assertEquals("Custom segmented action", control.accessibleContext.accessibleDescription)
+    }
+
+    @Test
     fun `hidden state hides and disables the component`() {
         val control = testControl(state = AiCommitAllControlState.Hidden)
 
         assertTrue(!control.isVisible)
         assertTrue(!control.isEnabled)
+    }
+
+    @Test
+    fun `running state removal resets animation phase`() {
+        val control = testControl(
+            state = testState(runningSection = AiCommitAllControlSection.Push),
+        )
+        control.setSnakeOffsetForTest(8f)
+
+        control.updateState(testState())
+
+        assertEquals(0f, control.runningIndicatorDashForTest(AiCommitAllControlSection.Push).phase)
+    }
+
+    @Test
+    fun `zero size bounds use stable ai hit target`() {
+        val control = testControl()
+        control.setSize(0, 0)
+
+        assertEquals(AiCommitAllControlSection.Ai, control.sectionAtPoint(0, 0))
     }
 
     @Test
@@ -298,8 +386,29 @@ internal class AiCommitAllThreeSectionControlTest {
         )
     }
 
-    private fun AiCommitAllThreeSectionControl.dispatchClick(section: AiCommitAllControlSection) {
-        dispatchEvent(mouseEvent(MouseEvent.MOUSE_CLICKED, section, MouseEvent.BUTTON1))
+    private fun AiCommitAllThreeSectionControl.dispatchClick(section: AiCommitAllControlSection): MouseEvent {
+        val event = mouseEvent(MouseEvent.MOUSE_CLICKED, section, MouseEvent.BUTTON1)
+        dispatchEvent(event)
+        return event
+    }
+
+    private fun AiCommitAllThreeSectionControl.dispatchClickAt(
+        x: Int,
+        y: Int,
+    ): MouseEvent {
+        val event = MouseEvent(
+            this,
+            MouseEvent.MOUSE_CLICKED,
+            System.currentTimeMillis(),
+            0,
+            x,
+            y,
+            1,
+            false,
+            MouseEvent.BUTTON1,
+        )
+        dispatchEvent(event)
+        return event
     }
 
     private fun AiCommitAllThreeSectionControl.dispatchMove(section: AiCommitAllControlSection) {
@@ -325,6 +434,31 @@ internal class AiCommitAllThreeSectionControlTest {
     private fun AiCommitAllThreeSectionControl.toolTipFor(section: AiCommitAllControlSection): String? {
         val event = mouseEvent(MouseEvent.MOUSE_MOVED, section, MouseEvent.NOBUTTON)
         return getToolTipText(event)
+    }
+
+    private fun AiCommitAllThreeSectionControl.firstXForSection(section: AiCommitAllControlSection): Int = (0 until width).first { x -> sectionAtPoint(x, height / 2) == section }
+
+    private fun AiCommitAllThreeSectionControl.sectionAtPoint(
+        x: Int,
+        y: Int,
+    ): AiCommitAllControlSection? {
+        val event = MouseEvent(
+            this,
+            MouseEvent.MOUSE_MOVED,
+            System.currentTimeMillis(),
+            0,
+            x,
+            y,
+            0,
+            false,
+            MouseEvent.NOBUTTON,
+        )
+        return when (getToolTipText(event)) {
+            "Generate an AI commit message for all Git changes." -> AiCommitAllControlSection.Ai
+            "Generate an AI commit message and commit all Git changes." -> AiCommitAllControlSection.Commit
+            "Generate an AI commit message, commit all Git changes, and push." -> AiCommitAllControlSection.Push
+            else -> null
+        }
     }
 
     private fun AiCommitAllThreeSectionControl.mouseEvent(

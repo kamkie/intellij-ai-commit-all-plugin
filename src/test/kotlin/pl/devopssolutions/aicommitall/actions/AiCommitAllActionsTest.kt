@@ -25,20 +25,28 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.actionSystem.DataProvider
 import com.intellij.openapi.actionSystem.KeyboardShortcut
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.TimerListener
+import com.intellij.openapi.application.Application
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ActionCallback
+import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.Key
+import org.jetbrains.concurrency.Promise
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowMode
 import pl.devopssolutions.aicommitall.workflow.AiCommitAllWorkflowResult
 import java.awt.Component
 import java.awt.event.InputEvent
+import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import java.lang.reflect.Proxy
 import java.util.concurrent.CompletableFuture
 import javax.swing.JComponent
+import javax.swing.JPanel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -117,6 +125,22 @@ internal class AiCommitAllActionsTest {
         assertSame(project, starter.project)
         assertSame(dataContext, starter.dataContext)
         assertEquals(AiCommitAllWorkflowMode.Commit, starter.mode)
+    }
+
+    @Test
+    fun `fallback action invocation passes original input event to workflow starter`() {
+        val starter = CapturingWorkflowStarter()
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = starter,
+            availabilityProvider = StaticAvailabilityProvider(),
+            activityProvider = StaticActivityProvider(),
+        )
+        val dataContext = testDataContext(testProject())
+        val inputEvent = testMouseEvent(JPanel())
+
+        action.actionPerformed(testEvent(dataContext, inputEvent))
+
+        assertSame(inputEvent, starter.inputEvent)
     }
 
     @Test
@@ -331,6 +355,29 @@ internal class AiCommitAllActionsTest {
     }
 
     @Test
+    fun `action update stays visible and enabled when only one section is enabled`() {
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = CapturingWorkflowStarter(),
+            availabilityProvider = StaticAvailabilityProvider(
+                AiCommitAllWorkflowMode.Ai to AiCommitAllWorkflowActionAvailability.Hidden,
+                AiCommitAllWorkflowMode.Commit to AiCommitAllWorkflowActionAvailability.Disabled,
+                AiCommitAllWorkflowMode.Push to AiCommitAllWorkflowActionAvailability.Enabled,
+            ),
+            activityProvider = StaticActivityProvider(),
+        )
+        val event = testEvent(testDataContext(testProject()))
+
+        action.update(event)
+        val control = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).asControl()
+
+        assertTrue(event.presentation.isVisible)
+        assertTrue(event.presentation.isEnabled)
+        assertFalse(control.isSectionEnabledForTest(AiCommitAllControlSection.Ai))
+        assertFalse(control.isSectionEnabledForTest(AiCommitAllControlSection.Commit))
+        assertTrue(control.isSectionEnabledForTest(AiCommitAllControlSection.Push))
+    }
+
+    @Test
     fun `action update disables all sections while running`() {
         val action = AiCommitAllThreeSectionAction(
             workflowStarter = CapturingWorkflowStarter(),
@@ -396,6 +443,67 @@ internal class AiCommitAllActionsTest {
         assertFalse(event.presentation.isVisible)
         assertFalse(event.presentation.isEnabled)
         assertTrue(provider.modes.isEmpty())
+    }
+
+    @Test
+    fun `custom component falls back to hidden state without presentation state`() {
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = CapturingWorkflowStarter(),
+            availabilityProvider = StaticAvailabilityProvider(),
+            activityProvider = StaticActivityProvider(),
+        )
+
+        val control = action.createCustomComponent(Presentation(), ActionPlaces.CHANGES_VIEW_TOOLBAR).asControl()
+
+        assertFalse(control.isVisible)
+        assertFalse(control.isEnabled)
+        assertTrue(AiCommitAllControlSection.entries.all { section -> !control.isSectionEnabledForTest(section) })
+    }
+
+    @Test
+    fun `custom component update ignores non-control components`() {
+        val action = AiCommitAllThreeSectionAction(
+            workflowStarter = CapturingWorkflowStarter(),
+            availabilityProvider = StaticAvailabilityProvider(),
+            activityProvider = StaticActivityProvider(),
+        )
+        val component = JPanel()
+        val presentation = Presentation()
+
+        action.updateCustomComponent(component, presentation)
+
+        assertTrue(component.isEnabled)
+        assertTrue(component.isVisible)
+    }
+
+    @Test
+    fun `custom component activation uses clicked component data context and mouse event`() {
+        val dataManager = ComponentDataManager()
+        withDataManagerApplication(dataManager) {
+            val starter = CapturingWorkflowStarter()
+            val action = AiCommitAllThreeSectionAction(
+                workflowStarter = starter,
+                availabilityProvider = StaticAvailabilityProvider(),
+                activityProvider = StaticActivityProvider(),
+            )
+            val project = testProject()
+            val dataContext = testDataContext(project)
+            val event = testEvent(dataContext)
+            action.update(event)
+            val control = action.createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR).asControl()
+            control.setSize(control.preferredSize)
+            dataManager.contexts[control] = dataContext
+
+            val inputEvent = testMouseEvent(control)
+            control.dispatchEvent(inputEvent)
+
+            assertTrue(dataManager.requestedComponents.isNotEmpty())
+            assertTrue(dataManager.requestedComponents.all { component -> component === control })
+            assertSame(project, starter.project)
+            assertSame(dataContext, starter.dataContext)
+            assertEquals(AiCommitAllWorkflowMode.Commit, starter.mode)
+            assertSame(inputEvent, starter.inputEvent)
+        }
     }
 
     @Test
@@ -524,14 +632,27 @@ internal class AiCommitAllActionsTest {
 
     private fun testEvent(
         dataContext: DataContext,
+        inputEvent: InputEvent? = null,
     ): AnActionEvent = AnActionEvent(
         dataContext,
         Presentation(),
         ActionPlaces.CHANGES_VIEW_TOOLBAR,
         ActionUiKind.NONE,
-        null,
+        inputEvent,
         0,
         TestActionManager,
+    )
+
+    private fun testMouseEvent(component: Component): MouseEvent = MouseEvent(
+        component,
+        MouseEvent.MOUSE_CLICKED,
+        0L,
+        0,
+        component.width / 2,
+        component.height / 2,
+        1,
+        false,
+        MouseEvent.BUTTON1,
     )
 
     private fun testDataContext(project: Project): DataContext = DataContext { dataId ->
@@ -562,6 +683,101 @@ internal class AiCommitAllActionsTest {
         java.lang.Void.TYPE -> null
         else -> null
     }
+
+    private fun withDataManagerApplication(
+        dataManager: ComponentDataManager,
+        block: () -> Unit,
+    ) {
+        if (ApplicationManager.getApplication() != null) {
+            block()
+            return
+        }
+
+        val disposable = Disposer.newDisposable("AI Commit All action test application")
+        ApplicationManager.setApplication(testApplication(dataManager), disposable)
+        try {
+            block()
+        } finally {
+            Disposer.dispose(disposable)
+        }
+    }
+
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+    private class ComponentDataManager : com.intellij.ide.DataManager() {
+        val contexts = mutableMapOf<Component, DataContext>()
+        val requestedComponents = mutableListOf<Component>()
+
+        override fun getDataContext(): DataContext = DataContext.EMPTY_CONTEXT
+
+        override fun getDataContextFromFocusAsync(): Promise<DataContext> = error("Focus data context is not needed for action tests.")
+
+        override fun getDataContext(component: Component): DataContext {
+            requestedComponents += component
+            return contexts[component] ?: DataContext.EMPTY_CONTEXT
+        }
+
+        override fun getDataContext(
+            component: Component,
+            x: Int,
+            y: Int,
+        ): DataContext = getDataContext(component)
+
+        override fun getCustomizedData(
+            dataId: String,
+            dataContext: DataContext,
+            dataProvider: DataProvider,
+        ): Any? = dataProvider.getData(dataId) ?: runCatching { dataContext.getData(dataId) }.getOrNull()
+
+        override fun customizeDataContext(
+            dataContext: DataContext,
+            dataSource: Any,
+        ): DataContext {
+            val dataProvider = dataSource as DataProvider
+            return DataContext { dataId -> getCustomizedData(dataId, dataContext, dataProvider) }
+        }
+
+        override fun <T : Any> saveInDataContext(
+            dataContext: DataContext?,
+            key: Key<T>,
+            data: T?,
+        ) = Unit
+
+        override fun <T : Any> loadFromDataContext(
+            dataContext: DataContext,
+            key: Key<T>,
+        ): T? = null
+    }
+
+    private fun testApplication(dataManager: ComponentDataManager): Application = Proxy.newProxyInstance(
+        Application::class.java.classLoader,
+        arrayOf(Application::class.java),
+    ) { _, method, arguments ->
+        when (method.name) {
+            "getService" -> when (arguments?.firstOrNull()) {
+                com.intellij.ide.DataManager::class.java -> dataManager
+                ActionManager::class.java -> TestActionManager
+                else -> null
+            }
+
+            "getServiceIfCreated" -> when (arguments?.firstOrNull()) {
+                com.intellij.ide.DataManager::class.java -> dataManager
+                ActionManager::class.java -> TestActionManager
+                else -> null
+            }
+
+            "isUnitTestMode",
+            "isHeadlessEnvironment",
+            -> true
+
+            "toString" -> "AI Commit All Action Test Application"
+
+            "hashCode" -> System.identityHashCode(dataManager)
+
+            "equals" -> false
+
+            else -> method.defaultReturnValue()
+        }
+    } as Application
 
     @Suppress("OVERRIDE_DEPRECATION")
     private object TestActionManager : ActionManager() {

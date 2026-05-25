@@ -117,6 +117,61 @@ internal class AiCommitAllConfigurableTest {
     }
 
     @Test
+    fun `apply before createComponent leaves settings unchanged`() {
+        val settings = configuredSettings(
+            timeoutMillis = 12_000,
+            checkIntervalMillis = 250,
+            clearCommitMessageBeforeGeneration = false,
+            useVcsShortcutsForAiCommitAll = false,
+        )
+        val configurable = AiCommitAllConfigurable(settings)
+
+        configurable.apply()
+
+        val completionOptions = settings.completionOptions()
+        assertEquals(12_000, completionOptions.timeout.toMillis())
+        assertEquals(250, completionOptions.checkInterval.toMillis())
+        assertFalse(settings.clearCommitMessageBeforeGeneration())
+        assertFalse(settings.useVcsShortcutsForAiCommitAll())
+    }
+
+    @Test
+    fun `apply after disposeUIResources leaves settings unchanged`() {
+        val settings = AiCommitAllSettings()
+        val configurable = AiCommitAllConfigurable(settings)
+        val ui = configurable.createComponent().settingsUi()
+
+        ui.timeoutMillis = 45_000
+        ui.checkIntervalMillis = 750
+        ui.clearCommitMessageBeforeGeneration = false
+        ui.useVcsShortcutsForAiCommitAll = false
+        configurable.disposeUIResources()
+        configurable.apply()
+
+        val completionOptions = settings.completionOptions()
+        assertEquals(AiCommitAllSettings.DEFAULT_TIMEOUT_MILLIS, completionOptions.timeout.toMillis())
+        assertEquals(AiCommitAllSettings.DEFAULT_CHECK_INTERVAL_MILLIS, completionOptions.checkInterval.toMillis())
+        assertTrue(settings.clearCommitMessageBeforeGeneration())
+        assertTrue(settings.useVcsShortcutsForAiCommitAll())
+    }
+
+    @Test
+    fun `apply persists maximum spinner values`() {
+        val settings = AiCommitAllSettings()
+        val configurable = AiCommitAllConfigurable(settings)
+        val ui = configurable.createComponent().settingsUi()
+
+        ui.timeoutMillis = Int.MAX_VALUE.toLong()
+        ui.checkIntervalMillis = Int.MAX_VALUE.toLong()
+
+        configurable.apply()
+
+        val completionOptions = settings.completionOptions()
+        assertEquals(Int.MAX_VALUE.toLong(), completionOptions.timeout.toMillis())
+        assertEquals(Int.MAX_VALUE.toLong(), completionOptions.checkInterval.toMillis())
+    }
+
+    @Test
     fun `apply rejects non-positive timeout without persisting changes`() {
         val settings = AiCommitAllSettings()
         val configurable = AiCommitAllConfigurable(settings)
@@ -171,6 +226,33 @@ internal class AiCommitAllConfigurableTest {
     }
 
     @Test
+    fun `reset after rejected apply restores ui from unchanged settings`() {
+        val settings = configuredSettings(
+            timeoutMillis = 12_000,
+            checkIntervalMillis = 250,
+            clearCommitMessageBeforeGeneration = false,
+            useVcsShortcutsForAiCommitAll = false,
+        )
+        val configurable = AiCommitAllConfigurable(settings)
+        val ui = configurable.createComponent().settingsUi()
+
+        ui.timeoutMillis = 0
+        ui.checkIntervalMillis = 750
+        ui.clearCommitMessageBeforeGeneration = true
+        ui.useVcsShortcutsForAiCommitAll = true
+
+        assertFailsWith<ConfigurationException> {
+            configurable.apply()
+        }
+        configurable.reset()
+
+        assertEquals(12_000, ui.timeoutMillis)
+        assertEquals(250, ui.checkIntervalMillis)
+        assertFalse(ui.clearCommitMessageBeforeGeneration)
+        assertFalse(ui.useVcsShortcutsForAiCommitAll)
+    }
+
+    @Test
     fun `reset restores every setting field`() {
         val settings = configuredSettings(
             timeoutMillis = 12_000,
@@ -198,6 +280,21 @@ internal class AiCommitAllConfigurableTest {
         assertEquals(750, ui.checkIntervalMillis)
         assertTrue(ui.clearCommitMessageBeforeGeneration)
         assertTrue(ui.useVcsShortcutsForAiCommitAll)
+    }
+
+    @Test
+    fun `apply persists clear toggle when vcs shortcut checkbox component is absent`() {
+        val settings = AiCommitAllSettings()
+        val configurable = AiCommitAllConfigurable(settings)
+        val ui = configurable.createComponent().settingsUi()
+
+        ui.clearCommitMessageBeforeGeneration = false
+        ui.useVcsShortcutsForAiCommitAll = false
+        configurable.clearUiField("useVcsShortcutsCheckBox")
+        configurable.apply()
+
+        assertFalse(settings.clearCommitMessageBeforeGeneration())
+        assertTrue(settings.useVcsShortcutsForAiCommitAll())
     }
 
     private data class SettingsUi(
@@ -275,5 +372,11 @@ internal class AiCommitAllConfigurableTest {
                 yieldAll(component.descendants())
             }
         }
+    }
+
+    private fun AiCommitAllConfigurable.clearUiField(fieldName: String) {
+        val field = javaClass.getDeclaredField(fieldName)
+        field.isAccessible = true
+        field.set(this, null)
     }
 }

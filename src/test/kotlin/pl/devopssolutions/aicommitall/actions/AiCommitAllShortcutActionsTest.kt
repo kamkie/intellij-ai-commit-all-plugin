@@ -100,6 +100,20 @@ internal class AiCommitAllShortcutActionsTest {
     }
 
     @Test
+    fun `shortcut update is disabled without project`() {
+        val action = testShortcutAction(
+            section = AiCommitAllControlSection.Commit,
+            sourceActionId = IDE_COMMIT_ACTION_ID,
+        )
+        val event = testEvent(DataContext.EMPTY_CONTEXT)
+
+        action.update(event)
+
+        assertTrue(event.presentation.isVisible)
+        assertFalse(event.presentation.isEnabled)
+    }
+
+    @Test
     fun `shortcut delegates to source action when setting is off`() {
         val starter = CapturingWorkflowStarter()
         val delegate = CapturingStandardActionDelegate()
@@ -180,6 +194,28 @@ internal class AiCommitAllShortcutActionsTest {
     }
 
     @Test
+    fun `shortcut actionPerformed uses fresh data context after unavailable update context`() {
+        val starter = CapturingWorkflowStarter()
+        val project = testProject()
+        val updateContext = testDataContext(project)
+        val actionContext = testDataContext(project)
+        val action = testShortcutAction(
+            section = AiCommitAllControlSection.Push,
+            sourceActionId = IDE_PUSH_ACTION_ID,
+            starter = starter,
+            availabilityProvider = AvailableOnlyForContextProvider(actionContext),
+        )
+        val updateEvent = testEvent(updateContext)
+
+        action.update(updateEvent)
+        action.actionPerformed(testEvent(actionContext))
+
+        assertFalse(updateEvent.presentation.isEnabled)
+        assertSame(actionContext, starter.dataContext)
+        assertEquals(AiCommitAllWorkflowMode.Push, starter.mode)
+    }
+
+    @Test
     fun `promoter promotes available plugin shortcut and suppresses matching source action`() {
         val sourceAction = testSourceAction()
         val shortcutAction = testShortcutAction(
@@ -193,6 +229,85 @@ internal class AiCommitAllShortcutActionsTest {
         )
         val actions = listOf<AnAction>(sourceAction, shortcutAction)
         val context = testDataContext(testProject())
+
+        assertEquals(listOf(shortcutAction), promoter.promote(actions, context))
+        assertEquals(listOf(sourceAction), promoter.suppress(actions, context))
+    }
+
+    @Test
+    fun `promoter handles commit and push shortcuts with source actions in mixed order`() {
+        val pushSourceAction = testSourceAction()
+        val commitSourceAction = testSourceAction()
+        val unrelatedAction = testSourceAction()
+        val commitShortcut = testShortcutAction(
+            section = AiCommitAllControlSection.Commit,
+            sourceActionId = IDE_COMMIT_ACTION_ID,
+        )
+        val pushShortcut = testShortcutAction(
+            section = AiCommitAllControlSection.Push,
+            sourceActionId = IDE_PUSH_ACTION_ID,
+        )
+        val promoter = AiCommitAllShortcutActionPromoter(
+            settingsProvider = StaticShortcutSettingsProvider(enabled = true),
+            actionIdProvider = MapActionIdProvider(
+                pushSourceAction to IDE_PUSH_ACTION_ID,
+                commitSourceAction to IDE_COMMIT_ACTION_ID,
+                unrelatedAction to "Unrelated.Action",
+            ),
+        )
+        val actions = listOf<AnAction>(
+            pushSourceAction,
+            commitShortcut,
+            unrelatedAction,
+            pushShortcut,
+            commitSourceAction,
+        )
+        val context = testDataContext(testProject())
+
+        assertEquals(listOf(commitShortcut, pushShortcut), promoter.promote(actions, context))
+        assertEquals(listOf(pushSourceAction, commitSourceAction), promoter.suppress(actions, context))
+    }
+
+    @Test
+    fun `promoter does not suppress anything when promoted shortcut source action is absent`() {
+        val shortcutAction = testShortcutAction(
+            section = AiCommitAllControlSection.Commit,
+            sourceActionId = IDE_COMMIT_ACTION_ID,
+        )
+        val unrelatedAction = testSourceAction()
+        val promoter = AiCommitAllShortcutActionPromoter(
+            settingsProvider = StaticShortcutSettingsProvider(enabled = true),
+            actionIdProvider = MapActionIdProvider(unrelatedAction to "Unrelated.Action"),
+        )
+        val actions = listOf<AnAction>(shortcutAction, unrelatedAction)
+
+        assertEquals(listOf(shortcutAction), promoter.promote(actions, testDataContext(testProject())))
+        assertEquals(emptyList(), promoter.suppress(actions, testDataContext(testProject())))
+    }
+
+    @Test
+    fun `promoter observes setting changes without stale takeover state`() {
+        val sourceAction = testSourceAction()
+        val shortcutAction = testShortcutAction(
+            section = AiCommitAllControlSection.Commit,
+            sourceActionId = IDE_COMMIT_ACTION_ID,
+        )
+        val settingsProvider = MutableShortcutSettingsProvider(enabled = true)
+        val promoter = AiCommitAllShortcutActionPromoter(
+            settingsProvider = settingsProvider,
+            actionIdProvider = MapActionIdProvider(sourceAction to IDE_COMMIT_ACTION_ID),
+        )
+        val actions = listOf<AnAction>(sourceAction, shortcutAction)
+        val context = testDataContext(testProject())
+
+        assertEquals(listOf(shortcutAction), promoter.promote(actions, context))
+
+        settingsProvider.enabled = false
+
+        assertEquals(emptyList(), promoter.promote(actions, context))
+        assertEquals(emptyList(), promoter.suppress(actions, context))
+
+        settingsProvider.enabled = true
 
         assertEquals(listOf(shortcutAction), promoter.promote(actions, context))
         assertEquals(listOf(sourceAction), promoter.suppress(actions, context))
@@ -261,13 +376,14 @@ internal class AiCommitAllShortcutActionsTest {
         starter: CapturingWorkflowStarter = CapturingWorkflowStarter(),
         settingsEnabled: Boolean = true,
         availability: AiCommitAllWorkflowActionAvailability = AiCommitAllWorkflowActionAvailability.Enabled,
+        availabilityProvider: AiCommitAllWorkflowAvailabilityProvider = StaticAvailabilityProvider(availability),
         delegate: StandardVcsShortcutActionDelegate = CapturingStandardActionDelegate(),
         runningSection: AiCommitAllControlSection? = null,
     ): AiCommitAllShortcutAction = object : AiCommitAllShortcutAction(
         section = section,
         sourceActionId = sourceActionId,
         workflowStarter = starter,
-        availabilityProvider = StaticAvailabilityProvider(availability),
+        availabilityProvider = availabilityProvider,
         settingsProvider = StaticShortcutSettingsProvider(settingsEnabled),
         standardActionDelegate = delegate,
         activityProvider = StaticActivityProvider(runningSection),
@@ -307,6 +423,12 @@ internal class AiCommitAllShortcutActionsTest {
         override fun useVcsShortcutsForAiCommitAll(): Boolean = enabled
     }
 
+    private class MutableShortcutSettingsProvider(
+        var enabled: Boolean,
+    ) : AiCommitAllShortcutSettingsProvider {
+        override fun useVcsShortcutsForAiCommitAll(): Boolean = enabled
+    }
+
     private class CapturingStandardActionDelegate : StandardVcsShortcutActionDelegate {
         var sourceActionId: String? = null
         var event: AnActionEvent? = null
@@ -321,6 +443,20 @@ internal class AiCommitAllShortcutActionsTest {
         private val runningSection: AiCommitAllControlSection?,
     ) : AiCommitAllWorkflowActivityProvider {
         override fun runningSection(project: Project): AiCommitAllControlSection? = runningSection
+    }
+
+    private class AvailableOnlyForContextProvider(
+        private val availableContext: DataContext,
+    ) : AiCommitAllWorkflowAvailabilityProvider {
+        override fun availability(
+            project: Project,
+            mode: AiCommitAllWorkflowMode,
+            dataContext: DataContext,
+        ): AiCommitAllWorkflowActionAvailability = if (dataContext === availableContext) {
+            AiCommitAllWorkflowActionAvailability.Enabled
+        } else {
+            AiCommitAllWorkflowActionAvailability.Disabled
+        }
     }
 
     private class MapActionIdProvider(vararg entries: Pair<AnAction, String>) : AiCommitAllActionIdProvider {
