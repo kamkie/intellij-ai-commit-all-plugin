@@ -392,14 +392,41 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     @Test
-    fun unchangedGeneratedMessageStopsWithoutCommitOrPush() {
-        fakeAiStopPathLeavesGitStateUnchanged(
-            testNameSuffix = "unchanged-message",
-        ) { probe, project ->
+    fun unchangedPrefilledGeneratedMessageCommitsAndPushesWhenClearingIsDisabled() {
+        assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
+        val fixture = ReleaseMatrixGitFixtureBuilder.createCommitAndPush(
+            tempDirectory.resolve("unchanged-prefilled-message-fixture"),
+        )
+        val initialCommitCount = fixture.primaryRepository.commitCount()
+        val initialRemoteHead = fixture.bareRemote.remoteHead()
+
+        runReleaseMatrixIdeWithFixture(
+            testName = "release-matrix-ui-unchanged-prefilled-message-push",
+            fixture = fixture,
+        ) {
+            val project = openReleaseMatrixCommitToolWindow()
+            val probe = utility(RemoteFakeAiAssistantProbe::class)
             probe.setAiCompletionOptions(timeoutMillis = 5_000, checkIntervalMillis = 100)
             probe.setClearCommitMessageBeforeGeneration(false)
             assertTrue(probe.setCommitMessageText(project, EXISTING_COMMIT_MESSAGE))
             probe.setFakeAiBehavior("unchanged")
+            activateAiCommitAllSection(project, "Push")
+            waitForPrimaryRepositoryCommit(
+                fixture = fixture,
+                initialCommitCount = initialCommitCount,
+                expectedMessage = EXISTING_COMMIT_MESSAGE,
+            )
+            waitFor(
+                message = "temporary bare remote receives unchanged prefilled message push",
+                timeout = 60.seconds,
+                interval = 1.seconds,
+                errorMessage = { "Remote HEAD stayed at ${fixture.bareRemote.remoteHead()}" },
+            ) {
+                fixture.bareRemote.remoteHead() != initialRemoteHead &&
+                    fixture.bareRemote.remoteHead() == fixture.primaryRepository.head()
+            }
+            assertEquals(emptyList(), fixture.primaryRepository.statusLines())
+            writeGitEvidence("unchanged-prefilled-message-push", fixture)
         }
     }
 
