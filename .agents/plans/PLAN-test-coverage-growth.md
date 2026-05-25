@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-test-coverage-growth
 
-Status: In Progress
+Status: Implemented
 
 Approved by: Kamil Kiewisz <kamkie@outlook.com>
 
@@ -14,17 +14,18 @@ Filename: `.agents/plans/PLAN-test-coverage-growth.md`
 
 ## Readiness
 
-- Plan readiness: Approved by Kamil Kiewisz <kamkie@outlook.com> on 2026-05-25T01:40:55+02:00 through the implementation request. Current coverage, residual targets, task packets, and continuity fields are updated from `.\gradlew.bat test jacocoTestReport`; implementation is in progress.
+- Plan readiness: Implemented. Approved by Kamil Kiewisz <kamkie@outlook.com> on 2026-05-25T01:40:55+02:00 through the implementation request; final coverage verification passed on 2026-05-25 and met the approved line and branch targets.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-05-25T01:40:55+02:00
 - Open questions: None blocking. Coverage targets are plan assumptions and can be adjusted during approval.
-- Implementation progress: T1 completed in commit `dea114f`; T2 completed in commit `c91d0a8`; T3 completed in commit `d01c5b3`; T4 completed in commit `6ff4c35`; T5 dispatch pending.
+- Implementation progress: T1 completed in commit `dea114f`; T2 completed in commit `c91d0a8`; T3 completed in commit `d01c5b3`; T4 completed in commit `6ff4c35`; T5 completed in commit `d2b5664`.
 
 ## Status History
 
 - 2026-05-24T23:01:33+02:00: none -> Draft by OpenAI Codex <codex@openai.com>; plan created from whole-codebase coverage analysis.
 - 2026-05-25T01:40:55+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; user requested implementation of `PLAN-test-coverage-growth.md`.
 - 2026-05-25T01:40:55+02:00: Approved -> In Progress by OpenAI Codex <codex@openai.com>; implementation started with approved-plan worker dispatch.
+- 2026-05-25T02:55:49+02:00: In Progress -> Implemented by OpenAI Codex <codex@openai.com>; all task packets completed and final coverage validation met the approved targets.
 
 ## Goal
 
@@ -603,20 +604,20 @@ Expected output:
 Result summary:
 
 - Status: completed; final coverage validation passed and plan targets were met.
-- Worker: W5.
+- Worker: W5 (`019e5c9b-61ef-70d1-9448-475c3bc6e7aa`).
 - Changed files or reviewed diff: `.agents/plans/PLAN-test-coverage-growth.md` T5 result summary and compact coverage handoff notes only.
 - Final coverage from `build/reports/jacoco/test/jacocoTestReport.xml`: line `2673 / 3408` (`78.4%`, baseline `2525 / 3400`, `74.3%`); branch `1008 / 1404` (`71.8%`, baseline `926 / 1404`, `66.0%`); instruction `12525 / 16290` (`76.9%`, baseline `11829 / 16282`, `72.7%`).
 - Coverage target comparison: plan targets met (`>= 78%` line and `>= 70%` branch); stretch targets not met (`80%` line and `72%` branch).
 - Validation evidence: `.\gradlew.bat test jacocoTestReport verifyJacocoCoverageReport` passed (`410` passing, `1` pending; coverage gate passed); `.\gradlew.bat spotlessCheck` passed; `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1` passed; `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/ai/validate-agent-artifacts.ps1` passed; `git diff --check` passed.
 - Self-review evidence from `.agents/references/reviews.md`: no behavior or build configuration changed; no `build.gradle.kts`, `README.md`, changelog, spec, task, or threshold edits; residual risk remains in live IDE/AI Assistant, manual release validation, and local IntelliJ fake coverage rather than unintended commit/push behavior.
 - Threshold recommendation: do not change gates in T5; a later maintainer-approved validation-policy follow-up is justified after CI confirms the deterministic result, with any new line gate kept below the measured `78.4%` result and any branch gate kept below the measured `71.8%` result.
-- Commit: W5 plan-evidence commit to be reported in worker handoff.
+- Commit: `d2b5664c890d2cadfe5b422bd0617b73b77834b8`
 - Worker events: W5 started 2026-05-25T02:50:43+02:00; stopped 2026-05-25T02:53:15+02:00.
-- Orchestrator reconciliation: pending O1 reconciliation; W5 evidence confirms T1, T2, T3, T4, and T5 completed with no skipped plan task.
+- Orchestrator reconciliation: O1 reconciled W5 evidence against commit metadata, final coverage numbers, validation output, and plan scope; T1, T2, T3, T4, and T5 completed with no skipped plan task.
 - Changelog/docs/spec/tasks updates: plan evidence only; no public plugin-facing behavior, release artifact, specification, task, README, changelog, or support-policy update required.
 - Blockers: none.
 - Review risks: coverage meets the approved plan targets but misses stretch targets; threshold changes still require explicit maintainer approval and should not be folded into this plan commit.
-- Handoff notes and next action: commit the T5 plan evidence, then return to O1 for whole-plan reconciliation and any separate threshold-policy decision.
+- Handoff notes and next action: plan implementation complete; any coverage-threshold increase remains a separate maintainer-approved validation-policy decision.
 
 ## Execution Model
 
@@ -634,16 +635,16 @@ Use this checkpoint before starting each dependent task, before a pause or hando
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, current task packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before any commit; and the next action's exact owner docs or source files.
-- Current task or wave: T1, T2, T3, and T4 complete; T5 coverage verification dispatch pending.
-- Completed commits: `dea114f` for T1 workflow coverage, `fd7d3a6` for T1 plan evidence, `21d8947` for the T2 continuity checkpoint, `c91d0a8` for T2 VCS coverage, `0b5fd8e` for T2 plan evidence, `d01c5b3` for T3 AI coverage, `42c89f2` for T3 plan evidence, and `6ff4c35` for T4 action/settings coverage. Related baseline work includes `PLAN-premature-stop-reliability` commits `79208d6`, `f6de9f8`, `4a703c3`, `524392b`, and follow-up plan-governance commits through `2b08f27`.
-- Plan status and readiness: `In Progress`; approved by Kamil Kiewisz <kamkie@outlook.com> at 2026-05-25T01:40:55+02:00, with no blocking open questions.
-- Validation and self-review state: T1, T2, T3, and T4 targeted tests, package tests, `spotlessCheck`, and `git diff --check` passed in worker evidence; `jacocoTestReport` passed in T1 through T3 worker evidence and remains for final T5 verification; plan evidence validation passed with `scripts\validate-docs.ps1`, `scripts\ai\validate-agent-artifacts.ps1`, and `git diff --check` before T4 dispatch.
-- Worker event state: W1 started 2026-05-25T01:40:55+02:00 and stopped 2026-05-25T02:03:00+02:00; W2 started 2026-05-25T02:10:00+02:00 and stopped 2026-05-25T02:22:00+02:00; W3 started 2026-05-25T02:26:00+02:00 and stopped 2026-05-25T02:34:14+02:00; W4 started 2026-05-25T02:38:00+02:00 and stopped 2026-05-25T02:47:42+02:00; no active workers.
-- Orchestrator reconciliation state: T1, T2, T3, and T4 reconciled against commit metadata, changed-file sets, validation evidence, and plan scope; T5 not started.
-- Changelog, docs, spec, task, or plan updates: Plan approval/progress metadata, T1/T2/T3/T4 result summaries, continuity checkpoints, and active-plan catalog updates are committed or pending plan-evidence commit; no public changelog, spec, or task update required for T1 through T4.
+- Current task or wave: T1, T2, T3, T4, and T5 complete.
+- Completed commits: `dea114f` for T1 workflow coverage, `fd7d3a6` for T1 plan evidence, `21d8947` for the T2 continuity checkpoint, `c91d0a8` for T2 VCS coverage, `0b5fd8e` for T2 plan evidence, `d01c5b3` for T3 AI coverage, `42c89f2` for T3 plan evidence, `6ff4c35` for T4 action/settings coverage, `a5b1544` for T4 plan evidence, and `d2b5664` for T5 final coverage verification. Related baseline work includes `PLAN-premature-stop-reliability` commits `79208d6`, `f6de9f8`, `4a703c3`, `524392b`, and follow-up plan-governance commits through `2b08f27`.
+- Plan status and readiness: `Implemented`; approved by Kamil Kiewisz <kamkie@outlook.com> at 2026-05-25T01:40:55+02:00, with no blocking open questions.
+- Validation and self-review state: T1 through T4 targeted tests and package tests passed in worker evidence; final T5 `.\gradlew.bat test jacocoTestReport verifyJacocoCoverageReport`, `.\gradlew.bat spotlessCheck`, documentation validation, agent-artifact validation, and `git diff --check` passed.
+- Worker event state: W1 started 2026-05-25T01:40:55+02:00 and stopped 2026-05-25T02:03:00+02:00; W2 started 2026-05-25T02:10:00+02:00 and stopped 2026-05-25T02:22:00+02:00; W3 started 2026-05-25T02:26:00+02:00 and stopped 2026-05-25T02:34:14+02:00; W4 started 2026-05-25T02:38:00+02:00 and stopped 2026-05-25T02:47:42+02:00; W5 started 2026-05-25T02:51:00+02:00 and stopped after final verification; no active workers.
+- Orchestrator reconciliation state: T1 through T5 reconciled against commit metadata, changed-file sets, validation evidence, final coverage output, and plan scope.
+- Changelog, docs, spec, task, or plan updates: Plan approval/progress metadata, result summaries, continuity checkpoints, active-plan catalog updates, and final implemented status are complete or pending the final status commit; no public changelog, spec, task, README, support, or coverage-threshold update required for this plan.
 - Blockers or open questions: None blocking.
-- Next action: Dispatch T5 coverage verification worker.
-- Context handoff notes: Treat ADR 0084 settling tests as existing regression coverage, run final coverage verification before any threshold recommendation, and preserve the T1/T2/T3/T4 review risks around static IntelliJ-service seams, unstaged rename/move fixture limits, production-clock async service coverage, local application/data/action manager fakes, and lack of full-suite verification after T4.
+- Next action: Handoff implemented plan and, if desired, decide separately whether to pursue a coverage-threshold policy update.
+- Context handoff notes: Treat ADR 0084 settling tests as existing regression coverage; final coverage met the approved targets but missed stretch targets, and any threshold increase remains separate from this implemented plan.
 
 ## Execution Graph
 

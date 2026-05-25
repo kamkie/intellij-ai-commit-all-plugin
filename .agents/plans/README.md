@@ -23,7 +23,7 @@ This directory holds task-specific implementation plans for work that is too lar
 ## Active Plans
 
 - `PLAN-premature-stop-reliability` - Premature Stop Reliability ([PLAN-premature-stop-reliability.md](PLAN-premature-stop-reliability.md)), implemented as of 2026-05-25.
-- `PLAN-test-coverage-growth` - Test Coverage Growth ([PLAN-test-coverage-growth.md](PLAN-test-coverage-growth.md)), in progress as of 2026-05-25.
+- `PLAN-test-coverage-growth` - Test Coverage Growth ([PLAN-test-coverage-growth.md](PLAN-test-coverage-growth.md)), implemented as of 2026-05-25.
 
 ## Archived Plans
 
