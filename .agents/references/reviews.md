@@ -31,6 +31,12 @@ Review in this order:
 - Do local-repository E2E tests avoid real remotes and destructive repository state?
 - Does publishing/signing/CI keep Marketplace tokens, certificates, private keys, and passwords out of the repository?
 - Is the target IDE version documented or otherwise accounted for?
+- Are material assumptions stated, resolved, or harmless to behavior, write scope, validation, ADR gates, and plan gates?
+- Is the implementation the simplest shape that satisfies the user request and accepted governing artifacts?
+- Did the change avoid speculative features, single-use abstractions, unnecessary configurability, and generic defensive code that the request did not need?
+- Does every changed line trace to the user request, governing artifact, validation fix, or cleanup caused by the current change?
+- Were unrelated dead code, formatting churn, style drift, or drive-by refactors left out unless explicitly requested?
+- Are success criteria and validation evidence strong enough for the claimed fix, refactor, or documentation rule change?
 
 ## Review Output
 

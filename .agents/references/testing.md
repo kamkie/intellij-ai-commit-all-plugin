@@ -2,6 +2,15 @@
 
 Use validation that matches the change. Documentation-only changes do not require plugin builds unless they alter executable examples or build instructions.
 
+## Success Criteria
+
+For non-trivial work, connect the requested outcome to concrete validation before handoff. Use the smallest check set that can prove the changed behavior without relying on unrelated source-repository assumptions.
+
+- For bug fixes, include or identify a reproduction when practical, then verify the fix against that scenario. If reproduction is impractical, explain the substitute evidence.
+- For refactors, preserve behavior with before-and-after validation when feasible, or run the narrowest existing tests that cover the refactored path.
+- For new validation rules, prove both the accepted path and the rejected path when the risk warrants it.
+- For skipped checks, record the exact reason, such as unavailable IDE sandbox, missing configured task, documentation-only scope, or external dependency.
+
 ## Build Checks
 
 Use the repository Gradle wrapper in validation examples: `.\gradlew.bat <task>` for PowerShell on Windows. `./gradlew <task>` is the equivalent for Unix-like shells and CI scripts.

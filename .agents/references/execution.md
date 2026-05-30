@@ -24,10 +24,18 @@ If a request requires a new ADR or implementation plan, create or update the req
 | Approved plan  | The work starts from an approved plan or needs sequencing, task packets, disjoint write scopes, cross-area implementation, or broader validation.    | The plan is not approved, approval metadata is missing, a required ADR is not accepted, or a new blocker appears. |
 | Proposal       | The user wants analysis, options, duplicated-rule findings, simplification ideas, or triage before implementation.                                   | The user accepts a finding for implementation and the change needs an ADR, plan, or task.                         |
 
+## Goal Framing
+
+Before non-trivial implementation, make the task verifiable. State or record material assumptions, meaningful tradeoffs, success criteria, and expected validation in the chat update, plan, task packet, or owner artifact that already governs the work. Keep trivial one-line or mechanical edits lightweight when the request, scope, and validation are obvious.
+
+Do not silently choose between materially different interpretations. Stop and ask, update the active plan, or record an open question when ambiguity affects user intent, intended behavior, write scope, validation evidence, ADR gates, plan gates, supported failure handling, or documented compatibility. For low-risk implementation details that do not change those surfaces, proceed with a stated assumption and verify the result.
+
+Prefer the simplest path that satisfies the requested behavior and accepted governing artifacts. When a requested approach appears broader than necessary, surface the smaller option and the tradeoff before expanding scope.
+
 ## Direct One-Off Loop
 
 1. After context compaction, resume, or summarized handoff, run the targeted reread check before continuing: reread the latest user request, `AGENTS.md`, and the most specific governing artifact needed for the next action. Reconcile the resumed task with local file changes, in-progress validation, active ADR or plan gates, and newer user instructions; do not bulk-load every guidance file.
-2. Frame the behavior: name the user-facing behavior, command, action, or workflow being changed.
+2. Frame the behavior and goal: name the user-facing behavior, command, action, or workflow being changed, and define success criteria for non-trivial work.
 3. Identify the owner artifact: find the source, descriptor, docs, task list, or reference guide that governs the behavior.
 4. Check gates: follow ADR and plan requirements before editing governed implementation, workflow guidance, backlog, validation rules, or related behavior.
 5. Run context and delegation preflight before optional broad loading: estimate the likely read set, context-pressure risk, active tool or user delegation limits, and whether local work, local packet mode, read-only exploration, validation, review, or a write worker is appropriate.
@@ -155,5 +163,7 @@ Stop and follow the ADR flow in `docs/decisions/README.md` when a request requir
 Stop after creating or updating a required plan and wait for explicit user approval before implementation starts.
 
 Pause and ask for a decision when implementation depends on an unresolved product choice, such as direct dependency on proprietary AI Assistant APIs.
+
+Stop or explicitly record an allowed assumption when ambiguity affects user intent, behavior, write scope, validation, ADR gates, plan gates, or supported IntelliJ plugin failure handling.
 
 When a new question, missing decision, or unsafe assumption appears during planned implementation, stop work immediately and update the appropriate document before continuing: the active plan, `docs/decisions/OPEN_QUESTIONS.md`, `docs/decisions/`, or `TASKS.md`.

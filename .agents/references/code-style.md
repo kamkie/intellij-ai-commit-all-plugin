@@ -40,8 +40,13 @@ Use this guide for Kotlin, Gradle, IntelliJ Platform plugin descriptors, and plu
 
 ## Design Discipline
 
+- Prefer the smallest implementation that satisfies the user request and accepted governing artifacts.
 - Do not add broad abstractions before there is real repetition.
+- Do not add speculative features, single-use abstractions, optional configurability, generalized extension points, or generic defensive handling unless the user requested it or an accepted ADR, plan, specification, or task requires it.
+- Keep changed lines traceable to the user request, the governing artifact, validation fixes, or cleanup caused by the current change.
+- Clean up imports, variables, functions, and comments made obsolete by the current change. Mention pre-existing dead code, style drift, or unrelated cleanup opportunities in the handoff or review instead of editing them unless requested.
 - Keep compatibility boundaries visible. If an IntelliJ API differs across target IDE versions, isolate that decision and document it.
+- Keep documented handling for AI Assistant absence, disabled state, sign-in requirements, timeouts, IDE errors, VCS failures, commit failures, push failures, and compatibility failures. The simplicity rule does not justify removing required failure handling.
 - Use `pl.devopssolutions.aicommitall` as the base package and plugin ID namespace per ADR 0022.
 - Use Apache-2.0 for repository and plugin materials per ADR 0018; do not commit third-party assets unless their license is known and compatible.
 - Publishing, signing, CI, Marketplace metadata, and release automation are in scope per ADR 0019; keep credentials out of the repository and use local properties or CI secrets.
