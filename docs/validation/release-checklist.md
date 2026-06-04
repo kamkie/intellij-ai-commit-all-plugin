@@ -1,6 +1,6 @@
 # Release Validation Checklist
 
-Last updated: 2026-05-24
+Last updated: 2026-06-04
 
 This reusable checklist owns manual release-readiness validation for AI Commit
 All. Use it when preparing a release candidate, validating a release-matrix
@@ -56,7 +56,21 @@ the exact product versions in the dated report:
 ## Automated Gates
 
 Record the relevant automated gates in the dated report. At minimum for release
-matrix work, include:
+preparation, run the local prerelease validation script:
+
+```powershell
+.\scripts\run-local-prerelease-validation.ps1
+```
+
+The script runs documentation checks, agent-artifact validation, formatting,
+Detekt, tests, coverage verification, plugin structure validation, and plugin
+packaging once. It then runs Plugin Verifier separately for IntelliJ IDEA,
+PyCharm, and WebStorm. Keep those verifier invocations split during local
+prerelease preparation so a verifier worker failure in one IDE does not force a
+full build/test/package rerun. The script preserves per-IDE verifier evidence
+under `build/reports/pluginVerifier-local-prerelease/`.
+
+For release matrix work, also include:
 
 ```powershell
 .\gradlew.bat buildPlugin

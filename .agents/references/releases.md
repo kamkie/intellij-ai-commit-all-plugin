@@ -82,6 +82,13 @@ Release preparation should cover:
 - Release artifact preparation.
 - Tagging and publication only when requested.
 
+For local prerelease automated validation, prefer
+`scripts/run-local-prerelease-validation.ps1`. It runs non-verifier gates once,
+then runs Plugin Verifier separately per IDE and preserves split verifier
+reports under `build/reports/pluginVerifier-local-prerelease/`. Do not use a
+single combined local multi-IDE `verifyPlugin` invocation as the prerelease
+gate unless a task explicitly requires reproducing that combined verifier path.
+
 ## What Not To Do
 
 - Do not tag a commit that has not passed required validation.
