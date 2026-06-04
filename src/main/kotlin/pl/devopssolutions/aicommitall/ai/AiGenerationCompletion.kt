@@ -25,7 +25,6 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.vcs.commit.CommitMessageUi
 import pl.devopssolutions.aicommitall.settings.AiCommitAllSettings
-import java.awt.KeyboardFocusManager
 import java.lang.reflect.Field
 import java.lang.reflect.InaccessibleObjectException
 import java.time.Duration
@@ -73,7 +72,6 @@ internal class AiGenerationCompletionService {
 internal class AiGenerationCompletionObserver(
     private val timeSource: AiCompletionTimeSource = SystemAiCompletionTimeSource,
     private val sleeper: AiCompletionSleeper = ThreadAiCompletionSleeper,
-    private val focusState: AiCompletionFocusState = AwtAiCompletionFocusState,
 ) {
     fun awaitCompletion(
         snapshot: AiCommitMessageSnapshot,
@@ -207,7 +205,6 @@ internal class AiGenerationCompletionObserver(
         stoppedWithUnusableMessageAtMillis: Long?,
         options: AiGenerationCompletionOptions,
     ): Boolean = stoppedWithUnusableMessageAtMillis != null &&
-        focusState.isApplicationFocused() &&
         timeSource.nowMillis() - stoppedWithUnusableMessageAtMillis >= options.stoppedSignalGracePeriod.toMillis()
 
     private fun isUnavailableSignalSettled(
@@ -227,7 +224,7 @@ internal class AiGenerationCompletionObserver(
         snapshot: AiCommitMessageSnapshot,
         stoppedWithUnusableMessageAtMillis: Long?,
     ): Long? {
-        if (!observedRunning || currentMessage.isUsableChangedMessage(snapshot) || !focusState.isApplicationFocused()) {
+        if (!observedRunning || currentMessage.isUsableChangedMessage(snapshot)) {
             return null
         }
 
@@ -569,21 +566,6 @@ private object IntelliJAiCompletionCompatibilityDiagnostics : AiCompletionCompat
         causeClassName?.let { causeClass ->
             append(", cause=").append(causeClass)
         }
-    }
-}
-
-internal fun interface AiCompletionFocusState {
-    fun isApplicationFocused(): Boolean
-
-    companion object {
-        val Focused: AiCompletionFocusState = AiCompletionFocusState { true }
-    }
-}
-
-private object AwtAiCompletionFocusState : AiCompletionFocusState {
-    override fun isApplicationFocused(): Boolean {
-        val focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager()
-        return focusManager.activeWindow != null
     }
 }
 

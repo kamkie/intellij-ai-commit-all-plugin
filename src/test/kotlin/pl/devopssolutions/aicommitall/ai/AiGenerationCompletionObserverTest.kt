@@ -145,7 +145,6 @@ internal class AiGenerationCompletionObserverTest {
         val observer = AiGenerationCompletionObserver(
             timeSource = timeSource,
             sleeper = AdvancingSleeper(timeSource),
-            focusState = AiCompletionFocusState.Focused,
         )
 
         val result = observer.awaitCompletion(
@@ -172,7 +171,6 @@ internal class AiGenerationCompletionObserverTest {
         val observer = AiGenerationCompletionObserver(
             timeSource = timeSource,
             sleeper = AdvancingSleeper(timeSource),
-            focusState = AiCompletionFocusState.Focused,
         )
 
         val result = observer.awaitCompletion(
@@ -190,7 +188,7 @@ internal class AiGenerationCompletionObserverTest {
     }
 
     @Test
-    fun `does not fail closed on stopped unchanged signal while application is inactive`() {
+    fun `does not fail closed when generated text appears after repeated stopped signals`() {
         val timeSource = MutableTimeSource()
         val signal = SequenceRunningSignal(
             AiGenerationRunningState.Running,
@@ -201,7 +199,6 @@ internal class AiGenerationCompletionObserverTest {
         val observer = AiGenerationCompletionObserver(
             timeSource = timeSource,
             sleeper = AdvancingSleeper(timeSource),
-            focusState = AiCompletionFocusState { false },
         )
 
         val result = observer.awaitCompletion(
@@ -218,7 +215,7 @@ internal class AiGenerationCompletionObserverTest {
     }
 
     @Test
-    fun `starts stopped signal grace period only after application focus returns`() {
+    fun `continues stopped signal grace period without application focus`() {
         val timeSource = MutableTimeSource()
         val signal = SequenceRunningSignal(
             AiGenerationRunningState.Running,
@@ -227,11 +224,9 @@ internal class AiGenerationCompletionObserverTest {
             AiGenerationRunningState.NotRunning,
             AiGenerationRunningState.NotRunning,
         )
-        val focusState = SequenceFocusState(false, true, true, true)
         val observer = AiGenerationCompletionObserver(
             timeSource = timeSource,
             sleeper = AdvancingSleeper(timeSource),
-            focusState = focusState,
         )
 
         val result = observer.awaitCompletion(
@@ -242,7 +237,7 @@ internal class AiGenerationCompletionObserverTest {
         )
 
         assertEquals(AiGenerationCompletionResult.UnchangedMessage("old message"), result)
-        assertEquals(2_000, timeSource.nowMillis)
+        assertEquals(1_500, timeSource.nowMillis)
     }
 
     @Test
@@ -256,7 +251,6 @@ internal class AiGenerationCompletionObserverTest {
         val observer = AiGenerationCompletionObserver(
             timeSource = timeSource,
             sleeper = AdvancingSleeper(timeSource),
-            focusState = AiCompletionFocusState.Focused,
         )
 
         val result = observer.awaitCompletion(
@@ -366,7 +360,6 @@ internal class AiGenerationCompletionObserverTest {
         val result = AiGenerationCompletionObserver(
             timeSource = timeSource,
             sleeper = AdvancingSleeper(timeSource),
-            focusState = AiCompletionFocusState.Focused,
         ).awaitCompletion(
             snapshot = AiCommitMessageSnapshot("old message"),
             messageReader = AiCommitMessageReader { "old message" },
@@ -386,7 +379,6 @@ internal class AiGenerationCompletionObserverTest {
         val result = AiGenerationCompletionObserver(
             timeSource = timeSource,
             sleeper = AdvancingSleeper(timeSource),
-            focusState = AiCompletionFocusState.Focused,
         ).awaitCompletion(
             snapshot = AiCommitMessageSnapshot(
                 originalMessage = "old message",
@@ -415,7 +407,6 @@ internal class AiGenerationCompletionObserverTest {
         val result = AiGenerationCompletionObserver(
             timeSource = timeSource,
             sleeper = AdvancingSleeper(timeSource),
-            focusState = AiCompletionFocusState.Focused,
         ).awaitCompletion(
             snapshot = AiCommitMessageSnapshot("old message"),
             messageReader = AiCommitMessageReader { "" },
@@ -435,7 +426,6 @@ internal class AiGenerationCompletionObserverTest {
         val result = AiGenerationCompletionObserver(
             timeSource = timeSource,
             sleeper = AdvancingSleeper(timeSource),
-            focusState = AiCompletionFocusState.Focused,
         ).awaitCompletion(
             snapshot = AiCommitMessageSnapshot(
                 originalMessage = "",
@@ -568,18 +558,6 @@ internal class AiGenerationCompletionObserverTest {
         override fun state(): AiGenerationRunningState {
             callCount++
             return state
-        }
-    }
-
-    private class SequenceFocusState(
-        private vararg val focusedStates: Boolean,
-    ) : AiCompletionFocusState {
-        private var callCount = 0
-
-        override fun isApplicationFocused(): Boolean {
-            val focused = focusedStates.getOrElse(callCount) { focusedStates.last() }
-            callCount++
-            return focused
         }
     }
 
