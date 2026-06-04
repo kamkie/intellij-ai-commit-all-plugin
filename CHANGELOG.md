@@ -4,15 +4,18 @@ All notable public plugin-facing changes are documented in this file.
 
 The format is based on Keep a Changelog. Release tags should use semantic version tags in the form `vMAJOR.MINOR.PATCH` for stable releases or `vMAJOR.MINOR.PATCH-PRERELEASE` for prereleases.
 
-This repository has no Marketplace-published plugin version yet. `v0.1.0-beta.2` is the current implementation prerelease candidate prepared from this repository.
+This repository has no Marketplace-published plugin version yet. `v0.1.0-beta.3` is the current implementation prerelease candidate prepared from this repository.
 
 This changelog records plugin source and runtime behavior changes, public plugin documentation changes, compatibility and support changes, and CI or release pipeline changes that affect the plugin artifact or publication. Internal AI-agent documentation, repository workflow notes, plans, proposals, ADR maintenance, scenario-register tracking, and test-case inventory changes are intentionally omitted unless they also change public plugin behavior or release artifacts.
 
 ## [Unreleased]
 
+## [v0.1.0-beta.3] - 2026-06-04
+
 ### Fixed
 
 - Run Release Matrix UI validation automatically for semantic version tag pushes, using the manual defaults for tag-triggered runs.
+- Continue AI completion stopped-signal handling while the IDE window is inactive, so clicking `Commit` and switching windows no longer delays the workflow until focus returns.
 
 ## [v0.1.0-beta.2] - 2026-05-25
 

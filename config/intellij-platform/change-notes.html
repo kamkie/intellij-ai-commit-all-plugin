@@ -1,6 +1,5 @@
-<p>v0.1.0-beta.2 prerelease.</p>
+<p>v0.1.0-beta.3 prerelease.</p>
 <ul>
-    <li>Attached the built plugin distribution ZIP to GitHub Releases created from semantic version tags.</li>
-    <li>Fixed Gradle-based GitHub Actions checkouts to fetch tags so Git-derived plugin versions work in CI after semantic release tags.</li>
-    <li>Reduced premature AI Commit All stops by boundedly rechecking transient AI Assistant, VCS, Commit tool window, action-routing, and safe-push metadata states before reporting the existing stop or fallback reason.</li>
+    <li>Run Release Matrix UI validation automatically for semantic version tag pushes, using the manual defaults for tag-triggered runs.</li>
+    <li>Continue AI completion stopped-signal handling while the IDE window is inactive, so clicking <code>Commit</code> and switching windows no longer delays the workflow until focus returns.</li>
 </ul>
