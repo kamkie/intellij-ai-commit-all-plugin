@@ -113,7 +113,7 @@ jobs:
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() && steps.codecov-test-results.outputs.files != '' }}
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           files: ${{ steps.codecov-test-results.outputs.files }}
           flags: unit
@@ -124,7 +124,7 @@ jobs:
           use_oidc: true
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           files: build/reports/jacoco/test/jacocoTestReport.xml
           flags: unit
