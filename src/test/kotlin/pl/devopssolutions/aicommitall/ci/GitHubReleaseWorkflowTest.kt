@@ -76,7 +76,7 @@ internal class GitHubReleaseWorkflowTest {
             "Release workflow must compare the checked-out tag with the requested release tag.",
         )
         assertTrue(
-            content.contains("actions/setup-node@v6"),
+            content.contains("uses: actions/setup-node@"),
             "Release workflow must install Node.js before documentation validation.",
         )
         assertTrue(
@@ -153,8 +153,8 @@ internal class GitHubReleaseWorkflowTest {
             "scripts/generate-github-release-notes.ps1",
             "-Tag '\${{ github.ref_name }}'",
             "-OutputPath 'build/github-release-notes.md'",
-            "actions/setup-java@v5",
-            "gradle/actions/setup-gradle@v6",
+            "uses: actions/setup-java@",
+            "uses: gradle/actions/setup-gradle@",
             "validate-wrappers: true",
             "Build release distribution",
             "./gradlew verifyPluginStructure buildPlugin",

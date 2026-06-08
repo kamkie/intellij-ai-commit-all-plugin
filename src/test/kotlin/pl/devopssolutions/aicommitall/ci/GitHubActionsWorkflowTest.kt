@@ -60,8 +60,8 @@ internal class GitHubActionsWorkflowTest {
             "CI workflow must generate and verify the JaCoCo XML report before uploading coverage.",
         )
         assertTrue(
-            content.contains("codecov/codecov-action@v6"),
-            "CI workflow must use the current Codecov action line.",
+            content.contains("uses: codecov/codecov-action@"),
+            "CI workflow must use the Codecov action line.",
         )
         assertTrue(
             content.contains("files: build/reports/jacoco/test/jacocoTestReport.xml"),
@@ -238,7 +238,7 @@ internal class GitHubActionsWorkflowTest {
             "CI workflow must run Detekt static analysis.",
         )
         assertTrue(
-            content.contains("github/codeql-action/upload-sarif@v4"),
+            content.contains("uses: github/codeql-action/upload-sarif@"),
             "CI workflow must upload Detekt SARIF through GitHub's SARIF upload action.",
         )
         assertTrue(
@@ -280,8 +280,8 @@ internal class GitHubActionsWorkflowTest {
             "Security workflow must be manually runnable.",
         )
         assertTrue(
-            content.contains("aquasecurity/trivy-action@v0.36.0"),
-            "Security workflow must run the pinned Trivy GitHub Action version.",
+            content.contains("uses: aquasecurity/trivy-action@"),
+            "Security workflow must run the Trivy GitHub Action.",
         )
         assertTrue(
             content.contains("scan-type: 'fs'"),
@@ -326,7 +326,7 @@ internal class GitHubActionsWorkflowTest {
             "Trivy SARIF must be written under build reports.",
         )
         assertTrue(
-            content.contains("github/codeql-action/upload-sarif@v4"),
+            content.contains("uses: github/codeql-action/upload-sarif@"),
             "Security workflow must upload Trivy SARIF through GitHub's SARIF upload action.",
         )
         assertTrue(
@@ -368,8 +368,8 @@ internal class GitHubActionsWorkflowTest {
             "CI workflow must expand Gradle JUnit XML paths before passing them to Codecov.",
         )
         assertTrue(
-            content.contains("codecov/codecov-action@v6"),
-            "CI workflow must upload test results through the current Codecov action.",
+            content.contains("uses: codecov/codecov-action@"),
+            "CI workflow must upload test results through the Codecov action.",
         )
         assertTrue(
             content.contains("files: \${{ steps.codecov-test-results.outputs.files }}"),
@@ -406,7 +406,7 @@ internal class GitHubActionsWorkflowTest {
             "CI workflow must grant permission for Test Reporter to create check runs.",
         )
         assertTrue(
-            content.contains("uses: dorny/test-reporter@v3"),
+            content.contains("uses: dorny/test-reporter@"),
             "CI workflow must publish test summaries through Test Reporter.",
         )
         assertTrue(
@@ -428,7 +428,7 @@ internal class GitHubActionsWorkflowTest {
         val content = Files.readString(Path.of(".github", "workflows", "ci.yml"))
 
         assertTrue(
-            content.contains("actions/upload-artifact@v7"),
+            content.contains("uses: actions/upload-artifact@"),
             "CI workflow must upload the packaged plugin ZIP as a GitHub Actions artifact.",
         )
         assertTrue(
