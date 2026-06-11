@@ -325,15 +325,15 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review evidence:
-- Commit:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: done
+- Worker: worker-t4 (implementation, mode code)
+- Changed files or reviewed diff: `AiCommitAllWorkflowStopReporter.kt` (`EmptyMessage` reports plugin-owned `EMPTY_AI_MESSAGE_NOTIFICATION_CONTENT` warning instead of standard empty-comment texts), reporter test (body pinned), spec REQ-ERR-002/003, REQ-AI-012, 13.1 row, changelog entry. `AiGenerationCompletion.kt` unchanged — worker proved every `EmptyMessage` follows an observed generation run (`observedRunning` gate); user-cleared messages stay `UserEditedMessage`.
+- Validation evidence: scoped Gradle tests 36/36 passed; `detekt spotlessCheck` passed; `validate-docs.ps1` passed.
+- Self-review evidence: notification-surface-only change of an already-terminal stop; no commit/push behavior change; fail-closed preserved.
+- Commit: T4 plan-task commit on main (`Project-Plan-Task: T4-empty-ai-message-timeout-notification`).
+- Blockers: none.
+- Review risks: third hardcoded English notification body (accepted by ADR 0088); `SCN-AI-*` scenario-register coverage deferred to release validation sweep.
+- Handoff notes and next action: next: T5.
 
 ### Task Packet: T5-allow-immediate-push-with-outgoing-commits
 

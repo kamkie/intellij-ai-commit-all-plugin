@@ -60,8 +60,8 @@ internal class WorkflowStopReporter(
 
             AiCommitAllWorkflowStopReason.EmptyMessage ->
                 notifier.warning(
-                    title = VcsBundle.message("error.title.check.in.with.empty.comment"),
-                    content = VcsBundle.message("error.no.commit.message"),
+                    title = AiCommitAllSettings.DISPLAY_NAME,
+                    content = EMPTY_AI_MESSAGE_NOTIFICATION_CONTENT,
                 )
 
             else -> Unit
@@ -74,6 +74,9 @@ internal class WorkflowStopReporter(
         const val STAGING_CONFIRMATION_FAILED_NOTIFICATION_CONTENT: String =
             "Staging could not be confirmed for the selected changes. " +
                 "Refresh the Commit tool window or repeat the action; the staging area state may be stale."
+        const val EMPTY_AI_MESSAGE_NOTIFICATION_CONTENT: String =
+            "AI Assistant finished without producing a commit message. " +
+                "Repeat the action; very large changes are a known trigger for AI generation giving up."
     }
 }
 

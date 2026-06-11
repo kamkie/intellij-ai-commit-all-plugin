@@ -73,7 +73,7 @@ internal class AiCommitAllWorkflowStopReporterTest {
     }
 
     @Test
-    fun `reports empty generated commit message with standard VCS message`() {
+    fun `reports empty generated commit message with plugin owned AI generation warning`() {
         val notifier = CapturingWorkflowStopNotifier()
 
         WorkflowStopReporter(notifier).report(AiCommitAllWorkflowStopReason.EmptyMessage)
@@ -81,8 +81,9 @@ internal class AiCommitAllWorkflowStopReporterTest {
         assertEquals(
             listOf(
                 WarningNotification(
-                    title = VcsBundle.message("error.title.check.in.with.empty.comment"),
-                    content = VcsBundle.message("error.no.commit.message"),
+                    title = "AI Commit All",
+                    content = "AI Assistant finished without producing a commit message. " +
+                        "Repeat the action; very large changes are a known trigger for AI generation giving up.",
                 ),
             ),
             notifier.warnings,
