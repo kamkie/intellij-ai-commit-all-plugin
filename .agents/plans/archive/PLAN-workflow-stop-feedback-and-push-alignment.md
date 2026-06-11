@@ -2,11 +2,13 @@
 
 Plan-ID: PLAN-workflow-stop-feedback-and-push-alignment
 
-Status: Implemented
+Status: Closed
+
+Close-Reason: Released
 
 Workers: 1
 
-Filename: `.agents/plans/PLAN-workflow-stop-feedback-and-push-alignment.md`
+Filename: `.agents/plans/archive/PLAN-workflow-stop-feedback-and-push-alignment.md`
 
 ## Readiness
 
@@ -22,6 +24,7 @@ Filename: `.agents/plans/PLAN-workflow-stop-feedback-and-push-alignment.md`
 - 2026-06-11T23:25:00+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval together with adr-0087 and adr-0088 acceptance.
 - 2026-06-11T23:26:00+02:00: Approved -> In Progress by Claude Fable 5 <noreply@anthropic.com>; sequential sub-agent task execution started with T1.
 - 2026-06-12T01:05:00+02:00: In Progress -> Implemented by Claude Fable 5 <noreply@anthropic.com>; T1-T5 committed with per-task validation and the full Gradle check passed.
+- 2026-06-12T02:05:00+02:00: Implemented -> Closed by Claude Fable 5 <noreply@anthropic.com>; released in v0.1.0-beta.4 during the release-preparation archive sweep; Close-Reason: Released.
 
 ## Goal
 
