@@ -198,15 +198,30 @@ internal class CommitWorkflowExecutionService(
         }
         val executorListener = workflowHandler as? CommitExecutorListener
         val decision = safeImmediatePushSupport.prepare(selection)
-        if (executorListener == null) {
-            return ImmediatePushAttempt.Fallback(UNSUPPORTED_HANDLER_FALLBACK_REASON)
-        }
-        val pushPlan = when (decision) {
-            is SafeImmediatePushDecision.Fallback ->
-                return ImmediatePushAttempt.Fallback(decision.reason.name)
+        return if (executorListener == null) {
+            ImmediatePushAttempt.Fallback(UNSUPPORTED_HANDLER_FALLBACK_REASON)
+        } else {
+            when (decision) {
+                is SafeImmediatePushDecision.Fallback -> ImmediatePushAttempt.Fallback(decision.reason.name)
 
-            is SafeImmediatePushDecision.Immediate -> decision.plan
+                is SafeImmediatePushDecision.Immediate -> startImmediatePush(
+                    workflowHandler = workflowHandler,
+                    executorListener = executorListener,
+                    pushPlan = decision.plan,
+                    onPushStarted = onPushStarted,
+                    completion = completion,
+                )
+            }
         }
+    }
+
+    private fun startImmediatePush(
+        workflowHandler: CommitWorkflowHandler,
+        executorListener: CommitExecutorListener,
+        pushPlan: SafeImmediatePushPlan,
+        onPushStarted: () -> Unit,
+        completion: CompletableFuture<Unit>,
+    ): ImmediatePushAttempt {
         val registration = registerPostCommitPush(
             workflowHandler = workflowHandler,
             pushPlan = pushPlan,
