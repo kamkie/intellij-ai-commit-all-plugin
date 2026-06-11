@@ -61,16 +61,6 @@ internal class SafeImmediatePushDecisionPolicyTest {
     }
 
     @Test
-    fun `allows immediate push when local branch is ahead of tracked upstream`() {
-        val result = SafeImmediatePushDecisionPolicy.fallbackReason(
-            repositories = listOf(safeRepositoryState(localMatchesTrackedUpstream = false)),
-            hasUnresolvedConflicts = false,
-        )
-
-        assertNull(result)
-    }
-
-    @Test
     fun `falls back when a multi-root target is ambiguous`() {
         val result = SafeImmediatePushDecisionPolicy.fallbackReason(
             repositories = listOf(
@@ -135,7 +125,6 @@ internal class SafeImmediatePushDecisionPolicyTest {
 
     private fun safeRepositoryState(
         hasTrackedUpstream: Boolean = true,
-        localMatchesTrackedUpstream: Boolean = true,
         targetIsTrackingBranch: Boolean = true,
         targetMatchesTrackedUpstream: Boolean = true,
         pushSpecAvailable: Boolean = true,
@@ -144,7 +133,6 @@ internal class SafeImmediatePushDecisionPolicyTest {
         repositoryStateIsNormal: Boolean = true,
     ): SafeImmediatePushRepositoryState = SafeImmediatePushRepositoryState(
         hasTrackedUpstream = hasTrackedUpstream,
-        localMatchesTrackedUpstream = localMatchesTrackedUpstream,
         targetIsTrackingBranch = targetIsTrackingBranch,
         targetMatchesTrackedUpstream = targetMatchesTrackedUpstream,
         pushSpecAvailable = pushSpecAvailable,

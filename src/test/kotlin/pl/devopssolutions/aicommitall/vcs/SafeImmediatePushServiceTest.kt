@@ -284,31 +284,6 @@ internal class SafeImmediatePushServiceTest {
     }
 
     @Test
-    fun `prepare creates immediate push plan when local branch is ahead of tracked upstream`() {
-        val path = TestFilePath("/repo/modified.txt")
-        val repository = SafeImmediatePushRepositoryHandle("repo")
-        val pushSpec = SafeImmediatePushSpecHandle("spec")
-        val environment = CapturingSafeImmediatePushEnvironment(
-            repositoriesByPath = mapOf(path.path to repository),
-            pushStates = mapOf(
-                repository to pushState(pushSpec, localMatchesTrackedUpstream = false),
-            ),
-        )
-        val service = SafeImmediatePushService(testProject(), environment)
-
-        val decision = service.prepare(
-            GitChangeSelection(
-                trackedChanges = emptyList(),
-                unversionedFiles = listOf(path),
-            ),
-        )
-        decision.asImmediate().plan.push()
-
-        assertEquals(setOf(repository), environment.awaitedRepositories.single().toSet())
-        assertEquals(mapOf(repository to pushSpec), environment.pushedSpecs.single())
-    }
-
-    @Test
     fun `prepare retries refreshable unavailable push metadata before falling back`() {
         val path = TestFilePath("/repo/modified.txt")
         val repository = SafeImmediatePushRepositoryHandle("repo")
@@ -334,6 +309,58 @@ internal class SafeImmediatePushServiceTest {
 
         assertEquals(listOf(repository, repository), environment.pushStateRequests)
         assertEquals(mapOf(repository to pushSpec), environment.pushedSpecs.single())
+    }
+
+    @Test
+    fun `prepare retries refreshable unavailable push metadata until the final settling attempt`() {
+        val path = TestFilePath("/repo/modified.txt")
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val pushSpec = SafeImmediatePushSpecHandle("spec")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            repositoriesByPath = mapOf(path.path to repository),
+            pushStateSequences = mapOf(
+                repository to listOf(
+                    pushState(pushSpec = null),
+                    pushState(pushSpec = null),
+                    pushState(pushSpec),
+                ),
+            ),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepare(
+            GitChangeSelection(
+                trackedChanges = emptyList(),
+                unversionedFiles = listOf(path),
+            ),
+        )
+        decision.asImmediate().plan.push()
+
+        assertEquals(listOf(repository, repository, repository), environment.pushStateRequests)
+        assertEquals(mapOf(repository to pushSpec), environment.pushedSpecs.single())
+    }
+
+    @Test
+    fun `prepare falls back without settling retries when tracked upstream is missing`() {
+        val path = TestFilePath("/repo/modified.txt")
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            repositoriesByPath = mapOf(path.path to repository),
+            pushStates = mapOf(
+                repository to pushState(pushSpec = null, hasTrackedUpstream = false),
+            ),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepare(
+            GitChangeSelection(
+                trackedChanges = emptyList(),
+                unversionedFiles = listOf(path),
+            ),
+        )
+
+        assertFallback(SafeImmediatePushFallbackReason.MissingTrackedUpstream, decision)
+        assertEquals(listOf(repository), environment.pushStateRequests)
     }
 
     @Test
@@ -521,7 +548,7 @@ internal class SafeImmediateOutgoingPushServiceTest {
         val environment = CapturingSafeImmediatePushEnvironment(
             allRepositories = listOf(firstRepository, secondRepository, thirdRepository),
             pushStates = mapOf(
-                firstRepository to pushState(firstSpec, localMatchesTrackedUpstream = false),
+                firstRepository to pushState(firstSpec),
                 secondRepository to pushState(secondSpec),
                 thirdRepository to pushState(thirdSpec),
             ),
@@ -548,7 +575,7 @@ internal class SafeImmediateOutgoingPushServiceTest {
         val environment = CapturingSafeImmediatePushEnvironment(
             allRepositories = listOf(outgoingRepository, unavailableRepository),
             pushStates = mapOf(
-                outgoingRepository to pushState(outgoingSpec, localMatchesTrackedUpstream = false),
+                outgoingRepository to pushState(outgoingSpec),
                 unavailableRepository to pushState(pushSpec = null),
             ),
             outgoingCommits = mapOf(outgoingRepository to true),
@@ -588,7 +615,6 @@ internal class SafeImmediateOutgoingPushServiceTest {
             pushStates = mapOf(
                 repository to pushState(
                     SafeImmediatePushSpecHandle("spec"),
-                    localMatchesTrackedUpstream = false,
                     repositoryStateIsNormal = false,
                 ),
             ),
@@ -610,10 +636,7 @@ internal class SafeImmediateOutgoingPushServiceTest {
         val environment = CapturingSafeImmediatePushEnvironment(
             allRepositories = listOf(outgoingRepository, failingRepository),
             pushStates = mapOf(
-                outgoingRepository to pushState(
-                    SafeImmediatePushSpecHandle("outgoing-spec"),
-                    localMatchesTrackedUpstream = false,
-                ),
+                outgoingRepository to pushState(SafeImmediatePushSpecHandle("outgoing-spec")),
                 failingRepository to pushState(SafeImmediatePushSpecHandle("failing-spec")),
             ),
             outgoingCommits = mapOf(outgoingRepository to true),
@@ -657,6 +680,47 @@ internal class SafeImmediateOutgoingPushServiceTest {
 
         assertEquals(listOf(repository, repository), environment.pushStateRequests)
         assertEquals(mapOf(repository to pushSpec), environment.pushedSpecs.single())
+    }
+
+    @Test
+    fun `prepare outgoing commits retries refreshable unavailable push metadata until the final settling attempt`() {
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val pushSpec = SafeImmediatePushSpecHandle("spec")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            allRepositories = listOf(repository),
+            pushStateSequences = mapOf(
+                repository to listOf(
+                    pushState(pushSpec = null),
+                    pushState(pushSpec = null),
+                    pushState(pushSpec),
+                ),
+            ),
+            outgoingCommits = mapOf(repository to true),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepareOutgoingCommits()
+        decision.asImmediate().plan.push()
+
+        assertEquals(listOf(repository, repository, repository), environment.pushStateRequests)
+        assertEquals(mapOf(repository to pushSpec), environment.pushedSpecs.single())
+    }
+
+    @Test
+    fun `prepare outgoing commits falls back without settling retries when tracked upstream is missing`() {
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            allRepositories = listOf(repository),
+            pushStates = mapOf(
+                repository to pushState(pushSpec = null, hasTrackedUpstream = false),
+            ),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepareOutgoingCommits()
+
+        assertFallback(SafeImmediatePushFallbackReason.NoAffectedRepositories, decision)
+        assertEquals(listOf(repository), environment.pushStateRequests)
     }
 
     @Test
@@ -779,7 +843,6 @@ private class CapturingSafeImmediatePushEnvironment(
 private fun pushState(
     pushSpec: SafeImmediatePushSpecHandle?,
     hasTrackedUpstream: Boolean = true,
-    localMatchesTrackedUpstream: Boolean = true,
     targetIsTrackingBranch: Boolean = true,
     targetMatchesTrackedUpstream: Boolean = true,
     targetIsNewBranch: Boolean = false,
@@ -788,7 +851,6 @@ private fun pushState(
 ): SafeImmediatePushRepositoryPushState = SafeImmediatePushRepositoryPushState(
     repositoryState = SafeImmediatePushRepositoryState(
         hasTrackedUpstream = hasTrackedUpstream,
-        localMatchesTrackedUpstream = localMatchesTrackedUpstream,
         targetIsTrackingBranch = targetIsTrackingBranch,
         targetMatchesTrackedUpstream = targetMatchesTrackedUpstream,
         pushSpecAvailable = pushSpec != null,

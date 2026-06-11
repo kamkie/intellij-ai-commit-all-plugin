@@ -419,7 +419,7 @@ Result summary:
 - Completed commits: T1 526fcd0 (+ detekt follow-up 1351b5f), T2 136e689, T3 716237c, T4 f36d8b8, T5 3c1e1a9.
 - Plan status and readiness: Implemented; release workflow still pending (release-notes mention of the post-commit diverged-remote discovery, scenario-register rows for the new tests).
 - Next action: release preparation per `.agents/references/releases.md` when the user requests it.
-- Context handoff notes: investigation evidence summarized in the ADRs; raw extracts in `build/log-investigation/` (untracked). Follow-up candidates: settling heuristic `hasOnlyRefreshablePushSpecUnavailable` still requires head match (see T5 risks); `TASKS.md` T-BUG-017 (stronger staging ground-truth fallback) and T-BUG-018 (draft-plan approval-line validator mismatch).
+- Context handoff notes: investigation evidence summarized in the ADRs; raw extracts in `build/log-investigation/` (untracked). The settling-heuristic head-match asymmetry from T5 risks was resolved by a direct follow-up on 2026-06-12 (`localMatchesTrackedUpstream` removed end to end; the outgoing-only refreshable-metadata retry, previously unreachable, now works per REQ-PUSH-006). Remaining follow-up candidate: `TASKS.md` T-BUG-017 (stronger staging ground-truth fallback).
 
 ## Execution Graph
 

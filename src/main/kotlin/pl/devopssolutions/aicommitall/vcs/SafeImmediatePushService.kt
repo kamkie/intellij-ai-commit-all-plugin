@@ -67,7 +67,6 @@ internal enum class SafeImmediatePushFallbackReason {
 
 internal data class SafeImmediatePushRepositoryState(
     val hasTrackedUpstream: Boolean,
-    val localMatchesTrackedUpstream: Boolean,
     val targetIsTrackingBranch: Boolean,
     val targetMatchesTrackedUpstream: Boolean,
     val pushSpecAvailable: Boolean,
@@ -362,7 +361,6 @@ private val SafeImmediatePushRepositoryPushState.hasRefreshableUnavailableMetada
 
 private val SafeImmediatePushRepositoryState.hasOnlyRefreshablePushSpecUnavailable: Boolean
     get() = hasTrackedUpstream &&
-        localMatchesTrackedUpstream &&
         targetIsTrackingBranch &&
         targetMatchesTrackedUpstream &&
         !pushSpecAvailable &&
@@ -420,7 +418,6 @@ private fun GitRepository.pushState(
 ): SafeImmediatePushRepositoryPushState {
     val currentBranch = this.currentBranch
     val trackInfo = currentBranch?.let { branch -> getBranchTrackInfo(branch.name) }
-    val localMatchesTrackedUpstream = trackInfo != null && localMatchesTrackedUpstream(trackInfo)
     val source = pushSupport.getSource(this)
     val target = if (source == null) {
         null
@@ -433,7 +430,6 @@ private fun GitRepository.pushState(
     return SafeImmediatePushRepositoryPushState(
         repositoryState = repositoryState(
             trackInfo = trackInfo,
-            localMatchesTrackedUpstream = localMatchesTrackedUpstream,
             target = target,
             pushSpec = pushSpec,
         ),
@@ -443,13 +439,11 @@ private fun GitRepository.pushState(
 
 private fun GitRepository.repositoryState(
     trackInfo: git4idea.repo.GitBranchTrackInfo?,
-    localMatchesTrackedUpstream: Boolean,
     target: GitPushTarget?,
     pushSpec: GitPushSpec?,
 ): SafeImmediatePushRepositoryState = if (trackInfo != null && pushSpec == null) {
     SafeImmediatePushRepositoryState(
         hasTrackedUpstream = true,
-        localMatchesTrackedUpstream = localMatchesTrackedUpstream,
         targetIsTrackingBranch = true,
         targetMatchesTrackedUpstream = true,
         pushSpecAvailable = false,
@@ -460,7 +454,6 @@ private fun GitRepository.repositoryState(
 } else {
     SafeImmediatePushRepositoryState(
         hasTrackedUpstream = trackInfo != null,
-        localMatchesTrackedUpstream = localMatchesTrackedUpstream,
         targetIsTrackingBranch = target?.targetType == GitPushTargetType.TRACKING_BRANCH,
         targetMatchesTrackedUpstream = trackInfo != null && target?.branch == trackInfo.remoteBranch,
         pushSpecAvailable = pushSpec != null,
@@ -475,15 +468,6 @@ private fun GitRepository.hasOutgoingCommits(pushSupport: GitPushSupport, pushSp
         pushSupport.outgoingCommitsProvider.getOutgoingCommits(this, pushSpec, false)
     }.getOrNull()
     return outgoingResult?.commits?.isNotEmpty() == true
-}
-
-private fun GitRepository.localMatchesTrackedUpstream(
-    trackInfo: git4idea.repo.GitBranchTrackInfo,
-): Boolean {
-    val localBranch = currentBranch
-    val localHash = localBranch?.let { branch -> info.localBranchesWithHashes[branch] }
-    val remoteHash = info.remoteBranchesWithHashes[trackInfo.remoteBranch]
-    return localHash != null && localHash == remoteHash
 }
 
 private val SafeImmediatePushRepositoryHandle.gitRepository: GitRepository
