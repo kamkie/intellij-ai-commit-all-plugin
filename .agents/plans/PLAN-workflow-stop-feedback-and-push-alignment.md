@@ -1,0 +1,407 @@
+# Plan: Workflow Stop Feedback And Push Alignment
+
+Plan-ID: PLAN-workflow-stop-feedback-and-push-alignment
+
+Status: Draft
+
+Workers: 1
+
+Filename: `.agents/plans/PLAN-workflow-stop-feedback-and-push-alignment.md`
+
+## Readiness
+
+- Plan readiness: Draft companion plan for proposed ADR 0087 and ADR 0088. Implementation is blocked until both ADRs are accepted (or their gated tasks are removed) and the user explicitly approves this plan. Tasks T1 and T2 are not ADR-gated but still require plan approval.
+- Open questions: None; user decisions recorded on 2026-06-11 (notify and log first, conservative staging fix with stronger fallback in `TASKS.md` T-BUG-017, align commit-and-push with outgoing-only push policy, report AI-caused empty messages as generation failure).
+- Implementation progress: Not started.
+
+## Status History
+
+- 2026-06-11T23:15:00+02:00: none -> Draft by Claude Fable 5 <noreply@anthropic.com>; companion draft plan created with proposed adr-0087 and adr-0088 from the June 2026 IDE-log investigation.
+
+## Goal
+
+Fix the four field failures diagnosed in the June 2026 IDE-log investigation of plugin `0.1.0-beta.3`: silent staging-confirmation stops perceived as hangs, undiagnosable push-dialog fallbacks, unwinnable staging confirmation on HEAD-identical phantom paths, and misleading empty-message errors after AI Assistant generation timeouts.
+
+## Non-Goals
+
+- Replacing `GitStageTracker`-based confirmation with git command output as ground truth (recorded as fallback hardening in `TASKS.md` T-BUG-017).
+- Automatic retry of AI generation after an empty result (user deferred).
+- Upstream YouTrack issue for the AI Assistant inlay generation timeout (user deferred).
+- Changing outgoing-only push behavior (ADR 0069 unchanged).
+
+## Assumptions
+
+- The staging-confirmation hard failures are caused by expected paths whose staged content equals HEAD (for example CRLF-only differences), per the investigation evidence; treating such paths as satisfied is safe because they contribute nothing to a commit.
+- The decision to align commit-and-push push policy with outgoing-only push is owned by proposed ADR 0087; the notification changes are owned by proposed ADR 0088.
+
+## Open Questions
+
+- None.
+
+## Proposed Changes
+
+- T1-log-immediate-push-fallback-reason: log the `SafeImmediatePushDecision.Fallback` reason in the commit-and-push path-selection diagnostic in `CommitWorkflowExecutionService`. Diagnostics only; no behavior change; no ADR gate.
+- T2-tolerate-head-identical-paths-in-staging-confirmation: in `GitStageConfirmation`/`GitStageSelectionItems`, treat expected paths that have no status entry after staging and refresh (staged content identical to HEAD) as satisfied instead of unconfirmable; update `REQ-SEL-008` sourcing this plan. Fail-closed behavior is retained for genuinely unconfirmed paths. No ADR gate.
+- T3-staging-confirmation-failure-stop-reason: add the `StagingConfirmationFailed` stop reason and plugin-owned warning notification; staging-confirmation failure stops report it instead of `UnsupportedWorkflow`; update specification Section 10.1 and `REQ-ERR-002..004`. Gated on ADR 0088 acceptance.
+- T4-empty-ai-message-timeout-notification: report `EmptyMessage` stops that follow an observed AI generation run with the plugin-owned AI-generation warning instead of `error.no.commit.message`; update `REQ-ERR-002..003` and `REQ-AI-012`. Gated on ADR 0088 acceptance.
+- T5-allow-immediate-push-with-outgoing-commits: drop the commit-and-push head-match verification and the `ForcePushStateUnverified` reason from `SafeImmediatePushDecisionPolicy`; update `REQ-PUSH-002` and `REQ-PUSH-005`, README "Push fallback" paragraph, and user guide. Gated on ADR 0087 acceptance.
+- Changelog entries for T2..T5 (public behavior changes); T1 is internal-only.
+
+## Task Packets
+
+### Task Packet: T1-log-immediate-push-fallback-reason
+
+Task id: T1-log-immediate-push-fallback-reason
+
+Lane: implementation
+
+Required skills:
+
+- `kotlin-plugin-style`
+
+Goal:
+
+- The commit-and-push diagnostic line that currently logs only `immediatePushStarted=false` also logs the `SafeImmediatePushFallbackReason` when the decision is a fallback.
+
+Initial context budget:
+
+- Read first:
+  - This task packet and the plan header.
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowExecutionService.kt`
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/SafeImmediatePushService.kt` (decision types only).
+- Escalate to:
+  - `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowExecutionServiceTest.kt` when extending tests.
+
+Allowed inputs:
+
+- Files named in `Read first` and `Escalate to`.
+
+Forbidden inputs:
+
+- Unrelated archived plans; other packets' implementation evidence.
+
+Write scope:
+
+- `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowExecutionService.kt`
+- `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/` (matching test).
+
+Dependencies:
+
+- None.
+
+Validation:
+
+- `./gradlew test --tests "*CommitWorkflowExecutionService*"` and detekt/format checks per `.agents/references/testing.md`.
+- Self-review per `.agents/references/reviews.md`.
+- Commit before T2 starts.
+
+Escalation triggers:
+
+- The fallback reason is not reachable at the logging call site without restructuring.
+
+Stop conditions:
+
+- Logging would require changing the `SafeImmediatePushSupport` contract in a way that affects behavior.
+
+Expected output:
+
+- Changed files, validation evidence, commit identifier, handoff notes.
+
+Result summary:
+
+- Status: pending
+
+### Task Packet: T2-tolerate-head-identical-paths-in-staging-confirmation
+
+Task id: T2-tolerate-head-identical-paths-in-staging-confirmation
+
+Lane: implementation
+
+Required skills:
+
+- `kotlin-plugin-style`, `plugin-test-tdd`
+
+Goal:
+
+- Staging confirmation succeeds when every expected path is either confirmed staged or provably HEAD-identical after staging and refresh; the June 2026 phantom-path failure sequences (logged `refreshedState=true, confirmed=false` across all attempts) no longer fail.
+
+Initial context budget:
+
+- Read first:
+  - This task packet and the plan header.
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/GitStageConfirmation.kt`
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/GitStageSelectionItems.kt`
+  - `docs/specification.md` `REQ-SEL-004`, `REQ-SEL-005`, `REQ-SEL-008`.
+- Escalate to:
+  - Existing `SCN-STAGE-AUT-*` tests and `git4idea.index.GitStageTracker` API when refining the satisfied-path predicate.
+
+Allowed inputs:
+
+- Files named in `Read first` and `Escalate to`.
+
+Forbidden inputs:
+
+- Unrelated archived plans; other packets' implementation evidence.
+
+Write scope:
+
+- `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/GitStageConfirmation.kt`
+- `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/GitStageSelectionItems.kt`
+- Matching tests under `src/test/kotlin/` and `src/integrationTest/kotlin/`.
+- `docs/specification.md` (`REQ-SEL-008` update), `CHANGELOG.md`.
+
+Dependencies:
+
+- T1 committed.
+
+Validation:
+
+- New regression test reproducing a HEAD-identical expected path; `./gradlew test integrationTest` staging scenarios; detekt/format; docs validation after the spec edit.
+- Self-review per `.agents/references/reviews.md`.
+- Commit before T3 starts.
+
+Escalation triggers:
+
+- The tracker state cannot distinguish "no status entry because HEAD-identical" from "no status entry because refresh is stale" within the existing refresh round.
+
+Stop conditions:
+
+- The fix cannot preserve fail-closed behavior for genuinely unconfirmed paths.
+
+Expected output:
+
+- Changed files, regression test evidence, spec/changelog updates, commit identifier, handoff notes.
+
+Result summary:
+
+- Status: pending
+
+### Task Packet: T3-staging-confirmation-failure-stop-reason
+
+Task id: T3-staging-confirmation-failure-stop-reason
+
+Lane: implementation
+
+Required skills:
+
+- `kotlin-plugin-style`, `plugin-test-tdd`
+
+Goal:
+
+- Staging-confirmation failure stops report `StagingConfirmationFailed` with a plugin-owned warning notification per ADR 0088; `UnsupportedWorkflow` no longer covers this path.
+
+Initial context budget:
+
+- Read first:
+  - This task packet, the plan header, and `docs/decisions/adr-0088-improve-silent-and-misleading-stop-feedback.md`.
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/AiCommitAllWorkflowCoordinator.kt` (stop reasons)
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/AiCommitAllWorkflowStopReporter.kt`
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowSelectionService.kt`
+- Escalate to:
+  - `docs/specification.md` Sections 10 and 10.1 for the REQ updates.
+
+Allowed inputs:
+
+- Files named in `Read first` and `Escalate to`.
+
+Forbidden inputs:
+
+- Unrelated archived plans; other packets' implementation evidence.
+
+Write scope:
+
+- The four source files above plus matching tests, `docs/specification.md`, `CHANGELOG.md`.
+
+Dependencies:
+
+- T2 committed; ADR 0088 accepted.
+
+Validation:
+
+- Stop-reporter unit tests for the new reason and notification; `SCN-STAGE-AUT-*` runs; docs validation; detekt/format.
+- Self-review per `.agents/references/reviews.md`.
+- Commit before T4 starts.
+
+Escalation triggers:
+
+- The selection service cannot distinguish staging-confirmation failure from other `UnsupportedWorkflow` causes at the stop site.
+
+Stop conditions:
+
+- ADR 0088 not accepted, or a notification path would require a plugin-owned dialog (ADR 0017 conflict).
+
+Expected output:
+
+- Changed files, validation evidence, spec/changelog updates, commit identifier, handoff notes.
+
+Result summary:
+
+- Status: pending
+
+### Task Packet: T4-empty-ai-message-timeout-notification
+
+Task id: T4-empty-ai-message-timeout-notification
+
+Lane: implementation
+
+Required skills:
+
+- `kotlin-plugin-style`
+
+Goal:
+
+- `EmptyMessage` stops that follow an observed AI generation run surface the plugin-owned AI-generation warning (timeout/large-change hint) instead of the standard empty-comment error, per ADR 0088; user-cleared messages keep `UserEditedMessage` behavior.
+
+Initial context budget:
+
+- Read first:
+  - This task packet, the plan header, and `docs/decisions/adr-0088-improve-silent-and-misleading-stop-feedback.md`.
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/AiCommitAllWorkflowStopReporter.kt`
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/ai/AiGenerationCompletion.kt`
+- Escalate to:
+  - `docs/specification.md` `REQ-AI-012`, `REQ-ERR-002..003`.
+
+Allowed inputs:
+
+- Files named in `Read first` and `Escalate to`.
+
+Forbidden inputs:
+
+- Unrelated archived plans; other packets' implementation evidence.
+
+Write scope:
+
+- The two source files above plus matching tests, `docs/specification.md`, `CHANGELOG.md`.
+
+Dependencies:
+
+- T3 committed; ADR 0088 accepted.
+
+Validation:
+
+- Unit tests for the reporter mapping; `SCN-AI-*` runs; docs validation; detekt/format.
+- Self-review per `.agents/references/reviews.md`.
+- Commit before T5 starts.
+
+Escalation triggers:
+
+- Completion detection cannot tell observed-generation-empty from never-started-empty without new state.
+
+Stop conditions:
+
+- ADR 0088 not accepted.
+
+Expected output:
+
+- Changed files, validation evidence, spec/changelog updates, commit identifier, handoff notes.
+
+Result summary:
+
+- Status: pending
+
+### Task Packet: T5-allow-immediate-push-with-outgoing-commits
+
+Task id: T5-allow-immediate-push-with-outgoing-commits
+
+Lane: implementation
+
+Required skills:
+
+- `kotlin-plugin-style`, `plugin-test-tdd`
+
+Goal:
+
+- Commit-and-push immediate push tolerates existing outgoing commits per ADR 0087; `ForcePushStateUnverified` is removed from the policy; a local-ahead commit-and-push takes the silent immediate-push path in tests.
+
+Initial context budget:
+
+- Read first:
+  - This task packet, the plan header, and `docs/decisions/adr-0087-allow-immediate-push-with-outgoing-commits.md`.
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/vcs/SafeImmediatePushService.kt`
+  - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/CommitWorkflowExecutionService.kt`
+- Escalate to:
+  - `docs/specification.md` `REQ-PUSH-002`, `REQ-PUSH-005`; `README.md` "Push fallback" paragraph; `docs/user-guide.md`.
+
+Allowed inputs:
+
+- Files named in `Read first` and `Escalate to`.
+
+Forbidden inputs:
+
+- Unrelated archived plans; other packets' implementation evidence.
+
+Write scope:
+
+- The two source files above plus matching tests, `docs/specification.md`, `README.md`, `docs/user-guide.md`, `CHANGELOG.md`.
+
+Dependencies:
+
+- T4 committed (or T2 committed when ADR 0088 tasks are skipped); ADR 0087 accepted.
+
+Validation:
+
+- `SCN-PUSH-*` automated scenarios including a new local-ahead immediate-push case and a diverged-remote failure-surface case; docs validation; detekt/format.
+- Self-review per `.agents/references/reviews.md`.
+- Final task commit.
+
+Escalation triggers:
+
+- Removing the head-match check breaks an existing test that encodes intended behavior beyond ADR 0047.
+
+Stop conditions:
+
+- ADR 0087 not accepted.
+
+Expected output:
+
+- Changed files, validation evidence, spec/docs/changelog updates, commit identifier, handoff notes.
+
+Result summary:
+
+- Status: pending
+
+## Execution Model
+
+- `Workers: 1`; sequential execution with one fresh sub-agent task worker per named task per `.agents/references/orchestration.md`.
+- Tasks share write scope in `CommitWorkflowExecutionService.kt` and `docs/specification.md`, so no parallel waves are planned.
+- Each task is implemented, validated through `.agents/references/testing.md`, self-reviewed through `.agents/references/reviews.md`, and committed before the next task starts, with `Project-Source: plan-task`, `Project-Plan: PLAN-workflow-stop-feedback-and-push-alignment`, and `Project-Plan-Task: <task id>` commit metadata.
+- If sub-agents are unavailable or forbidden for approved-plan execution, stop before implementation and report the blocker.
+
+## Long-Run Continuity
+
+- Resume docs reread: after compaction, resume, or handoff, reread `AGENTS.md`; this plan's header, `## Readiness`, current task packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before any commit.
+- Current task or wave: none (Draft).
+- Completed commits: none.
+- Plan status and readiness: Draft; blocked on ADR 0087 and ADR 0088 acceptance and explicit plan approval.
+- Next action: user review of adr-0087, adr-0088, and this plan.
+- Context handoff notes: investigation evidence summarized in the ADRs; raw extracts in `build/log-investigation/` (untracked).
+
+## Execution Graph
+
+```mermaid
+flowchart TD
+    O1["O1[code]<br/>orchestrator"]
+    W1["W1[code]<br/>T1-log-immediate-push-fallback-reason"]
+    W2["W2[code]<br/>T2-tolerate-head-identical-paths-in-staging-confirmation"]
+    W3["W3[code]<br/>T3-staging-confirmation-failure-stop-reason<br/>(gated: adr-0088)"]
+    W4["W4[code]<br/>T4-empty-ai-message-timeout-notification<br/>(gated: adr-0088)"]
+    W5["W5[code]<br/>T5-allow-immediate-push-with-outgoing-commits<br/>(gated: adr-0087)"]
+    O1 --> W1 --> W2 --> W3 --> W4 --> W5
+```
+
+## Validation
+
+- Per-task Gradle unit and integration test runs scoped to the touched scenarios (`SCN-STAGE-AUT-*`, `SCN-AI-*`, `SCN-PUSH-*`).
+- `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-docs.ps1` after every specification, README, ADR, or plan edit.
+- Full `./gradlew check` before plan completion handoff.
+
+## Risks
+
+- T2 predicate risk: misclassifying a stale-tracker path as HEAD-identical would commit less than the user selected; mitigated by only treating a path as satisfied after staging plus completed refresh rounds, and by the T-BUG-017 fallback hardening if field reports persist.
+- T5 moves diverged-remote discovery from a pre-commit dialog to a post-commit push failure; acceptable per ADR 0087, but release notes must mention it.
+- Stop-reason set change (T3) touches the fixed specification taxonomy; tests asserting `UnsupportedWorkflow` on staging paths must be updated deliberately, not loosened.
+
+## Handoff Notes
+
+- Created together with proposed `adr-0087-allow-immediate-push-with-outgoing-commits` and `adr-0088-improve-silent-and-misleading-stop-feedback` from the 2026-06-11 IDE-log investigation; do not start implementation before ADR acceptance and explicit plan approval.
+- Stronger staging-confirmation hardening (git output as ground truth) is tracked as `TASKS.md` T-BUG-017, deliberately outside this plan.

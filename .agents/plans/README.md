@@ -22,7 +22,7 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- None.
+- `PLAN-workflow-stop-feedback-and-push-alignment` - Workflow Stop Feedback And Push Alignment ([PLAN-workflow-stop-feedback-and-push-alignment.md](PLAN-workflow-stop-feedback-and-push-alignment.md)), Draft companion plan for proposed adr-0087 and adr-0088.
 
 ## Archived Plans
 
