@@ -575,6 +575,137 @@ internal class CommitWorkflowExecutionServiceTest {
     }
 
     @Test
+    fun `describes safe immediate push fallback reason in immediate push attempt diagnostics`() {
+        val registrar = CapturingCommitResultRegistrar()
+        val service = CommitWorkflowExecutionService(
+            scheduler = CapturingScheduler(),
+            commitResultRegistrar = registrar,
+        )
+        val workflowHandler = CapturingCommitWorkflowHandler(
+            commitAndPushExecutor = TestCommitAndPushExecutor,
+            commitAndPushEnabled = true,
+        )
+
+        val attempt = service.executeImmediatePushWhenSafe(
+            workflowHandler = workflowHandler,
+            selection = GitChangeSelection(emptyList()),
+            safeImmediatePushSupport = TestSafeImmediatePushSupport(
+                SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.MissingTrackedUpstream),
+            ),
+            onPushStarted = {},
+            completion = CompletableFuture(),
+        )
+
+        assertEquals(ImmediatePushAttempt.Fallback("MissingTrackedUpstream"), attempt)
+        assertEquals(
+            "immediatePushStarted=false, fallbackReason=MissingTrackedUpstream",
+            attempt.diagnosticSummary(),
+        )
+        assertEquals(0, registrar.registerCallCount)
+    }
+
+    @Test
+    fun `describes missing selection in immediate push attempt diagnostics`() {
+        val support = TestSafeImmediatePushSupport(
+            SafeImmediatePushDecision.Fallback(SafeImmediatePushFallbackReason.MissingTrackedUpstream),
+        )
+        val service = CommitWorkflowExecutionService(CapturingScheduler())
+
+        val attempt = service.executeImmediatePushWhenSafe(
+            workflowHandler = CapturingCommitWorkflowHandler(),
+            selection = null,
+            safeImmediatePushSupport = support,
+            onPushStarted = {},
+            completion = CompletableFuture(),
+        )
+
+        assertEquals(ImmediatePushAttempt.Fallback("NoSelection"), attempt)
+        assertEquals(
+            "immediatePushStarted=false, fallbackReason=NoSelection",
+            attempt.diagnosticSummary(),
+        )
+        assertEquals(0, support.prepareCallCount)
+    }
+
+    @Test
+    fun `describes unsupported workflow handler in immediate push attempt diagnostics`() {
+        val support = TestSafeImmediatePushSupport(
+            SafeImmediatePushDecision.Immediate(CapturingSafeImmediatePushPlan()),
+        )
+        val service = CommitWorkflowExecutionService(CapturingScheduler())
+
+        val attempt = service.executeImmediatePushWhenSafe(
+            workflowHandler = UnsupportedCommitWorkflowHandler,
+            selection = GitChangeSelection(emptyList()),
+            safeImmediatePushSupport = support,
+            onPushStarted = {},
+            completion = CompletableFuture(),
+        )
+
+        assertEquals(ImmediatePushAttempt.Fallback("UnsupportedHandler"), attempt)
+        assertEquals(
+            "immediatePushStarted=false, fallbackReason=UnsupportedHandler",
+            attempt.diagnosticSummary(),
+        )
+        assertEquals(1, support.prepareCallCount)
+    }
+
+    @Test
+    fun `describes unavailable result listener in immediate push attempt diagnostics`() {
+        val registrar = CapturingCommitResultRegistrar(registered = false)
+        val service = CommitWorkflowExecutionService(
+            scheduler = CapturingScheduler(),
+            commitResultRegistrar = registrar,
+        )
+
+        val attempt = service.executeImmediatePushWhenSafe(
+            workflowHandler = CapturingCommitWorkflowHandler(
+                commitAndPushExecutor = TestCommitAndPushExecutor,
+                commitAndPushEnabled = true,
+            ),
+            selection = GitChangeSelection(emptyList()),
+            safeImmediatePushSupport = TestSafeImmediatePushSupport(
+                SafeImmediatePushDecision.Immediate(CapturingSafeImmediatePushPlan()),
+            ),
+            onPushStarted = {},
+            completion = CompletableFuture(),
+        )
+
+        assertEquals(ImmediatePushAttempt.Fallback("ResultListenerUnavailable"), attempt)
+        assertEquals(1, registrar.registerCallCount)
+    }
+
+    @Test
+    fun `reports started immediate push attempt without fallback reason`() {
+        val registrar = CapturingCommitResultRegistrar()
+        val defaultCommitExecutionGate = CapturingDefaultCommitExecutionGate()
+        val service = CommitWorkflowExecutionService(
+            scheduler = CapturingScheduler(),
+            commitResultRegistrar = registrar,
+            defaultCommitExecutionGate = defaultCommitExecutionGate,
+        )
+        val workflowHandler = CapturingCommitWorkflowHandler(
+            commitAndPushExecutor = TestCommitAndPushExecutor,
+            commitAndPushEnabled = true,
+        )
+
+        val attempt = service.executeImmediatePushWhenSafe(
+            workflowHandler = workflowHandler,
+            selection = GitChangeSelection(emptyList()),
+            safeImmediatePushSupport = TestSafeImmediatePushSupport(
+                SafeImmediatePushDecision.Immediate(CapturingSafeImmediatePushPlan()),
+            ),
+            onPushStarted = {},
+            completion = CompletableFuture(),
+        )
+
+        assertEquals(ImmediatePushAttempt.Started, attempt)
+        assertEquals("immediatePushStarted=true", attempt.diagnosticSummary())
+        assertEquals(1, registrar.registerCallCount)
+        assertEquals(1, defaultCommitExecutionGate.readyActionCount)
+    }
+
+    @Test
     fun `stops commit and push when workflow is missing`() {
         val result = CommitWorkflowExecutionService(CapturingScheduler())
             .executeCommitAndPush(null)
@@ -696,7 +827,12 @@ internal class CommitWorkflowExecutionServiceTest {
     private class TestSafeImmediatePushSupport(
         private val decision: SafeImmediatePushDecision,
     ) : SafeImmediatePushSupport {
-        override fun prepare(selection: GitChangeSelection): SafeImmediatePushDecision = decision
+        var prepareCallCount = 0
+
+        override fun prepare(selection: GitChangeSelection): SafeImmediatePushDecision {
+            prepareCallCount++
+            return decision
+        }
     }
 
     private class CapturingSafeImmediatePushPlan : SafeImmediatePushPlan {

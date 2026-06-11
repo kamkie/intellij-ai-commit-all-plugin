@@ -113,15 +113,15 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review evidence:
-- Commit:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: done
+- Worker: worker-t1 (implementation, mode code)
+- Changed files or reviewed diff: `CommitWorkflowExecutionService.kt` (path-selected diagnostic now logs `fallbackReason=<enum or NoSelection|UnsupportedHandler|ResultListenerUnavailable>`; `executeImmediatePushWhenSafe` returns sealed `ImmediatePushAttempt`), `CommitWorkflowExecutionServiceTest.kt` (5 new tests plus prepare-call-count guard).
+- Validation evidence: `.\gradlew.bat test --tests "*CommitWorkflowExecutionService*"` 29/29 passed; `.\gradlew.bat spotlessCheck` passed.
+- Self-review evidence: decision logic, prepare-call ordering, and fallback executor conditions verified unchanged by orchestrator diff review; no platform API changes.
+- Commit: T1 plan-task commit on main (`Project-Plan-Task: T1-log-immediate-push-fallback-reason`).
+- Blockers: none.
+- Review risks: `executeImmediatePushWhenSafe` visibility widened private -> internal as a test seam (deliberate).
+- Handoff notes and next action: diagnostics-only; no changelog entry. Next: T2.
 
 ### Task Packet: T2-tolerate-head-identical-paths-in-staging-confirmation
 

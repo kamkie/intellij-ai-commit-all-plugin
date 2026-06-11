@@ -36,6 +36,9 @@ import pl.devopssolutions.aicommitall.vcs.SafeImmediatePushSupport
 import java.util.concurrent.CompletableFuture
 
 private const val GIT_COMMIT_AND_PUSH_EXECUTOR_ID = "Git.Commit.And.Push.Executor"
+private const val NO_SELECTION_FALLBACK_REASON = "NoSelection"
+private const val UNSUPPORTED_HANDLER_FALLBACK_REASON = "UnsupportedHandler"
+private const val RESULT_LISTENER_UNAVAILABLE_FALLBACK_REASON = "ResultListenerUnavailable"
 
 @Service(Service.Level.PROJECT)
 internal class CommitWorkflowExecutionService(
@@ -147,19 +150,18 @@ internal class CommitWorkflowExecutionService(
         }
         scheduler.schedule {
             if (execution.workflowHandler.isExecutorEnabled(execution.executor)) {
-                val immediatePushStarted = selection != null &&
-                    executeImmediatePushWhenSafe(
-                        workflowHandler = execution.workflowHandler,
-                        selection = selection,
-                        safeImmediatePushSupport = safeImmediatePushSupport,
-                        onPushStarted = onPushStarted,
-                        completion = completion,
-                    )
+                val immediatePushAttempt = executeImmediatePushWhenSafe(
+                    workflowHandler = execution.workflowHandler,
+                    selection = selection,
+                    safeImmediatePushSupport = safeImmediatePushSupport,
+                    onPushStarted = onPushStarted,
+                    completion = completion,
+                )
                 logger.info(
                     "AI Commit All diagnostic: commit-and-push execution path selected, " +
-                        "immediatePushStarted=$immediatePushStarted",
+                        immediatePushAttempt.diagnosticSummary(),
                 )
-                if (!immediatePushStarted) {
+                if (immediatePushAttempt !is ImmediatePushAttempt.Started) {
                     val registration = registerCommitAndPushCompletion(
                         workflowHandler = execution.workflowHandler,
                         completion = completion,
@@ -184,56 +186,41 @@ internal class CommitWorkflowExecutionService(
         return CommitWorkflowExecutionResult.Started(completion)
     }
 
-    private fun executeImmediatePushWhenSafe(
+    internal fun executeImmediatePushWhenSafe(
         workflowHandler: CommitWorkflowHandler,
-        selection: GitChangeSelection,
+        selection: GitChangeSelection?,
         safeImmediatePushSupport: SafeImmediatePushSupport,
         onPushStarted: () -> Unit,
         completion: CompletableFuture<Unit>,
-    ): Boolean {
-        val execution = immediatePushExecution(
+    ): ImmediatePushAttempt {
+        if (selection == null) {
+            return ImmediatePushAttempt.Fallback(NO_SELECTION_FALLBACK_REASON)
+        }
+        val executorListener = workflowHandler as? CommitExecutorListener
+        val decision = safeImmediatePushSupport.prepare(selection)
+        if (executorListener == null) {
+            return ImmediatePushAttempt.Fallback(UNSUPPORTED_HANDLER_FALLBACK_REASON)
+        }
+        val pushPlan = when (decision) {
+            is SafeImmediatePushDecision.Fallback ->
+                return ImmediatePushAttempt.Fallback(decision.reason.name)
+
+            is SafeImmediatePushDecision.Immediate -> decision.plan
+        }
+        val registration = registerPostCommitPush(
             workflowHandler = workflowHandler,
-            selection = selection,
-            safeImmediatePushSupport = safeImmediatePushSupport,
+            pushPlan = pushPlan,
             onPushStarted = onPushStarted,
             completion = completion,
-        )
-        if (execution != null) {
-            completeExceptionallyOnFailure(completion, execution.registration) {
-                defaultCommitExecutionGate.runWhenReady(workflowHandler) {
-                    completeExceptionallyOnFailure(completion, execution.registration) {
-                        execution.executorListener.executorCalled(null)
-                    }
+        ) ?: return ImmediatePushAttempt.Fallback(RESULT_LISTENER_UNAVAILABLE_FALLBACK_REASON)
+        completeExceptionallyOnFailure(completion, registration) {
+            defaultCommitExecutionGate.runWhenReady(workflowHandler) {
+                completeExceptionallyOnFailure(completion, registration) {
+                    executorListener.executorCalled(null)
                 }
             }
         }
-        return execution != null
-    }
-
-    private fun immediatePushExecution(
-        workflowHandler: CommitWorkflowHandler,
-        selection: GitChangeSelection,
-        safeImmediatePushSupport: SafeImmediatePushSupport,
-        onPushStarted: () -> Unit,
-        completion: CompletableFuture<Unit>,
-    ): ImmediatePushExecution? {
-        val executorListener = workflowHandler as? CommitExecutorListener
-        val pushPlan = (safeImmediatePushSupport.prepare(selection) as? SafeImmediatePushDecision.Immediate)?.plan
-        return if (executorListener != null && pushPlan != null) {
-            registerPostCommitPush(
-                workflowHandler = workflowHandler,
-                pushPlan = pushPlan,
-                onPushStarted = onPushStarted,
-                completion = completion,
-            )?.let { registration ->
-                ImmediatePushExecution(
-                    executorListener = executorListener,
-                    registration = registration,
-                )
-            }
-        } else {
-            null
-        }
+        return ImmediatePushAttempt.Started
     }
 
     private fun registerCompletion(
@@ -339,10 +326,16 @@ private fun CommitAndPushExecutionState.diagnosticName(): String = when (this) {
         "Ready(workflowHandler=${workflowHandler.javaClass.name}, executor=${executor.id})"
 }
 
-private data class ImmediatePushExecution(
-    val executorListener: CommitExecutorListener,
-    val registration: CommitWorkflowResultRegistration,
-)
+internal sealed interface ImmediatePushAttempt {
+    data object Started : ImmediatePushAttempt
+
+    data class Fallback(val reason: String) : ImmediatePushAttempt
+}
+
+internal fun ImmediatePushAttempt.diagnosticSummary(): String = when (this) {
+    ImmediatePushAttempt.Started -> "immediatePushStarted=true"
+    is ImmediatePushAttempt.Fallback -> "immediatePushStarted=false, fallbackReason=$reason"
+}
 
 private class CompletionResultHandler(
     private val completion: CompletableFuture<Unit>,
