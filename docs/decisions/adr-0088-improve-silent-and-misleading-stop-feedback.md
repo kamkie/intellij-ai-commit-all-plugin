@@ -1,6 +1,7 @@
 ---
-status: proposed
+status: accepted
 date: 2026-06-11
+accepted_at: 2026-06-11T23:25:00+02:00
 decision-makers: Kamil Kiewisz <kamkie@outlook.com>
 consulted: Claude
 informed: Repository contributors

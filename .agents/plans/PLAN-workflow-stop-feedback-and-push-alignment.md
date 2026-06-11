@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-workflow-stop-feedback-and-push-alignment
 
-Status: Draft
+Status: In Progress
 
 Workers: 1
 
@@ -10,13 +10,17 @@ Filename: `.agents/plans/PLAN-workflow-stop-feedback-and-push-alignment.md`
 
 ## Readiness
 
-- Plan readiness: Draft companion plan for proposed ADR 0087 and ADR 0088. Implementation is blocked until both ADRs are accepted (or their gated tasks are removed) and the user explicitly approves this plan. Tasks T1 and T2 are not ADR-gated but still require plan approval.
+- Plan readiness: Ready; adr-0087 and adr-0088 accepted 2026-06-11, plan explicitly approved by the user in the same request ("accept and implement adr's and plan").
+- Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Approved at: 2026-06-11T23:25:00+02:00
 - Open questions: None; user decisions recorded on 2026-06-11 (notify and log first, conservative staging fix with stronger fallback in `TASKS.md` T-BUG-017, align commit-and-push with outgoing-only push policy, report AI-caused empty messages as generation failure).
-- Implementation progress: Not started.
+- Implementation progress: T1 in progress.
 
 ## Status History
 
 - 2026-06-11T23:15:00+02:00: none -> Draft by Claude Fable 5 <noreply@anthropic.com>; companion draft plan created with proposed adr-0087 and adr-0088 from the June 2026 IDE-log investigation.
+- 2026-06-11T23:25:00+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval together with adr-0087 and adr-0088 acceptance.
+- 2026-06-11T23:26:00+02:00: Approved -> In Progress by Claude Fable 5 <noreply@anthropic.com>; sequential sub-agent task execution started with T1.
 
 ## Goal
 
@@ -97,7 +101,7 @@ Validation:
 
 Escalation triggers:
 
-- The fallback reason is not reachable at the logging call site without restructuring.
+- Report to the orchestrator when the fallback reason is not reachable at the logging call site without restructuring the `SafeImmediatePushSupport` contract.
 
 Stop conditions:
 
@@ -110,6 +114,14 @@ Expected output:
 Result summary:
 
 - Status: pending
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence:
+- Self-review evidence:
+- Commit:
+- Blockers:
+- Review risks:
+- Handoff notes and next action:
 
 ### Task Packet: T2-tolerate-head-identical-paths-in-staging-confirmation
 
@@ -162,7 +174,7 @@ Validation:
 
 Escalation triggers:
 
-- The tracker state cannot distinguish "no status entry because HEAD-identical" from "no status entry because refresh is stale" within the existing refresh round.
+- Load the `git4idea.index.GitStageTracker` platform sources and existing `SCN-STAGE-AUT-*` tests when the tracker state cannot distinguish "no status entry because HEAD-identical" from "no status entry because refresh is stale" within the existing refresh round.
 
 Stop conditions:
 
@@ -175,6 +187,14 @@ Expected output:
 Result summary:
 
 - Status: pending
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence:
+- Self-review evidence:
+- Commit:
+- Blockers:
+- Review risks:
+- Handoff notes and next action:
 
 ### Task Packet: T3-staging-confirmation-failure-stop-reason
 
@@ -224,7 +244,7 @@ Validation:
 
 Escalation triggers:
 
-- The selection service cannot distinguish staging-confirmation failure from other `UnsupportedWorkflow` causes at the stop site.
+- Report to the orchestrator when the selection service cannot distinguish staging-confirmation failure from other `UnsupportedWorkflow` causes at the stop site.
 
 Stop conditions:
 
@@ -237,6 +257,14 @@ Expected output:
 Result summary:
 
 - Status: pending
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence:
+- Self-review evidence:
+- Commit:
+- Blockers:
+- Review risks:
+- Handoff notes and next action:
 
 ### Task Packet: T4-empty-ai-message-timeout-notification
 
@@ -285,7 +313,7 @@ Validation:
 
 Escalation triggers:
 
-- Completion detection cannot tell observed-generation-empty from never-started-empty without new state.
+- Report to the orchestrator when completion detection cannot tell observed-generation-empty from never-started-empty without new state.
 
 Stop conditions:
 
@@ -298,6 +326,14 @@ Expected output:
 Result summary:
 
 - Status: pending
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence:
+- Self-review evidence:
+- Commit:
+- Blockers:
+- Review risks:
+- Handoff notes and next action:
 
 ### Task Packet: T5-allow-immediate-push-with-outgoing-commits
 
@@ -346,7 +382,7 @@ Validation:
 
 Escalation triggers:
 
-- Removing the head-match check breaks an existing test that encodes intended behavior beyond ADR 0047.
+- Review the failing test's governing requirement and report to the orchestrator when removing the head-match check breaks an existing test that encodes intended behavior beyond ADR 0047.
 
 Stop conditions:
 
@@ -359,6 +395,14 @@ Expected output:
 Result summary:
 
 - Status: pending
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence:
+- Self-review evidence:
+- Commit:
+- Blockers:
+- Review risks:
+- Handoff notes and next action:
 
 ## Execution Model
 
