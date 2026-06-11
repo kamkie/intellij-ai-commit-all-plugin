@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-workflow-stop-feedback-and-push-alignment
 
-Status: In Progress
+Status: Implemented
 
 Workers: 1
 
@@ -14,13 +14,14 @@ Filename: `.agents/plans/PLAN-workflow-stop-feedback-and-push-alignment.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-06-11T23:25:00+02:00
 - Open questions: None; user decisions recorded on 2026-06-11 (notify and log first, conservative staging fix with stronger fallback in `TASKS.md` T-BUG-017, align commit-and-push with outgoing-only push policy, report AI-caused empty messages as generation failure).
-- Implementation progress: T1 in progress.
+- Implementation progress: all five tasks implemented, validated, and committed; full `.\gradlew.bat check` passed (429 tests, 1 pre-existing skip).
 
 ## Status History
 
 - 2026-06-11T23:15:00+02:00: none -> Draft by Claude Fable 5 <noreply@anthropic.com>; companion draft plan created with proposed adr-0087 and adr-0088 from the June 2026 IDE-log investigation.
 - 2026-06-11T23:25:00+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval together with adr-0087 and adr-0088 acceptance.
 - 2026-06-11T23:26:00+02:00: Approved -> In Progress by Claude Fable 5 <noreply@anthropic.com>; sequential sub-agent task execution started with T1.
+- 2026-06-12T01:05:00+02:00: In Progress -> Implemented by Claude Fable 5 <noreply@anthropic.com>; T1-T5 committed with per-task validation and the full Gradle check passed.
 
 ## Goal
 
@@ -414,11 +415,11 @@ Result summary:
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, resume, or handoff, reread `AGENTS.md`; this plan's header, `## Readiness`, current task packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before any commit.
-- Current task or wave: none (Draft).
-- Completed commits: none.
-- Plan status and readiness: Draft; blocked on ADR 0087 and ADR 0088 acceptance and explicit plan approval.
-- Next action: user review of adr-0087, adr-0088, and this plan.
-- Context handoff notes: investigation evidence summarized in the ADRs; raw extracts in `build/log-investigation/` (untracked).
+- Current task or wave: none; all tasks complete.
+- Completed commits: T1 526fcd0 (+ detekt follow-up 1351b5f), T2 136e689, T3 716237c, T4 f36d8b8, T5 3c1e1a9.
+- Plan status and readiness: Implemented; release workflow still pending (release-notes mention of the post-commit diverged-remote discovery, scenario-register rows for the new tests).
+- Next action: release preparation per `.agents/references/releases.md` when the user requests it.
+- Context handoff notes: investigation evidence summarized in the ADRs; raw extracts in `build/log-investigation/` (untracked). Follow-up candidates: settling heuristic `hasOnlyRefreshablePushSpecUnavailable` still requires head match (see T5 risks); `TASKS.md` T-BUG-017 (stronger staging ground-truth fallback) and T-BUG-018 (draft-plan approval-line validator mismatch).
 
 ## Execution Graph
 
