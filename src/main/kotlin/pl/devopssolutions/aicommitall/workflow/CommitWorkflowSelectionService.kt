@@ -116,7 +116,7 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
         activeChangeList: LocalChangeList,
         inclusionItems: Collection<Any>,
     ): CommitWorkflowSelectionResult {
-        val synchronized = ReflectiveCommitWorkflowSynchronizer.synchronize(
+        val synchronizationResult = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = input.workflowHandler,
             changeLists = changeLists,
             unversionedFiles = selection.unversionedFiles,
@@ -125,15 +125,21 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
         )
         logger.info(
             "AI Commit All diagnostic: commit workflow selection synchronization finished, " +
-                "synchronized=$synchronized, inclusionItems=${inclusionItems.size}",
+                "synchronized=${synchronizationResult == CommitWorkflowSynchronizationResult.Synchronized}, " +
+                "result=$synchronizationResult, inclusionItems=${inclusionItems.size}",
         )
 
-        return if (synchronized) {
-            CommitWorkflowSelectionResult.Prepared(selection)
-        } else {
-            CommitWorkflowSelectionResult.UnsupportedWorkflow(
-                "The active commit workflow does not expose compatible inclusion-state methods.",
-            )
+        return when (synchronizationResult) {
+            CommitWorkflowSynchronizationResult.Synchronized ->
+                CommitWorkflowSelectionResult.Prepared(selection)
+
+            CommitWorkflowSynchronizationResult.StagingConfirmationFailed ->
+                CommitWorkflowSelectionResult.StagingConfirmationFailed
+
+            CommitWorkflowSynchronizationResult.Incompatible ->
+                CommitWorkflowSelectionResult.UnsupportedWorkflow(
+                    "The active commit workflow does not expose compatible inclusion-state methods.",
+                )
         }
     }
 

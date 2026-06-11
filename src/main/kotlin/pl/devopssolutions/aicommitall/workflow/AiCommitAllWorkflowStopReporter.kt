@@ -52,6 +52,12 @@ internal class WorkflowStopReporter(
                     content = AI_TIMEOUT_NOTIFICATION_CONTENT,
                 )
 
+            AiCommitAllWorkflowStopReason.StagingConfirmationFailed ->
+                notifier.warning(
+                    title = AiCommitAllSettings.DISPLAY_NAME,
+                    content = STAGING_CONFIRMATION_FAILED_NOTIFICATION_CONTENT,
+                )
+
             AiCommitAllWorkflowStopReason.EmptyMessage ->
                 notifier.warning(
                     title = VcsBundle.message("error.title.check.in.with.empty.comment"),
@@ -65,6 +71,9 @@ internal class WorkflowStopReporter(
     companion object {
         const val AI_TIMEOUT_NOTIFICATION_CONTENT: String =
             "AI Assistant did not finish generating a commit message before the configured timeout."
+        const val STAGING_CONFIRMATION_FAILED_NOTIFICATION_CONTENT: String =
+            "Staging could not be confirmed for the selected changes. " +
+                "Refresh the Commit tool window or repeat the action; the staging area state may be stale."
     }
 }
 

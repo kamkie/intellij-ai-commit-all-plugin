@@ -55,6 +55,24 @@ internal class AiCommitAllWorkflowStopReporterTest {
     }
 
     @Test
+    fun `reports staging confirmation failure with plugin owned warning message`() {
+        val notifier = CapturingWorkflowStopNotifier()
+
+        WorkflowStopReporter(notifier).report(AiCommitAllWorkflowStopReason.StagingConfirmationFailed)
+
+        assertEquals(
+            listOf(
+                WarningNotification(
+                    title = "AI Commit All",
+                    content = "Staging could not be confirmed for the selected changes. " +
+                        "Refresh the Commit tool window or repeat the action; the staging area state may be stale.",
+                ),
+            ),
+            notifier.warnings,
+        )
+    }
+
+    @Test
     fun `reports empty generated commit message with standard VCS message`() {
         val notifier = CapturingWorkflowStopNotifier()
 

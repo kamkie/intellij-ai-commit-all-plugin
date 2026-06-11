@@ -28,4 +28,6 @@ internal sealed interface CommitWorkflowSelectionResult {
     data class UnsupportedVcs(val supportStatus: GitVcsSupportStatus) : CommitWorkflowSelectionResult
 
     data class UnsupportedWorkflow(val reason: String) : CommitWorkflowSelectionResult
+
+    data object StagingConfirmationFailed : CommitWorkflowSelectionResult
 }

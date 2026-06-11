@@ -30,7 +30,6 @@ import java.nio.charset.Charset
 import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 internal class ReflectiveCommitWorkflowSynchronizerTest {
@@ -48,7 +47,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             inclusionItems = items,
         )
 
-        assertTrue(result)
+        assertEquals(CommitWorkflowSynchronizationResult.Synchronized, result)
         assertEquals(listOf(changeList), handler.synchronizedChangeLists)
         assertEquals(0, handler.synchronizedUnversionedCount)
         assertEquals(changeList, handler.activeChangeList)
@@ -71,7 +70,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             inclusionItems = items,
         )
 
-        assertTrue(result)
+        assertEquals(CommitWorkflowSynchronizationResult.Synchronized, result)
         assertEquals(listOf(changeList), handler.synchronizedChangeLists)
         assertEquals(1, handler.synchronizedUnversionedCount)
         assertEquals(items, handler.inclusionItems)
@@ -91,7 +90,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             diagnostics = diagnostics,
         )
 
-        assertFalse(result)
+        assertEquals(CommitWorkflowSynchronizationResult.Incompatible, result)
         assertEquals(
             listOf(
                 CommitWorkflowCompatibilityDiagnostic(
@@ -118,7 +117,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             inclusionItems = emptyList(),
         )
 
-        assertFalse(result)
+        assertEquals(CommitWorkflowSynchronizationResult.Incompatible, result)
         assertEquals(null, handler.synchronizedChangeLists)
         assertEquals(null, handler.activeChangeList)
     }
@@ -137,7 +136,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             diagnostics = diagnostics,
         )
 
-        assertFalse(result)
+        assertEquals(CommitWorkflowSynchronizationResult.Incompatible, result)
         assertEquals(
             listOf(
                 CommitWorkflowCompatibilityDiagnostic(
@@ -165,7 +164,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             diagnostics = diagnostics,
         )
 
-        assertFalse(result)
+        assertEquals(CommitWorkflowSynchronizationResult.Incompatible, result)
         assertEquals(
             listOf(
                 CommitWorkflowCompatibilityDiagnostic(
@@ -193,7 +192,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             diagnostics = diagnostics,
         )
 
-        assertFalse(result)
+        assertEquals(CommitWorkflowSynchronizationResult.Incompatible, result)
         assertEquals(
             listOf(
                 CommitWorkflowCompatibilityDiagnostic(
@@ -223,7 +222,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             synchronizationRetry = singleAttemptRetry(),
         )
 
-        assertFalse(result)
+        assertEquals(CommitWorkflowSynchronizationResult.Incompatible, result)
         assertEquals(
             listOf(
                 CommitWorkflowCompatibilityDiagnostic(
@@ -252,7 +251,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             inclusionItems = items,
         )
 
-        assertTrue(result)
+        assertEquals(CommitWorkflowSynchronizationResult.Synchronized, result)
         assertEquals(2, handler.synchronizeCallCount)
         assertEquals(1, handler.setCommitStateCallCount)
         assertEquals(changeList, handler.activeChangeList)

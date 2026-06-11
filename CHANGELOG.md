@@ -13,6 +13,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 ### Fixed
 
 - Continue the workflow instead of stalling in staging confirmation and stopping silently when a selected file has no real content change against HEAD after staging (for example a line-ending-only difference erased by Git line-ending normalization).
+- Show a warning notification naming the cause when Git staging confirmation fails after its bounded retries, instead of stopping the workflow silently as an unsupported workflow.
 
 ## [v0.1.0-beta.3] - 2026-06-04
 

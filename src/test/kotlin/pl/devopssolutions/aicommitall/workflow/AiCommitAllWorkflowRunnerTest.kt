@@ -283,6 +283,52 @@ internal class AiCommitAllWorkflowRunnerTest {
     }
 
     @Test
+    fun `staging confirmation failure stops with staging confirmation failed reason`() {
+        val dependencies = CapturingWorkflowDependencies(
+            selectionResult = CommitWorkflowSelectionResult.StagingConfirmationFailed,
+        )
+
+        val result = runner(dependencies)
+            .start(AiCommitAllWorkflowMode.Commit, testDataContext())
+            .join()
+
+        assertEquals(
+            AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.StagingConfirmationFailed),
+            result,
+        )
+        assertEquals(
+            listOf("readiness", "prepare", "stop:StagingConfirmationFailed"),
+            dependencies.events,
+        )
+        assertEquals(0, dependencies.commitCallCount)
+        assertEquals(0, dependencies.pushCallCount)
+    }
+
+    @Test
+    fun `unsupported workflow selection still stops with unsupported workflow reason`() {
+        val dependencies = CapturingWorkflowDependencies(
+            selectionResult = CommitWorkflowSelectionResult.UnsupportedWorkflow(
+                "The active commit workflow does not expose compatible inclusion-state methods.",
+            ),
+        )
+
+        val result = runner(dependencies)
+            .start(AiCommitAllWorkflowMode.Commit, testDataContext())
+            .join()
+
+        assertEquals(
+            AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.UnsupportedWorkflow),
+            result,
+        )
+        assertEquals(
+            listOf("readiness", "prepare", "stop:UnsupportedWorkflow"),
+            dependencies.events,
+        )
+        assertEquals(0, dependencies.commitCallCount)
+        assertEquals(0, dependencies.pushCallCount)
+    }
+
+    @Test
     fun `empty selection is retried before AI generation starts`() {
         val selection = GitChangeSelection(
             trackedChanges = emptyList(),

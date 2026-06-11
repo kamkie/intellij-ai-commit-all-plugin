@@ -431,6 +431,9 @@ private fun selectionPreparation(
 
     is CommitWorkflowSelectionResult.UnsupportedWorkflow ->
         AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.UnsupportedWorkflow)
+
+    CommitWorkflowSelectionResult.StagingConfirmationFailed ->
+        AiCommitAllWorkflowPreparationResult.Stopped(AiCommitAllWorkflowStopReason.StagingConfirmationFailed)
 }
 
 private fun emptySelectionPreparation(
@@ -683,6 +686,7 @@ internal enum class AiCommitAllWorkflowStopReason {
     EmptySelection,
     UnsupportedVcs,
     UnsupportedWorkflow,
+    StagingConfirmationFailed,
     MissingAiAction,
     AiCompletionFailed,
     AiTimeout,

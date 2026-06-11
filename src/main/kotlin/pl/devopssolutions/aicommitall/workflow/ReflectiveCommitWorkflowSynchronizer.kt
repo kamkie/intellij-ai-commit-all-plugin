@@ -38,7 +38,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         inclusionItems: Collection<Any>,
         diagnostics: CommitWorkflowCompatibilityDiagnostics = IntelliJCommitWorkflowCompatibilityDiagnostics,
         synchronizationRetry: CommitWorkflowSynchronizationRetry = CommitWorkflowSynchronizationRetry.DEFAULT,
-    ): Boolean = synchronizeGitStageWorkflow(workflowHandler, diagnostics)
+    ): CommitWorkflowSynchronizationResult = synchronizeGitStageWorkflow(workflowHandler, diagnostics)
         ?: synchronizeCommitWorkflow(
             workflowHandler = workflowHandler,
             changeLists = changeLists,
@@ -57,16 +57,23 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         inclusionItems: Collection<Any>,
         diagnostics: CommitWorkflowCompatibilityDiagnostics,
         synchronizationRetry: CommitWorkflowSynchronizationRetry,
-    ): Boolean = inclusionItems.isNotEmpty() &&
-        workflowHandler.javaClass.commitWorkflowMethods(diagnostics)?.synchronize(
-            workflowHandler = workflowHandler,
-            changeLists = changeLists,
-            unversionedFiles = unversionedFiles,
-            activeChangeList = activeChangeList,
-            inclusionItems = inclusionItems,
-            diagnostics = diagnostics,
-            synchronizationRetry = synchronizationRetry,
-        ) == true
+    ): CommitWorkflowSynchronizationResult {
+        val synchronized = inclusionItems.isNotEmpty() &&
+            workflowHandler.javaClass.commitWorkflowMethods(diagnostics)?.synchronize(
+                workflowHandler = workflowHandler,
+                changeLists = changeLists,
+                unversionedFiles = unversionedFiles,
+                activeChangeList = activeChangeList,
+                inclusionItems = inclusionItems,
+                diagnostics = diagnostics,
+                synchronizationRetry = synchronizationRetry,
+            ) == true
+        return if (synchronized) {
+            CommitWorkflowSynchronizationResult.Synchronized
+        } else {
+            CommitWorkflowSynchronizationResult.Incompatible
+        }
+    }
 
     private fun Class<*>.commitWorkflowMethods(
         diagnostics: CommitWorkflowCompatibilityDiagnostics,
@@ -100,7 +107,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
     private fun synchronizeGitStageWorkflow(
         workflowHandler: CommitWorkflowHandler,
         diagnostics: CommitWorkflowCompatibilityDiagnostics,
-    ): Boolean? {
+    ): CommitWorkflowSynchronizationResult? {
         val gitStageHandler = workflowHandler as? GitStageCommitWorkflowHandler ?: return null
 
         return runCatching {
@@ -110,7 +117,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
             val currentState = tracker.state
             val expectedPathsByRoot = GitStageSelectionItems.committablePathsByRoot(currentState)
             if (expectedPathsByRoot.isEmpty()) {
-                return@runCatching false
+                return@runCatching CommitWorkflowSynchronizationResult.Incompatible
             }
             val pathsToStageByRoot = GitStageSelectionItems.pathsToStageByRoot(currentState)
 
@@ -127,7 +134,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
                         reason = "staging state confirmation failed",
                     ),
                 )
-                return@runCatching false
+                return@runCatching CommitWorkflowSynchronizationResult.StagingConfirmationFailed
             }
             val includedRoots = expectedPathsByRoot.keys
             CommitWorkflowUiThreadAccess.run {
@@ -135,7 +142,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
                 gitStageHandler.ui.setTrackerState(refreshedState)
                 gitStageHandler.ui.setIncludedRoots(includedRoots)
             }
-            true
+            CommitWorkflowSynchronizationResult.Synchronized
         }.getOrElse { exception ->
             diagnostics.report(
                 CommitWorkflowCompatibilityDiagnostic(
@@ -146,7 +153,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
                     causeClassName = exception.cause?.javaClass?.name,
                 ),
             )
-            false
+            CommitWorkflowSynchronizationResult.Incompatible
         }
     }
 
@@ -170,6 +177,14 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         method.name == name &&
             method.parameterTypes.contentEquals(parameterTypes)
     }
+}
+
+internal sealed interface CommitWorkflowSynchronizationResult {
+    data object Synchronized : CommitWorkflowSynchronizationResult
+
+    data object StagingConfirmationFailed : CommitWorkflowSynchronizationResult
+
+    data object Incompatible : CommitWorkflowSynchronizationResult
 }
 
 private data class CommitWorkflowMethods(

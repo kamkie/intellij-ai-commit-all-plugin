@@ -256,15 +256,15 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review evidence:
-- Commit:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: done
+- Worker: worker-t3 (implementation, mode code)
+- Changed files or reviewed diff: synchronizer returns sealed `CommitWorkflowSynchronizationResult` (staging failure vs incompatible vs synchronized); `CommitWorkflowSelectionResult.StagingConfirmationFailed`; coordinator enum + mapping; stop reporter warning (constant body, AiTimeout precedent); tests for reporter, runner (failure vs genuinely-unsupported), synchronizer; spec 10.1 row, REQ-ERR-003/004, REQ-ACT-006 (orchestrator follow-up), 13.1 row; changelog entry.
+- Validation evidence: scoped Gradle tests 141/141 passed; `detekt spotlessCheck` passed; `validate-docs.ps1` passed (re-run after orchestrator REQ-ACT-006 amendment).
+- Self-review evidence: only `Synchronized` maps to `Prepared`; both failure variants stop without commit/push; notification body pinned by test.
+- Commit: T3 plan-task commit on main (`Project-Plan-Task: T3-staging-confirmation-failure-stop-reason`).
+- Blockers: none.
+- Review risks: unconfirmed path count omitted from the notification (would require payload-carrying stop reasons; ADR 0088 SHOULD-level). `synchronizeGitStageWorkflow` mapping verified by exhaustiveness + downstream tests; real-IDE confirmation stays with `SCN-STAGE-AUT-*`.
+- Handoff notes and next action: next: T4.
 
 ### Task Packet: T4-empty-ai-message-timeout-notification
 
