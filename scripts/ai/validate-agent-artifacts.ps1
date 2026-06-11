@@ -585,8 +585,8 @@ function Test-AgentPlans
         if ($readinessMatch.Success -and $null -ne $status -and $statusesRequiringApproval -contains $status)
         {
             $readinessText = $readinessMatch.Groups[1].Value
-            $approvedByMatch = [regex]::Match($readinessText, '(?m)^-\s+Approved by:\s*(.*?)\s*$')
-            $approvedAtMatch = [regex]::Match($readinessText, '(?m)^-\s+Approved at:\s*(.*?)\s*$')
+            $approvedByMatch = [regex]::Match($readinessText, '(?m)^-\s+Approved by:[ \t]*(.*?)[ \t]*$')
+            $approvedAtMatch = [regex]::Match($readinessText, '(?m)^-\s+Approved at:[ \t]*(.*?)[ \t]*$')
             $approvedBy = if ($approvedByMatch.Success)
             {
                 $approvedByMatch.Groups[1].Value.Trim()

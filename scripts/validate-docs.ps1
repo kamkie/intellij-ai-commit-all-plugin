@@ -354,9 +354,9 @@ foreach ($plan in $planFiles) {
         Add-ValidationError "$relative is missing a ## Readiness section"
     } else {
         $readinessText = $readinessMatch.Groups[1].Value
-        $approvedByMatch = [regex]::Match($readinessText, '(?m)^-\s+Approved by:\s*(.*?)\s*$')
+        $approvedByMatch = [regex]::Match($readinessText, '(?m)^-\s+Approved by:[ \t]*(.*?)[ \t]*$')
         $approvedBy = if ($approvedByMatch.Success) { $approvedByMatch.Groups[1].Value.Trim() } else { '' }
-        $approvedAtMatch = [regex]::Match($readinessText, '(?m)^-\s+Approved at:\s*(.*?)\s*$')
+        $approvedAtMatch = [regex]::Match($readinessText, '(?m)^-\s+Approved at:[ \t]*(.*?)[ \t]*$')
         $approvedAt = if ($approvedAtMatch.Success)
         {
             $approvedAtMatch.Groups[1].Value.Trim()

@@ -17,7 +17,6 @@ Use this reference when validation, sandbox runs, plugin packaging, or manual In
 - Fix missing ADR index rows, implementation tracker rows, prompt catalog rows, broken local links, malformed refs, or Markdown lint failures at the owning artifact.
 - Do not silence markdownlint or remove governance checks unless a new accepted ADR changes the validation policy.
 - Governed Markdown files use LF line endings, and several validator table regexes anchor on `|$`, so a PowerShell `Set-Content`/`Out-File` rewrite (which emits CRLF) makes every ADR tracker row report as missing. Use targeted editor edits, or `[System.IO.File]::WriteAllText` with LF content, for scripted rewrites.
-- In `Draft` plans, omit the `Approved by:` and `Approved at:` readiness lines entirely instead of leaving them empty; the validator's extraction regex walks across an empty value onto the next bullet and reports the draft as claiming approval (tracked as T-BUG-018).
 
 ## Gradle And Formatting
 
