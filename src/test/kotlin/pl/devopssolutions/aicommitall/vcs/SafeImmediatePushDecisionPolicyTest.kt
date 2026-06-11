@@ -61,21 +61,10 @@ internal class SafeImmediatePushDecisionPolicyTest {
     }
 
     @Test
-    fun `falls back when force-push safety cannot be proven`() {
+    fun `allows immediate push when local branch is ahead of tracked upstream`() {
         val result = SafeImmediatePushDecisionPolicy.fallbackReason(
             repositories = listOf(safeRepositoryState(localMatchesTrackedUpstream = false)),
             hasUnresolvedConflicts = false,
-        )
-
-        assertEquals(SafeImmediatePushFallbackReason.ForcePushStateUnverified, result)
-    }
-
-    @Test
-    fun `allows outgoing-only push when local branch is ahead of tracked upstream`() {
-        val result = SafeImmediatePushDecisionPolicy.fallbackReason(
-            repositories = listOf(safeRepositoryState(localMatchesTrackedUpstream = false)),
-            hasUnresolvedConflicts = false,
-            requireTrackedUpstreamHeadMatch = false,
         )
 
         assertNull(result)

@@ -61,7 +61,6 @@ internal enum class SafeImmediatePushFallbackReason {
     UnsafeRepositoryState,
     UnresolvedConflict,
     MissingTrackedUpstream,
-    ForcePushStateUnverified,
     AmbiguousTarget,
     UnsupportedPushApi,
 }
@@ -81,7 +80,6 @@ internal object SafeImmediatePushDecisionPolicy {
     fun fallbackReason(
         repositories: Collection<SafeImmediatePushRepositoryState>,
         hasUnresolvedConflicts: Boolean,
-        requireTrackedUpstreamHeadMatch: Boolean = true,
     ): SafeImmediatePushFallbackReason? = listOf(
         repositories.isEmpty() to SafeImmediatePushFallbackReason.NoAffectedRepositories,
         hasUnresolvedConflicts to SafeImmediatePushFallbackReason.UnresolvedConflict,
@@ -89,8 +87,6 @@ internal object SafeImmediatePushDecisionPolicy {
             SafeImmediatePushFallbackReason.UnsafeRepositoryState,
         repositories.any { repository -> !repository.hasTrackedUpstream } to
             SafeImmediatePushFallbackReason.MissingTrackedUpstream,
-        trackedUpstreamHeadMismatch(repositories, requireTrackedUpstreamHeadMatch) to
-            SafeImmediatePushFallbackReason.ForcePushStateUnverified,
         repositories.any { repository -> repository.hasAmbiguousTarget } to
             SafeImmediatePushFallbackReason.AmbiguousTarget,
         repositories.any { repository -> !repository.pushSpecAvailable } to
@@ -102,12 +98,6 @@ internal object SafeImmediatePushDecisionPolicy {
             !targetMatchesTrackedUpstream ||
             targetIsNewBranch ||
             targetIsSpecialRef
-
-    private fun trackedUpstreamHeadMismatch(
-        repositories: Collection<SafeImmediatePushRepositoryState>,
-        requireTrackedUpstreamHeadMatch: Boolean,
-    ): Boolean = requireTrackedUpstreamHeadMatch &&
-        repositories.any { repository -> !repository.localMatchesTrackedUpstream }
 }
 
 @Service(Service.Level.PROJECT)
@@ -216,7 +206,6 @@ internal class SafeImmediatePushService @JvmOverloads constructor(
             pushSpecs = pushSpecs,
             repositoryStates = repositoryStates,
             hasUnresolvedConflicts = false,
-            requireTrackedUpstreamHeadMatch = false,
         )
         return if (hasRefreshableUnavailableMetadata && decision.isNotUnsafeFallback()) {
             SafeImmediatePushPreparationAttempt.RefreshablePushMetadataUnavailable(
@@ -231,12 +220,10 @@ internal class SafeImmediatePushService @JvmOverloads constructor(
         pushSpecs: Map<SafeImmediatePushRepositoryHandle, SafeImmediatePushSpecHandle>,
         repositoryStates: Collection<SafeImmediatePushRepositoryState>,
         hasUnresolvedConflicts: Boolean,
-        requireTrackedUpstreamHeadMatch: Boolean = true,
     ): SafeImmediatePushDecision {
         val fallbackReason = SafeImmediatePushDecisionPolicy.fallbackReason(
             repositories = repositoryStates,
             hasUnresolvedConflicts = hasUnresolvedConflicts,
-            requireTrackedUpstreamHeadMatch = requireTrackedUpstreamHeadMatch,
         )
         return if (fallbackReason == null) {
             SafeImmediatePushDecision.Immediate(

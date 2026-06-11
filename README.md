@@ -46,6 +46,8 @@ Then:
 | `Commit` | Generate the message, then commit. |
 | `Push` | Commit and push, or push safe outgoing commits when nothing new needs committing. |
 
+When the push state is safe, `Push` pushes silently without the IDE Push Commits dialog, including when the local branch already has unpushed commits from earlier `Commit` runs. Commit-and-push falls back to the dialog only for states such as a missing tracked upstream, an ambiguous push target, unresolved conflicts, an abnormal repository state, or an unsupported push API. The push is always a normal non-force push; a remote that moved ahead surfaces as a standard push failure after the commit.
+
 ## Key Settings
 
 Open `Settings | Tools | AI Commit All`.

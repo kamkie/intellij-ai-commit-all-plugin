@@ -92,8 +92,8 @@ When committable changes exist:
 
 1. The plugin performs the full `Commit` workflow.
 2. After the commit completes, the plugin attempts to push.
-3. If the push state is safe, the IDE Push Commits dialog is skipped.
-4. If the push state is not safe for immediate push, the workflow falls back to the IDE commit-and-push executor and Push Commits dialog.
+3. If the push state is safe, the IDE Push Commits dialog is skipped. Local commits that were not pushed yet, for example from earlier `Commit` runs, do not block the immediate push.
+4. If the push state is not safe for immediate push, for example a missing tracked upstream, an ambiguous push target, unresolved conflicts, an abnormal repository state, or an unsupported push API, the workflow falls back to the IDE commit-and-push executor and Push Commits dialog.
 
 When no committable changes exist but local outgoing commits are available:
 
@@ -154,7 +154,7 @@ At user level, that means every affected Git repository must have:
 - An unambiguous target that matches the tracked upstream.
 - No force-push requirement, new-branch push, or special-ref target.
 
-You can still commit when your branch is already ahead of its tracked upstream. The match check only controls whether `Push` can skip the IDE Push Commits dialog after creating a new commit. For commit-and-push, the plugin uses immediate push only when the branch matched its tracked upstream before the new commit; otherwise it falls back to the IDE commit-and-push flow. For outgoing-only push, the branch may already be ahead because the outgoing commits are the work being pushed.
+A local branch that is already ahead of its tracked upstream does not block immediate push. Both commit-and-push and outgoing-only push tolerate existing unpushed commits, for example from earlier `Commit` runs. The push is always a normal non-force push: if the remote moved ahead in the meantime, the Git server rejects the push and the rejection surfaces as a standard IDE push failure after the commit; update your branch with pull or rebase, then push again.
 
 The plugin does not add its own confirmation dialog for the safe immediate-push path. Unsafe commit-and-push states fall back to the IDE dialog. Unsafe outgoing-only push states stop instead of opening the dialog.
 

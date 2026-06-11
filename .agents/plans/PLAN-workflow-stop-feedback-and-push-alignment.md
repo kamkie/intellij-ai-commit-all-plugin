@@ -394,15 +394,15 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review evidence:
-- Commit:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: done
+- Worker: worker-t5 (implementation, mode code)
+- Changed files or reviewed diff: `SafeImmediatePushService.kt` (removed `ForcePushStateUnverified` and the `requireTrackedUpstreamHeadMatch` head-match check; `localMatchesTrackedUpstream` field and settling heuristic kept unchanged), policy/service tests (local-ahead now Immediate, TDD red captured; all other fallback coverage retained), spec REQ-PUSH-002/003/005 + 13.1 ADR 0087 row, README new push-fallback paragraph, user-guide push sections, changelog Changed entry.
+- Validation evidence: `clean test --tests "*SafeImmediatePush*"` 29/29 passed; full `.\gradlew.bat test` 429/429 passed (1 pre-existing skip); `detekt spotlessCheck` passed; `validate-docs.ps1` passed; `git diff --check` clean.
+- Self-review evidence: force push impossible (`force=false` unchanged); all other ADR 0047 conditions verified intact; no stale `ForcePushStateUnverified` references repo-wide.
+- Commit: T5 plan-task commit on main (`Project-Plan-Task: T5-allow-immediate-push-with-outgoing-commits`).
+- Blockers: none.
+- Review risks: settling heuristic `hasOnlyRefreshablePushSpecUnavailable` still requires head match, so a local-ahead repo with a transiently missing push spec falls back without the 3x50ms settling retry (pre-existing shape, explicitly out of scope; candidate follow-up). Diverged-remote discovery moves post-commit per ADR 0087 — release notes must mention it.
+- Handoff notes and next action: plan complete pending full `gradlew check` and release-sweep scenario-register updates.
 
 ## Execution Model
 

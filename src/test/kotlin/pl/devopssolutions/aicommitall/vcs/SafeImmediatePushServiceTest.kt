@@ -284,6 +284,31 @@ internal class SafeImmediatePushServiceTest {
     }
 
     @Test
+    fun `prepare creates immediate push plan when local branch is ahead of tracked upstream`() {
+        val path = TestFilePath("/repo/modified.txt")
+        val repository = SafeImmediatePushRepositoryHandle("repo")
+        val pushSpec = SafeImmediatePushSpecHandle("spec")
+        val environment = CapturingSafeImmediatePushEnvironment(
+            repositoriesByPath = mapOf(path.path to repository),
+            pushStates = mapOf(
+                repository to pushState(pushSpec, localMatchesTrackedUpstream = false),
+            ),
+        )
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepare(
+            GitChangeSelection(
+                trackedChanges = emptyList(),
+                unversionedFiles = listOf(path),
+            ),
+        )
+        decision.asImmediate().plan.push()
+
+        assertEquals(setOf(repository), environment.awaitedRepositories.single().toSet())
+        assertEquals(mapOf(repository to pushSpec), environment.pushedSpecs.single())
+    }
+
+    @Test
     fun `prepare retries refreshable unavailable push metadata before falling back`() {
         val path = TestFilePath("/repo/modified.txt")
         val repository = SafeImmediatePushRepositoryHandle("repo")

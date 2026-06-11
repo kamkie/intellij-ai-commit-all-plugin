@@ -10,6 +10,10 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ## [Unreleased]
 
+### Changed
+
+- `Push` no longer opens the IDE Push Commits dialog just because earlier commits have not been pushed; commit-and-push now pushes immediately when the local branch is ahead of its tracked upstream, and a remote that moved ahead surfaces as a standard push error after the commit instead of a pre-commit dialog.
+
 ### Fixed
 
 - Continue the workflow instead of stalling in staging confirmation and stopping silently when a selected file has no real content change against HEAD after staging (for example a line-ending-only difference erased by Git line-ending normalization).
