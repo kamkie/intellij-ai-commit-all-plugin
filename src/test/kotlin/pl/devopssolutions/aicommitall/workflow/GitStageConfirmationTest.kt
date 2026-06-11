@@ -136,6 +136,53 @@ internal class GitStageConfirmationTest {
     }
 
     @Test
+    fun `confirms head-identical expected path absent from refreshed initialized state`() {
+        val root = LightVirtualFile("repo")
+        val headIdentical = TestFilePath("/repo/line-endings-only.txt")
+        val refreshed = stageState(root)
+        val operations = CapturingOperations(refreshed)
+
+        val result = confirmation(operations, attempts = 3)
+            .confirm(mapOf(root to listOf(headIdentical)))
+
+        assertSame(refreshed, result)
+        assertEquals(
+            listOf(
+                "stage:repo:/repo/line-endings-only.txt",
+                "reload:/repo/line-endings-only.txt",
+                "refresh",
+            ),
+            operations.events,
+        )
+    }
+
+    @Test
+    fun `re-stages only reported paths while a head-identical path stays satisfied`() {
+        val root = LightVirtualFile("repo")
+        val modified = TestFilePath("/repo/modified.txt")
+        val headIdentical = TestFilePath("/repo/line-endings-only.txt")
+        val partial = stageState(root, gitStatus(' ', 'M', modified))
+        val confirmed = stageState(root, gitStatus('M', ' ', modified))
+        val operations = CapturingOperations(partial, confirmed)
+
+        val result = confirmation(operations, attempts = 3)
+            .confirm(mapOf(root to listOf(modified, headIdentical)))
+
+        assertSame(confirmed, result)
+        assertEquals(
+            listOf(
+                "stage:repo:/repo/modified.txt,/repo/line-endings-only.txt",
+                "reload:/repo/modified.txt,/repo/line-endings-only.txt",
+                "refresh",
+                "stage:repo:/repo/modified.txt",
+                "reload:/repo/modified.txt,/repo/line-endings-only.txt",
+                "refresh",
+            ),
+            operations.events,
+        )
+    }
+
+    @Test
     fun `confirms already staged paths without re-staging them`() {
         val root = LightVirtualFile("repo")
         val stagedDeletion = TestFilePath("/repo/delete-me.txt")
@@ -192,6 +239,21 @@ internal class GitStageConfirmationTest {
         assertEquals(3, operations.stageCallCount)
         assertEquals(3, operations.reloadCallCount)
         assertEquals(3, operations.refreshCallCount)
+    }
+
+    @Test
+    fun `fails closed when every tracker refresh attempt fails`() {
+        val root = LightVirtualFile("repo")
+        val modified = TestFilePath("/repo/modified.txt")
+        val operations = CapturingOperations()
+        operations.failRefreshCalls += 1
+        operations.failRefreshCalls += 2
+
+        val result = confirmation(operations, attempts = 2)
+            .confirm(mapOf(root to listOf(modified)))
+
+        assertNull(result)
+        assertEquals(2, operations.refreshCallCount)
     }
 
     @Test

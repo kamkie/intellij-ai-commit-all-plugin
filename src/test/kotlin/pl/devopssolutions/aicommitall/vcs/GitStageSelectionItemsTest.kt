@@ -353,6 +353,58 @@ internal class GitStageSelectionItemsTest {
     }
 
     @Test
+    fun `treats expected path without status entry as satisfied by refreshed initialized roots`() {
+        val staged = TestFilePath("/repo/staged.txt")
+        val headIdentical = TestFilePath("/repo/line-endings-only.txt")
+        val state = stageState(gitStatus('M', ' ', staged))
+
+        assertTrue(GitStageSelectionItems.containsAllStagedPaths(state, listOf(staged, headIdentical)))
+        assertEquals(
+            emptyList(),
+            GitStageSelectionItems.missingStagedPaths(state, listOf(staged, headIdentical)),
+        )
+    }
+
+    @Test
+    fun `keeps expected path without status entry missing when tracker state has no roots`() {
+        val headIdentical = TestFilePath("/repo/line-endings-only.txt")
+        val state = GitStageTracker.State(emptyMap())
+
+        assertFalse(GitStageSelectionItems.containsAllStagedPaths(state, listOf(headIdentical)))
+        assertEquals(
+            listOf(headIdentical),
+            GitStageSelectionItems.missingStagedPaths(state, listOf(headIdentical)),
+        )
+    }
+
+    @Test
+    fun `keeps expected path without status entry missing while a tracker root is not initialized`() {
+        val root = LightVirtualFile("repo")
+        val headIdentical = TestFilePath("/repo/line-endings-only.txt")
+        val state = GitStageTracker.State(
+            mapOf(root to GitStageTracker.RootState(root, false, emptyMap())),
+        )
+
+        assertFalse(GitStageSelectionItems.containsAllStagedPaths(state, listOf(headIdentical)))
+        assertEquals(
+            listOf(headIdentical),
+            GitStageSelectionItems.missingStagedPaths(state, listOf(headIdentical)),
+        )
+    }
+
+    @Test
+    fun `keeps unstaged rename source missing even though it has no own status entry`() {
+        val renameSource = TestFilePath("/repo/docs/old.md")
+        val renameTarget = TestFilePath("/repo/docs/new.md")
+        val state = stageState(gitStatus(' ', 'R', renameTarget, renameSource))
+
+        assertEquals(
+            listOf(renameSource),
+            GitStageSelectionItems.missingStagedPaths(state, listOf(renameSource)),
+        )
+    }
+
+    @Test
     fun `matches refreshed staged paths by path text`() {
         val expected = TestFilePath("/repo/modified.txt")
         val refreshed = TestFilePath("/repo/modified.txt")

@@ -57,18 +57,38 @@ internal object GitStageSelectionItems {
         state: GitStageTracker.State,
         expectedPaths: Collection<FilePath>,
     ): List<FilePath> {
-        val stagedPaths = state.rootStates.values
+        val statuses = state.rootStates.values
+            .flatMap { rootState -> rootState.statuses.values }
+        val stagedPaths = statuses
             .asSequence()
-            .flatMap { rootState -> rootState.statuses.values.asSequence() }
             .flatMap { status -> status.stagedPaths().asSequence() }
             .map { path -> path.normalizedPath() }
             .toSet()
+        val reportedPaths = statuses
+            .asSequence()
+            .flatMap { status -> status.reportedPaths().asSequence() }
+            .map { path -> path.normalizedPath() }
+            .toSet()
+        val absentPathsAreHeadIdentical = state.confirmsAbsentExpectedPaths()
 
         return expectedPaths
             .distinctBy { path -> path.normalizedPath() }
-            .filter { path -> path.normalizedPath() !in stagedPaths }
+            .filter { path ->
+                val normalizedPath = path.normalizedPath()
+                when {
+                    normalizedPath in stagedPaths -> false
+                    normalizedPath in reportedPaths -> true
+                    else -> !absentPathsAreHeadIdentical
+                }
+            }
     }
 }
+
+// A refreshed snapshot from initialized Git roots reports every changed path, so an expected path
+// it no longer mentions has staged content identical to HEAD and contributes nothing to the
+// commit. Empty or partially initialized tracker snapshots stay fail-closed.
+private fun GitStageTracker.State.confirmsAbsentExpectedPaths(): Boolean = rootStates.isNotEmpty() &&
+    rootStates.values.all { rootState -> rootState.initialized }
 
 private fun GitFileStatus.committablePath(): FilePath? = if (isIgnored() || isNotChanged()) {
     null
@@ -87,6 +107,8 @@ private fun GitFileStatus.stagedPaths(): List<FilePath> = if (canConfirmStagedPa
 } else {
     emptyList()
 }
+
+private fun GitFileStatus.reportedPaths(): List<FilePath> = listOfNotNull(path, origPath)
 
 private fun GitFileStatus.isExcludedFromStageMutation(): Boolean = isIgnored() || isNotChanged() || isConflicted()
 

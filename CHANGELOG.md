@@ -10,6 +10,10 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ## [Unreleased]
 
+### Fixed
+
+- Continue the workflow instead of stalling in staging confirmation and stopping silently when a selected file has no real content change against HEAD after staging (for example a line-ending-only difference erased by Git line-ending normalization).
+
 ## [v0.1.0-beta.3] - 2026-06-04
 
 ### Fixed
