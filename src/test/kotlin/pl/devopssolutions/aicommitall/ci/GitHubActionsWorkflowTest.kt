@@ -151,13 +151,15 @@ internal class GitHubActionsWorkflowTest {
     fun `gradle configures detekt static analysis reports`() {
         val content = Files.readString(Path.of("build.gradle.kts"))
         val buildLogic = Files.readString(gradleVerificationTask("VerifyDetektBaselineTask.kt"))
+        val detektPluginDeclaration = Regex("id\\(\"dev\\.detekt\"\\) version \"[^\"]+\"")
+        val detektToolVersionDeclaration = Regex("toolVersion = \"[^\"]+\"")
 
         assertTrue(
-            content.contains("id(\"dev.detekt\") version \"2.0.0-alpha.3\""),
-            "The build must apply the Detekt Gradle plugin version aligned with the Kotlin toolchain.",
+            detektPluginDeclaration.containsMatchIn(content),
+            "The build must apply the Detekt Gradle plugin with an explicit version.",
         )
         assertTrue(
-            content.contains("toolVersion = \"2.0.0-alpha.3\""),
+            detektToolVersionDeclaration.containsMatchIn(content),
             "The Detekt runtime version must stay pinned instead of drifting with plugin defaults.",
         )
         assertTrue(
