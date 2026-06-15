@@ -43,14 +43,14 @@ jobs:
           exit-code: '1'
 
       - name: Upload Trivy SARIF to code scanning
-        if: ${{ !cancelled() && hashFiles('build/reports/trivy/trivy-results.sarif') != '' }}
+        if: ${{ !env.ACT && !cancelled() && hashFiles('build/reports/trivy/trivy-results.sarif') != '' }}
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: build/reports/trivy/trivy-results.sarif
           category: trivy
 
       - name: Upload Trivy reports artifact
-        if: ${{ !cancelled() }}
+        if: ${{ !env.ACT && !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: ai-commit-all-trivy-reports

@@ -55,14 +55,14 @@ jobs:
         run: ./gradlew detekt
 
       - name: Upload Detekt SARIF to code scanning
-        if: ${{ !cancelled() && hashFiles('build/reports/detekt/detekt.sarif') != '' }}
+        if: ${{ !env.ACT && !cancelled() && hashFiles('build/reports/detekt/detekt.sarif') != '' }}
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: build/reports/detekt/detekt.sarif
           category: detekt
 
       - name: Upload Detekt reports artifact
-        if: ${{ !cancelled() }}
+        if: ${{ !env.ACT && !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: ai-commit-all-detekt-reports
@@ -74,7 +74,7 @@ jobs:
         run: ./gradlew test jacocoTestReport verifyJacocoCoverageReport verifyPluginStructure buildPlugin
 
       - name: Publish unit test summary
-        if: ${{ !cancelled() && steps.gradle-validation.outcome != 'skipped' && hashFiles('build/test-results/test/*.xml') != '' }}
+        if: ${{ !env.ACT && !cancelled() && steps.gradle-validation.outcome != 'skipped' && hashFiles('build/test-results/test/*.xml') != '' }}
         uses: dorny/test-reporter@v3
         with:
           name: Gradle unit tests
@@ -82,7 +82,7 @@ jobs:
           reporter: java-junit
 
       - name: Upload unit test results artifact
-        if: ${{ !cancelled() && steps.gradle-validation.outcome != 'skipped' }}
+        if: ${{ !env.ACT && !cancelled() && steps.gradle-validation.outcome != 'skipped' }}
         uses: actions/upload-artifact@v7
         with:
           name: ai-commit-all-unit-test-results
@@ -92,6 +92,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Upload plugin ZIP artifact
+        if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v7
         with:
           name: ai-commit-all-plugin
@@ -101,7 +102,7 @@ jobs:
 
       - name: Collect Codecov test result files
         id: codecov-test-results
-        if: ${{ !cancelled() && steps.gradle-validation.outcome != 'skipped' && hashFiles('build/test-results/test/*.xml') != '' }}
+        if: ${{ !env.ACT && !cancelled() && steps.gradle-validation.outcome != 'skipped' && hashFiles('build/test-results/test/*.xml') != '' }}
         shell: bash
         run: |
           files=$(find build/test-results/test -name '*.xml' -type f | sort | paste -sd, -)
@@ -112,7 +113,7 @@ jobs:
           echo "files=${files}" >> "${GITHUB_OUTPUT}"
 
       - name: Upload test results to Codecov
-        if: ${{ !cancelled() && steps.codecov-test-results.outputs.files != '' }}
+        if: ${{ !env.ACT && !cancelled() && steps.codecov-test-results.outputs.files != '' }}
         uses: codecov/codecov-action@v7
         with:
           files: ${{ steps.codecov-test-results.outputs.files }}
@@ -124,6 +125,7 @@ jobs:
           use_oidc: true
 
       - name: Upload coverage to Codecov
+        if: ${{ !env.ACT }}
         uses: codecov/codecov-action@v7
         with:
           files: build/reports/jacoco/test/jacocoTestReport.xml

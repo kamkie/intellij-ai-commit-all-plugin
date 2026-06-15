@@ -83,6 +83,8 @@ $markdownFiles = Get-ChildItem -LiteralPath $repoRoot -Recurse -File -Filter '*.
         $_.FullName -notmatch '\\.git\\' -and
         $_.FullName -notmatch '\\.gradle\\' -and
         $_.FullName -notmatch '\\.intellijPlatform\\' -and
+        $_.FullName -notmatch '\\.act\\' -and
+        $_.FullName -notmatch '\\.tools\\' -and
         $_.FullName -notmatch '\\build\\' -and
         $_.FullName -notmatch '\\out\\'
     }

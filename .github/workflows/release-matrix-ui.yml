@@ -98,7 +98,7 @@ jobs:
           -PideVersion="${{ inputs.ide-version || '2026.1.2' }}"
 
       - name: Publish release-matrix UI test summary
-        if: ${{ !cancelled() && hashFiles('build/test-results/releaseMatrixUiTest/*.xml') != '' }}
+        if: ${{ !env.ACT && !cancelled() && hashFiles('build/test-results/releaseMatrixUiTest/*.xml') != '' }}
         uses: dorny/test-reporter@v3
         with:
           name: Release matrix UI tests (${{ matrix.name }})
@@ -106,7 +106,7 @@ jobs:
           reporter: java-junit
 
       - name: Upload release-matrix UI evidence
-        if: ${{ !cancelled() }}
+        if: ${{ !env.ACT && !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: ai-commit-all-release-matrix-ui-${{ matrix.code }}-evidence
