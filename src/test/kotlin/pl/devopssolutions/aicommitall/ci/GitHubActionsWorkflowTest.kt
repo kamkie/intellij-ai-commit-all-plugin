@@ -352,13 +352,19 @@ internal class GitHubActionsWorkflowTest {
     @Test
     fun `ci workflow uploads gradle test results to codecov`() {
         val content = Files.readString(Path.of(".github", "workflows", "ci.yml"))
+        val collectTestResultsStep = workflowStep(content, "Collect Codecov test result files")
+        val uploadTestResultsStep = workflowStep(content, "Upload test results to Codecov")
 
         assertFalse(
             content.contains("codecov/test-results-action@"),
             "CI workflow must not use the deprecated Codecov test-results action.",
         )
         assertTrue(
-            content.contains("if: \${{ !cancelled() }}"),
+            collectTestResultsStep.contains("if: \${{ !env.ACT && !cancelled()"),
+            "CI workflow must collect test results even after test failures when the workflow is not cancelled.",
+        )
+        assertTrue(
+            uploadTestResultsStep.contains("if: \${{ !env.ACT && !cancelled()"),
             "CI workflow must upload test results even after test failures when the workflow is not cancelled.",
         )
         assertTrue(
@@ -459,4 +465,14 @@ internal class GitHubActionsWorkflowTest {
     }
 
     private fun gradleVerificationTask(fileName: String): Path = Path.of(GRADLE_TASK_ROOT).resolve(fileName)
+
+    private fun workflowStep(content: String, stepName: String): String {
+        val marker = "      - name: $stepName"
+        val start = content.indexOf(marker)
+
+        assertTrue(start >= 0, "CI workflow must contain the '$stepName' step.")
+
+        val nextStep = content.indexOf("\n      - name:", start + marker.length)
+        return if (nextStep == -1) content.substring(start) else content.substring(start, nextStep)
+    }
 }
