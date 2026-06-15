@@ -61,6 +61,27 @@ Run the IntelliJ Plugin Verifier locally with the default verifier target from `
 .\gradlew.bat verifyPlugin -PpluginVerifierIdeVersions="IU-2026.1.1,PY-2026.1.1,WS-2026.1.1"
 ```
 
+To run the pull-request CI workflow locally through `nektos/act`, keep Docker running and use:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\run-act.ps1
+```
+
+The wrapper uses a globally installed `act` when available, otherwise it downloads the current `nektos/act` release into `.tools/act/`. The default run is equivalent to:
+
+```powershell
+act pull_request --workflows .github/workflows/ci.yml --job build
+```
+
+Pass `act` arguments after the script name for narrower checks, for example:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\run-act.ps1 pull_request --list
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\run-act.ps1 pull_request --workflows .github/workflows/plugin-verifier.yml --job verify --matrix ide:IU-2026.1.1
+```
+
+Local `act` runs skip GitHub-hosted reporting and artifact-upload steps such as CodeQL SARIF upload, unit-test check publishing, and Codecov OIDC upload. Reports and plugin ZIPs remain in `build/` locally. Release publication, dependency submission, and Marketplace signing still require GitHub-hosted workflows and repository secrets.
+
 For documentation-only changes, run documentation validation and `git diff --check`. For plugin code changes, include targeted tests and build checks. For release, signing, publishing, or supported-scope changes, also review [docs/validation/release-checklist.md](docs/validation/release-checklist.md).
 
 ## Pull Requests
