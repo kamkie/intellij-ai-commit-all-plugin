@@ -56,6 +56,10 @@ Preserve `T-AREA-NNN` task refs, wording, grouping, and evidence links when movi
 - [x] T-DETEKT-007: address the remaining baseline findings: `ComplexCondition` in `GitStageSelectionItems`, `TooManyFunctions` in `AiCommitAllThreeSectionControl`, `UnusedParameter` in `PushOnlyWorkflowExecutionService`, and the `GitStageConfirmation` `250` constant. (`src/main/kotlin/.../vcs/`, `src/main/kotlin/.../actions/`, `src/main/kotlin/.../workflow/`; Plan `PLAN-detekt-baseline-cleanup`, Tasks 1 and 2)
 - [x] T-DETEKT-008: empty `config/detekt/baseline.xml` once T-DETEKT-002..T-DETEKT-007 are landed and add a CI check that fails when the baseline grows. (`config/detekt/baseline.xml`, `build.gradle.kts`, `.github/workflows/ci.yml`; Plan `PLAN-detekt-baseline-cleanup`, Task 4; guard command: `.\gradlew.bat verifyDetektBaseline`)
 
+### Staging Reliability
+
+- [x] T-BUG-017: fallback hardening for staging confirmation, only if the conservative HEAD-identical-path fix (`PLAN-workflow-stop-feedback-and-push-alignment` task T2) proves insufficient in the field: confirm staging against Git command output as ground truth (implemented with IntelliJ `GitLineHandler` `diff --cached --quiet` and scoped `status --porcelain` checks) instead of relying on `GitStageTracker` UI state, which the June 2026 IDE-log investigation showed can stay stale or omit HEAD-identical paths until a window-focus VFS refresh. (`src/main/kotlin/pl/devopssolutions/aicommitall/workflow/GitStageConfirmation.kt`, `docs/specification.md` REQ-SEL-008`; validation: red `.\gradlew.bat test --tests "pl.devopssolutions.aicommitall.workflow.GitStageConfirmationTest"` timed out after adding missing fallback API tests; green targeted test, `.\gradlew.bat test`, plus final handoff validation)
+
 ### Three-Section AI Commit Push Control
 
 - [x] T-ACTIONS-009: Replace the current `AI Commit All` / `& Push` Commit tool window control with the ADR 0052 three-section `<AI icon> AI | Commit | Push` control. (Plan `PLAN-three-section-ai-commit-push-control`, ADR 0052)
