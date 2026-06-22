@@ -1,8 +1,5 @@
-<p>v0.1.0-beta.4 prerelease.</p>
+<p>v0.1.0-beta.5 prerelease.</p>
 <ul>
-    <li><code>Push</code> no longer opens the IDE Push Commits dialog just because earlier commits have not been pushed; commit-and-push now pushes immediately when the local branch is ahead of its tracked upstream, and a remote that moved ahead surfaces as a standard push error after the commit instead of a pre-commit dialog.</li>
-    <li>Retry transiently missing push metadata within the bounded settling window when the local branch is ahead of its tracked upstream, on both the commit-and-push and outgoing-only push paths, instead of falling back to the IDE Push Commits dialog or stopping immediately.</li>
-    <li>Continue the workflow instead of stalling in staging confirmation and stopping silently when a selected file has no real content change against HEAD after staging (for example a line-ending-only difference erased by Git line-ending normalization).</li>
-    <li>Show a warning notification naming the cause when Git staging confirmation fails after its bounded retries, instead of stopping the workflow silently as an unsupported workflow.</li>
-    <li>Explain that AI generation finished without producing a commit message (for example AI Assistant&#39;s own generation timeout on large changes), instead of showing the misleading standard &quot;empty commit message&quot; error.</li>
+    <li>Updated release validation and CI tooling for Gradle 9.6.0, Spotless 8.7.0, Detekt 2.0.0-alpha.5, actions/checkout v7, and local <code>act</code> workflow runs so prerelease gates and publication artifacts continue to run on the current toolchain.</li>
+    <li>Confirm Git staging-area selections against the Git index when <code>GitStageTracker</code> stays stale after staging, so staged or HEAD-identical paths can continue while worktree-only changes still fail closed.</li>
 </ul>

@@ -4,11 +4,17 @@ All notable public plugin-facing changes are documented in this file.
 
 The format is based on Keep a Changelog. Release tags should use semantic version tags in the form `vMAJOR.MINOR.PATCH` for stable releases or `vMAJOR.MINOR.PATCH-PRERELEASE` for prereleases.
 
-This repository has no Marketplace-published plugin version yet. `v0.1.0-beta.4` is the current implementation prerelease candidate prepared from this repository.
+This repository has no Marketplace-published plugin version yet. `v0.1.0-beta.5` is the current implementation prerelease candidate prepared from this repository.
 
 This changelog records plugin source and runtime behavior changes, public plugin documentation changes, compatibility and support changes, and CI or release pipeline changes that affect the plugin artifact or publication. Internal AI-agent documentation, repository workflow notes, plans, proposals, ADR maintenance, scenario-register tracking, and test-case inventory changes are intentionally omitted unless they also change public plugin behavior or release artifacts.
 
 ## [Unreleased]
+
+## [v0.1.0-beta.5] - 2026-06-22
+
+### Changed
+
+- Updated release validation and CI tooling for Gradle 9.6.0, Spotless 8.7.0, Detekt 2.0.0-alpha.5, actions/checkout v7, and local `act` workflow runs so prerelease gates and publication artifacts continue to run on the current toolchain.
 
 ### Fixed
 
