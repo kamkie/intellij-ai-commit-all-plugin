@@ -23,7 +23,7 @@ jobs:
           - WS-2026.1.1
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
