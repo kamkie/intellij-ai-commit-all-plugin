@@ -25,6 +25,9 @@ import com.intellij.openapi.vcs.changes.InvokeAfterUpdateMode
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.vcsUtil.VcsFileUtil
+import git4idea.commands.Git
+import git4idea.commands.GitCommand
+import git4idea.commands.GitLineHandler
 import git4idea.index.GitStageTracker
 import git4idea.index.GitStageTrackerListener
 import git4idea.util.GitFileUtils
@@ -42,9 +45,15 @@ internal class GitStageConfirmation(
     fun confirm(
         pathsByRoot: Map<VirtualFile, List<FilePath>>,
         expectedPaths: Collection<FilePath> = pathsByRoot.values.flatten(),
+        expectedPathsByRoot: Map<VirtualFile, List<FilePath>> = pathsByRoot,
     ): GitStageTracker.State? {
         val distinctExpectedPaths = expectedPaths
             .distinctBy { path -> path.normalizedPath() }
+        val distinctExpectedPathsByRoot = expectedPathsByRoot
+            .mapValues { (_, paths) ->
+                paths.distinctBy { path -> path.normalizedPath() }
+            }
+            .filterValues { paths -> paths.isNotEmpty() }
         var pathsToStageByRoot = pathsByRoot
             .mapValues { (_, paths) ->
                 paths.distinctBy { path -> path.normalizedPath() }
@@ -74,16 +83,18 @@ internal class GitStageConfirmation(
                 attempt = attempt,
             )
 
-            val expectedPathsAreStaged = refreshedState != null &&
-                GitStageSelectionItems.containsAllStagedPaths(refreshedState, distinctExpectedPaths)
+            val expectedPathsAreStaged = refreshedState.confirmsExpectedPaths(distinctExpectedPaths)
             logger.info(
                 "AI Commit All diagnostic: staging confirmation attempt completed, " +
                     "attempt=${attempt + 1}/$attempts, " +
                     "refreshedState=${refreshedState != null}, confirmed=$expectedPathsAreStaged",
             )
-            if (expectedPathsAreStaged) {
-                confirmedState = refreshedState
-            } else if (refreshedState != null && refreshedState.hasStatusEntries()) {
+            confirmedState = confirmedStateAfterFallback(
+                refreshedState = refreshedState,
+                distinctExpectedPaths = distinctExpectedPaths,
+                distinctExpectedPathsByRoot = distinctExpectedPathsByRoot,
+            )
+            if (confirmedState == null && refreshedState != null && refreshedState.hasStatusEntries()) {
                 pathsToStageByRoot = refreshedState.pathsToStageByRoot(distinctExpectedPaths)
             }
 
@@ -98,6 +109,74 @@ internal class GitStageConfirmation(
                 "confirmed=${confirmedState != null}, attemptsUsed=$attempt",
         )
         return confirmedState
+    }
+
+    private fun GitStageTracker.State?.confirmsExpectedPaths(
+        distinctExpectedPaths: Collection<FilePath>,
+    ): Boolean = this != null && GitStageSelectionItems.containsAllStagedPaths(this, distinctExpectedPaths)
+
+    private fun confirmedStateAfterFallback(
+        refreshedState: GitStageTracker.State?,
+        distinctExpectedPaths: Collection<FilePath>,
+        distinctExpectedPathsByRoot: Map<VirtualFile, List<FilePath>>,
+    ): GitStageTracker.State? = refreshedState?.let { state ->
+        when {
+            state.confirmsExpectedPaths(distinctExpectedPaths) -> state
+            confirmGitIndexState(distinctExpectedPathsByRoot) -> bestEffortTrackerSync(distinctExpectedPaths) ?: state
+            else -> null
+        }
+    }
+
+    private fun confirmGitIndexState(
+        expectedPathsByRoot: Map<VirtualFile, List<FilePath>>,
+    ): Boolean = runCatching {
+        if (expectedPathsByRoot.isEmpty()) {
+            return@runCatching false
+        }
+
+        var confirmedCount = 0
+        val unconfirmedPaths = mutableListOf<FilePath>()
+        expectedPathsByRoot.forEach { (root, paths) ->
+            paths.forEach { path ->
+                when (operations.confirmIndexPath(root, path)) {
+                    GitIndexConfirmation.STAGED,
+                    GitIndexConfirmation.HEAD_IDENTICAL,
+                    -> confirmedCount += 1
+
+                    GitIndexConfirmation.UNCONFIRMED -> unconfirmedPaths += path
+                }
+            }
+        }
+        logger.info(
+            "AI Commit All diagnostic: staging confirmation index fallback completed, " +
+                "confirmed=${unconfirmedPaths.isEmpty()}, " +
+                "confirmedPaths=$confirmedCount, unconfirmedPaths=${unconfirmedPaths.size}",
+        )
+        unconfirmedPaths.isEmpty()
+    }.getOrElse { exception ->
+        logger.info(
+            "AI Commit All diagnostic: staging confirmation index fallback failed, " +
+                "exception=${exception.javaClass.name}, " +
+                "cause=${exception.cause?.javaClass?.name ?: "<none>"}",
+        )
+        false
+    }
+
+    private fun bestEffortTrackerSync(
+        distinctExpectedPaths: Collection<FilePath>,
+    ): GitStageTracker.State? = runCatching {
+        operations.reloadExternalFiles(distinctExpectedPaths)
+        operations.markPathsDirty(distinctExpectedPaths)
+        operations.waitForStatusRefresh()
+        operations.refreshTrackerState()
+            .takeIf { state -> GitStageSelectionItems.containsAllStagedPaths(state, distinctExpectedPaths) }
+    }.getOrElse { exception ->
+        logger.info(
+            "AI Commit All diagnostic: staging confirmation index fallback tracker sync failed, " +
+                "exception=${exception.javaClass.name}, " +
+                "cause=${exception.cause?.javaClass?.name ?: "<none>"}",
+        )
+        null
     }
 
     private fun GitStageTracker.State.pathsToStageByRoot(
@@ -155,6 +234,14 @@ internal interface GitStageConfirmationOperations {
     fun waitForStatusRefresh() = Unit
 
     fun refreshTrackerState(): GitStageTracker.State
+
+    fun confirmIndexPath(root: VirtualFile, path: FilePath): GitIndexConfirmation = GitIndexConfirmation.UNCONFIRMED
+}
+
+internal enum class GitIndexConfirmation {
+    STAGED,
+    HEAD_IDENTICAL,
+    UNCONFIRMED,
 }
 
 internal fun interface GitStageConfirmationSleeper {
@@ -219,6 +306,42 @@ internal class IntellijGitStageConfirmationOperations(
         }
     }
 
+    override fun confirmIndexPath(root: VirtualFile, path: FilePath): GitIndexConfirmation = when {
+        hasStagedIndexContent(root, path) -> GitIndexConfirmation.STAGED
+        hasAnyStatus(root, path) -> GitIndexConfirmation.UNCONFIRMED
+        else -> GitIndexConfirmation.HEAD_IDENTICAL
+    }
+
+    private fun hasStagedIndexContent(root: VirtualFile, path: FilePath): Boolean {
+        val handler = GitLineHandler(project, root, GitCommand.DIFF)
+        handler.addParameters("--cached", "--quiet")
+        handler.endOptions()
+        handler.addRelativePaths(listOf(path))
+
+        val result = Git.getInstance().runCommand(handler)
+        return when (result.exitCode) {
+            GIT_DIFF_NO_CHANGES -> false
+
+            GIT_DIFF_HAS_CHANGES -> true
+
+            else -> {
+                result.throwOnError(GIT_DIFF_NO_CHANGES, GIT_DIFF_HAS_CHANGES)
+                false
+            }
+        }
+    }
+
+    private fun hasAnyStatus(root: VirtualFile, path: FilePath): Boolean {
+        val handler = GitLineHandler(project, root, GitCommand.STATUS)
+        handler.addParameters("--porcelain=v1", "--untracked-files=all")
+        handler.endOptions()
+        handler.addRelativePaths(listOf(path))
+
+        val result = Git.getInstance().runCommand(handler)
+        result.throwOnError()
+        return result.output.any { line -> line.isNotBlank() }
+    }
+
     private fun CountDownLatch.awaitBounded(timeout: Duration) {
         try {
             await(timeout.toMillis(), TimeUnit.MILLISECONDS)
@@ -228,6 +351,8 @@ internal class IntellijGitStageConfirmationOperations(
     }
 
     private companion object {
+        private const val GIT_DIFF_NO_CHANGES = 0
+        private const val GIT_DIFF_HAS_CHANGES = 1
         val STATUS_REFRESH_TIMEOUT: Duration = Duration.ofSeconds(2)
         val TRACKER_REFRESH_TIMEOUT: Duration = Duration.ofSeconds(2)
     }

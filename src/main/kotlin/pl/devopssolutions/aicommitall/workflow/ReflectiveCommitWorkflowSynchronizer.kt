@@ -125,6 +125,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
                 project = project,
                 tracker = tracker,
                 pathsByRoot = pathsToStageByRoot,
+                expectedPathsByRoot = expectedPathsByRoot,
                 expectedPaths = expectedPathsByRoot.values.flatten(),
             ) ?: run {
                 diagnostics.report(
@@ -161,6 +162,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         project: Project,
         tracker: GitStageTracker,
         pathsByRoot: Map<VirtualFile, List<FilePath>>,
+        expectedPathsByRoot: Map<VirtualFile, List<FilePath>>,
         expectedPaths: Collection<FilePath>,
     ): GitStageTracker.State? = GitStageConfirmation(
         attempts = GIT_STAGE_CONFIRMATION_ATTEMPTS,
@@ -168,6 +170,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
     ).confirm(
         pathsByRoot = pathsByRoot,
         expectedPaths = expectedPaths,
+        expectedPathsByRoot = expectedPathsByRoot,
     )
 
     private fun Class<*>.findMethod(

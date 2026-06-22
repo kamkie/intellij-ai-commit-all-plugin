@@ -10,6 +10,10 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ## [Unreleased]
 
+### Fixed
+
+- Confirm Git staging-area selections against the Git index when `GitStageTracker` stays stale after staging, so staged or HEAD-identical paths can continue while worktree-only changes still fail closed.
+
 ## [v0.1.0-beta.4] - 2026-06-12
 
 ### Changed

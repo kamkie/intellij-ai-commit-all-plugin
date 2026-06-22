@@ -242,6 +242,60 @@ internal class GitStageConfirmationTest {
     }
 
     @Test
+    fun `confirms stale tracker state when git index shows staged content`() {
+        val root = LightVirtualFile("repo")
+        val modified = TestFilePath("/repo/modified.txt")
+        val stale = stageState(root, gitStatus(' ', 'M', modified))
+        val operations = CapturingOperations(stale)
+        operations.indexConfirmations[modified.normalizedPath()] = GitIndexConfirmation.STAGED
+
+        val result = confirmation(operations, attempts = 1)
+            .confirm(
+                pathsByRoot = mapOf(root to listOf(modified)),
+                expectedPathsByRoot = mapOf(root to listOf(modified)),
+            )
+
+        assertSame(stale, result)
+        assertEquals(listOf("index:repo:/repo/modified.txt"), operations.indexConfirmationEvents)
+    }
+
+    @Test
+    fun `confirms stale tracker state when git index reports no status for expected path`() {
+        val root = LightVirtualFile("repo")
+        val headIdentical = TestFilePath("/repo/line-endings-only.txt")
+        val stale = stageState(root, gitStatus(' ', 'M', headIdentical))
+        val operations = CapturingOperations(stale)
+        operations.indexConfirmations[headIdentical.normalizedPath()] = GitIndexConfirmation.HEAD_IDENTICAL
+
+        val result = confirmation(operations, attempts = 1)
+            .confirm(
+                pathsByRoot = mapOf(root to listOf(headIdentical)),
+                expectedPathsByRoot = mapOf(root to listOf(headIdentical)),
+            )
+
+        assertSame(stale, result)
+        assertEquals(listOf("index:repo:/repo/line-endings-only.txt"), operations.indexConfirmationEvents)
+    }
+
+    @Test
+    fun `fails closed when git index fallback still reports only worktree changes`() {
+        val root = LightVirtualFile("repo")
+        val modified = TestFilePath("/repo/modified.txt")
+        val notStaged = stageState(root, gitStatus(' ', 'M', modified))
+        val operations = CapturingOperations(notStaged)
+        operations.indexConfirmations[modified.normalizedPath()] = GitIndexConfirmation.UNCONFIRMED
+
+        val result = confirmation(operations, attempts = 1)
+            .confirm(
+                pathsByRoot = mapOf(root to listOf(modified)),
+                expectedPathsByRoot = mapOf(root to listOf(modified)),
+            )
+
+        assertNull(result)
+        assertEquals(listOf("index:repo:/repo/modified.txt"), operations.indexConfirmationEvents)
+    }
+
+    @Test
     fun `fails closed when every tracker refresh attempt fails`() {
         val root = LightVirtualFile("repo")
         val modified = TestFilePath("/repo/modified.txt")
@@ -534,6 +588,8 @@ internal class GitStageConfirmationTest {
         val failStageCalls = mutableSetOf<Int>()
         val failReloadCalls = mutableSetOf<Int>()
         val failRefreshCalls = mutableSetOf<Int>()
+        val indexConfirmations = mutableMapOf<String, GitIndexConfirmation>()
+        val indexConfirmationEvents = mutableListOf<String>()
         val reloadedPaths = mutableListOf<List<FilePath>>()
         var stageCallCount = 0
         var reloadCallCount = 0
@@ -576,6 +632,11 @@ internal class GitStageConfirmationTest {
             }
             return states.removeFirstOrNull() ?: GitStageTracker.State(emptyMap())
         }
+
+        override fun confirmIndexPath(root: VirtualFile, path: FilePath): GitIndexConfirmation {
+            indexConfirmationEvents += "index:${root.name}:${path.path}"
+            return indexConfirmations[path.normalizedPath()] ?: GitIndexConfirmation.UNCONFIRMED
+        }
     }
 
     private fun stageState(
@@ -602,6 +663,8 @@ internal class GitStageConfirmationTest {
         val RETRY_DELAY: Duration = Duration.ofMillis(250)
 
         fun pathEventText(paths: Collection<FilePath>): String = paths.joinToString(",") { path -> path.path }
+
+        fun FilePath.normalizedPath(): String = path.replace('\\', '/')
     }
 
     private class TestFilePath(private val rawPath: String) : FilePath {
