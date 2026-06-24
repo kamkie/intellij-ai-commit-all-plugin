@@ -23,6 +23,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
 import git4idea.index.GitFileStatus
 import git4idea.index.GitStageTracker
+import pl.devopssolutions.aicommitall.vcs.GitStageSelectionItems
 import java.io.File
 import java.nio.charset.Charset
 import java.time.Duration
@@ -30,6 +31,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 internal class GitStageConfirmationTest {
     @Test
@@ -242,7 +244,7 @@ internal class GitStageConfirmationTest {
     }
 
     @Test
-    fun `confirms stale tracker state when git index shows staged content`() {
+    fun `returns index confirmed staged state when git index shows staged content`() {
         val root = LightVirtualFile("repo")
         val modified = TestFilePath("/repo/modified.txt")
         val stale = stageState(root, gitStatus(' ', 'M', modified))
@@ -255,12 +257,62 @@ internal class GitStageConfirmationTest {
                 expectedPathsByRoot = mapOf(root to listOf(modified)),
             )
 
-        assertSame(stale, result)
+        val confirmed = result ?: error("Expected index-confirmed tracker state.")
+        assertTrue(GitStageSelectionItems.containsAllStagedPaths(confirmed, listOf(modified)))
         assertEquals(listOf("index:repo:/repo/modified.txt"), operations.indexConfirmationEvents)
     }
 
     @Test
-    fun `confirms stale tracker state when git index reports no status for expected path`() {
+    fun `does not wait for tracker resync after git index confirms staged content`() {
+        val root = LightVirtualFile("repo")
+        val modified = TestFilePath("/repo/modified.txt")
+        val stale = stageState(root, gitStatus(' ', 'M', modified))
+        val operations = CapturingOperations(stale)
+        operations.indexConfirmations[modified.normalizedPath()] = GitIndexConfirmation.STAGED
+
+        val result = confirmation(operations, attempts = 1)
+            .confirm(
+                pathsByRoot = mapOf(root to listOf(modified)),
+                expectedPathsByRoot = mapOf(root to listOf(modified)),
+            )
+
+        val confirmed = result ?: error("Expected index-confirmed tracker state.")
+        assertTrue(GitStageSelectionItems.containsAllStagedPaths(confirmed, listOf(modified)))
+        assertEquals(
+            listOf(
+                "stage:/repo/modified.txt",
+                "reload:/repo/modified.txt",
+                "dirty:/repo/modified.txt",
+                "wait-status",
+                "refresh",
+            ),
+            operations.refreshBoundaryEvents,
+        )
+        assertEquals(1, operations.refreshCallCount)
+    }
+
+    @Test
+    fun `returns index confirmed staged state when refreshed tracker has no statuses`() {
+        val root = LightVirtualFile("repo")
+        val modified = TestFilePath("/repo/modified.txt")
+        val empty = GitStageTracker.State(emptyMap())
+        val operations = CapturingOperations(empty)
+        operations.indexConfirmations[modified.normalizedPath()] = GitIndexConfirmation.STAGED
+
+        val result = confirmation(operations, attempts = 1)
+            .confirm(
+                pathsByRoot = mapOf(root to listOf(modified)),
+                expectedPathsByRoot = mapOf(root to listOf(modified)),
+            )
+
+        val confirmed = result ?: error("Expected index-confirmed tracker state.")
+        assertTrue(GitStageSelectionItems.containsAllStagedPaths(confirmed, listOf(modified)))
+        assertEquals(setOf(root), confirmed.rootStates.keys)
+        assertEquals(1, operations.refreshCallCount)
+    }
+
+    @Test
+    fun `returns initialized state when git index reports no status for expected path`() {
         val root = LightVirtualFile("repo")
         val headIdentical = TestFilePath("/repo/line-endings-only.txt")
         val stale = stageState(root, gitStatus(' ', 'M', headIdentical))
@@ -273,7 +325,9 @@ internal class GitStageConfirmationTest {
                 expectedPathsByRoot = mapOf(root to listOf(headIdentical)),
             )
 
-        assertSame(stale, result)
+        val confirmed = result ?: error("Expected index-confirmed tracker state.")
+        assertTrue(GitStageSelectionItems.containsAllStagedPaths(confirmed, listOf(headIdentical)))
+        assertEquals(emptyMap(), confirmed.rootStates.getValue(root).statuses)
         assertEquals(listOf("index:repo:/repo/line-endings-only.txt"), operations.indexConfirmationEvents)
     }
 

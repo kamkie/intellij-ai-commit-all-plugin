@@ -1,5 +1,4 @@
-<p>v0.1.0-beta.5 prerelease.</p>
+<p>v0.1.0-beta.6 prerelease.</p>
 <ul>
-    <li>Updated release validation and CI tooling for Gradle 9.6.0, Spotless 8.7.0, Detekt 2.0.0-alpha.5, actions/checkout v7, and local <code>act</code> workflow runs so prerelease gates and publication artifacts continue to run on the current toolchain.</li>
-    <li>Confirm Git staging-area selections against the Git index when <code>GitStageTracker</code> stays stale after staging, so staged or HEAD-identical paths can continue while worktree-only changes still fail closed.</li>
+    <li>Continue immediately after Git index confirmation with an index-confirmed Commit UI state when the IDE staging tracker remains stale, avoiding focus-dependent hangs after background staging has already succeeded.</li>
 </ul>

@@ -28,6 +28,7 @@ import com.intellij.vcsUtil.VcsFileUtil
 import git4idea.commands.Git
 import git4idea.commands.GitCommand
 import git4idea.commands.GitLineHandler
+import git4idea.index.GitFileStatus
 import git4idea.index.GitStageTracker
 import git4idea.index.GitStageTrackerListener
 import git4idea.util.GitFileUtils
@@ -35,6 +36,8 @@ import pl.devopssolutions.aicommitall.vcs.GitStageSelectionItems
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+
+private const val DEFAULT_SYNTHETIC_STAGED_INDEX = 'M'
 
 internal class GitStageConfirmation(
     private val attempts: Int,
@@ -122,26 +125,33 @@ internal class GitStageConfirmation(
     ): GitStageTracker.State? = refreshedState?.let { state ->
         when {
             state.confirmsExpectedPaths(distinctExpectedPaths) -> state
-            confirmGitIndexState(distinctExpectedPathsByRoot) -> bestEffortTrackerSync(distinctExpectedPaths) ?: state
-            else -> null
+
+            else -> confirmGitIndexState(distinctExpectedPathsByRoot)?.let { confirmationsByPath ->
+                state.withGitIndexConfirmations(distinctExpectedPathsByRoot, confirmationsByPath)
+            }
         }
     }
 
     private fun confirmGitIndexState(
         expectedPathsByRoot: Map<VirtualFile, List<FilePath>>,
-    ): Boolean = runCatching {
+    ): Map<String, GitIndexConfirmation>? = runCatching {
         if (expectedPathsByRoot.isEmpty()) {
-            return@runCatching false
+            return@runCatching null
         }
 
         var confirmedCount = 0
+        val confirmationsByPath = mutableMapOf<String, GitIndexConfirmation>()
         val unconfirmedPaths = mutableListOf<FilePath>()
         expectedPathsByRoot.forEach { (root, paths) ->
             paths.forEach { path ->
-                when (operations.confirmIndexPath(root, path)) {
+                val confirmation = operations.confirmIndexPath(root, path)
+                when (confirmation) {
                     GitIndexConfirmation.STAGED,
                     GitIndexConfirmation.HEAD_IDENTICAL,
-                    -> confirmedCount += 1
+                    -> {
+                        confirmedCount += 1
+                        confirmationsByPath[path.normalizedPath()] = confirmation
+                    }
 
                     GitIndexConfirmation.UNCONFIRMED -> unconfirmedPaths += path
                 }
@@ -152,27 +162,10 @@ internal class GitStageConfirmation(
                 "confirmed=${unconfirmedPaths.isEmpty()}, " +
                 "confirmedPaths=$confirmedCount, unconfirmedPaths=${unconfirmedPaths.size}",
         )
-        unconfirmedPaths.isEmpty()
+        confirmationsByPath.takeIf { unconfirmedPaths.isEmpty() }
     }.getOrElse { exception ->
         logger.info(
             "AI Commit All diagnostic: staging confirmation index fallback failed, " +
-                "exception=${exception.javaClass.name}, " +
-                "cause=${exception.cause?.javaClass?.name ?: "<none>"}",
-        )
-        false
-    }
-
-    private fun bestEffortTrackerSync(
-        distinctExpectedPaths: Collection<FilePath>,
-    ): GitStageTracker.State? = runCatching {
-        operations.reloadExternalFiles(distinctExpectedPaths)
-        operations.markPathsDirty(distinctExpectedPaths)
-        operations.waitForStatusRefresh()
-        operations.refreshTrackerState()
-            .takeIf { state -> GitStageSelectionItems.containsAllStagedPaths(state, distinctExpectedPaths) }
-    }.getOrElse { exception ->
-        logger.info(
-            "AI Commit All diagnostic: staging confirmation index fallback tracker sync failed, " +
                 "exception=${exception.javaClass.name}, " +
                 "cause=${exception.cause?.javaClass?.name ?: "<none>"}",
         )
@@ -215,14 +208,75 @@ internal class GitStageConfirmation(
         null
     }
 
-    private fun FilePath.normalizedPath(): String = path.replace('\\', '/')
-
     private companion object {
         private const val DEFAULT_RETRY_DELAY_MILLIS = 250L
         val logger: Logger = Logger.getInstance(GitStageConfirmation::class.java)
         val DEFAULT_RETRY_DELAY: Duration = Duration.ofMillis(DEFAULT_RETRY_DELAY_MILLIS)
     }
 }
+
+private fun GitStageTracker.State.withGitIndexConfirmations(
+    expectedPathsByRoot: Map<VirtualFile, List<FilePath>>,
+    confirmationsByPath: Map<String, GitIndexConfirmation>,
+): GitStageTracker.State {
+    val updatedRootStates = rootStates.toMutableMap()
+    expectedPathsByRoot.forEach { (root, paths) ->
+        val rootState = updatedRootStates[root]
+        val updatedStatuses = rootState?.statuses.orEmpty().toMutableMap()
+        paths.forEach { path ->
+            when (confirmationsByPath[path.normalizedPath()]) {
+                GitIndexConfirmation.STAGED -> updatedStatuses.stageIndexConfirmedPath(path)
+
+                GitIndexConfirmation.HEAD_IDENTICAL -> updatedStatuses.removeIndexConfirmedPath(path)
+
+                GitIndexConfirmation.UNCONFIRMED,
+                null,
+                -> Unit
+            }
+        }
+        updatedRootStates[root] = GitStageTracker.RootState(root, true, updatedStatuses)
+    }
+    return GitStageTracker.State(updatedRootStates)
+}
+
+private fun MutableMap<FilePath, GitFileStatus>.stageIndexConfirmedPath(path: FilePath) {
+    val existingStatus = values.firstOrNull { status -> status.reports(path) }
+    removeIndexConfirmedPath(path)
+    val stagedStatus = existingStatus?.asIndexConfirmedStagedStatus()
+        ?: GitFileStatus(DEFAULT_SYNTHETIC_STAGED_INDEX, ' ', path, null)
+    this[stagedStatus.path] = stagedStatus
+}
+
+private fun MutableMap<FilePath, GitFileStatus>.removeIndexConfirmedPath(path: FilePath) {
+    val matchingKeys = filter { (statusPath, status) ->
+        statusPath.normalizedPath() == path.normalizedPath() || status.reports(path)
+    }.keys
+    matchingKeys.forEach { statusPath -> remove(statusPath) }
+}
+
+private fun GitFileStatus.asIndexConfirmedStagedStatus(): GitFileStatus = copy(
+    stagedIndex(),
+    ' ',
+    path,
+    origPath,
+)
+
+private fun GitFileStatus.stagedIndex(): Char = when {
+    index.isStagedIndex() -> index
+    workTree.isWorkTreeChange() -> if (workTree == '?') 'A' else workTree
+    else -> DEFAULT_SYNTHETIC_STAGED_INDEX
+}
+
+private fun GitFileStatus.reports(expectedPath: FilePath): Boolean {
+    val normalizedPath = expectedPath.normalizedPath()
+    return path.normalizedPath() == normalizedPath || origPath?.normalizedPath() == normalizedPath
+}
+
+private fun Char.isStagedIndex(): Boolean = this != ' ' && this != '?'
+
+private fun Char.isWorkTreeChange(): Boolean = this != ' '
+
+private fun FilePath.normalizedPath(): String = path.replace('\\', '/')
 
 internal interface GitStageConfirmationOperations {
     fun stagePaths(root: VirtualFile, paths: List<FilePath>)

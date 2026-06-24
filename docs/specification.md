@@ -1,6 +1,6 @@
 # Plugin Behavior Specification
 
-Last updated: 2026-05-25
+Last updated: 2026-06-24
 
 This document is the validation contract for the intended observable behavior of
 the `AI Commit All` IntelliJ plugin. It states what the plugin must do and where
@@ -105,7 +105,7 @@ The selection is the set of files acted on by a workflow run.
 - REQ-SEL-005: Already-staged paths MUST remain staged when additional unstaged paths are selected for staging, and already-staged deleted or renamed paths MUST NOT be re-added as stale pathspecs after they are staged. Source: ADR 0020. Validates: SCN-STAGE-AUT-016..017, SCN-STAGE-AUT-021..022, SCN-STAGE-AUT-025..026.
 - REQ-SEL-006: Multi-root and nested-module paths MUST be grouped per Git root and MUST NOT be merged or lost across roots. Source: ADR 0009. Validates: SCN-STAGE-AUT-004..005.
 - REQ-SEL-007: Equivalent path spellings that differ only by slash direction MUST be treated as the same path so the selection is not duplicated. Source: PLAN-include-all-git-files. Validates: SCN-STAGE-AUT-006.
-- REQ-SEL-008: The workflow MUST NOT invoke AI generation until staging state confirms that every expected path is staged or satisfied. An expected path with no status entry in a refreshed staging snapshot whose Git roots are all initialized MUST be treated as satisfied, because its staged content equals HEAD and contributes nothing to the commit. Paths the snapshot still reports but does not show as staged MUST remain unconfirmed, and if confirmation cannot be reached within the bounded staging-confirmation window, the workflow MUST fail closed. Source: PLAN-confirm-staged-before-ai-generation, PLAN-workflow-stop-feedback-and-push-alignment. Validates: SCN-STAGE-AUT-007..014, SCN-STAGE-AUT-020.
+- REQ-SEL-008: The workflow MUST NOT invoke AI generation until staging state confirms that every expected path is staged or satisfied. An expected path with no status entry in a refreshed staging snapshot whose Git roots are all initialized MUST be treated as satisfied, because its staged content equals HEAD and contributes nothing to the commit. Paths the snapshot still reports but does not show as staged MUST remain unconfirmed unless a Git index fallback confirms every expected path. When the Git index fallback confirms every expected path after a stale or empty tracker snapshot, the workflow MUST pass an index-confirmed tracker state to the Commit UI and continue without synchronously waiting for another tracker or Commit UI refresh before AI generation. If confirmation cannot be reached within the bounded staging-confirmation window, the workflow MUST fail closed. Source: PLAN-confirm-staged-before-ai-generation, PLAN-workflow-stop-feedback-and-push-alignment, T-BUG-019. Validates: SCN-STAGE-AUT-007..014, SCN-STAGE-AUT-020.
 - REQ-SEL-009: When the IDE changelist state is frozen, the workflow MUST treat the observation as provisional until bounded settling completes before staging mutation. If the state remains frozen after settling, the workflow MUST stop before staging mutation and MUST report `VcsFrozen`. Source: ADR 0016, ADR 0084. Validates: SCN-WORKFLOW-*.
 - REQ-SEL-010: When a background VCS operation is already running, the workflow MUST treat the observation as provisional until bounded settling completes before staging mutation. If the background operation remains active after settling, the workflow MUST stop before staging mutation and MUST report `VcsBackgroundOperationRunning`. Source: ADR 0016, ADR 0084. Validates: SCN-WORKFLOW-*, SCN-STAGE-MAN-018.
 - REQ-SEL-011: When selection collection appears empty, the workflow MUST retry or refresh the selection within bounded settling before reporting `EmptySelection`. If the selection remains empty after settling, the workflow MUST stop and MUST report `EmptySelection`. Source: ADR 0016, ADR 0084. Validates: SCN-WORKFLOW-*, SCN-STAGE-MAN-017.
@@ -274,6 +274,7 @@ behavior change.
 | PLAN-maintainability-stability-audit        | REQ-PUSH-009                                                    |
 | PLAN-three-section-ai-commit-push-control   | REQ-UI-005, REQ-UI-008, REQ-UI-017                              |
 | PLAN-workflow-stop-feedback-and-push-alignment | REQ-SEL-008                                                  |
+| T-BUG-019                                   | REQ-SEL-008                                                     |
 | T-UI-003 (archived)                         | REQ-UI-016                                                      |
 | alpha.6/alpha.8 fixes                       | REQ-PUSH-009, REQ-COMPAT-003                                    |
 | alpha.9 fix                                 | REQ-PUSH-003                                                    |
