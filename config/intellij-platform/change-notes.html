@@ -1,4 +1,4 @@
-<p>v0.1.0-beta.6 prerelease.</p>
+<p>v0.1.0-beta.7 prerelease.</p>
 <ul>
-    <li>Continue immediately after Git index confirmation with an index-confirmed Commit UI state when the IDE staging tracker remains stale, avoiding focus-dependent hangs after background staging has already succeeded.</li>
+    <li>Avoid waiting on a synchronous Commit UI visual refresh after Git index-confirmed staging; the workflow now updates the required staging model state, schedules the visual tracker/root refresh asynchronously, and logs each synchronization substep.</li>
 </ul>

@@ -258,6 +258,116 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         assertEquals(items, handler.inclusionItems)
     }
 
+    @Test
+    fun `assigns git stage workflow state before scheduling visual UI refresh`() {
+        val scheduler = CapturingUiRefreshScheduler()
+        val diagnostics = CapturingGitStageDiagnostics()
+        val synchronization = GitStageWorkflowStateSynchronization(
+            uiScheduler = scheduler,
+            diagnostics = diagnostics,
+        )
+        val events = mutableListOf<String>()
+
+        synchronization.synchronize(
+            assignState = { events += "assign-state" },
+            refreshUi = {
+                setTrackerState { events += "set-tracker-state" }
+                setIncludedRoots { events += "set-included-roots" }
+            },
+        )
+
+        assertEquals(listOf("assign-state"), events)
+        assertEquals(1, scheduler.scheduledActionCount)
+        assertEquals(
+            listOf(
+                "started:state assignment",
+                "finished:state assignment",
+                "started:ui refresh scheduling",
+                "finished:ui refresh scheduling",
+            ),
+            diagnostics.stepEvents,
+        )
+
+        scheduler.runScheduledActions()
+
+        assertEquals(
+            listOf("assign-state", "set-tracker-state", "set-included-roots"),
+            events,
+        )
+        assertEquals(
+            listOf(
+                "started:state assignment",
+                "finished:state assignment",
+                "started:ui refresh scheduling",
+                "finished:ui refresh scheduling",
+                "started:ui refresh completion",
+                "started:setTrackerState",
+                "finished:setTrackerState",
+                "started:setIncludedRoots",
+                "finished:setIncludedRoots",
+                "finished:ui refresh completion",
+            ),
+            diagnostics.stepEvents,
+        )
+    }
+
+    @Test
+    fun `keeps git stage UI refresh best effort when visual update throws`() {
+        val scheduler = CapturingUiRefreshScheduler()
+        val diagnostics = CapturingGitStageDiagnostics()
+        val synchronization = GitStageWorkflowStateSynchronization(
+            uiScheduler = scheduler,
+            diagnostics = diagnostics,
+        )
+        val events = mutableListOf<String>()
+
+        synchronization.synchronize(
+            assignState = { events += "assign-state" },
+            refreshUi = {
+                setTrackerState {
+                    events += "set-tracker-state"
+                    error("tracker UI blocked")
+                }
+                setIncludedRoots { events += "set-included-roots" }
+            },
+        )
+        scheduler.runScheduledActions()
+
+        assertEquals(
+            listOf("assign-state", "set-tracker-state", "set-included-roots"),
+            events,
+        )
+        assertEquals(
+            listOf(
+                "failed:setTrackerState:IllegalStateException",
+            ),
+            diagnostics.failures,
+        )
+        assertTrue("finished:setIncludedRoots" in diagnostics.stepEvents)
+        assertTrue("finished:ui refresh completion" in diagnostics.stepEvents)
+    }
+
+    @Test
+    fun `reports git stage visual UI scheduling failure without failing state synchronization`() {
+        val diagnostics = CapturingGitStageDiagnostics()
+        val synchronization = GitStageWorkflowStateSynchronization(
+            uiScheduler = ThrowingUiRefreshScheduler(IllegalStateException("EDT unavailable")),
+            diagnostics = diagnostics,
+        )
+        var assigned = false
+
+        synchronization.synchronize(
+            assignState = { assigned = true },
+            refreshUi = { setTrackerState { error("should not run") } },
+        )
+
+        assertTrue(assigned)
+        assertEquals(
+            listOf("failed:ui refresh scheduling:IllegalStateException"),
+            diagnostics.failures,
+        )
+    }
+
     private open class TestCommitWorkflowHandler : CommitWorkflowHandler {
         override val amendCommitHandler: AmendCommitHandler
             get() = error("Not needed for reflection tests.")
@@ -355,6 +465,47 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
 
         override fun report(diagnostic: CommitWorkflowCompatibilityDiagnostic) {
             events += diagnostic
+        }
+    }
+
+    private class CapturingUiRefreshScheduler : CommitWorkflowUiRefreshScheduler {
+        private val actions = mutableListOf<() -> Unit>()
+
+        val scheduledActionCount: Int
+            get() = actions.size
+
+        override fun schedule(action: () -> Unit) {
+            actions += action
+        }
+
+        fun runScheduledActions() {
+            val scheduledActions = actions.toList()
+            actions.clear()
+            scheduledActions.forEach { action -> action() }
+        }
+    }
+
+    private class ThrowingUiRefreshScheduler(
+        private val failure: RuntimeException,
+    ) : CommitWorkflowUiRefreshScheduler {
+        override fun schedule(action: () -> Unit): Unit = throw failure
+    }
+
+    private class CapturingGitStageDiagnostics : GitStageWorkflowStateSynchronizationDiagnostics {
+        val stepEvents = mutableListOf<String>()
+        val failures = mutableListOf<String>()
+
+        override fun started(step: String) {
+            stepEvents += "started:$step"
+        }
+
+        override fun finished(step: String, elapsedMillis: Long) {
+            stepEvents += "finished:$step"
+        }
+
+        override fun failed(step: String, elapsedMillis: Long, exception: Throwable) {
+            stepEvents += "failed:$step"
+            failures += "failed:$step:${exception.javaClass.simpleName}"
         }
     }
 

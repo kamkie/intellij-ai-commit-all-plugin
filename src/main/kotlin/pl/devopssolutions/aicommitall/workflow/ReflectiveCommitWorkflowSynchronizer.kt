@@ -30,6 +30,8 @@ import java.time.Duration
 private const val GIT_STAGE_CONFIRMATION_ATTEMPTS = 10
 
 internal object ReflectiveCommitWorkflowSynchronizer {
+    private val gitStageStateSynchronization = GitStageWorkflowStateSynchronization()
+
     fun synchronize(
         workflowHandler: CommitWorkflowHandler,
         changeLists: List<LocalChangeList>,
@@ -138,11 +140,13 @@ internal object ReflectiveCommitWorkflowSynchronizer {
                 return@runCatching CommitWorkflowSynchronizationResult.StagingConfirmationFailed
             }
             val includedRoots = expectedPathsByRoot.keys
-            CommitWorkflowUiThreadAccess.run {
-                gitStageHandler.state = refreshedState
-                gitStageHandler.ui.setTrackerState(refreshedState)
-                gitStageHandler.ui.setIncludedRoots(includedRoots)
-            }
+            gitStageStateSynchronization.synchronize(
+                assignState = { gitStageHandler.state = refreshedState },
+                refreshUi = {
+                    setTrackerState { gitStageHandler.ui.setTrackerState(refreshedState) }
+                    setIncludedRoots { gitStageHandler.ui.setIncludedRoots(includedRoots) }
+                },
+            )
             CommitWorkflowSynchronizationResult.Synchronized
         }.getOrElse { exception ->
             diagnostics.report(
@@ -179,6 +183,136 @@ internal object ReflectiveCommitWorkflowSynchronizer {
     ): Method? = methods.firstOrNull { method ->
         method.name == name &&
             method.parameterTypes.contentEquals(parameterTypes)
+    }
+}
+
+internal class GitStageWorkflowStateSynchronization(
+    private val uiScheduler: CommitWorkflowUiRefreshScheduler = IntellijCommitWorkflowUiRefreshScheduler,
+    private val diagnostics: GitStageWorkflowStateSynchronizationDiagnostics =
+        IntelliJGitStageWorkflowStateSynchronizationDiagnostics,
+) {
+    fun synchronize(
+        assignState: () -> Unit,
+        refreshUi: GitStageWorkflowUiRefresh.() -> Unit,
+    ) {
+        runRequiredStep("state assignment", assignState)
+        scheduleUiRefresh(refreshUi)
+    }
+
+    private fun scheduleUiRefresh(refreshUi: GitStageWorkflowUiRefresh.() -> Unit) {
+        diagnostics.started("ui refresh scheduling")
+        val startedAtNanos = System.nanoTime()
+        runCatching {
+            uiScheduler.schedule {
+                runBestEffortStep("ui refresh completion") {
+                    GitStageWorkflowUiRefresh(diagnostics).refreshUi()
+                }
+            }
+        }.onSuccess {
+            diagnostics.finished("ui refresh scheduling", elapsedMillisSince(startedAtNanos))
+        }.onFailure { exception ->
+            diagnostics.failed("ui refresh scheduling", elapsedMillisSince(startedAtNanos), exception)
+        }
+    }
+
+    private fun runRequiredStep(step: String, action: () -> Unit) {
+        diagnostics.started(step)
+        val startedAtNanos = System.nanoTime()
+        runCatching(action)
+            .onSuccess { diagnostics.finished(step, elapsedMillisSince(startedAtNanos)) }
+            .onFailure { exception ->
+                diagnostics.failed(step, elapsedMillisSince(startedAtNanos), exception)
+                throw exception
+            }
+    }
+
+    private fun runBestEffortStep(step: String, action: () -> Unit) {
+        diagnostics.started(step)
+        val startedAtNanos = System.nanoTime()
+        runCatching(action)
+            .onSuccess { diagnostics.finished(step, elapsedMillisSince(startedAtNanos)) }
+            .onFailure { exception -> diagnostics.failed(step, elapsedMillisSince(startedAtNanos), exception) }
+    }
+
+    private fun elapsedMillisSince(startedAtNanos: Long): Long = Duration.ofNanos(System.nanoTime() - startedAtNanos)
+        .toMillis()
+}
+
+internal class GitStageWorkflowUiRefresh(
+    private val diagnostics: GitStageWorkflowStateSynchronizationDiagnostics,
+) {
+    fun setTrackerState(action: () -> Unit) {
+        runStep("setTrackerState", action)
+    }
+
+    fun setIncludedRoots(action: () -> Unit) {
+        runStep("setIncludedRoots", action)
+    }
+
+    private fun runStep(step: String, action: () -> Unit) {
+        diagnostics.started(step)
+        val startedAtNanos = System.nanoTime()
+        runCatching(action)
+            .onSuccess {
+                diagnostics.finished(
+                    step = step,
+                    elapsedMillis = Duration.ofNanos(System.nanoTime() - startedAtNanos).toMillis(),
+                )
+            }
+            .onFailure { exception ->
+                diagnostics.failed(
+                    step = step,
+                    elapsedMillis = Duration.ofNanos(System.nanoTime() - startedAtNanos).toMillis(),
+                    exception = exception,
+                )
+            }
+    }
+}
+
+internal fun interface CommitWorkflowUiRefreshScheduler {
+    fun schedule(action: () -> Unit)
+}
+
+private object IntellijCommitWorkflowUiRefreshScheduler : CommitWorkflowUiRefreshScheduler {
+    override fun schedule(action: () -> Unit) {
+        val application = com.intellij.openapi.application.ApplicationManager.getApplication()
+        if (application == null) {
+            action()
+        } else {
+            application.invokeLater(action)
+        }
+    }
+}
+
+internal interface GitStageWorkflowStateSynchronizationDiagnostics {
+    fun started(step: String)
+
+    fun finished(step: String, elapsedMillis: Long)
+
+    fun failed(step: String, elapsedMillis: Long, exception: Throwable)
+}
+
+private object IntelliJGitStageWorkflowStateSynchronizationDiagnostics :
+    GitStageWorkflowStateSynchronizationDiagnostics {
+    private val logger = Logger.getInstance(GitStageWorkflowStateSynchronization::class.java)
+
+    override fun started(step: String) {
+        logger.info("AI Commit All diagnostic: git-stage workflow state synchronization started, step=$step")
+    }
+
+    override fun finished(step: String, elapsedMillis: Long) {
+        logger.info(
+            "AI Commit All diagnostic: git-stage workflow state synchronization finished, " +
+                "step=$step, elapsedMs=$elapsedMillis",
+        )
+    }
+
+    override fun failed(step: String, elapsedMillis: Long, exception: Throwable) {
+        logger.info(
+            "AI Commit All diagnostic: git-stage workflow state synchronization failed, " +
+                "step=$step, elapsedMs=$elapsedMillis, " +
+                "exception=${exception.javaClass.name}, cause=${exception.cause?.javaClass?.name ?: "<none>"}",
+        )
     }
 }
 
