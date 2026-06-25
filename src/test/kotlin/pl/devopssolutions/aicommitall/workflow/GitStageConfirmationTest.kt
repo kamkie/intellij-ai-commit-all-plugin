@@ -312,6 +312,25 @@ internal class GitStageConfirmationTest {
     }
 
     @Test
+    fun `synthesizes added index status when git index confirms a staged untracked path`() {
+        val root = LightVirtualFile("repo")
+        val untracked = TestFilePath("/repo/new-file.txt")
+        val stale = stageState(root, gitStatus('?', '?', untracked))
+        val operations = CapturingOperations(stale)
+        operations.indexConfirmations[untracked.normalizedPath()] = GitIndexConfirmation.STAGED
+
+        val result = confirmation(operations, attempts = 1)
+            .confirm(
+                pathsByRoot = mapOf(root to listOf(untracked)),
+                expectedPathsByRoot = mapOf(root to listOf(untracked)),
+            )
+
+        val confirmed = result ?: error("Expected index-confirmed tracker state.")
+        assertTrue(GitStageSelectionItems.containsAllStagedPaths(confirmed, listOf(untracked)))
+        assertEquals(listOf("index:repo:/repo/new-file.txt"), operations.indexConfirmationEvents)
+    }
+
+    @Test
     fun `returns initialized state when git index reports no status for expected path`() {
         val root = LightVirtualFile("repo")
         val headIdentical = TestFilePath("/repo/line-endings-only.txt")

@@ -46,6 +46,13 @@ internal class CommitWorkflowSelectionServiceTest {
     }
 
     @Test
+    fun `commit workflow ui thread access runs the action directly without an application`() {
+        val result = CommitWorkflowUiThreadAccess.run { 42 }
+
+        assertEquals(42, result)
+    }
+
+    @Test
     fun `activation retry succeeds when commit workflow activation settles`() {
         var attempts = 0
         val sleeper = CapturingActivationSleeper()

@@ -101,6 +101,28 @@ internal class GitStagingAreaSelectionCollectorTest {
         )
     }
 
+    @Test
+    fun `default diagnostics fails closed and logs without rethrowing when collection wraps a cause`() {
+        val cause = IllegalStateException("tracker disposed")
+
+        val result = GitStagingAreaSelectionCollector.collect(
+            stateProvider = { throw IllegalArgumentException("tracker state unavailable", cause) },
+            isGitPath = { true },
+        )
+
+        assertEquals(emptyList(), result)
+    }
+
+    @Test
+    fun `default diagnostics fails closed and logs without rethrowing when collection has no cause`() {
+        val result = GitStagingAreaSelectionCollector.collect(
+            stateProvider = { error("tracker state unavailable") },
+            isGitPath = { true },
+        )
+
+        assertEquals(emptyList(), result)
+    }
+
     private class CapturingGitChangeSelectionCompatibilityDiagnostics : GitChangeSelectionCompatibilityDiagnostics {
         val events = mutableListOf<GitChangeSelectionCompatibilityDiagnostic>()
 

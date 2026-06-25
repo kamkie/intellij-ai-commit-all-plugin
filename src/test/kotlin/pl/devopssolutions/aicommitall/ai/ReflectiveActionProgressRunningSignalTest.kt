@@ -115,6 +115,52 @@ internal class ReflectiveActionProgressRunningSignalTest {
         )
     }
 
+    @Test
+    fun `reports unavailable when progress indicator rejects state reads as unsupported`() {
+        val diagnostics = CapturingAiCompletionCompatibilityDiagnostics()
+        val signal = ReflectiveActionProgressRunningSignal(
+            action = TestAction(unsupportedProgressIndicator()),
+            diagnostics = diagnostics,
+        )
+
+        assertEquals(AiGenerationRunningState.Unavailable, signal.state())
+        assertEquals(
+            listOf(
+                AiCompletionCompatibilityDiagnostic(
+                    sourceClassName = TestAction::class.java.name,
+                    methodName = "state",
+                    memberName = "ProgressIndicator.isRunning",
+                    reason = "progress indicator state read failed",
+                    exceptionClassName = UnsupportedOperationException::class.java.name,
+                ),
+            ),
+            diagnostics.events,
+        )
+    }
+
+    @Test
+    fun `finds progress indicator field declared on a superclass`() {
+        val signal = ReflectiveActionProgressRunningSignal(
+            InheritingAction(progressIndicator(running = true)),
+        )
+
+        assertEquals(AiGenerationRunningState.Running, signal.state())
+    }
+
+    @Test
+    fun `default diagnostics report a missing progress indicator field without throwing`() {
+        val signal = ReflectiveActionProgressRunningSignal(ActionWithoutProgressIndicator())
+
+        assertEquals(AiGenerationRunningState.Unavailable, signal.state())
+    }
+
+    @Test
+    fun `default diagnostics report a failed progress indicator read without throwing`() {
+        val signal = ReflectiveActionProgressRunningSignal(TestAction(throwingProgressIndicator()))
+
+        assertEquals(AiGenerationRunningState.Unavailable, signal.state())
+    }
+
     private class TestAction(
         @Suppress("unused")
         private val progressIndicator: ProgressIndicator?,
@@ -125,6 +171,17 @@ internal class ReflectiveActionProgressRunningSignalTest {
     private class ActionWithoutProgressIndicator : AnAction() {
         override fun actionPerformed(event: AnActionEvent) = Unit
     }
+
+    private open class BaseActionWithProgressIndicator(
+        @Suppress("unused")
+        private val progressIndicator: ProgressIndicator?,
+    ) : AnAction() {
+        override fun actionPerformed(event: AnActionEvent) = Unit
+    }
+
+    private class InheritingAction(
+        progressIndicator: ProgressIndicator?,
+    ) : BaseActionWithProgressIndicator(progressIndicator)
 
     private class ActionWithIncompatibleProgressIndicator(
         @Suppress("unused")
@@ -162,6 +219,19 @@ internal class ReflectiveActionProgressRunningSignalTest {
             "isRunning" -> error("Progress state unavailable")
             "toString" -> "Throwing ProgressIndicator"
             "hashCode" -> 1
+            "equals" -> false
+            else -> method.defaultReturnValue()
+        }
+    } as ProgressIndicator
+
+    private fun unsupportedProgressIndicator(): ProgressIndicator = Proxy.newProxyInstance(
+        ProgressIndicator::class.java.classLoader,
+        arrayOf(ProgressIndicator::class.java),
+    ) { _, method, _ ->
+        when (method.name) {
+            "isRunning" -> throw UnsupportedOperationException("Progress state unsupported")
+            "toString" -> "Unsupported ProgressIndicator"
+            "hashCode" -> 2
             "equals" -> false
             else -> method.defaultReturnValue()
         }

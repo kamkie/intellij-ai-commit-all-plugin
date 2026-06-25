@@ -394,6 +394,38 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
     }
 
     @Test
+    fun `default diagnostics and scheduler synchronize git stage state without an application`() {
+        val synchronization = GitStageWorkflowStateSynchronization()
+        val events = mutableListOf<String>()
+
+        synchronization.synchronize(
+            assignState = { events += "assign-state" },
+            refreshUi = {
+                setTrackerState { events += "set-tracker-state" }
+                setIncludedRoots { events += "set-included-roots" }
+            },
+        )
+
+        assertEquals(
+            listOf("assign-state", "set-tracker-state", "set-included-roots"),
+            events,
+        )
+    }
+
+    @Test
+    fun `default diagnostics record a best effort git stage UI failure without throwing`() {
+        val synchronization = GitStageWorkflowStateSynchronization()
+        var assigned = false
+
+        synchronization.synchronize(
+            assignState = { assigned = true },
+            refreshUi = { setTrackerState { error("tracker UI blocked") } },
+        )
+
+        assertTrue(assigned)
+    }
+
+    @Test
     fun `synchronization retry sleeps between failures and returns the final failure`() {
         val sleeper = CapturingSynchronizationSleeper()
         var attempts = 0

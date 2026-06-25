@@ -230,8 +230,8 @@ val verifyJacocoCoverageReport by tasks.registering(VerifyJacocoCoverageReportTa
     description = "Verifies the JaCoCo XML report contains executed production coverage."
     dependsOn(tasks.jacocoTestReport)
     reportFile.set(jacocoXmlReport)
-    minimumLineCoverage.set(0.68)
-    minimumBranchCoverage.set(0.62)
+    minimumLineCoverage.set(0.79)
+    minimumBranchCoverage.set(0.72)
 }
 
 val fakeAiAssistantPluginJar by tasks.registering(Jar::class) {
