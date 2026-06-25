@@ -18,6 +18,7 @@ on:
 permissions:
   checks: write
   contents: read
+  id-token: write
 
 jobs:
   prepare-matrix:
@@ -97,6 +98,23 @@ jobs:
           -PideProducts="${{ matrix.code }}"
           -PideVersion="${{ inputs.ide-version || '2026.1.2' }}"
 
+      - name: Aggregate release-matrix UI coverage
+        if: ${{ !env.ACT && !cancelled() && hashFiles('build/jacoco/releaseMatrixUiTest.exec') != '' }}
+        continue-on-error: true
+        run: ./gradlew jacocoAggregateReport
+
+      - name: Upload release-matrix UI coverage to Codecov
+        if: ${{ !env.ACT && !cancelled() && hashFiles('build/reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml') != '' }}
+        uses: codecov/codecov-action@v7
+        with:
+          files: build/reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml
+          flags: integration
+          name: ai-commit-all-release-matrix-ui-${{ matrix.code }}
+          report_type: coverage
+          disable_search: true
+          fail_ci_if_error: false
+          use_oidc: true
+
       - name: Publish release-matrix UI test summary
         if: ${{ !env.ACT && !cancelled() && hashFiles('build/test-results/releaseMatrixUiTest/*.xml') != '' }}
         uses: dorny/test-reporter@v3
@@ -114,6 +132,7 @@ jobs:
             build/test-results/releaseMatrixUiTest/*.xml
             build/reports/tests/releaseMatrixUiTest/**
             build/reports/releaseMatrixUiTest/**
+            build/reports/jacoco/jacocoAggregateReport/**
             build/idea-sandbox/**/log/**
             out/ide-tests/tests/**/log/**
           if-no-files-found: warn

@@ -230,8 +230,46 @@ val verifyJacocoCoverageReport by tasks.registering(VerifyJacocoCoverageReportTa
     description = "Verifies the JaCoCo XML report contains executed production coverage."
     dependsOn(tasks.jacocoTestReport)
     reportFile.set(jacocoXmlReport)
-    minimumLineCoverage.set(0.68)
-    minimumBranchCoverage.set(0.62)
+    minimumLineCoverage.set(0.79)
+    minimumBranchCoverage.set(0.72)
+}
+
+// Release-matrix UI coverage aggregation: capture coverage of production classes executed inside
+// the Starter-launched IDE process, then merge it with the unit-test coverage into one report.
+// This keeps the unit `jacocoTestReport`/`verifyJacocoCoverageReport` gate untouched while letting
+// the heavy UI lane contribute coverage for the IntelliJ platform adapters that unit tests cannot reach.
+val integrationCoverageEnabled = providers.gradleProperty("aicommitall.integrationCoverage")
+    .map { value -> value.toBooleanStrict() }
+    .orElse(true)
+val instrumentedClassesDir = layout.buildDirectory.dir("instrumented/instrumentCode")
+val integrationCoverageExecFile = layout.buildDirectory.file("jacoco/releaseMatrixUiTest.exec")
+val jacocoAgentJarFile = layout.buildDirectory.file("jacoco/agent/jacocoagent.jar")
+
+val extractJacocoAgentJar by tasks.registering(Sync::class) {
+    group = "verification"
+    description = "Extracts the JaCoCo runtime agent for the release-matrix UI IDE process."
+    from(configurations.named("jacocoAgent").map { agent -> zipTree(agent.singleFile) }) {
+        include("jacocoagent.jar")
+    }
+    into(layout.buildDirectory.dir("jacoco/agent"))
+}
+
+val jacocoAggregateReport by tasks.registering(JacocoReport::class) {
+    group = "verification"
+    description = "Aggregates unit and release-matrix UI coverage of production classes into one report."
+    dependsOn(tasks.named("instrumentCode"))
+    executionData(
+        fileTree(layout.buildDirectory.dir("jacoco")) {
+            include("test.exec", "releaseMatrixUiTest.exec")
+        },
+    )
+    classDirectories.setFrom(instrumentedClassesDir)
+    sourceDirectories.setFrom(layout.projectDirectory.dir("src/main/kotlin"))
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
 }
 
 val fakeAiAssistantPluginJar by tasks.registering(Jar::class) {
@@ -324,6 +362,17 @@ val releaseMatrixUiTest by intellijPlatformTesting.testIdeUi.registering {
             "aicommitall.fake.ai.plugin.path",
             fakeAiAssistantPluginArchiveFile.get().asFile.absolutePath,
         )
+        if (integrationCoverageEnabled.get()) {
+            dependsOn(extractJacocoAgentJar)
+            systemProperty(
+                "aicommitall.coverage.agent.jar",
+                jacocoAgentJarFile.get().asFile.absolutePath,
+            )
+            systemProperty(
+                "aicommitall.coverage.exec.file",
+                integrationCoverageExecFile.get().asFile.absolutePath,
+            )
+        }
     }
 }
 

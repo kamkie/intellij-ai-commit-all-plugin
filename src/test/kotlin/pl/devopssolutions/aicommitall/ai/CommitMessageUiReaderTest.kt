@@ -48,6 +48,24 @@ internal class CommitMessageUiReaderTest {
     }
 
     @Test
+    fun `reads commit message through default text access boundary outside an application`() {
+        val reader = CommitMessageUiReader(TestPublicCommitMessageUi("generated message"))
+
+        val message = reader.readMessage()
+
+        assertEquals("generated message", message)
+    }
+
+    @Test
+    fun `clears public commit message text through default mutation access outside an application`() {
+        val commitMessageUi = TestPublicCommitMessageUi("stale message")
+
+        CommitMessageTextCleaner.clear(commitMessageUi = commitMessageUi)
+
+        assertEquals("", commitMessageUi.text)
+    }
+
+    @Test
     fun `clears public commit message text through mutation access when no optional controls exist`() {
         val commitMessageUi = TestPublicCommitMessageUi("stale message")
         val mutationAccess = CapturingCommitMessageTextMutationAccess()

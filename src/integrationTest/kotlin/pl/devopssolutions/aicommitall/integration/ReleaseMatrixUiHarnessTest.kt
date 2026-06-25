@@ -26,6 +26,7 @@ import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.NoCIServer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
@@ -768,6 +769,7 @@ class ReleaseMatrixUiHarnessTest {
                 LocalProjectInfo(fixture.projectDirectory),
             ).withVersion(ideVersion),
         ).apply {
+            attachCoverageAgentIfRequested()
             val pluginConfigurator = PluginConfigurator(this)
             Files.deleteIfExists(pluginConfigurator.disabledPluginsPath)
             pluginConfigurator
@@ -792,6 +794,24 @@ class ReleaseMatrixUiHarnessTest {
                     waitForOpenProjectSmart()
                 }
             }
+        }
+    }
+
+    private fun IDETestContext.attachCoverageAgentIfRequested() {
+        val agentJar = System.getProperty("aicommitall.coverage.agent.jar")
+            ?.takeIf { value -> value.isNotBlank() } ?: return
+        val execFile = System.getProperty("aicommitall.coverage.exec.file")
+            ?.takeIf { value -> value.isNotBlank() } ?: return
+        if (!Files.isRegularFile(Path.of(agentJar))) {
+            return
+        }
+        Path.of(execFile).parent?.let { parent -> Files.createDirectories(parent) }
+        applyVMOptionsPatch {
+            addLine(
+                line = "-javaagent:$agentJar=destfile=$execFile,append=true,output=file," +
+                    "includes=pl.devopssolutions.aicommitall.*",
+                filterPrefix = "-javaagent:$agentJar",
+            )
         }
     }
 
