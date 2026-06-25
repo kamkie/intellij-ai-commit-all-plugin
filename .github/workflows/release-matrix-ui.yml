@@ -98,22 +98,13 @@ jobs:
           -PideProducts="${{ matrix.code }}"
           -PideVersion="${{ inputs.ide-version || '2026.1.2' }}"
 
-      - name: Aggregate release-matrix UI coverage
+      - name: Upload release-matrix UI coverage exec
         if: ${{ !env.ACT && !cancelled() && hashFiles('build/jacoco/releaseMatrixUiTest.exec') != '' }}
-        continue-on-error: true
-        run: ./gradlew jacocoAggregateReport
-
-      - name: Upload release-matrix UI coverage to Codecov
-        if: ${{ !env.ACT && !cancelled() && hashFiles('build/reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml') != '' }}
-        uses: codecov/codecov-action@v7
+        uses: actions/upload-artifact@v7
         with:
-          files: build/reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml
-          flags: integration
-          name: ai-commit-all-release-matrix-ui-${{ matrix.code }}
-          report_type: coverage
-          disable_search: true
-          fail_ci_if_error: false
-          use_oidc: true
+          name: ai-commit-all-coverage-exec-${{ matrix.code }}
+          path: build/jacoco/releaseMatrixUiTest.exec
+          if-no-files-found: warn
 
       - name: Publish release-matrix UI test summary
         if: ${{ !env.ACT && !cancelled() && hashFiles('build/test-results/releaseMatrixUiTest/*.xml') != '' }}
@@ -132,7 +123,57 @@ jobs:
             build/test-results/releaseMatrixUiTest/*.xml
             build/reports/tests/releaseMatrixUiTest/**
             build/reports/releaseMatrixUiTest/**
-            build/reports/jacoco/jacocoAggregateReport/**
             build/idea-sandbox/**/log/**
             out/ide-tests/tests/**/log/**
           if-no-files-found: warn
+
+  merge-coverage:
+    name: Merge release-matrix UI coverage
+    needs: release-matrix-ui
+    if: ${{ !cancelled() && !env.ACT }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          validate-wrappers: true
+
+      - name: Download release-matrix UI coverage exec files
+        uses: actions/download-artifact@v7
+        with:
+          pattern: ai-commit-all-coverage-exec-*
+          path: build/jacoco
+
+      - name: Build merged unit and UI coverage report
+        run: ./gradlew test jacocoAggregateReport
+
+      - name: Upload merged coverage report artifact
+        if: ${{ !cancelled() && hashFiles('build/reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml') != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-commit-all-merged-coverage
+          path: build/reports/jacoco/jacocoAggregateReport/**
+          if-no-files-found: warn
+
+      - name: Upload merged coverage to Codecov
+        if: ${{ !cancelled() && hashFiles('build/reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml') != '' }}
+        uses: codecov/codecov-action@v7
+        with:
+          files: build/reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml
+          flags: aggregate
+          name: ai-commit-all-merged-coverage
+          report_type: coverage
+          disable_search: true
+          fail_ci_if_error: false
+          use_oidc: true

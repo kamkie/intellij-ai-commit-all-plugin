@@ -258,9 +258,11 @@ val jacocoAggregateReport by tasks.registering(JacocoReport::class) {
     group = "verification"
     description = "Aggregates unit and release-matrix UI coverage of production classes into one report."
     dependsOn(tasks.named("instrumentCode"))
+    // Merge every execution-data file under build/jacoco, including per-IDE-product release-matrix
+    // exec files downloaded from the matrix jobs, so a single report spans unit and UI coverage.
     executionData(
         fileTree(layout.buildDirectory.dir("jacoco")) {
-            include("test.exec", "releaseMatrixUiTest.exec")
+            include("**/*.exec")
         },
     )
     classDirectories.setFrom(instrumentedClassesDir)
