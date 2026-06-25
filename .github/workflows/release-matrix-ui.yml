@@ -130,7 +130,7 @@ jobs:
   merge-coverage:
     name: Merge release-matrix UI coverage
     needs: release-matrix-ui
-    if: ${{ !cancelled() && !env.ACT }}
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
