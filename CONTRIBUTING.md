@@ -80,7 +80,7 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\run-act.ps1 pull_request -
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\run-act.ps1 pull_request --workflows .github/workflows/plugin-verifier.yml --job verify --matrix ide:IU-2026.1.1
 ```
 
-Local `act` runs skip GitHub-hosted reporting and artifact-upload steps such as CodeQL SARIF upload, unit-test check publishing, and Codecov OIDC upload. Reports and plugin ZIPs remain in `build/` locally. Release publication, dependency submission, and Marketplace signing still require GitHub-hosted workflows and repository secrets.
+Local `act` runs skip GitHub-hosted reporting and artifact-upload steps such as CodeQL SARIF upload, unit-test check publishing, and Codecov OIDC upload. Release-matrix UI runs also prepare the local `act` container with Xvfb and the Linux UI libraries needed by the IDE, restore the Gradle wrapper execute bit after the Windows-to-Linux file copy, and skip the merged coverage job because `act` does not provide GitHub's artifact runtime token. Reports and plugin ZIPs remain in `build/` locally. Release publication, dependency submission, and Marketplace signing still require GitHub-hosted workflows and repository secrets.
 
 For documentation-only changes, run documentation validation and `git diff --check`. For plugin code changes, include targeted tests and build checks. For release, signing, publishing, or supported-scope changes, also review [docs/validation/release-checklist.md](docs/validation/release-checklist.md).
 
