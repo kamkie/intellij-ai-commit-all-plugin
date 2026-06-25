@@ -257,9 +257,13 @@ val extractJacocoAgentJar by tasks.registering(Sync::class) {
 val jacocoAggregateReport by tasks.registering(JacocoReport::class) {
     group = "verification"
     description = "Aggregates unit and release-matrix UI coverage of production classes into one report."
-    dependsOn(tasks.named("instrumentCode"))
-    // Merge every execution-data file under build/jacoco, including per-IDE-product release-matrix
-    // exec files downloaded from the matrix jobs, so a single report spans unit and UI coverage.
+    // Depend on the unit test run so its build/jacoco/test.exec output is wired explicitly; merging
+    // it through executionData otherwise trips Gradle's implicit task-dependency validation.
+    dependsOn(tasks.test, tasks.named("instrumentCode"))
+    // Merge every execution-data file under build/jacoco: the unit test.exec plus the release-matrix
+    // releaseMatrixUiTest.exec produced in the same job. Each release-matrix UI matrix job builds this
+    // report against its own up-to-date instrumented classes (the exact bytecode its IDE loaded), so
+    // the integration probes match by class id; building it from a separate rebuild would discard them.
     executionData(
         fileTree(layout.buildDirectory.dir("jacoco")) {
             include("**/*.exec")
