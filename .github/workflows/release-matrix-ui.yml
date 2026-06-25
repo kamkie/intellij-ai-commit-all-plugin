@@ -156,7 +156,7 @@ jobs:
           path: build/jacoco
 
       - name: Build merged unit and UI coverage report
-        run: ./gradlew test jacocoAggregateReport
+        run: ./gradlew jacocoAggregateReport
 
       - name: Upload merged coverage report artifact
         if: ${{ !cancelled() && hashFiles('build/reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml') != '' }}
