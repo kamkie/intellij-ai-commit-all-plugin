@@ -538,6 +538,17 @@ internal class SafeImmediateOutgoingPushServiceTest {
     }
 
     @Test
+    fun `prepare outgoing commits falls back when Git push support is unavailable`() {
+        val environment = CapturingSafeImmediatePushEnvironment(pushSupportAvailable = false)
+        val service = SafeImmediatePushService(testProject(), environment)
+
+        val decision = service.prepareOutgoingCommits()
+
+        assertFallback(SafeImmediatePushFallbackReason.UnsupportedPushApi, decision)
+        assertEquals(0, environment.allRepositoriesCallCount)
+    }
+
+    @Test
     fun `prepare outgoing commits pushes only repositories with outgoing commits`() {
         val firstRepository = SafeImmediatePushRepositoryHandle("first")
         val secondRepository = SafeImmediatePushRepositoryHandle("second")

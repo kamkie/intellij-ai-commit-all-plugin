@@ -15,10 +15,50 @@
  */
 package pl.devopssolutions.aicommitall.vcs
 
+import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.fileTypes.PlainTextFileType
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.vcs.FilePath
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.testFramework.LightVirtualFile
+import git4idea.index.GitFileStatus
+import git4idea.index.GitStageTracker
+import java.io.File
+import java.nio.charset.Charset
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal class GitStagingAreaSelectionCollectorTest {
+    @Test
+    fun `collects distinct committable git paths from staging tracker state`() {
+        val root = LightVirtualFile("repo")
+        val modified = TestFilePath("/repo/src/Main.kt")
+        val duplicateModified = TestFilePath("\\repo\\src\\Main.kt")
+        val untracked = TestFilePath("/repo/src/New.kt")
+        val ignoredByFilter = TestFilePath("/repo/build/output.txt")
+        val state = GitStageTracker.State(
+            mapOf(
+                root to GitStageTracker.RootState(
+                    root,
+                    true,
+                    linkedMapOf(
+                        modified to GitFileStatus('M', ' ', modified, null),
+                        duplicateModified to GitFileStatus(' ', 'M', duplicateModified, null),
+                        untracked to GitFileStatus('?', '?', untracked, null),
+                        ignoredByFilter to GitFileStatus('A', ' ', ignoredByFilter, null),
+                    ),
+                ),
+            ),
+        )
+
+        val result = GitStagingAreaSelectionCollector.collect(
+            stateProvider = { state },
+            isGitPath = { path -> !path.path.contains("/build/") },
+        )
+
+        assertEquals(listOf(modified, untracked), result)
+    }
+
     @Test
     fun `reports diagnostic and fails closed when staging area state cannot be collected`() {
         val diagnostics = CapturingGitChangeSelectionCompatibilityDiagnostics()
@@ -43,11 +83,57 @@ internal class GitStagingAreaSelectionCollectorTest {
         )
     }
 
+    @Test
+    fun `reports diagnostic cause when staging area collection wraps a platform failure`() {
+        val diagnostics = CapturingGitChangeSelectionCompatibilityDiagnostics()
+        val cause = IllegalStateException("tracker disposed")
+
+        val result = GitStagingAreaSelectionCollector.collect(
+            stateProvider = { throw IllegalArgumentException("tracker state unavailable", cause) },
+            isGitPath = { true },
+            diagnostics = diagnostics,
+        )
+
+        assertEquals(emptyList(), result)
+        assertEquals(
+            IllegalStateException::class.java.name,
+            diagnostics.events.single().causeClassName,
+        )
+    }
+
     private class CapturingGitChangeSelectionCompatibilityDiagnostics : GitChangeSelectionCompatibilityDiagnostics {
         val events = mutableListOf<GitChangeSelectionCompatibilityDiagnostic>()
 
         override fun report(diagnostic: GitChangeSelectionCompatibilityDiagnostic) {
             events += diagnostic
         }
+    }
+
+    private class TestFilePath(private val rawPath: String) : FilePath {
+        override fun getVirtualFile(): VirtualFile? = null
+
+        override fun getVirtualFileParent(): VirtualFile? = null
+
+        override fun getIOFile(): File = File(rawPath)
+
+        override fun getName(): String = ioFile.name
+
+        override fun getPresentableUrl(): String = rawPath
+
+        override fun getCharset(): Charset = Charsets.UTF_8
+
+        override fun getCharset(project: Project?): Charset = Charsets.UTF_8
+
+        override fun getFileType(): FileType = PlainTextFileType.INSTANCE
+
+        override fun getPath(): String = rawPath
+
+        override fun isDirectory(): Boolean = false
+
+        override fun isUnder(parent: FilePath, strict: Boolean): Boolean = false
+
+        override fun getParentPath(): FilePath? = null
+
+        override fun isNonLocal(): Boolean = false
     }
 }

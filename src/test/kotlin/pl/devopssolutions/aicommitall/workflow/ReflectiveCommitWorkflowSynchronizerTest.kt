@@ -30,6 +30,8 @@ import java.nio.charset.Charset
 import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 internal class ReflectiveCommitWorkflowSynchronizerTest {
@@ -368,6 +370,83 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         )
     }
 
+    @Test
+    fun `reports and rethrows git stage state assignment failures`() {
+        val diagnostics = CapturingGitStageDiagnostics()
+        val failure = IllegalStateException("state write failed")
+        val synchronization = GitStageWorkflowStateSynchronization(
+            uiScheduler = CapturingUiRefreshScheduler(),
+            diagnostics = diagnostics,
+        )
+
+        val thrown = assertFailsWith<IllegalStateException> {
+            synchronization.synchronize(
+                assignState = { throw failure },
+                refreshUi = { setTrackerState { error("should not run") } },
+            )
+        }
+
+        assertSame(failure, thrown)
+        assertEquals(
+            listOf("failed:state assignment:IllegalStateException"),
+            diagnostics.failures,
+        )
+    }
+
+    @Test
+    fun `synchronization retry sleeps between failures and returns the final failure`() {
+        val sleeper = CapturingSynchronizationSleeper()
+        var attempts = 0
+        val firstFailure = IllegalStateException("first")
+        val finalFailure = IllegalArgumentException("final")
+
+        val result = CommitWorkflowSynchronizationRetry(
+            maxAttempts = 2,
+            retryInterval = Duration.ofMillis(25),
+            sleeper = sleeper,
+        ).run {
+            attempts++
+            if (attempts == 1) {
+                throw firstFailure
+            }
+            throw finalFailure
+        }
+
+        assertSame(finalFailure, result)
+        assertEquals(listOf(Duration.ofMillis(25)), sleeper.delays)
+    }
+
+    @Test
+    fun `synchronization retry stops after transient failure settles`() {
+        val sleeper = CapturingSynchronizationSleeper()
+        var attempts = 0
+
+        val result = CommitWorkflowSynchronizationRetry(
+            maxAttempts = 3,
+            retryInterval = Duration.ofMillis(25),
+            sleeper = sleeper,
+        ).run {
+            attempts++
+            if (attempts == 1) {
+                error("transient failure")
+            }
+        }
+
+        assertEquals(null, result)
+        assertEquals(2, attempts)
+        assertEquals(listOf(Duration.ofMillis(25)), sleeper.delays)
+    }
+
+    @Test
+    fun `synchronization retry rejects invalid settings`() {
+        assertFailsWith<IllegalArgumentException> {
+            CommitWorkflowSynchronizationRetry(maxAttempts = 0, retryInterval = Duration.ZERO)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            CommitWorkflowSynchronizationRetry(maxAttempts = 1, retryInterval = Duration.ofMillis(-1))
+        }
+    }
+
     private open class TestCommitWorkflowHandler : CommitWorkflowHandler {
         override val amendCommitHandler: AmendCommitHandler
             get() = error("Not needed for reflection tests.")
@@ -506,6 +585,14 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         override fun failed(step: String, elapsedMillis: Long, exception: Throwable) {
             stepEvents += "failed:$step"
             failures += "failed:$step:${exception.javaClass.simpleName}"
+        }
+    }
+
+    private class CapturingSynchronizationSleeper : CommitWorkflowSynchronizationSleeper {
+        val delays = mutableListOf<Duration>()
+
+        override fun sleep(duration: Duration) {
+            delays += duration
         }
     }
 

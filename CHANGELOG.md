@@ -10,6 +10,10 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ## [Unreleased]
 
+### Changed
+
+- Expanded automated coverage for VCS outgoing-commit refresh, staging-area selection, push completion, control color, and workflow synchronization guard paths.
+
 ## [v0.1.0-beta.7] - 2026-06-25
 
 ### Fixed

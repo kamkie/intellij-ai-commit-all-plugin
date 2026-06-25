@@ -249,6 +249,20 @@ internal class GitPushCompletionServiceTest {
     }
 
     @Test
+    fun `push completion listener forwards repository result to completion handler`() {
+        val repository = testRepository("repo")
+        val result = pushResult(GitPushRepoResult.Type.SUCCESS)
+        val completions = mutableListOf<Pair<GitRepository, GitPushRepoResult>>()
+        val listener = GitPushCompletionListener { completedRepository, pushResult ->
+            completions += completedRepository to pushResult
+        }
+
+        listener.onCompleted(repository, result)
+
+        assertEquals(listOf(repository to result), completions)
+    }
+
+    @Test
     fun `dispose cancels pending waiters with partial push results`() {
         val timeoutScheduler = ManualGitPushCompletionTimeoutScheduler()
         val tracker = GitPushCompletionTracker(timeoutScheduler)

@@ -15,12 +15,63 @@
  */
 package pl.devopssolutions.aicommitall.vcs
 
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.project.Project
+import java.lang.reflect.Proxy
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 internal class GitOutgoingCommitsStatusTest {
+    @Test
+    fun `service refreshes cached outgoing status after repository change callbacks`() {
+        val scheduler = CapturingRefreshScheduler()
+        val actionRefresh = CountingActionRefresh()
+        val environment = CapturingOutgoingCommitsEnvironment(
+            loaderResults = listOf(true),
+        )
+        val service = GitOutgoingCommitsService(
+            project = testProject(),
+            environment = environment,
+            scheduler = scheduler,
+            actionRefresh = actionRefresh,
+        )
+
+        environment.repositoryRefreshes.single().invoke()
+
+        assertFalse(service.cachedHasOutgoingCommitsToPush())
+        assertEquals(1, scheduler.pendingCount)
+
+        scheduler.runNext()
+
+        assertTrue(service.cachedHasOutgoingCommitsToPush())
+        assertEquals(1, actionRefresh.count)
+    }
+
+    @Test
+    fun `service refreshes cached outgoing status after push completion callbacks`() {
+        val scheduler = CapturingRefreshScheduler()
+        val actionRefresh = CountingActionRefresh()
+        val environment = CapturingOutgoingCommitsEnvironment(
+            loaderResults = listOf(true, false),
+        )
+        val service = GitOutgoingCommitsService(
+            project = testProject(),
+            environment = environment,
+            scheduler = scheduler,
+            actionRefresh = actionRefresh,
+        )
+
+        assertTrue(service.hasOutgoingCommitsToPush())
+
+        environment.pushCompletionRefreshes.single().invoke()
+        scheduler.runNext()
+
+        assertFalse(service.cachedHasOutgoingCommitsToPush())
+        assertEquals(2, actionRefresh.count)
+    }
+
     @Test
     fun `cached status returns last known value and refreshes in background`() {
         val scheduler = CapturingRefreshScheduler()
@@ -268,5 +319,57 @@ internal class GitOutgoingCommitsStatusTest {
         override fun refreshActions() {
             count++
         }
+    }
+
+    private class CapturingOutgoingCommitsEnvironment(
+        loaderResults: List<Boolean>,
+    ) : GitOutgoingCommitsEnvironment {
+        private val results = ArrayDeque(loaderResults)
+        private var lastResult = loaderResults.lastOrNull() ?: false
+        val repositoryRefreshes = mutableListOf<() -> Unit>()
+        val pushCompletionRefreshes = mutableListOf<() -> Unit>()
+
+        override fun subscribeToRepositoryChanges(
+            parentDisposable: Disposable,
+            refresh: () -> Unit,
+        ) {
+            repositoryRefreshes += refresh
+        }
+
+        override fun subscribeToPushCompletion(
+            parentDisposable: Disposable,
+            refresh: () -> Unit,
+        ) {
+            pushCompletionRefreshes += refresh
+        }
+
+        override fun hasOutgoingCommitsToPush(): Boolean {
+            if (results.isNotEmpty()) {
+                lastResult = results.removeFirst()
+            }
+            return lastResult
+        }
+    }
+
+    private fun testProject(): Project = Proxy.newProxyInstance(
+        Project::class.java.classLoader,
+        arrayOf(Project::class.java),
+    ) { proxy, method, args ->
+        when (method.name) {
+            "toString" -> "Test Project"
+            "hashCode" -> System.identityHashCode(proxy)
+            "equals" -> proxy === args?.firstOrNull()
+            else -> method.defaultReturnValue()
+        }
+    } as Project
+
+    private fun java.lang.reflect.Method.defaultReturnValue(): Any? = when (returnType) {
+        java.lang.Boolean.TYPE -> false
+        java.lang.Integer.TYPE -> 0
+        java.lang.Long.TYPE -> 0L
+        java.lang.Float.TYPE -> 0f
+        java.lang.Double.TYPE -> 0.0
+        java.lang.Void.TYPE -> null
+        else -> null
     }
 }
