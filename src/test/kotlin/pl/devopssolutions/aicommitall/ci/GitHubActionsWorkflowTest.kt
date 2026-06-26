@@ -106,12 +106,28 @@ internal class GitHubActionsWorkflowTest {
     }
 
     @Test
-    fun `jacoco report uses intellij instrumented production classes`() {
+    fun `jacoco reports use matching production class bytes for each coverage source`() {
         val content = Files.readString(Path.of("build.gradle.kts"))
 
         assertTrue(
-            content.contains("classDirectories.setFrom(layout.buildDirectory.dir(\"instrumented/instrumentCode\"))"),
-            "JaCoCo must report against the IntelliJ-instrumented production classes used by plugin tests.",
+            content.contains("classDirectories.setFrom(instrumentedClassesDir)"),
+            "Unit JaCoCo reports must keep using the IntelliJ-instrumented production classes.",
+        )
+        assertTrue(
+            content.contains("val integrationCoverageClassDumpDir = layout.buildDirectory.dir(\"jacoco/releaseMatrixUiClassDump\")"),
+            "The release-matrix UI lane must keep JaCoCo classdumpdir output under build/jacoco.",
+        )
+        assertTrue(
+            content.contains("val jacocoIntegrationReport by tasks.registering(JacocoReport::class)") &&
+                content.contains("executionData(integrationCoverageExecFile)") &&
+                content.contains("classDirectories.setFrom(integrationCoverageClassDumpDir)"),
+            "Integration JaCoCo reports must match the IDE JVM's dumped class bytes.",
+        )
+        assertTrue(
+            content.contains("tasks.registering(MergeJacocoXmlReportsTask::class)") &&
+                content.contains("reportFiles.from(jacocoXmlReport, jacocoIntegrationXmlReport)") &&
+                content.contains("outputReportFile.set(jacocoAggregateXmlReport)"),
+            "The aggregate report must merge unit XML with the dumped-class integration XML.",
         )
         assertTrue(
             content.contains("isIncludeNoLocationClasses = true"),
@@ -120,6 +136,35 @@ internal class GitHubActionsWorkflowTest {
         assertTrue(
             content.contains("verifyJacocoCoverageReport"),
             "The build must fail when the JaCoCo XML report contains no executed production coverage.",
+        )
+    }
+
+    @Test
+    fun `release matrix harness passes jacoco class dump directory to starter ide`() {
+        val content = Files.readString(
+            Path.of(
+                "src",
+                "integrationTest",
+                "kotlin",
+                "pl",
+                "devopssolutions",
+                "aicommitall",
+                "integration",
+                "ReleaseMatrixUiHarnessTest.kt",
+            ),
+        )
+
+        assertTrue(
+            content.contains("aicommitall.coverage.class.dump.dir"),
+            "The release-matrix harness must accept the Gradle-provided JaCoCo class dump directory.",
+        )
+        assertTrue(
+            content.contains("Files.createDirectories(classDumpDir)"),
+            "The harness must create the JaCoCo classdumpdir before launching the IDE.",
+        )
+        assertTrue(
+            content.contains("classdumpdir=\$classDumpDir"),
+            "The IDE JaCoCo agent must dump the transformed classes it records in the exec file.",
         )
     }
 

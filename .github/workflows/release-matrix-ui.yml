@@ -142,6 +142,8 @@ jobs:
             build/reports/tests/releaseMatrixUiTest/**
             build/reports/releaseMatrixUiTest/**
             build/reports/jacoco/jacocoAggregateReport/**
+            build/reports/jacoco/jacocoIntegrationReport/**
+            build/jacoco/releaseMatrixUiClassDump/**
             build/idea-sandbox/**/log/**
             out/ide-tests/tests/**/log/**
           if-no-files-found: warn

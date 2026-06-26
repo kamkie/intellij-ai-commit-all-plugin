@@ -802,14 +802,19 @@ class ReleaseMatrixUiHarnessTest {
             ?.takeIf { value -> value.isNotBlank() } ?: return
         val execFile = System.getProperty("aicommitall.coverage.exec.file")
             ?.takeIf { value -> value.isNotBlank() } ?: return
+        val classDumpDir = System.getProperty("aicommitall.coverage.class.dump.dir")
+            ?.takeIf { value -> value.isNotBlank() }
+            ?.let(Path::of)
+            ?: error("JaCoCo class dump directory is required when release-matrix UI coverage is enabled.")
         if (!Files.isRegularFile(Path.of(agentJar))) {
             return
         }
         Path.of(execFile).parent?.let { parent -> Files.createDirectories(parent) }
+        Files.createDirectories(classDumpDir)
         applyVMOptionsPatch {
             addLine(
                 line = "-javaagent:$agentJar=destfile=$execFile,append=true,output=file," +
-                    "includes=pl.devopssolutions.aicommitall.*",
+                    "includes=pl.devopssolutions.aicommitall.*,classdumpdir=$classDumpDir",
                 filterPrefix = "-javaagent:$agentJar",
             )
         }

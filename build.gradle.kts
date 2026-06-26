@@ -4,7 +4,9 @@ import dev.detekt.gradle.Detekt
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import pl.devopssolutions.aicommitall.gradle.MergeJacocoXmlReportsTask
 import pl.devopssolutions.aicommitall.gradle.VerifyDetektBaselineTask
+import pl.devopssolutions.aicommitall.gradle.VerifyJacocoClassDumpTask
 import pl.devopssolutions.aicommitall.gradle.VerifyJacocoCoverageReportTask
 import java.util.Locale
 
@@ -212,9 +214,11 @@ tasks.test {
     }
 }
 
+val instrumentedClassesDir = layout.buildDirectory.dir("instrumented/instrumentCode")
+
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
-    classDirectories.setFrom(layout.buildDirectory.dir("instrumented/instrumentCode"))
+    classDirectories.setFrom(instrumentedClassesDir)
 
     reports {
         xml.required.set(true)
@@ -241,9 +245,15 @@ val verifyJacocoCoverageReport by tasks.registering(VerifyJacocoCoverageReportTa
 val integrationCoverageEnabled = providers.gradleProperty("aicommitall.integrationCoverage")
     .map { value -> value.toBooleanStrict() }
     .orElse(true)
-val instrumentedClassesDir = layout.buildDirectory.dir("instrumented/instrumentCode")
 val integrationCoverageExecFile = layout.buildDirectory.file("jacoco/releaseMatrixUiTest.exec")
+val integrationCoverageClassDumpDir = layout.buildDirectory.dir("jacoco/releaseMatrixUiClassDump")
 val jacocoAgentJarFile = layout.buildDirectory.file("jacoco/agent/jacocoagent.jar")
+val jacocoIntegrationXmlReport = layout.buildDirectory.file(
+    "reports/jacoco/jacocoIntegrationReport/jacocoIntegrationReport.xml",
+)
+val jacocoAggregateXmlReport = layout.buildDirectory.file(
+    "reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml",
+)
 
 val extractJacocoAgentJar by tasks.registering(Sync::class) {
     group = "verification"
@@ -254,28 +264,33 @@ val extractJacocoAgentJar by tasks.registering(Sync::class) {
     into(layout.buildDirectory.dir("jacoco/agent"))
 }
 
-val jacocoAggregateReport by tasks.registering(JacocoReport::class) {
+val verifyReleaseMatrixJacocoClassDump by tasks.registering(VerifyJacocoClassDumpTask::class) {
     group = "verification"
-    description = "Aggregates unit and release-matrix UI coverage of production classes into one report."
-    // Depend on the unit test run so its build/jacoco/test.exec output is wired explicitly; merging
-    // it through executionData otherwise trips Gradle's implicit task-dependency validation.
-    dependsOn(tasks.test, tasks.named("instrumentCode"))
-    // Merge every execution-data file under build/jacoco: the unit test.exec plus the release-matrix
-    // releaseMatrixUiTest.exec produced in the same job. Each release-matrix UI matrix job builds this
-    // report against its own up-to-date instrumented classes (the exact bytecode its IDE loaded), so
-    // the integration probes match by class id; building it from a separate rebuild would discard them.
-    executionData(
-        fileTree(layout.buildDirectory.dir("jacoco")) {
-            include("**/*.exec")
-        },
-    )
-    classDirectories.setFrom(instrumentedClassesDir)
+    description = "Verifies release-matrix UI JaCoCo exec data has matching dumped classes."
+    execFilePath.set(integrationCoverageExecFile.map { file -> file.asFile.absolutePath })
+    classDumpDirPath.set(integrationCoverageClassDumpDir.map { directory -> directory.asFile.absolutePath })
+}
+
+val jacocoIntegrationReport by tasks.registering(JacocoReport::class) {
+    group = "verification"
+    description = "Reports release-matrix UI coverage against the class bytes dumped by the IDE JaCoCo agent."
+    dependsOn(verifyReleaseMatrixJacocoClassDump)
+    executionData(integrationCoverageExecFile)
+    classDirectories.setFrom(integrationCoverageClassDumpDir)
     sourceDirectories.setFrom(layout.projectDirectory.dir("src/main/kotlin"))
     reports {
         xml.required.set(true)
         html.required.set(true)
         csv.required.set(false)
     }
+}
+
+val jacocoAggregateReport by tasks.registering(MergeJacocoXmlReportsTask::class) {
+    group = "verification"
+    description = "Aggregates unit and release-matrix UI JaCoCo XML coverage into one report."
+    dependsOn(tasks.jacocoTestReport, jacocoIntegrationReport)
+    reportFiles.from(jacocoXmlReport, jacocoIntegrationXmlReport)
+    outputReportFile.set(jacocoAggregateXmlReport)
 }
 
 val fakeAiAssistantPluginJar by tasks.registering(Jar::class) {
@@ -377,6 +392,10 @@ val releaseMatrixUiTest by intellijPlatformTesting.testIdeUi.registering {
             systemProperty(
                 "aicommitall.coverage.exec.file",
                 integrationCoverageExecFile.get().asFile.absolutePath,
+            )
+            systemProperty(
+                "aicommitall.coverage.class.dump.dir",
+                integrationCoverageClassDumpDir.get().asFile.absolutePath,
             )
         }
     }
