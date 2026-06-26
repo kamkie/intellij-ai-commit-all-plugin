@@ -107,9 +107,10 @@ internal class GitHubCoverageWorkflowTest {
         )
         assertTrue(
             uiCoverageJob.contains("files: build/reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml") &&
-                uiCoverageJob.contains("flags: aggregate") &&
+                uiCoverageJob.contains("flags: unit,aggregate") &&
+                uiCoverageJob.contains("name: ai-commit-all-unit-tests") &&
                 uiCoverageJob.contains("report_type: coverage"),
-            "UI coverage job must upload the aggregate JaCoCo XML report to Codecov.",
+            "UI coverage job must upload the aggregate JaCoCo XML report to Codecov's stable coverage stream.",
         )
         assertTrue(
             content.contains("disable_search: true") && content.contains("use_oidc: true"),

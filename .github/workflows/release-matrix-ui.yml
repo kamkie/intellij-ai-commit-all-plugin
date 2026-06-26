@@ -118,18 +118,6 @@ jobs:
         if: ${{ !env.ACT && success() && hashFiles('build/jacoco/releaseMatrixUiIde.exec') != '' }}
         run: ./gradlew jacocoAggregateReport
 
-      - name: Upload release-matrix UI coverage to Codecov
-        if: ${{ !env.ACT && !cancelled() && hashFiles('build/reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml') != '' }}
-        uses: codecov/codecov-action@v7
-        with:
-          files: build/reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml
-          flags: aggregate
-          name: ai-commit-all-release-matrix-ui-${{ matrix.code }}
-          report_type: coverage
-          disable_search: true
-          fail_ci_if_error: false
-          use_oidc: true
-
       - name: Publish release-matrix UI test summary
         if: ${{ !env.ACT && !cancelled() && hashFiles('build/test-results/releaseMatrixUiTest/*.xml') != '' }}
         uses: dorny/test-reporter@v3

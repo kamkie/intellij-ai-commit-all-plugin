@@ -45,6 +45,16 @@ internal class GitHubReleaseWorkflowTest {
                 content.contains("find build/jacoco/releaseMatrixUiClassDump -name '*.class'"),
             "Release matrix UI workflow must prove the IDE JaCoCo exec and dumped classes exist.",
         )
+        assertTrue(
+            content.contains("build/reports/jacoco/jacocoAggregateReport/**"),
+            "Release matrix UI workflow must keep the aggregate JaCoCo report in the evidence artifact.",
+        )
+        assertFalse(
+            content.contains("Upload release-matrix UI coverage to Codecov") ||
+                content.contains("codecov/codecov-action@") ||
+                content.contains("report_type: coverage"),
+            "Release matrix UI workflow must not add extra Codecov sessions to release commits.",
+        )
         assertFalse(
             content.contains("hashFiles('build/jacoco/releaseMatrixUiTest.exec')"),
             "Release matrix UI workflow must not infer IDE coverage from the Gradle test worker exec file.",

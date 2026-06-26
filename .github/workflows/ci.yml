@@ -224,8 +224,10 @@ jobs:
         uses: codecov/codecov-action@v7
         with:
           files: build/reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml
-          flags: aggregate
-          name: ai-commit-all-ci-aggregate
+          # Keep the historical unit stream so Codecov's branch graph and trend
+          # continue from the same series, while still exposing the aggregate flag.
+          flags: unit,aggregate
+          name: ai-commit-all-unit-tests
           report_type: coverage
           disable_search: true
           fail_ci_if_error: true
