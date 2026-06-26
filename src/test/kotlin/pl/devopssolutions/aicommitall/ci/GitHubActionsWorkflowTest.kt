@@ -188,6 +188,10 @@ internal class GitHubActionsWorkflowTest {
             content.contains("inclnolocationclasses=true"),
             "The IDE JaCoCo agent must include plugin classes loaded without protection-domain source locations.",
         )
+        assertTrue(
+            content.contains("excludes=pl.devopssolutions.aicommitall.integration.*"),
+            "The IDE JaCoCo agent must leave test-only integration probe classes uninstrumented.",
+        )
     }
 
     @Test
