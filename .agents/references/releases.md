@@ -88,8 +88,23 @@ then runs Plugin Verifier separately per IDE and preserves split verifier
 reports under `build/reports/pluginVerifier-local-prerelease/`. Do not use a
 single combined local multi-IDE `verifyPlugin` invocation as the prerelease
 gate unless a task explicitly requires reproducing that combined verifier path.
-Run it with an execution budget of at least 45 minutes; the full local gate can
-legitimately exceed short interactive command timeouts even when it is healthy.
+The script records completed gates and timings in
+`build/reports/local-prerelease-validation/status.json`. Run it with an
+execution budget of at least 45 minutes; if an attached command timeout or
+isolated verifier failure interrupts the run, rerun the same command with
+`-Resume` to continue from the first incomplete gate for the same `HEAD`, IDE
+version list, and publish channel instead of repeating earlier checks.
+
+For beta prereleases from an already-green `main`, remote-first validation may
+replace the full local prerelease gate when the release prep change is limited
+to release metadata, documentation, generated Marketplace metadata, changelog,
+or validation-report updates. Before tagging, run
+`scripts/run-remote-first-beta-validation.ps1 -Tag <tag>` and record in the
+dated validation report that local Gradle, tests, coverage, Plugin Verifier, and
+release-matrix UI gates were intentionally deferred to GitHub. Do not use this
+mode for stable releases, Marketplace publication, signing changes, Gradle or
+workflow changes, plugin runtime changes that have not already passed `main`
+CI, or any release where local artifact inspection is required.
 
 After pushing `main` and the release tag, prefer
 `scripts/watch-github-release-validation.ps1 -Tag <tag>` over manual `gh run

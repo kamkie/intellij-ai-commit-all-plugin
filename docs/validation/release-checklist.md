@@ -70,6 +70,32 @@ prerelease preparation so a verifier worker failure in one IDE does not force a
 full build/test/package rerun. The script preserves per-IDE verifier evidence
 under `build/reports/pluginVerifier-local-prerelease/`.
 
+The local prerelease script writes completed gate timings to
+`build/reports/local-prerelease-validation/status.json`. If the attached command
+times out or one verifier lane fails after earlier gates completed, rerun the
+same command with `-Resume` to continue from the first incomplete gate for the
+same `HEAD`, IDE version list, and publish channel:
+
+```powershell
+.\scripts\run-local-prerelease-validation.ps1 -Resume
+```
+
+For beta prereleases from an already-green `main`, a remote-first fast path may
+replace the full local prerelease script when the release prep change is limited
+to release metadata, documentation, generated Marketplace metadata, changelog,
+or validation-report updates:
+
+```powershell
+.\scripts\run-remote-first-beta-validation.ps1 -Tag <tag>
+```
+
+Record this mode in the dated report, including that local Gradle, tests,
+coverage, Plugin Verifier, and release-matrix UI gates were intentionally
+deferred to GitHub. Do not use the remote-first path for stable releases,
+Marketplace publication, signing changes, Gradle or workflow changes, plugin
+runtime changes that have not already passed `main` CI, or any release where
+local artifact inspection is required.
+
 After pushing `main` and the release tag, use the GitHub release-validation
 watcher instead of manually polling each workflow:
 
