@@ -423,6 +423,7 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     @Test
+    @Tag(RELEASE_MATRIX_SMOKE_TAG)
     fun emptyGeneratedMessageStopsWithoutCommitOrPush() {
         fakeAiStopPathLeavesGitStateUnchanged(
             testNameSuffix = "empty-message",
@@ -472,6 +473,7 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     @Test
+    @Tag(RELEASE_MATRIX_SMOKE_TAG)
     fun userEditedMessageStopsWithoutCommitOrPush() {
         fakeAiStopPathLeavesGitStateUnchanged(
             testNameSuffix = "user-edited-message",
@@ -488,6 +490,7 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     @Test
+    @Tag(RELEASE_MATRIX_SMOKE_TAG)
     fun commitSectionCreatesLocalCommitWithStagingAreaDisabled() {
         commitSectionCreatesLocalCommitThroughCommitToolWindow(stagingAreaEnabled = false)
     }
@@ -526,6 +529,7 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     @Test
+    @Tag(RELEASE_MATRIX_SMOKE_TAG)
     fun pushSectionCommitsAndPushesToTemporaryBareRemote() {
         assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
         val fixture = ReleaseMatrixGitFixtureBuilder.createCommitAndPush(tempDirectory.resolve("push-flow-fixture"))
