@@ -493,6 +493,7 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     @Test
+    @Tag(RELEASE_MATRIX_SMOKE_TAG)
     fun commitSectionCreatesLocalCommitWithStagingAreaEnabled() {
         commitSectionCreatesLocalCommitThroughCommitToolWindow(stagingAreaEnabled = true)
     }
