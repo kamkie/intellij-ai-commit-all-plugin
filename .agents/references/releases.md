@@ -88,6 +88,17 @@ then runs Plugin Verifier separately per IDE and preserves split verifier
 reports under `build/reports/pluginVerifier-local-prerelease/`. Do not use a
 single combined local multi-IDE `verifyPlugin` invocation as the prerelease
 gate unless a task explicitly requires reproducing that combined verifier path.
+Run it with an execution budget of at least 45 minutes; the full local gate can
+legitimately exceed short interactive command timeouts even when it is healthy.
+
+After pushing `main` and the release tag, prefer
+`scripts/watch-github-release-validation.ps1 -Tag <tag>` over manual `gh run
+list`, `gh run watch`, and one-off rerun commands. The watcher waits for the
+main push workflows plus the tag-triggered GitHub Release and Release Matrix UI
+workflows for the release commit, verifies the GitHub Release ZIP asset, and
+reruns failed Release Matrix UI jobs once by default. Set
+`-ReleaseMatrixReruns 0` when preserving the first remote failure is more
+important than completing the release quickly.
 
 ## What Not To Do
 

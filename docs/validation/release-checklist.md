@@ -70,6 +70,20 @@ prerelease preparation so a verifier worker failure in one IDE does not force a
 full build/test/package rerun. The script preserves per-IDE verifier evidence
 under `build/reports/pluginVerifier-local-prerelease/`.
 
+After pushing `main` and the release tag, use the GitHub release-validation
+watcher instead of manually polling each workflow:
+
+```powershell
+.\scripts\watch-github-release-validation.ps1 -Tag <tag>
+```
+
+The watcher waits for the release commit's main push workflows, tag-triggered
+GitHub Release workflow, and tag-triggered Release Matrix UI workflow. It also
+checks that the GitHub Release exists, is marked as a prerelease for prerelease
+tags, and has exactly one ZIP asset. By default it reruns failed Release Matrix
+UI jobs once; pass `-ReleaseMatrixReruns 0` when recording the first failure
+without an automatic rerun.
+
 For release matrix work, also include:
 
 ```powershell
