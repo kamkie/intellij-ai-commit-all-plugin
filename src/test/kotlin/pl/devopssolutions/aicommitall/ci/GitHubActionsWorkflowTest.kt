@@ -184,6 +184,10 @@ internal class GitHubActionsWorkflowTest {
             content.contains("classdumpdir=\$classDumpDir"),
             "The IDE JaCoCo agent must dump the transformed classes it records in the exec file.",
         )
+        assertTrue(
+            content.contains("inclnolocationclasses=true"),
+            "The IDE JaCoCo agent must include plugin classes loaded without protection-domain source locations.",
+        )
     }
 
     @Test

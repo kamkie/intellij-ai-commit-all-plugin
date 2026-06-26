@@ -814,7 +814,8 @@ class ReleaseMatrixUiHarnessTest {
         applyVMOptionsPatch {
             addLine(
                 line = "-javaagent:$agentJar=destfile=$execFile,append=true,output=file," +
-                    "includes=pl.devopssolutions.aicommitall.*,classdumpdir=$classDumpDir",
+                    "includes=pl.devopssolutions.aicommitall.*,inclnolocationclasses=true," +
+                    "classdumpdir=$classDumpDir",
                 filterPrefix = "-javaagent:$agentJar",
             )
         }
