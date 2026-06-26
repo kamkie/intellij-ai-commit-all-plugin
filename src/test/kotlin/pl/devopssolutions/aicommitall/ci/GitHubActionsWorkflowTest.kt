@@ -114,11 +114,17 @@ internal class GitHubActionsWorkflowTest {
             "Unit JaCoCo reports must keep using the IntelliJ-instrumented production classes.",
         )
         assertTrue(
-            content.contains("val integrationCoverageClassDumpDir = layout.buildDirectory.dir(\"jacoco/releaseMatrixUiClassDump\")"),
+            content.contains(
+                "val integrationCoverageClassDumpDir = " +
+                    "layout.buildDirectory.dir(\"jacoco/releaseMatrixUiClassDump\")",
+            ),
             "The release-matrix UI lane must keep JaCoCo classdumpdir output under build/jacoco.",
         )
         assertTrue(
-            content.contains("val integrationCoverageExecFile = layout.buildDirectory.file(\"jacoco/releaseMatrixUiIde.exec\")"),
+            content.contains(
+                "val integrationCoverageExecFile = " +
+                    "layout.buildDirectory.file(\"jacoco/releaseMatrixUiIde.exec\")",
+            ),
             "The IDE JaCoCo agent must write to an exec file distinct from the Gradle releaseMatrixUiTest task.",
         )
         assertFalse(
