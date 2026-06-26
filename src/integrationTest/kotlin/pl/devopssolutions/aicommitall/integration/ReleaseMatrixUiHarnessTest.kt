@@ -241,6 +241,7 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     @Test
+    @Tag(RELEASE_MATRIX_SMOKE_TAG)
     fun commitShortcutCreatesLocalCommitWhenTakeoverEnabled() {
         assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
         val fixture = ReleaseMatrixGitFixtureBuilder.createCommitOnly(tempDirectory.resolve("commit-shortcut-fixture"))
@@ -298,6 +299,7 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     @Test
+    @Tag(RELEASE_MATRIX_SMOKE_TAG)
     fun aiSectionGeneratesCommitMessageWithoutCreatingCommit() {
         assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
         val fixture = ReleaseMatrixGitFixtureBuilder.createCommitOnly(tempDirectory.resolve("ai-only-flow-fixture"))
