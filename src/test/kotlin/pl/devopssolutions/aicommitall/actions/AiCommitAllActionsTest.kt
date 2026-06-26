@@ -509,6 +509,39 @@ internal class AiCommitAllActionsTest {
     }
 
     @Test
+    fun `custom component push activation uses one clicked component data context snapshot`() {
+        val dataManager = ComponentDataManager()
+        withDataManagerApplication(dataManager) {
+            val starter = CapturingWorkflowStarter()
+            val project = testProject()
+            val dataContext = testDataContext(project)
+            val action = AiCommitAllThreeSectionAction(
+                workflowStarter = starter,
+                availabilityProvider = AvailableOnlyForDataContextProvider(dataContext),
+                activityProvider = StaticActivityProvider(),
+            )
+            val event = testEvent(dataContext)
+            action.update(event)
+            val control = action
+                .createCustomComponent(event.presentation, ActionPlaces.CHANGES_VIEW_TOOLBAR)
+                .asControl()
+            control.setSize(control.preferredSize)
+            dataManager.contexts[control] = dataContext
+            dataManager.queuedContexts[control] = mutableListOf(dataContext, DataContext.EMPTY_CONTEXT)
+
+            val inputEvent = testMouseEvent(control, xRatio = 0.88)
+            control.dispatchEvent(inputEvent)
+
+            assertEquals(1, dataManager.requestedComponents.size)
+            assertSame(control, dataManager.requestedComponents.single())
+            assertSame(project, starter.project)
+            assertSame(dataContext, starter.dataContext)
+            assertEquals(AiCommitAllWorkflowMode.Push, starter.mode)
+            assertSame(inputEvent, starter.inputEvent)
+        }
+    }
+
+    @Test
     fun `action update hides when every section is unavailable`() {
         val action = AiCommitAllThreeSectionAction(
             workflowStarter = CapturingWorkflowStarter(),
@@ -618,6 +651,20 @@ internal class AiCommitAllActionsTest {
         }
     }
 
+    private class AvailableOnlyForDataContextProvider(
+        private val availableDataContext: DataContext,
+    ) : AiCommitAllWorkflowAvailabilityProvider {
+        override fun availability(
+            project: Project,
+            mode: AiCommitAllWorkflowMode,
+            dataContext: DataContext,
+        ): AiCommitAllWorkflowActionAvailability = if (dataContext === availableDataContext) {
+            AiCommitAllWorkflowActionAvailability.Enabled
+        } else {
+            AiCommitAllWorkflowActionAvailability.Disabled
+        }
+    }
+
     private class StaticActivityProvider(
         private val runningSection: AiCommitAllControlSection? = null,
     ) : AiCommitAllWorkflowActivityProvider {
@@ -645,12 +692,15 @@ internal class AiCommitAllActionsTest {
         TestActionManager,
     )
 
-    private fun testMouseEvent(component: Component): MouseEvent = MouseEvent(
+    private fun testMouseEvent(
+        component: Component,
+        xRatio: Double = 0.5,
+    ): MouseEvent = MouseEvent(
         component,
         MouseEvent.MOUSE_CLICKED,
         0L,
         0,
-        component.width / 2,
+        (component.width * xRatio).toInt(),
         component.height / 2,
         1,
         false,
@@ -707,6 +757,7 @@ internal class AiCommitAllActionsTest {
     @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
     private class ComponentDataManager : com.intellij.ide.DataManager() {
         val contexts = mutableMapOf<Component, DataContext>()
+        val queuedContexts = mutableMapOf<Component, MutableList<DataContext>>()
         val requestedComponents = mutableListOf<Component>()
 
         override fun getDataContext(): DataContext = DataContext.EMPTY_CONTEXT
@@ -717,7 +768,12 @@ internal class AiCommitAllActionsTest {
 
         override fun getDataContext(component: Component): DataContext {
             requestedComponents += component
-            return contexts[component] ?: DataContext.EMPTY_CONTEXT
+            val queued = queuedContexts[component]
+            return if (!queued.isNullOrEmpty()) {
+                queued.removeAt(0)
+            } else {
+                contexts[component] ?: DataContext.EMPTY_CONTEXT
+            }
         }
 
         override fun getDataContext(

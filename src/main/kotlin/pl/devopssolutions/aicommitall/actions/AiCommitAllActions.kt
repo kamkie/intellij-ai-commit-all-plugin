@@ -72,10 +72,11 @@ internal class AiCommitAllThreeSectionAction(
         AiCommitAllCommitToolbarCustomizer.removeStandardCommitAndPushAction()
         lateinit var control: AiCommitAllThreeSectionControl
         control = AiCommitAllThreeSectionControl { section, inputEvent ->
+            val dataContext = DataManager.getInstance().getDataContext(control)
             startSection(
-                project = CommonDataKeys.PROJECT.getData(DataManager.getInstance().getDataContext(control)),
+                project = CommonDataKeys.PROJECT.getData(dataContext),
                 section = section,
-                dataContext = DataManager.getInstance().getDataContext(control),
+                dataContext = dataContext,
                 inputEvent = inputEvent,
             )
         }
