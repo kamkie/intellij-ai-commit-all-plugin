@@ -73,6 +73,8 @@ The wrapper uses a globally installed `act` when available, otherwise it downloa
 act pull_request --workflows .github/workflows/ci.yml --job build
 ```
 
+The wrapper enables `act --rm` unless `--reuse`/`-r` is passed, so failed workflow containers are cleaned up automatically. Multi-product release-matrix UI runs are split into one local `act` invocation per IDE product because local matrix containers share host ports.
+
 Pass `act` arguments after the script name for narrower checks, for example:
 
 ```powershell
