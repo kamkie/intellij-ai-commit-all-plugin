@@ -15,7 +15,11 @@
  */
 package pl.devopssolutions.aicommitall.vcs
 
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
+import com.intellij.util.messages.MessageBus
+import com.intellij.util.messages.MessageBusConnection
+import git4idea.push.GitPushListener
 import git4idea.push.GitPushRepoResult
 import git4idea.repo.GitRepository
 import git4idea.update.GitUpdateResult
@@ -27,6 +31,35 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 internal class GitPushCompletionServiceTest {
+    @Test
+    fun `service subscribes to project push topic and forwards completions to tracker`() {
+        val messageBus = CapturingMessageBus()
+        val timeoutScheduler = ManualGitPushCompletionTimeoutScheduler()
+        val service = GitPushCompletionService(
+            project = testProject(messageBus),
+            timeoutScheduler = timeoutScheduler,
+        )
+        val repository = testRepository("service-repository")
+        val pushResult = pushResult(GitPushRepoResult.Type.SUCCESS)
+        var listenerCallbackCount = 0
+        val parentDisposable = Disposer.newDisposable()
+
+        val completion = service.awaitCompletion(
+            repositories = listOf(repository),
+        )
+        service.addCompletionListener(parentDisposable) {
+            listenerCallbackCount += 1
+        }
+
+        messageBus.complete(repository, pushResult)
+
+        assertEquals(GitPushCompletionResult.Success(mapOf(repository to pushResult)), completion.join())
+        assertEquals(1, listenerCallbackCount)
+
+        Disposer.dispose(parentDisposable)
+        service.dispose()
+    }
+
     @Test
     fun `await completion immediately succeeds for empty repository set`() {
         val timeoutScheduler = ManualGitPushCompletionTimeoutScheduler()
@@ -337,7 +370,66 @@ internal class GitPushCompletionServiceTest {
         }
     }
 
+    private class CapturingMessageBus {
+        private var pushListener: GitPushListener? = null
+
+        val messageBus: MessageBus = Proxy.newProxyInstance(
+            MessageBus::class.java.classLoader,
+            arrayOf(MessageBus::class.java),
+        ) { proxy, method, _ ->
+            when (method.name) {
+                "connect" -> connection
+                "toString" -> "Test MessageBus"
+                "hashCode" -> System.identityHashCode(proxy)
+                "equals" -> proxy === this
+                else -> method.defaultReturnValue()
+            }
+        } as MessageBus
+
+        private val connection: MessageBusConnection = Proxy.newProxyInstance(
+            MessageBusConnection::class.java.classLoader,
+            arrayOf(MessageBusConnection::class.java),
+        ) { proxy, method, args ->
+            when (method.name) {
+                "subscribe" -> {
+                    pushListener = args?.getOrNull(1) as GitPushListener
+                    Unit
+                }
+
+                "disconnect" -> Unit
+
+                "toString" -> "Test MessageBusConnection"
+
+                "hashCode" -> System.identityHashCode(proxy)
+
+                "equals" -> proxy === args?.firstOrNull()
+
+                else -> method.defaultReturnValue()
+            }
+        } as MessageBusConnection
+
+        fun complete(
+            repository: GitRepository,
+            pushResult: GitPushRepoResult,
+        ) {
+            requireNotNull(pushListener).onCompleted(repository, pushResult)
+        }
+    }
+
     private companion object {
+        private fun testProject(messageBus: CapturingMessageBus): Project = Proxy.newProxyInstance(
+            Project::class.java.classLoader,
+            arrayOf(Project::class.java),
+        ) { proxy, method, args ->
+            when (method.name) {
+                "getMessageBus" -> messageBus.messageBus
+                "toString" -> "Test Project"
+                "hashCode" -> System.identityHashCode(proxy)
+                "equals" -> proxy === args?.firstOrNull()
+                else -> method.defaultReturnValue()
+            }
+        } as Project
+
         private fun testRepository(name: String): GitRepository = Proxy.newProxyInstance(
             GitRepository::class.java.classLoader,
             arrayOf(GitRepository::class.java),

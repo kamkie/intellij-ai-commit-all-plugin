@@ -20,18 +20,23 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vcs.FilePath
 import com.intellij.openapi.vcs.changes.ChangeListManager
 import com.intellij.openapi.vcs.changes.LocalChangeList
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowUi
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelectionService
+import pl.devopssolutions.aicommitall.vcs.GitChangeSelectionSource
 import pl.devopssolutions.aicommitall.vcs.GitVcsSupportStatus
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicReference
 
 @Service(Service.Level.PROJECT)
-internal class CommitWorkflowSelectionService(private val project: Project) {
+internal class CommitWorkflowSelectionService @JvmOverloads constructor(
+    private val project: Project,
+    private val dependencies: CommitWorkflowSelectionDependencies = CommitWorkflowSelectionDependencies(),
+) {
     fun prepareAllFilesSelection(
         workflowHandler: CommitWorkflowHandler?,
         workflowUi: CommitWorkflowUi?,
@@ -40,7 +45,7 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
         ?: CommitWorkflowSelectionResult.MissingWorkflow
 
     private fun prepareAllFilesSelection(input: CommitWorkflowSelectionInput): CommitWorkflowSelectionResult {
-        val selectionService = GitChangeSelectionService.getInstance(project)
+        val selectionService = dependencies.selectionSource(project)
         val supportStatus = selectionService.supportStatus()
         return if (supportStatus == GitVcsSupportStatus.Supported) {
             prepareSupportedSelection(input, selectionService)
@@ -51,7 +56,7 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
 
     private fun prepareSupportedSelection(
         input: CommitWorkflowSelectionInput,
-        selectionService: GitChangeSelectionService,
+        selectionService: GitChangeSelectionSource,
     ): CommitWorkflowSelectionResult {
         val selection = selectionService.collectSelection()
         return if (selection.hasCommittableContent) {
@@ -67,7 +72,7 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
     ): CommitWorkflowSelectionResult {
         val changeLists = CommitWorkflowSelectionItems.changeListsContaining(
             trackedChanges = selection.trackedChanges,
-            changeLists = ChangeListManager.getInstance(project).changeLists,
+            changeLists = dependencies.changeLists(project),
         )
         return if (changeLists.isEmpty() && selection.trackedChanges.isNotEmpty()) {
             CommitWorkflowSelectionResult.UnsupportedWorkflow("No Git changelist owns the selected tracked changes.")
@@ -91,8 +96,8 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
                 "stagingAreaPaths=${selection.stagingAreaPaths.size}, " +
                 "changeLists=${changeLists.size}, inclusionItems=${inclusionItems.size}",
         )
-        val activated = CommitWorkflowActivationRetry.DEFAULT.activate {
-            CommitWorkflowUiThreadAccess.run { input.workflowUi.activate() }
+        val activated = dependencies.activationRetry.activate {
+            dependencies.activateWorkflowUi(input.workflowUi)
         }
         logger.info("AI Commit All diagnostic: commit workflow UI activation result, activated=$activated")
 
@@ -116,7 +121,7 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
         activeChangeList: LocalChangeList,
         inclusionItems: Collection<Any>,
     ): CommitWorkflowSelectionResult {
-        val synchronizationResult = ReflectiveCommitWorkflowSynchronizer.synchronize(
+        val synchronizationResult = dependencies.selectionSynchronizer.synchronize(
             workflowHandler = input.workflowHandler,
             changeLists = changeLists,
             unversionedFiles = selection.unversionedFiles,
@@ -144,13 +149,55 @@ internal class CommitWorkflowSelectionService(private val project: Project) {
     }
 
     private fun chooseActiveChangeList(changeLists: List<LocalChangeList>): LocalChangeList = changeLists.firstOrNull()
-        ?: ChangeListManager.getInstance(project).defaultChangeList
+        ?: dependencies.defaultChangeList(project)
 
     companion object {
         private val logger: Logger = Logger.getInstance(CommitWorkflowSelectionService::class.java)
 
         fun getInstance(project: Project): CommitWorkflowSelectionService = project.service()
     }
+}
+
+internal class CommitWorkflowSelectionDependencies(
+    val selectionSource: (Project) -> GitChangeSelectionSource = GitChangeSelectionService::getInstance,
+    val changeLists: (Project) -> List<LocalChangeList> = { currentProject ->
+        ChangeListManager.getInstance(currentProject).changeLists
+    },
+    val defaultChangeList: (Project) -> LocalChangeList = { currentProject ->
+        ChangeListManager.getInstance(currentProject).defaultChangeList
+    },
+    val activationRetry: CommitWorkflowActivationRetry = CommitWorkflowActivationRetry.DEFAULT,
+    val selectionSynchronizer: CommitWorkflowSelectionSynchronizer =
+        ReflectiveCommitWorkflowSelectionSynchronizer,
+    val activateWorkflowUi: (CommitWorkflowUi) -> Boolean = { workflowUi ->
+        CommitWorkflowUiThreadAccess.run { workflowUi.activate() }
+    },
+)
+
+internal fun interface CommitWorkflowSelectionSynchronizer {
+    fun synchronize(
+        workflowHandler: CommitWorkflowHandler,
+        changeLists: List<LocalChangeList>,
+        unversionedFiles: List<FilePath>,
+        activeChangeList: LocalChangeList,
+        inclusionItems: Collection<Any>,
+    ): CommitWorkflowSynchronizationResult
+}
+
+private object ReflectiveCommitWorkflowSelectionSynchronizer : CommitWorkflowSelectionSynchronizer {
+    override fun synchronize(
+        workflowHandler: CommitWorkflowHandler,
+        changeLists: List<LocalChangeList>,
+        unversionedFiles: List<FilePath>,
+        activeChangeList: LocalChangeList,
+        inclusionItems: Collection<Any>,
+    ): CommitWorkflowSynchronizationResult = ReflectiveCommitWorkflowSynchronizer.synchronize(
+        workflowHandler = workflowHandler,
+        changeLists = changeLists,
+        unversionedFiles = unversionedFiles,
+        activeChangeList = activeChangeList,
+        inclusionItems = inclusionItems,
+    )
 }
 
 internal class CommitWorkflowActivationRetry(

@@ -31,19 +31,16 @@ import java.awt.event.InputEvent
 import java.time.Duration
 
 @Service(Service.Level.PROJECT)
-internal class AiCommitMessageActionInvocationService(private val project: Project) {
-    private val invoker = AiCommitMessageActionInvoker(
-        actionFinder = AiCommitMessageActionDiscoveryService.getInstance(),
-        actionSystemInvoker = IntellijAiActionSystemInvoker,
-        dataContextFactory = IntellijAiInvocationDataContextFactory,
-    )
-
+internal class AiCommitMessageActionInvocationService @JvmOverloads constructor(
+    private val project: Project,
+    private val actionGeneration: AiCommitMessageActionGeneration = IntellijAiCommitMessageActionGeneration,
+) {
     fun invokeCommitMessageGeneration(
         workflowHandler: CommitWorkflowHandler?,
         workflowUi: CommitWorkflowUi?,
         parentDataContext: DataContext = DataContext.EMPTY_CONTEXT,
         inputEvent: InputEvent? = null,
-    ): AiCommitMessageActionInvocationResult = invoker.invokeCommitMessageGeneration(
+    ): AiCommitMessageActionInvocationResult = actionGeneration.invokeCommitMessageGeneration(
         project = project,
         workflowHandler = workflowHandler,
         workflowUi = workflowUi,
@@ -54,6 +51,38 @@ internal class AiCommitMessageActionInvocationService(private val project: Proje
     companion object {
         fun getInstance(project: Project): AiCommitMessageActionInvocationService = project.service()
     }
+}
+
+internal fun interface AiCommitMessageActionGeneration {
+    fun invokeCommitMessageGeneration(
+        project: Project,
+        workflowHandler: CommitWorkflowHandler?,
+        workflowUi: CommitWorkflowUi?,
+        parentDataContext: DataContext,
+        inputEvent: InputEvent?,
+    ): AiCommitMessageActionInvocationResult
+}
+
+private object IntellijAiCommitMessageActionGeneration : AiCommitMessageActionGeneration {
+    private val invoker = AiCommitMessageActionInvoker(
+        actionFinder = AiCommitMessageActionDiscoveryService.getInstance(),
+        actionSystemInvoker = IntellijAiActionSystemInvoker,
+        dataContextFactory = IntellijAiInvocationDataContextFactory,
+    )
+
+    override fun invokeCommitMessageGeneration(
+        project: Project,
+        workflowHandler: CommitWorkflowHandler?,
+        workflowUi: CommitWorkflowUi?,
+        parentDataContext: DataContext,
+        inputEvent: InputEvent?,
+    ): AiCommitMessageActionInvocationResult = invoker.invokeCommitMessageGeneration(
+        project = project,
+        workflowHandler = workflowHandler,
+        workflowUi = workflowUi,
+        parentDataContext = parentDataContext,
+        inputEvent = inputEvent,
+    )
 }
 
 internal class AiCommitMessageActionInvoker(

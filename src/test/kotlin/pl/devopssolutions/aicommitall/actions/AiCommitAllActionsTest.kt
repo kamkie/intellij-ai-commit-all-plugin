@@ -594,6 +594,28 @@ internal class AiCommitAllActionsTest {
         )
     }
 
+    @Test
+    fun `availability policy follows commit executor capability when committable content exists`() {
+        val availabilityByMode = AiCommitAllWorkflowMode.entries.associateWith { mode ->
+            AiCommitAllWorkflowAvailabilityPolicy.availability(
+                mode = mode,
+                hasCommittableContent = true,
+                canExecuteCommit = { false },
+                canExecuteCommitAndPush = { mode == AiCommitAllWorkflowMode.Push },
+                hasOutgoingCommitsToPush = { false },
+            )
+        }
+
+        assertEquals(
+            mapOf(
+                AiCommitAllWorkflowMode.Ai to AiCommitAllWorkflowActionAvailability.Enabled,
+                AiCommitAllWorkflowMode.Commit to AiCommitAllWorkflowActionAvailability.Disabled,
+                AiCommitAllWorkflowMode.Push to AiCommitAllWorkflowActionAvailability.Enabled,
+            ),
+            availabilityByMode,
+        )
+    }
+
     private class CapturingWorkflowStarter : AiCommitAllWorkflowStarter {
         var project: Project? = null
         var mode: AiCommitAllWorkflowMode? = null
