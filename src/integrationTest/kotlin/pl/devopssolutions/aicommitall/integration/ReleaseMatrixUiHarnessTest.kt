@@ -300,6 +300,45 @@ class ReleaseMatrixUiHarnessTest {
 
     @Test
     @Tag(RELEASE_MATRIX_SMOKE_TAG)
+    fun pushShortcutPushesOutgoingOnlyLocalCommitWhenTakeoverEnabled() {
+        assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
+        val fixture = ReleaseMatrixGitFixtureBuilder.createOutgoingOnly(tempDirectory.resolve("outgoing-only-shortcut-fixture"))
+        val initialCommitCount = fixture.primaryRepository.commitCount()
+        val outgoingHead = fixture.primaryRepository.head()
+        val initialRemoteHead = fixture.bareRemote.remoteHead()
+
+        runReleaseMatrixIdeWithFixture(
+            testName = "release-matrix-ui-outgoing-only-push-shortcut",
+            fixture = fixture,
+        ) {
+            val project = openReleaseMatrixCommitToolWindow()
+            val probe = utility(RemoteFakeAiAssistantProbe::class)
+            probe.setUseVcsShortcutsForAiCommitAll(true)
+            waitFor(
+                message = "outgoing-only fixture enables push shortcut takeover",
+                timeout = 60.seconds,
+                interval = 1.seconds,
+            ) {
+                probe.hasOutgoingCommitsToPush(project) &&
+                    probe.isShortcutActionEnabled(project, AI_COMMIT_ALL_PUSH_SHORTCUT_ACTION_ID)
+            }
+            assertTrue(probe.performAction(project, AI_COMMIT_ALL_PUSH_SHORTCUT_ACTION_ID))
+            waitFor(
+                message = "outgoing-only local commit reaches temporary bare remote through shortcut",
+                timeout = 60.seconds,
+                interval = 1.seconds,
+                errorMessage = { "Remote HEAD stayed at ${fixture.bareRemote.remoteHead()}" },
+            ) {
+                fixture.bareRemote.remoteHead() != initialRemoteHead && fixture.bareRemote.remoteHead() == outgoingHead
+            }
+            assertEquals(initialCommitCount, fixture.primaryRepository.commitCount())
+            assertEquals(emptyList(), fixture.primaryRepository.statusLines())
+            writeGitEvidence("outgoing-only-push-shortcut", fixture)
+        }
+    }
+
+    @Test
+    @Tag(RELEASE_MATRIX_SMOKE_TAG)
     fun aiSectionGeneratesCommitMessageWithoutCreatingCommit() {
         assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
         val fixture = ReleaseMatrixGitFixtureBuilder.createCommitOnly(tempDirectory.resolve("ai-only-flow-fixture"))
