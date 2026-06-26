@@ -15,11 +15,12 @@
  */
 package pl.devopssolutions.aicommitall.gradle
 
+import org.w3c.dom.Document
 import org.w3c.dom.Element
 import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
 
-internal fun parseXmlDocumentElement(file: File): Element {
+internal fun parseXmlDocument(file: File): Document {
     val documentBuilderFactory = DocumentBuilderFactory.newInstance()
     documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
     documentBuilderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false)
@@ -28,5 +29,6 @@ internal fun parseXmlDocumentElement(file: File): Element {
     return documentBuilderFactory
         .newDocumentBuilder()
         .parse(file)
-        .documentElement
 }
+
+internal fun parseXmlDocumentElement(file: File): Element = parseXmlDocument(file).documentElement

@@ -31,6 +31,10 @@ internal class GitHubReleaseWorkflowTest {
             content.contains("out/ide-tests/tests/**/log/**"),
             "Release matrix UI workflow must upload JetBrains Starter IDE logs and screenshots.",
         )
+        assertTrue(
+            content.contains("build/jacoco/releaseMatrixUiClassDump/**"),
+            "Release matrix UI workflow must upload JaCoCo classdumpdir output for coverage diagnosis.",
+        )
     }
 
     @Test
