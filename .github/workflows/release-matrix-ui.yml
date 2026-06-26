@@ -96,7 +96,7 @@ jobs:
         if: ${{ env.ACT }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb libxi6
+          sudo apt-get install -y xvfb libxi6 libxtst6 libxrender1 libxext6 libxss1 libnss3 libgtk-3-0
           mkdir -p /tmp/xdg-runtime
           chmod 700 /tmp/xdg-runtime
           echo "XDG_RUNTIME_DIR=/tmp/xdg-runtime" >> "${GITHUB_ENV}"
@@ -104,7 +104,7 @@ jobs:
 
       - name: Run release-matrix UI tests
         run: >
-          xvfb-run -a ./gradlew releaseMatrixUiTest
+          xvfb-run -a ./gradlew --no-configuration-cache releaseMatrixUiTest
           -PideProducts="${{ matrix.code }}"
           -PideVersion="${{ inputs.ide-version || '2026.1.2' }}"
 
