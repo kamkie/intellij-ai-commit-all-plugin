@@ -108,8 +108,14 @@ jobs:
           -PideProducts="${{ matrix.code }}"
           -PideVersion="${{ inputs.ide-version || '2026.1.2' }}"
 
+      - name: Verify release-matrix UI coverage data
+        if: ${{ !env.ACT && success() }}
+        run: |
+          test -s build/jacoco/releaseMatrixUiIde.exec
+          find build/jacoco/releaseMatrixUiClassDump -name '*.class' -type f -print -quit | grep -q .
+
       - name: Build release-matrix UI coverage report
-        if: ${{ !env.ACT && !cancelled() && hashFiles('build/jacoco/releaseMatrixUiTest.exec') != '' }}
+        if: ${{ !env.ACT && success() && hashFiles('build/jacoco/releaseMatrixUiIde.exec') != '' }}
         run: ./gradlew jacocoAggregateReport
 
       - name: Upload release-matrix UI coverage to Codecov
@@ -143,6 +149,7 @@ jobs:
             build/reports/releaseMatrixUiTest/**
             build/reports/jacoco/jacocoAggregateReport/**
             build/reports/jacoco/jacocoIntegrationReport/**
+            build/jacoco/releaseMatrixUiIde.exec
             build/jacoco/releaseMatrixUiClassDump/**
             build/idea-sandbox/**/log/**
             out/ide-tests/tests/**/log/**
