@@ -245,7 +245,7 @@ val verifyJacocoCoverageReport by tasks.registering(VerifyJacocoCoverageReportTa
 val integrationCoverageEnabled = providers.gradleProperty("aicommitall.integrationCoverage")
     .map { value -> value.toBooleanStrict() }
     .orElse(true)
-val integrationCoverageExecFile = layout.buildDirectory.file("jacoco/releaseMatrixUiTest.exec")
+val integrationCoverageExecFile = layout.buildDirectory.file("jacoco/releaseMatrixUiIde.exec")
 val integrationCoverageClassDumpDir = layout.buildDirectory.dir("jacoco/releaseMatrixUiClassDump")
 val jacocoAgentJarFile = layout.buildDirectory.file("jacoco/agent/jacocoagent.jar")
 val jacocoIntegrationXmlReport = layout.buildDirectory.file(
@@ -262,6 +262,12 @@ val extractJacocoAgentJar by tasks.registering(Sync::class) {
         include("jacocoagent.jar")
     }
     into(layout.buildDirectory.dir("jacoco/agent"))
+}
+
+val cleanReleaseMatrixUiCoverage by tasks.registering(Delete::class) {
+    group = "verification"
+    description = "Removes stale release-matrix UI JaCoCo IDE coverage data."
+    delete(integrationCoverageExecFile, integrationCoverageClassDumpDir)
 }
 
 val verifyReleaseMatrixJacocoClassDump by tasks.registering(VerifyJacocoClassDumpTask::class) {
@@ -376,6 +382,9 @@ val releaseMatrixUiTest by intellijPlatformTesting.testIdeUi.registering {
         exclude("pl/devopssolutions/aicommitall/integration/fakeai/**")
         shouldRunAfter(tasks.test)
         dependsOn(fakeAiAssistantPlugin)
+        extensions.configure<JacocoTaskExtension> {
+            isEnabled = false
+        }
         systemProperty("aicommitall.ide.product", selectedProductCode)
         systemProperty("aicommitall.ide.products", selectedProductCode)
         systemProperty("aicommitall.ide.version", releaseMatrixIdeVersion.get())
@@ -384,7 +393,7 @@ val releaseMatrixUiTest by intellijPlatformTesting.testIdeUi.registering {
             fakeAiAssistantPluginArchiveFile.get().asFile.absolutePath,
         )
         if (integrationCoverageEnabled.get()) {
-            dependsOn(extractJacocoAgentJar)
+            dependsOn(cleanReleaseMatrixUiCoverage, extractJacocoAgentJar)
             systemProperty(
                 "aicommitall.coverage.agent.jar",
                 jacocoAgentJarFile.get().asFile.absolutePath,

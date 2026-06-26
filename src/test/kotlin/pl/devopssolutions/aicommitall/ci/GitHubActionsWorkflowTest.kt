@@ -118,6 +118,20 @@ internal class GitHubActionsWorkflowTest {
             "The release-matrix UI lane must keep JaCoCo classdumpdir output under build/jacoco.",
         )
         assertTrue(
+            content.contains("val integrationCoverageExecFile = layout.buildDirectory.file(\"jacoco/releaseMatrixUiIde.exec\")"),
+            "The IDE JaCoCo agent must write to an exec file distinct from the Gradle releaseMatrixUiTest task.",
+        )
+        assertFalse(
+            content.contains("jacoco/releaseMatrixUiTest.exec"),
+            "The IDE JaCoCo agent must not share the Gradle releaseMatrixUiTest task's default exec path.",
+        )
+        assertTrue(
+            content.contains("val cleanReleaseMatrixUiCoverage by tasks.registering(Delete::class)") &&
+                content.contains("delete(integrationCoverageExecFile, integrationCoverageClassDumpDir)") &&
+                content.contains("dependsOn(cleanReleaseMatrixUiCoverage, extractJacocoAgentJar)"),
+            "The release-matrix UI lane must remove stale IDE coverage before attaching the JaCoCo agent.",
+        )
+        assertTrue(
             content.contains("val jacocoIntegrationReport by tasks.registering(JacocoReport::class)") &&
                 content.contains("executionData(integrationCoverageExecFile)") &&
                 content.contains("classDirectories.setFrom(integrationCoverageClassDumpDir)"),
@@ -132,6 +146,10 @@ internal class GitHubActionsWorkflowTest {
         assertTrue(
             content.contains("isIncludeNoLocationClasses = true"),
             "JaCoCo must instrument plugin classes loaded through the IntelliJ test classloader.",
+        )
+        assertTrue(
+            content.contains("isEnabled = false"),
+            "The Gradle releaseMatrixUiTest worker must not create a misleading host-JVM JaCoCo exec file.",
         )
         assertTrue(
             content.contains("verifyJacocoCoverageReport"),
@@ -165,6 +183,14 @@ internal class GitHubActionsWorkflowTest {
         assertTrue(
             content.contains("classdumpdir=\$classDumpDir"),
             "The IDE JaCoCo agent must dump the transformed classes it records in the exec file.",
+        )
+        assertTrue(
+            content.contains("inclnolocationclasses=true"),
+            "The IDE JaCoCo agent must include plugin classes loaded without protection-domain source locations.",
+        )
+        assertTrue(
+            content.contains("excludes=pl.devopssolutions.aicommitall.integration.*"),
+            "The IDE JaCoCo agent must leave test-only integration probe classes uninstrumented.",
         )
     }
 

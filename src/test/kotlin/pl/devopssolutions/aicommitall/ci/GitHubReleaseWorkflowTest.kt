@@ -35,6 +35,20 @@ internal class GitHubReleaseWorkflowTest {
             content.contains("build/jacoco/releaseMatrixUiClassDump/**"),
             "Release matrix UI workflow must upload JaCoCo classdumpdir output for coverage diagnosis.",
         )
+        assertTrue(
+            content.contains("build/jacoco/releaseMatrixUiIde.exec"),
+            "Release matrix UI workflow must upload the IDE JaCoCo exec file for coverage diagnosis.",
+        )
+        assertTrue(
+            content.contains("Verify release-matrix UI coverage data") &&
+                content.contains("test -s build/jacoco/releaseMatrixUiIde.exec") &&
+                content.contains("find build/jacoco/releaseMatrixUiClassDump -name '*.class'"),
+            "Release matrix UI workflow must prove the IDE JaCoCo exec and dumped classes exist.",
+        )
+        assertFalse(
+            content.contains("hashFiles('build/jacoco/releaseMatrixUiTest.exec')"),
+            "Release matrix UI workflow must not infer IDE coverage from the Gradle test worker exec file.",
+        )
     }
 
     @Test

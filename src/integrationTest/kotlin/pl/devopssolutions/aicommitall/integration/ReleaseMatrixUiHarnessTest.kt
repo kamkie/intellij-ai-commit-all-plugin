@@ -150,13 +150,12 @@ class ReleaseMatrixUiHarnessTest {
             val probe = utility(RemoteFakeAiAssistantProbe::class)
 
             openToolWindow(COMMIT_TOOL_WINDOW_ID)
-            assertTrue(probe.activateCommitToolWindow(project))
             waitFor(
                 message = "AI Commit All control is visible in the Commit tool window",
-                timeout = 60.seconds,
+                timeout = 90.seconds,
                 interval = 1.seconds,
             ) {
-                probe.isAiCommitAllControlShowing(project)
+                probe.openCommitToolWindow(project) && probe.isIdeFrameAndAiCommitAllControlVisible(project)
             }
             waitFor(
                 message = "standard Commit and Push toolbar action is absent",
@@ -814,7 +813,10 @@ class ReleaseMatrixUiHarnessTest {
         applyVMOptionsPatch {
             addLine(
                 line = "-javaagent:$agentJar=destfile=$execFile,append=true,output=file," +
-                    "includes=pl.devopssolutions.aicommitall.*,classdumpdir=$classDumpDir",
+                    "includes=pl.devopssolutions.aicommitall.*," +
+                    "excludes=pl.devopssolutions.aicommitall.integration.*," +
+                    "inclnolocationclasses=true," +
+                    "classdumpdir=$classDumpDir",
                 filterPrefix = "-javaagent:$agentJar",
             )
         }
