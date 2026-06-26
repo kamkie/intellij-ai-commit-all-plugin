@@ -91,6 +91,14 @@ jobs:
             build/reports/tests/test/**
           if-no-files-found: warn
 
+      - name: Upload unit coverage report artifact
+        if: ${{ !env.ACT && !cancelled() && steps.gradle-validation.outcome != 'skipped' && hashFiles('build/reports/jacoco/test/jacocoTestReport.xml') != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-commit-all-unit-coverage
+          path: build/reports/jacoco/test/jacocoTestReport.xml
+          if-no-files-found: error
+
       - name: Upload plugin ZIP artifact
         if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v7
@@ -124,18 +132,6 @@ jobs:
           fail_ci_if_error: true
           use_oidc: true
 
-      - name: Upload coverage to Codecov
-        if: ${{ !env.ACT }}
-        uses: codecov/codecov-action@v7
-        with:
-          files: build/reports/jacoco/test/jacocoTestReport.xml
-          flags: unit
-          name: ai-commit-all-unit-tests
-          report_type: coverage
-          disable_search: true
-          fail_ci_if_error: true
-          use_oidc: true
-
       - name: Fail on Detekt findings
         if: ${{ steps.detekt-analysis.outcome == 'failure' }}
         shell: bash
@@ -163,3 +159,74 @@ jobs:
           fi
 
           exit 1
+
+  ui-coverage:
+    name: UI coverage
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          validate-wrappers: true
+
+      - name: Download unit coverage report
+        if: ${{ !env.ACT }}
+        uses: actions/download-artifact@v7
+        with:
+          name: ai-commit-all-unit-coverage
+          path: build/reports/jacoco/unit
+
+      - name: Prepare local act environment
+        if: ${{ env.ACT }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libxi6 libxtst6 libxrender1 libxext6 libxss1 libnss3 libgtk-3-0
+          mkdir -p /tmp/xdg-runtime
+          chmod 700 /tmp/xdg-runtime
+          echo "XDG_RUNTIME_DIR=/tmp/xdg-runtime" >> "${GITHUB_ENV}"
+          chmod +x ./gradlew
+
+      - name: Run release-matrix UI smoke coverage
+        run: >
+          xvfb-run -a ./gradlew --no-configuration-cache releaseMatrixUiTest
+          -PideProducts=PY
+          -PideVersion=2026.1.2
+
+      - name: Verify CI coverage inputs
+        if: ${{ !env.ACT && success() }}
+        run: |
+          test -s build/reports/jacoco/unit/jacocoTestReport.xml
+          test -s build/jacoco/releaseMatrixUiIde.exec
+          find build/jacoco/releaseMatrixUiClassDump -name '*.class' -type f -print -quit | grep -q .
+
+      - name: Build aggregate coverage report
+        if: ${{ !env.ACT && success() && hashFiles('build/jacoco/releaseMatrixUiIde.exec') != '' }}
+        run: >
+          ./gradlew --no-configuration-cache jacocoAggregateReport
+          -Paicommitall.unitJacocoXmlReport=build/reports/jacoco/unit/jacocoTestReport.xml
+
+      - name: Upload aggregate coverage to Codecov
+        if: ${{ !env.ACT && !cancelled() && hashFiles('build/reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml') != '' }}
+        uses: codecov/codecov-action@v7
+        with:
+          files: build/reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml
+          flags: aggregate
+          name: ai-commit-all-ci-aggregate
+          report_type: coverage
+          disable_search: true
+          fail_ci_if_error: true
+          use_oidc: true

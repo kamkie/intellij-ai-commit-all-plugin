@@ -46,8 +46,32 @@ internal class GitHubActionsWorkflowTest {
     }
 
     @Test
-    fun `ci workflow uploads jacoco coverage to codecov`() {
+    fun `ci workflow runs on pull requests and main pushes only`() {
         val content = Files.readString(Path.of(".github", "workflows", "ci.yml"))
+
+        assertTrue(
+            content.contains("pull_request:"),
+            "CI workflow must run for pull requests.",
+        )
+        assertTrue(
+            content.contains("push:\n    branches:\n      - main"),
+            "CI workflow must run for pushes to main.",
+        )
+        assertFalse(
+            content.contains("workflow_dispatch:"),
+            "CI workflow must not become a manual release-validation workflow.",
+        )
+        assertFalse(
+            Regex("(?m)^    tags:").containsMatchIn(content),
+            "CI workflow must not run tag-release behavior.",
+        )
+    }
+
+    @Test
+    fun `ci workflow uploads aggregate jacoco coverage to codecov`() {
+        val content = Files.readString(Path.of(".github", "workflows", "ci.yml"))
+        val buildJob = workflowJob(content, "build")
+        val uiCoverageJob = workflowJob(content, "ui-coverage")
         val validationCommand = "./gradlew test jacocoTestReport " +
             "verifyJacocoCoverageReport verifyPluginStructure buildPlugin"
 
@@ -60,16 +84,58 @@ internal class GitHubActionsWorkflowTest {
             "CI workflow must generate and verify the JaCoCo XML report before uploading coverage.",
         )
         assertTrue(
-            content.contains("uses: codecov/codecov-action@"),
-            "CI workflow must use the Codecov action line.",
+            buildJob.contains("name: ai-commit-all-unit-coverage") &&
+                buildJob.contains("path: build/reports/jacoco/test/jacocoTestReport.xml"),
+            "Build job must publish the existing unit JaCoCo XML as an artifact for the aggregate job.",
+        )
+        assertFalse(
+            buildJob.contains("report_type: coverage"),
+            "Build job must not upload unit-only coverage before the aggregate UI coverage job completes.",
         )
         assertTrue(
-            content.contains("files: build/reports/jacoco/test/jacocoTestReport.xml"),
-            "CI workflow must upload the explicit JaCoCo XML report.",
+            uiCoverageJob.contains("needs: build"),
+            "UI coverage job must wait for the build job's unit JaCoCo artifact.",
         )
         assertTrue(
-            content.contains("report_type: coverage"),
-            "CI workflow must upload the JaCoCo XML report as Codecov coverage.",
+            uiCoverageJob.contains("uses: actions/download-artifact@") &&
+                uiCoverageJob.contains("name: ai-commit-all-unit-coverage") &&
+                uiCoverageJob.contains("path: build/reports/jacoco/unit"),
+            "UI coverage job must download the unit JaCoCo artifact instead of rerunning unit coverage.",
+        )
+        assertTrue(
+            uiCoverageJob.contains("releaseMatrixUiTest") &&
+                uiCoverageJob.contains("-PideProducts=PY") &&
+                uiCoverageJob.contains("-PideVersion=2026.1.2"),
+            "UI coverage job must run the smallest release-matrix UI lane that exposes integration coverage.",
+        )
+        assertTrue(
+            uiCoverageJob.contains("test -s build/reports/jacoco/unit/jacocoTestReport.xml") &&
+                uiCoverageJob.contains("test -s build/jacoco/releaseMatrixUiIde.exec") &&
+                uiCoverageJob.contains("find build/jacoco/releaseMatrixUiClassDump -name '*.class'"),
+            "UI coverage job must verify the downloaded unit XML and IDE JaCoCo coverage inputs.",
+        )
+        assertTrue(
+            uiCoverageJob.contains("./gradlew --no-configuration-cache jacocoAggregateReport") &&
+                uiCoverageJob.contains(
+                    "-Paicommitall.unitJacocoXmlReport=build/reports/jacoco/unit/jacocoTestReport.xml",
+                ),
+            "UI coverage job must build aggregate coverage from the downloaded unit XML.",
+        )
+        assertTrue(
+            uiCoverageJob.contains("uses: codecov/codecov-action@"),
+            "UI coverage job must use the Codecov action line.",
+        )
+        assertTrue(
+            uiCoverageJob.contains("files: build/reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml"),
+            "UI coverage job must upload the aggregate JaCoCo XML report.",
+        )
+        assertTrue(
+            uiCoverageJob.contains("flags: aggregate"),
+            "UI coverage job must flag the aggregate coverage upload for Codecov.",
+        )
+        assertTrue(
+            uiCoverageJob.contains("report_type: coverage"),
+            "UI coverage job must upload the aggregate JaCoCo XML report as Codecov coverage.",
         )
         assertTrue(
             content.contains("disable_search: true"),
@@ -78,6 +144,32 @@ internal class GitHubActionsWorkflowTest {
         assertTrue(
             content.contains("use_oidc: true"),
             "CI workflow must use OIDC instead of requiring a Codecov token secret.",
+        )
+    }
+
+    @Test
+    fun `ci workflow keeps normal builds separate from release automation`() {
+        val content = Files.readString(Path.of(".github", "workflows", "ci.yml"))
+
+        listOf(
+            "signPlugin",
+            "publishPlugin",
+            "PUBLISH_TOKEN",
+            "CERTIFICATE_CHAIN",
+            "PRIVATE_KEY",
+            "PRIVATE_KEY_PASSWORD",
+            "jetbrains-marketplace",
+            "gh release",
+            "release_tag:",
+            "Verify annotated release tag",
+            "github.ref != 'refs/heads/main'",
+        ).forEach { forbidden ->
+            assertFalse(content.contains(forbidden), "CI workflow must not contain release behavior: $forbidden")
+        }
+
+        assertTrue(
+            content.contains("buildPlugin"),
+            "CI workflow may still package the plugin for normal build validation.",
         )
     }
 
@@ -145,9 +237,17 @@ internal class GitHubActionsWorkflowTest {
         )
         assertTrue(
             content.contains("tasks.registering(MergeJacocoXmlReportsTask::class)") &&
-                content.contains("reportFiles.from(jacocoXmlReport, jacocoIntegrationXmlReport)") &&
+                content.contains("reportFiles.from(jacocoAggregateUnitXmlReport, jacocoIntegrationXmlReport)") &&
                 content.contains("outputReportFile.set(jacocoAggregateXmlReport)"),
             "The aggregate report must merge unit XML with the dumped-class integration XML.",
+        )
+        assertTrue(
+            content.contains("val jacocoAggregateUnitXmlReportOverride = ") &&
+                content.contains("providers.gradleProperty(\"aicommitall.unitJacocoXmlReport\")") &&
+                content.contains("if (!jacocoAggregateUnitXmlReportOverride.isPresent)") &&
+                content.contains("dependsOn(tasks.jacocoTestReport)") &&
+                content.contains(".orElse(jacocoXmlReport)"),
+            "The aggregate report must accept a downloaded unit XML without rerunning jacocoTestReport.",
         )
         assertTrue(
             content.contains("isIncludeNoLocationClasses = true"),
@@ -542,6 +642,16 @@ internal class GitHubActionsWorkflowTest {
     }
 
     private fun gradleVerificationTask(fileName: String): Path = Path.of(GRADLE_TASK_ROOT).resolve(fileName)
+
+    private fun workflowJob(content: String, jobName: String): String {
+        val marker = "  $jobName:\n"
+        val start = content.indexOf(marker)
+
+        assertTrue(start >= 0, "CI workflow must contain the '$jobName' job.")
+
+        val nextJob = Regex("(?m)^  [A-Za-z0-9_-]+:\\s*$").find(content, start + marker.length)
+        return if (nextJob == null) content.substring(start) else content.substring(start, nextJob.range.first)
+    }
 
     private fun workflowStep(content: String, stepName: String): String {
         val marker = "      - name: $stepName"

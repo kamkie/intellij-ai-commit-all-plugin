@@ -254,6 +254,10 @@ val jacocoIntegrationXmlReport = layout.buildDirectory.file(
 val jacocoAggregateXmlReport = layout.buildDirectory.file(
     "reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml",
 )
+val jacocoAggregateUnitXmlReportOverride = providers.gradleProperty("aicommitall.unitJacocoXmlReport")
+val jacocoAggregateUnitXmlReport = jacocoAggregateUnitXmlReportOverride
+    .map { path -> layout.projectDirectory.file(path) }
+    .orElse(jacocoXmlReport)
 
 val extractJacocoAgentJar by tasks.registering(Sync::class) {
     group = "verification"
@@ -294,8 +298,11 @@ val jacocoIntegrationReport by tasks.registering(JacocoReport::class) {
 val jacocoAggregateReport by tasks.registering(MergeJacocoXmlReportsTask::class) {
     group = "verification"
     description = "Aggregates unit and release-matrix UI JaCoCo XML coverage into one report."
-    dependsOn(tasks.jacocoTestReport, jacocoIntegrationReport)
-    reportFiles.from(jacocoXmlReport, jacocoIntegrationXmlReport)
+    if (!jacocoAggregateUnitXmlReportOverride.isPresent) {
+        dependsOn(tasks.jacocoTestReport)
+    }
+    dependsOn(jacocoIntegrationReport)
+    reportFiles.from(jacocoAggregateUnitXmlReport, jacocoIntegrationXmlReport)
     outputReportFile.set(jacocoAggregateXmlReport)
 }
 
