@@ -185,7 +185,7 @@ jobs:
 
       - name: Download unit coverage report
         if: ${{ !env.ACT }}
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ai-commit-all-unit-coverage
           path: build/reports/jacoco/unit
