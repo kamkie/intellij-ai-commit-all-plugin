@@ -14,7 +14,7 @@ plugins {
     kotlin("jvm") version "2.3.21"
     jacoco
     id("dev.detekt") version "2.0.0-alpha.5"
-    id("com.diffplug.spotless") version "8.7.0"
+    id("com.diffplug.spotless") version "8.8.0"
     id("com.palantir.git-version") version "5.0.0"
     id("com.adarshr.test-logger") version "4.0.0"
     id("org.jetbrains.intellij.platform")
