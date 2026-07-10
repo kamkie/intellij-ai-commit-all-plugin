@@ -29,6 +29,7 @@ import java.nio.charset.Charset
 import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
@@ -848,6 +849,97 @@ internal class GitIndexStatusSnapshotTest {
         )
 
         assertEquals(GitIndexConfirmation.STAGED, confirmations[staged.normalizedPath()])
+    }
+
+    @Test
+    fun `rejects an expected path outside the confirmed Git root`() {
+        val outsideRoot = TestFilePath("D:/other-repo/file.txt")
+
+        val failure = assertFailsWith<IllegalStateException> {
+            classifyGitStatusSnapshot(
+                rootPath = "C:/repo",
+                expectedPaths = listOf(outsideRoot),
+                porcelainOutput = "",
+            )
+        }
+
+        assertTrue(failure.message.orEmpty().contains("outside Git root"))
+    }
+
+    @Test
+    fun `rejects malformed status records`() {
+        assertFailsWith<IllegalArgumentException> {
+            classifyGitStatusSnapshot(
+                rootPath = "/repo",
+                expectedPaths = emptyList(),
+                porcelainOutput = "M\u0000",
+            )
+        }
+    }
+
+    @Test
+    fun `rejects a rename record without its original path`() {
+        assertFailsWith<IllegalStateException> {
+            classifyGitStatusSnapshot(
+                rootPath = "/repo",
+                expectedPaths = emptyList(),
+                porcelainOutput = "R  after.txt\u0000",
+            )
+        }
+    }
+
+    @Test
+    fun `classifies both sides of a worktree rename as unconfirmed`() {
+        val renameSource = TestFilePath("/repo/before.txt")
+        val renameTarget = TestFilePath("/repo/after.txt")
+
+        val confirmations = classifyGitStatusSnapshot(
+            rootPath = "/repo",
+            expectedPaths = listOf(renameSource, renameTarget),
+            porcelainOutput = " R after.txt\u0000before.txt\u0000",
+        )
+
+        assertEquals(GitIndexConfirmation.UNCONFIRMED, confirmations[renameSource.normalizedPath()])
+        assertEquals(GitIndexConfirmation.UNCONFIRMED, confirmations[renameTarget.normalizedPath()])
+    }
+
+    @Test
+    fun `classifies both sides of an index copy as staged`() {
+        val copySource = TestFilePath("/repo/source.txt")
+        val copyTarget = TestFilePath("/repo/copy.txt")
+
+        val confirmations = classifyGitStatusSnapshot(
+            rootPath = "/repo",
+            expectedPaths = listOf(copySource, copyTarget),
+            porcelainOutput = "C  copy.txt\u0000source.txt\u0000",
+        )
+
+        assertEquals(GitIndexConfirmation.STAGED, confirmations[copySource.normalizedPath()])
+        assertEquals(GitIndexConfirmation.STAGED, confirmations[copyTarget.normalizedPath()])
+    }
+
+    @Test
+    fun `default index snapshot operation fails closed for every requested path`() {
+        val root = LightVirtualFile("repo")
+        val first = TestFilePath("/repo/first.txt")
+        val second = TestFilePath("/repo/second.txt")
+        val operations = object : GitStageConfirmationOperations {
+            override fun stagePaths(root: VirtualFile, paths: List<FilePath>) = Unit
+
+            override fun reloadExternalFiles(paths: Collection<FilePath>) = Unit
+
+            override fun refreshTrackerState(): GitStageTracker.State = GitStageTracker.State(emptyMap())
+
+            override fun currentTrackerState(): GitStageTracker.State = GitStageTracker.State(emptyMap())
+        }
+
+        assertEquals(
+            mapOf(
+                first.normalizedPath() to GitIndexConfirmation.UNCONFIRMED,
+                second.normalizedPath() to GitIndexConfirmation.UNCONFIRMED,
+            ),
+            operations.confirmIndexSnapshot(root, listOf(first, second)),
+        )
     }
 }
 

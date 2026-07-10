@@ -842,6 +842,53 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
 
 internal class GitStageSelectionBoundaryTest {
     @Test
+    fun `expected AI paths include staged rename sides and exclude unstaged and HEAD identical paths`() {
+        val root = LightVirtualFile("repo")
+        val renameSource = BoundaryTestFilePath("/repo/before.txt")
+        val renameTarget = BoundaryTestFilePath("/repo/after.txt")
+        val staged = BoundaryTestFilePath("/repo/staged.txt")
+        val unstaged = BoundaryTestFilePath("/repo/unstaged.txt")
+        val headIdentical = BoundaryTestFilePath("/repo/head-identical.txt")
+        val state = GitStageTracker.State(
+            mapOf(
+                root to GitStageTracker.RootState(
+                    root,
+                    true,
+                    mapOf(
+                        renameTarget to GitFileStatus('R', ' ', renameTarget, renameSource),
+                        staged to GitFileStatus('M', ' ', staged, null),
+                        unstaged to GitFileStatus(' ', 'M', unstaged, null),
+                    ),
+                ),
+            ),
+        )
+
+        val result = state.expectedStagedPathTexts(
+            listOf(renameSource, renameTarget, staged, unstaged, headIdentical),
+        )
+
+        assertEquals(
+            setOf(renameSource.path, renameTarget.path, staged.path),
+            result,
+        )
+    }
+
+    @Test
+    fun `additional selection paths use the deepest root and deduplicate normalized paths`() {
+        val root = LightVirtualFile("repo")
+        val nestedRoot = LightVirtualFile("repo/nested")
+        val nestedPath = BoundaryTestFilePath("${nestedRoot.path}/selected.txt")
+
+        val result = includeAdditionalSelectionPathsByRoot(
+            pathsByRoot = emptyMap(),
+            roots = listOf(root, nestedRoot),
+            additionalPaths = listOf(nestedPath, nestedPath),
+        )
+
+        assertEquals(mapOf<VirtualFile, List<FilePath>>(nestedRoot to listOf(nestedPath)), result)
+    }
+
+    @Test
     fun `commit UI inclusion verification rejects unexpected visible paths`() {
         val expected = BoundaryTestFilePath("/repo/expected.txt")
         val unexpected = BoundaryTestFilePath("/repo/unexpected.txt")

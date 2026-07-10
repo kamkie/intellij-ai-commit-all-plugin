@@ -505,7 +505,7 @@ internal data class GitStageSelectionPaths(
     val allSelectedPathsMapped: Boolean,
 )
 
-private fun GitStageTracker.State.expectedStagedPathTexts(
+internal fun GitStageTracker.State.expectedStagedPathTexts(
     expectedPaths: Collection<FilePath>,
 ): Set<String> = buildSet {
     val statuses = rootStates.values.flatMap { rootState -> rootState.statuses.values }
