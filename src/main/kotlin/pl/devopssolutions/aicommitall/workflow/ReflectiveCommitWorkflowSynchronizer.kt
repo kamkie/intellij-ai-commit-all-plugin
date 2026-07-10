@@ -237,7 +237,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         return CommitWorkflowSynchronizationResult.StagingConfirmationFailed
     }
 
-    private fun mappedGitStageSelectionPaths(
+    internal fun mappedGitStageSelectionPaths(
         state: GitStageTracker.State,
         selectedPaths: List<FilePath>,
         unversionedFiles: List<FilePath>,

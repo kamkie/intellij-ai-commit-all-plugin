@@ -842,6 +842,56 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
 
 internal class GitStageSelectionBoundaryTest {
     @Test
+    fun `mapped selection paths pass through without diagnostics`() {
+        val root = LightVirtualFile("repo")
+        val selected = BoundaryTestFilePath("/repo/selected.txt")
+        val diagnostics = BoundaryCapturingCompatibilityDiagnostics()
+
+        val result = ReflectiveCommitWorkflowSynchronizer.mappedGitStageSelectionPaths(
+            state = GitStageTracker.State(
+                mapOf(root to GitStageTracker.RootState(root, true, emptyMap())),
+            ),
+            selectedPaths = listOf(selected),
+            unversionedFiles = emptyList(),
+            diagnostics = diagnostics,
+            sourceClassName = "TestGitStageHandler",
+        ) ?: error("Expected mapped selection paths.")
+
+        assertEquals(listOf(selected), result.expectedPathsByRoot[root])
+        assertTrue(result.allSelectedPathsMapped)
+        assertEquals(emptyList(), diagnostics.events)
+    }
+
+    @Test
+    fun `unmapped selection paths fail closed with compatibility diagnostic`() {
+        val root = LightVirtualFile("repo")
+        val outsideRoot = BoundaryTestFilePath("/other-repo/selected.txt")
+        val diagnostics = BoundaryCapturingCompatibilityDiagnostics()
+
+        val result = ReflectiveCommitWorkflowSynchronizer.mappedGitStageSelectionPaths(
+            state = GitStageTracker.State(
+                mapOf(root to GitStageTracker.RootState(root, true, emptyMap())),
+            ),
+            selectedPaths = listOf(outsideRoot),
+            unversionedFiles = emptyList(),
+            diagnostics = diagnostics,
+            sourceClassName = "TestGitStageHandler",
+        )
+
+        assertEquals(null, result)
+        assertEquals(
+            listOf(
+                CommitWorkflowCompatibilityDiagnostic(
+                    sourceClassName = "TestGitStageHandler",
+                    methodName = "synchronizeGitStageWorkflow",
+                    reason = "selected paths could not be mapped to Git roots",
+                ),
+            ),
+            diagnostics.events,
+        )
+    }
+
+    @Test
     fun `expected AI paths include staged rename sides and exclude unstaged and HEAD identical paths`() {
         val root = LightVirtualFile("repo")
         val renameSource = BoundaryTestFilePath("/repo/before.txt")
@@ -964,6 +1014,14 @@ internal class GitStageSelectionBoundaryTest {
         override fun getContent(): String? = null
 
         override fun getRevisionNumber() = error("Not needed for inclusion verification tests.")
+    }
+
+    private class BoundaryCapturingCompatibilityDiagnostics : CommitWorkflowCompatibilityDiagnostics {
+        val events = mutableListOf<CommitWorkflowCompatibilityDiagnostic>()
+
+        override fun report(diagnostic: CommitWorkflowCompatibilityDiagnostic) {
+            events += diagnostic
+        }
     }
 
     private fun testChange(filePath: FilePath): Change = Change(
