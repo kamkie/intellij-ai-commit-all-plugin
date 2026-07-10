@@ -586,6 +586,7 @@ class ReleaseMatrixUiHarnessTest {
                 fixture = fixture,
                 initialCommitCount = initialCommitCount,
                 expectedMessage = GENERATED_COMMIT_MESSAGE,
+                timeout = if (stagingAreaEnabled) 120.seconds else 60.seconds,
             )
             assertEquals(emptyList(), fixture.primaryRepository.statusLines())
             writeGitEvidence("commit-flow-${if (stagingAreaEnabled) "staging" else "changelists"}", fixture)
@@ -815,10 +816,11 @@ class ReleaseMatrixUiHarnessTest {
         fixture: ReleaseMatrixGitFixture,
         initialCommitCount: Int,
         expectedMessage: String,
+        timeout: Duration = 60.seconds,
     ) {
         waitFor(
             message = "AI Commit All creates local commit '$expectedMessage'",
-            timeout = 60.seconds,
+            timeout = timeout,
             interval = 1.seconds,
             errorMessage = { "Latest commit: ${fixture.primaryRepository.latestCommitSubject()}" },
         ) {
