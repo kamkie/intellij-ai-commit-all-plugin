@@ -1,5 +1,4 @@
-<p>v0.1.0-beta.8 prerelease.</p>
+<p>v0.1.0-beta.9 prerelease.</p>
 <ul>
-    <li>Expanded automated coverage for VCS outgoing-commit refresh, staging-area selection, push completion, control color, and workflow synchronization guard paths.</li>
-    <li>Avoid intermittent first-click no-ops on the <code>Push</code> section when the toolbar component&#39;s action-time data context changes during one click.</li>
+    <li>Continue staging-area workflows immediately when direct Git index confirmation proves every selected path is staged or HEAD-identical, while applying and verifying the current Commit UI inclusion model before AI invocation. This removes plugin-owned tracker refresh waits but cannot eliminate delays caused by a separately starved EDT.</li>
 </ul>

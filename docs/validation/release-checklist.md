@@ -1,6 +1,6 @@
 # Release Validation Checklist
 
-Last updated: 2026-06-26
+Last updated: 2026-07-10
 
 This reusable checklist owns manual release-readiness validation for AI Commit
 All. Use it when preparing a release candidate, validating a release-matrix
@@ -346,6 +346,7 @@ it as release-readiness evidence.
 
 ## Existing Reports
 
+- [2026-07-10 v0.1.0-beta.9 Release Preparation](reports/2026-07-10-v0.1.0-beta.9.md)
 - [2026-06-26 v0.1.0-beta.8 Release Preparation](reports/2026-06-26-v0.1.0-beta.8.md)
 - [2026-06-25 v0.1.0-beta.7 Release Preparation](reports/2026-06-25-v0.1.0-beta.7.md)
 - [2026-06-24 v0.1.0-beta.6 Release Preparation](reports/2026-06-24-v0.1.0-beta.6.md)
