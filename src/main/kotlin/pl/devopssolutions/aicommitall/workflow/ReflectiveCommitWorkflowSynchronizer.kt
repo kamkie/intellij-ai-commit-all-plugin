@@ -93,14 +93,15 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         setTrackerState = { gitStageHandler.ui.setTrackerState(handoff.state) },
         setIncludedRoots = { gitStageHandler.ui.setIncludedRoots(handoff.includedRoots) },
         verifyIncludedPaths = {
-            val visiblePaths = workflowUi.includedPathTexts()
-            val missingPaths = handoff.expectedStagedPathTexts - visiblePaths
+            val verification = workflowUi.verifyIncludedPathTexts(handoff.expectedStagedPathTexts)
             logger.info(
                 "AI Commit All diagnostic: git-stage Commit UI included-path verification completed, " +
                     "expectedPaths=${handoff.expectedStagedPathTexts.size}, " +
-                    "visiblePaths=${visiblePaths.size}, missingPaths=${missingPaths.size}",
+                    "visiblePaths=${verification.visiblePathTexts.size}, " +
+                    "missingPaths=${verification.missingPathTexts.size}, " +
+                    "unexpectedPaths=${verification.unexpectedPathTexts.size}",
             )
-            missingPaths.isEmpty()
+            verification.matchesExactly
         },
     )
 
@@ -262,8 +263,9 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         selectedPaths: List<FilePath>,
         unversionedFiles: List<FilePath>,
     ): GitStageSelectionPaths {
+        val selectedPathTexts = selectedPaths.mapTo(mutableSetOf()) { path -> path.normalizedPath() }
         val expectedPathsByRoot = includeAdditionalSelectionPathsByRoot(
-            pathsByRoot = GitStageSelectionItems.committablePathsByRoot(state),
+            pathsByRoot = emptyMap(),
             roots = state.rootStates.keys,
             additionalPaths = selectedPaths,
         )
@@ -273,9 +275,15 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         return GitStageSelectionPaths(
             expectedPathsByRoot = expectedPathsByRoot,
             pathsToStageByRoot = includeAdditionalSelectionPathsByRoot(
-                pathsByRoot = GitStageSelectionItems.pathsToStageByRoot(state),
+                pathsByRoot = GitStageSelectionItems.pathsToStageByRoot(state)
+                    .mapValues { (_, paths) ->
+                        paths.filter { path -> path.normalizedPath() in selectedPathTexts }
+                    }
+                    .filterValues { paths -> paths.isNotEmpty() },
                 roots = state.rootStates.keys,
-                additionalPaths = unversionedFiles,
+                additionalPaths = unversionedFiles.filter { path ->
+                    path.normalizedPath() in selectedPathTexts
+                },
             ),
             allSelectedPathsMapped = selectedPaths.all { path -> path.normalizedPath() in mappedPathTexts },
         )
@@ -513,6 +521,25 @@ private fun GitStageTracker.State.expectedStagedPathTexts(
                 status.origPath?.let { path -> add(path.normalizedPath()) }
             }
     }
+}
+
+internal fun CommitWorkflowUi.verifyIncludedPathTexts(
+    expectedPathTexts: Set<String>,
+): CommitUiIncludedPathVerification {
+    val visiblePathTexts = includedPathTexts()
+    return CommitUiIncludedPathVerification(
+        visiblePathTexts = visiblePathTexts,
+        missingPathTexts = expectedPathTexts - visiblePathTexts,
+        unexpectedPathTexts = visiblePathTexts - expectedPathTexts,
+    )
+}
+
+internal data class CommitUiIncludedPathVerification(
+    val visiblePathTexts: Set<String>,
+    val missingPathTexts: Set<String>,
+    val unexpectedPathTexts: Set<String>,
+) {
+    val matchesExactly: Boolean = missingPathTexts.isEmpty() && unexpectedPathTexts.isEmpty()
 }
 
 private fun CommitWorkflowUi.includedPathTexts(): Set<String> = buildSet {

@@ -19,21 +19,26 @@ import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.FilePath
+import com.intellij.openapi.vcs.FileStatus
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.CommitExecutor
+import com.intellij.openapi.vcs.changes.ContentRevision
 import com.intellij.openapi.vcs.changes.LocalChangeList
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.vcs.commit.AmendCommitHandler
 import com.intellij.vcs.commit.CommitWorkflowHandler
+import com.intellij.vcs.commit.CommitWorkflowUi
 import git4idea.index.GitFileStatus
 import git4idea.index.GitStageTracker
 import java.io.File
+import java.lang.reflect.Proxy
 import java.nio.charset.Charset
 import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
@@ -832,5 +837,133 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             maxAttempts = 1,
             retryInterval = Duration.ZERO,
         )
+    }
+}
+
+internal class GitStageSelectionBoundaryTest {
+    @Test
+    fun `commit UI inclusion verification rejects unexpected visible paths`() {
+        val expected = BoundaryTestFilePath("/repo/expected.txt")
+        val unexpected = BoundaryTestFilePath("/repo/unexpected.txt")
+        val workflowUi = testWorkflowUi(
+            changes = listOf(testChange(expected), testChange(unexpected)),
+        )
+
+        val verification = workflowUi.verifyIncludedPathTexts(setOf(expected.path.replace('\\', '/')))
+
+        assertFalse(verification.matchesExactly)
+        assertEquals(setOf(unexpected.path.replace('\\', '/')), verification.unexpectedPathTexts)
+    }
+
+    @Test
+    fun `commit UI inclusion verification preserves rename sides and unversioned paths`() {
+        val renameSource = BoundaryTestFilePath("/repo/before.txt")
+        val renameTarget = BoundaryTestFilePath("/repo/after.txt")
+        val unversioned = BoundaryTestFilePath("/repo/new.txt")
+        val workflowUi = testWorkflowUi(
+            changes = listOf(
+                Change(
+                    BoundaryTestContentRevision(renameSource),
+                    BoundaryTestContentRevision(renameTarget),
+                    FileStatus.MODIFIED,
+                ),
+            ),
+            unversionedFiles = listOf(unversioned),
+        )
+
+        assertTrue(
+            workflowUi.verifyIncludedPathTexts(
+                expectedPathTexts = setOf(
+                    renameSource.path.replace('\\', '/'),
+                    renameTarget.path.replace('\\', '/'),
+                    unversioned.path.replace('\\', '/'),
+                ),
+            ).matchesExactly,
+        )
+    }
+
+    @Test
+    fun `tracker paths added after selection are excluded from confirmation`() {
+        val root = LightVirtualFile("repo")
+        val selected = BoundaryTestFilePath("/repo/selected.txt")
+        val addedAfterSelection = BoundaryTestFilePath("/repo/added-after-selection.txt")
+        val currentState = GitStageTracker.State(
+            mapOf(
+                root to GitStageTracker.RootState(
+                    root,
+                    true,
+                    mapOf(
+                        selected to GitFileStatus(' ', 'M', selected, null),
+                        addedAfterSelection to GitFileStatus(' ', 'M', addedAfterSelection, null),
+                    ),
+                ),
+            ),
+        )
+
+        val result = ReflectiveCommitWorkflowSynchronizer.gitStageSelectionPaths(
+            state = currentState,
+            selectedPaths = listOf(selected),
+            unversionedFiles = emptyList(),
+        )
+
+        assertEquals(listOf(selected), result.expectedPathsByRoot[root])
+        assertEquals(listOf(selected), result.pathsToStageByRoot[root])
+        assertTrue(result.allSelectedPathsMapped)
+    }
+
+    private class BoundaryTestContentRevision(private val filePath: FilePath) : ContentRevision {
+        override fun getFile(): FilePath = filePath
+
+        override fun getContent(): String? = null
+
+        override fun getRevisionNumber() = error("Not needed for inclusion verification tests.")
+    }
+
+    private fun testChange(filePath: FilePath): Change = Change(
+        BoundaryTestContentRevision(filePath),
+        BoundaryTestContentRevision(filePath),
+        FileStatus.MODIFIED,
+    )
+
+    private fun testWorkflowUi(
+        changes: List<Change>,
+        unversionedFiles: List<FilePath> = emptyList(),
+    ): CommitWorkflowUi = Proxy.newProxyInstance(
+        CommitWorkflowUi::class.java.classLoader,
+        arrayOf(CommitWorkflowUi::class.java),
+    ) { _, method, _ ->
+        when (method.name) {
+            "getIncludedChanges" -> changes
+            "getIncludedUnversionedFiles" -> unversionedFiles
+            else -> error("Unexpected CommitWorkflowUi method: ${method.name}")
+        }
+    } as CommitWorkflowUi
+
+    private class BoundaryTestFilePath(private val rawPath: String) : FilePath {
+        override fun getVirtualFile(): VirtualFile? = null
+
+        override fun getVirtualFileParent(): VirtualFile? = null
+
+        override fun getIOFile(): File = File(rawPath)
+
+        override fun getName(): String = ioFile.name
+
+        override fun getPresentableUrl(): String = rawPath
+
+        override fun getCharset(): Charset = Charsets.UTF_8
+
+        override fun getCharset(project: Project?): Charset = Charsets.UTF_8
+
+        override fun getFileType(): FileType = PlainTextFileType.INSTANCE
+
+        override fun getPath(): String = rawPath
+
+        override fun isDirectory(): Boolean = false
+
+        override fun isUnder(parent: FilePath, strict: Boolean): Boolean = false
+
+        override fun getParentPath(): FilePath? = null
+
+        override fun isNonLocal(): Boolean = false
     }
 }

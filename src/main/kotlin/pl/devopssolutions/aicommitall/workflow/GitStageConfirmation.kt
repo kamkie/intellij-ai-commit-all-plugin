@@ -25,9 +25,8 @@ import com.intellij.openapi.vcs.changes.InvokeAfterUpdateMode
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.vcsUtil.VcsFileUtil
-import git4idea.commands.Git
+import git4idea.commands.GitBinaryHandler
 import git4idea.commands.GitCommand
-import git4idea.commands.GitLineHandler
 import git4idea.index.GitFileStatus
 import git4idea.index.GitStageTracker
 import git4idea.index.GitStageTrackerListener
@@ -173,8 +172,9 @@ internal class GitStageConfirmation(
         val confirmationsByPath = mutableMapOf<String, GitIndexConfirmation>()
         val unconfirmedPaths = mutableListOf<FilePath>()
         expectedPathsByRoot.forEach { (root, paths) ->
+            val rootConfirmations = operations.confirmIndexSnapshot(root, paths)
             paths.forEach { path ->
-                val confirmation = operations.confirmIndexPath(root, path)
+                val confirmation = rootConfirmations[path.normalizedPath()] ?: GitIndexConfirmation.UNCONFIRMED
                 when (confirmation) {
                     GitIndexConfirmation.STAGED,
                     GitIndexConfirmation.HEAD_IDENTICAL,
@@ -351,7 +351,12 @@ internal interface GitStageConfirmationOperations {
 
     fun currentTrackerState(): GitStageTracker.State
 
-    fun confirmIndexPath(root: VirtualFile, path: FilePath): GitIndexConfirmation = GitIndexConfirmation.UNCONFIRMED
+    fun confirmIndexSnapshot(
+        root: VirtualFile,
+        paths: Collection<FilePath>,
+    ): Map<String, GitIndexConfirmation> = paths.associate { path ->
+        path.normalizedPath() to GitIndexConfirmation.UNCONFIRMED
+    }
 }
 
 internal enum class GitIndexConfirmation {
@@ -424,40 +429,20 @@ internal class IntellijGitStageConfirmationOperations(
 
     override fun currentTrackerState(): GitStageTracker.State = tracker.state
 
-    override fun confirmIndexPath(root: VirtualFile, path: FilePath): GitIndexConfirmation = when {
-        hasStagedIndexContent(root, path) -> GitIndexConfirmation.STAGED
-        hasAnyStatus(root, path) -> GitIndexConfirmation.UNCONFIRMED
-        else -> GitIndexConfirmation.HEAD_IDENTICAL
-    }
-
-    private fun hasStagedIndexContent(root: VirtualFile, path: FilePath): Boolean {
-        val handler = GitLineHandler(project, root, GitCommand.DIFF)
-        handler.addParameters("--cached", "--quiet")
+    override fun confirmIndexSnapshot(
+        root: VirtualFile,
+        paths: Collection<FilePath>,
+    ): Map<String, GitIndexConfirmation> {
+        val handler = GitBinaryHandler(project, root, GitCommand.STATUS)
+        handler.addParameters("--porcelain=v1", "-z", "--untracked-files=all")
         handler.endOptions()
-        handler.addRelativePaths(listOf(path))
+        handler.addRelativePaths(paths)
 
-        val result = Git.getInstance().runCommand(handler)
-        return when (result.exitCode) {
-            GIT_DIFF_NO_CHANGES -> false
-
-            GIT_DIFF_HAS_CHANGES -> true
-
-            else -> {
-                result.throwOnError(GIT_DIFF_NO_CHANGES, GIT_DIFF_HAS_CHANGES)
-                false
-            }
-        }
-    }
-
-    private fun hasAnyStatus(root: VirtualFile, path: FilePath): Boolean {
-        val handler = GitLineHandler(project, root, GitCommand.STATUS)
-        handler.addParameters("--porcelain=v1", "--untracked-files=all")
-        handler.endOptions()
-        handler.addRelativePaths(listOf(path))
-
-        val result = Git.getInstance().runCommand(handler)
-        result.throwOnError()
-        return result.output.any { line -> line.isNotBlank() }
+        return classifyGitStatusSnapshot(
+            rootPath = root.path,
+            expectedPaths = paths,
+            porcelainOutput = handler.run().toString(handler.charset),
+        )
     }
 
     private fun CountDownLatch.awaitBounded(timeout: Duration) {
@@ -469,8 +454,6 @@ internal class IntellijGitStageConfirmationOperations(
     }
 
     private companion object {
-        private const val GIT_DIFF_NO_CHANGES = 0
-        private const val GIT_DIFF_HAS_CHANGES = 1
         val STATUS_REFRESH_TIMEOUT: Duration = Duration.ofSeconds(2)
         val TRACKER_REFRESH_TIMEOUT: Duration = Duration.ofSeconds(2)
     }

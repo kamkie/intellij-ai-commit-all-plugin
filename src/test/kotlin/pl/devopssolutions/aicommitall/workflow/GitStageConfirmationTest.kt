@@ -288,6 +288,33 @@ internal class GitStageConfirmationTest {
     }
 
     @Test
+    fun `confirms all expected paths from one coherent index snapshot per root`() {
+        val root = LightVirtualFile("repo")
+        val first = TestFilePath("/repo/first.txt")
+        val second = TestFilePath("/repo/second.txt")
+        val stale = stageState(
+            root,
+            gitStatus(' ', 'M', first),
+            gitStatus(' ', 'M', second),
+        )
+        val operations = CapturingOperations(stale)
+        operations.indexConfirmations[first.normalizedPath()] = GitIndexConfirmation.STAGED
+        operations.indexConfirmations[second.normalizedPath()] = GitIndexConfirmation.STAGED
+
+        val result = confirmation(operations, attempts = 1)
+            .confirm(
+                pathsByRoot = mapOf(root to listOf(first, second)),
+                expectedPathsByRoot = mapOf(root to listOf(first, second)),
+            )
+
+        assertTrue(result != null)
+        assertEquals(
+            listOf("index:repo:/repo/first.txt,/repo/second.txt"),
+            operations.indexConfirmationEvents,
+        )
+    }
+
+    @Test
     fun `returns index confirmed staged state when refreshed tracker has no statuses`() {
         val root = LightVirtualFile("repo")
         val modified = TestFilePath("/repo/modified.txt")
@@ -777,6 +804,53 @@ internal class GitStageConfirmationFastPathTest {
     ): GitFileStatus = GitFileStatus(index, workTree, path, null)
 }
 
+internal class GitIndexStatusSnapshotTest {
+    @Test
+    fun `classifies staged unstaged and HEAD identical paths from one status snapshot`() {
+        val staged = TestFilePath("/repo/staged.txt")
+        val unstaged = TestFilePath("/repo/unstaged.txt")
+        val headIdentical = TestFilePath("/repo/head-identical.txt")
+
+        val confirmations = classifyGitStatusSnapshot(
+            rootPath = "/repo",
+            expectedPaths = listOf(staged, unstaged, headIdentical),
+            porcelainOutput = "M  staged.txt\u0000 M unstaged.txt\u0000",
+        )
+
+        assertEquals(GitIndexConfirmation.STAGED, confirmations[staged.normalizedPath()])
+        assertEquals(GitIndexConfirmation.UNCONFIRMED, confirmations[unstaged.normalizedPath()])
+        assertEquals(GitIndexConfirmation.HEAD_IDENTICAL, confirmations[headIdentical.normalizedPath()])
+    }
+
+    @Test
+    fun `classifies both sides of a staged rename from one status snapshot`() {
+        val renameSource = TestFilePath("/repo/before.txt")
+        val renameTarget = TestFilePath("/repo/after.txt")
+
+        val confirmations = classifyGitStatusSnapshot(
+            rootPath = "/repo",
+            expectedPaths = listOf(renameSource, renameTarget),
+            porcelainOutput = "R  after.txt\u0000before.txt\u0000",
+        )
+
+        assertEquals(GitIndexConfirmation.STAGED, confirmations[renameSource.normalizedPath()])
+        assertEquals(GitIndexConfirmation.STAGED, confirmations[renameTarget.normalizedPath()])
+    }
+
+    @Test
+    fun `preserves newlines in paths from NUL delimited status snapshots`() {
+        val staged = TestFilePath("/repo/line\nbreak.txt")
+
+        val confirmations = classifyGitStatusSnapshot(
+            rootPath = "/repo",
+            expectedPaths = listOf(staged),
+            porcelainOutput = "M  line\nbreak.txt\u0000",
+        )
+
+        assertEquals(GitIndexConfirmation.STAGED, confirmations[staged.normalizedPath()])
+    }
+}
+
 private class CapturingSleeper : GitStageConfirmationSleeper {
     val delays = mutableListOf<Duration>()
 
@@ -843,12 +917,18 @@ private class CapturingOperations(
     override fun currentTrackerState(): GitStageTracker.State = states.firstOrNull()
         ?: GitStageTracker.State(emptyMap())
 
-    override fun confirmIndexPath(root: VirtualFile, path: FilePath): GitIndexConfirmation {
-        indexConfirmationEvents += "index:${root.name}:${path.path}"
-        if (path.normalizedPath() in failIndexConfirmationPaths) {
+    override fun confirmIndexSnapshot(
+        root: VirtualFile,
+        paths: Collection<FilePath>,
+    ): Map<String, GitIndexConfirmation> {
+        indexConfirmationEvents += "index:${root.name}:${pathEventText(paths)}"
+        if (paths.any { path -> path.normalizedPath() in failIndexConfirmationPaths }) {
             error("index confirmation failed")
         }
-        return indexConfirmations[path.normalizedPath()] ?: GitIndexConfirmation.UNCONFIRMED
+        return paths.associate { path ->
+            path.normalizedPath() to
+                (indexConfirmations[path.normalizedPath()] ?: GitIndexConfirmation.UNCONFIRMED)
+        }
     }
 }
 
