@@ -22,7 +22,7 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- None.
+- `PLAN-fast-path-staging-confirmation` - Fast-Path Staging Confirmation ([PLAN-fast-path-staging-confirmation.md](PLAN-fast-path-staging-confirmation.md)), approved and awaiting implementation task startup.
 
 ## Archived Plans
 
