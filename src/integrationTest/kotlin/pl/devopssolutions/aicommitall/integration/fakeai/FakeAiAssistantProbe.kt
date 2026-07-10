@@ -35,6 +35,7 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vcs.CommitMessageI
+import com.intellij.openapi.vcs.FilePath
 import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.WindowManager
@@ -266,6 +267,9 @@ object FakeAiAssistantProbe {
     fun fakeAiInvocationCount(): Int = FakeLlmCommitMessageAction.invocationCount()
 
     @JvmStatic
+    fun commitUiPathsAtFakeAiInvocation(): List<String> = FakeLlmCommitMessageAction.commitUiPathsAtInvocation()
+
+    @JvmStatic
     fun unregisterFakeAiAction() {
         val actionManager = ActionManager.getInstance()
         if (actionManager.getAction(FAKE_AI_ACTION_ID) != null) {
@@ -329,6 +333,18 @@ object FakeAiAssistantProbe {
         val service = companion.javaClass.getDeclaredMethod("getInstance", Project::class.java).invoke(companion, project)
         val selection = service.javaClass.getDeclaredMethod("collectSelection").invoke(service)
         return selection.javaClass.getDeclaredMethod("getHasCommittableContent").invoke(selection) as Boolean
+    }
+
+    @JvmStatic
+    fun stagingAreaSelectionPaths(project: Project): List<String> {
+        val serviceClass = aiCommitAllPluginClass("pl.devopssolutions.aicommitall.vcs.GitChangeSelectionService")
+        val companion = serviceClass.getDeclaredField("Companion").get(null)
+        val service = companion.javaClass.getDeclaredMethod("getInstance", Project::class.java).invoke(companion, project)
+        val selection = service.javaClass.getDeclaredMethod("collectSelection").invoke(service)
+
+        @Suppress("UNCHECKED_CAST")
+        val paths = selection.javaClass.getDeclaredMethod("getStagingAreaPaths").invoke(selection) as List<FilePath>
+        return paths.map { path -> path.path.replace('\\', '/') }.sorted()
     }
 
     @JvmStatic

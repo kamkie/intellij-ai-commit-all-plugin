@@ -27,6 +27,7 @@ import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.vcs.commit.CommitMessageUi
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 
 class FakeLlmCommitMessageAction : AnAction() {
     @Suppress("unused")
@@ -34,7 +35,7 @@ class FakeLlmCommitMessageAction : AnAction() {
     private var progressIndicator: ProgressIndicator? = null
 
     override fun actionPerformed(event: AnActionEvent) {
-        recordInvocation()
+        recordInvocation(event)
         val indicator = EmptyProgressIndicator().also { progress ->
             progress.start()
         }
@@ -132,6 +133,7 @@ class FakeLlmCommitMessageAction : AnAction() {
     companion object {
         const val GENERATED_MESSAGE: String = "AI Commit All release matrix message"
         private val invocationCounter = AtomicInteger()
+        private val visibleCommitUiPaths = AtomicReference<List<String>>(emptyList())
 
         @Volatile
         private var behavior: FakeLlmCommitMessageBehavior = FakeLlmCommitMessageBehavior.Generated
@@ -145,12 +147,30 @@ class FakeLlmCommitMessageAction : AnAction() {
         fun reset() {
             behavior = FakeLlmCommitMessageBehavior.Generated
             invocationCounter.set(0)
+            visibleCommitUiPaths.set(emptyList())
         }
 
         fun invocationCount(): Int = invocationCounter.get()
 
-        fun recordInvocation() {
+        fun commitUiPathsAtInvocation(): List<String> = visibleCommitUiPaths.get()
+
+        fun recordInvocation(event: AnActionEvent) {
+            val workflowUi = VcsDataKeys.COMMIT_WORKFLOW_UI.getData(event.dataContext)
+            val paths = buildSet {
+                workflowUi?.getIncludedChanges()?.forEach { change ->
+                    change.beforeRevision?.file?.path?.let { path -> addNormalizedPath(path) }
+                    change.afterRevision?.file?.path?.let { path -> addNormalizedPath(path) }
+                }
+                workflowUi?.getIncludedUnversionedFiles()?.forEach { path ->
+                    addNormalizedPath(path.path)
+                }
+            }.sorted()
+            visibleCommitUiPaths.set(paths)
             invocationCounter.incrementAndGet()
+        }
+
+        private fun MutableSet<String>.addNormalizedPath(path: String) {
+            add(path.replace('\\', '/'))
         }
 
         private fun currentBehavior(): FakeLlmCommitMessageBehavior = behavior
@@ -159,7 +179,7 @@ class FakeLlmCommitMessageAction : AnAction() {
 
 class FakeUnavailableLlmCommitMessageAction : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
-        FakeLlmCommitMessageAction.recordInvocation()
+        FakeLlmCommitMessageAction.recordInvocation(event)
     }
 }
 

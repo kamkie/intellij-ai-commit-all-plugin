@@ -88,6 +88,7 @@ internal class CommitWorkflowSelectionService @JvmOverloads constructor(
     ): CommitWorkflowSelectionResult {
         val activeChangeList = chooseActiveChangeList(changeLists)
         val inclusionItems = CommitWorkflowSelectionItems.inclusionItems(selection)
+        val selectedPaths = CommitWorkflowSelectionItems.selectedPaths(selection)
         logger.info(
             "AI Commit All diagnostic: activating commit workflow UI, " +
                 "trackedChanges=${selection.trackedChanges.size}, " +
@@ -108,6 +109,7 @@ internal class CommitWorkflowSelectionService @JvmOverloads constructor(
                 changeLists = changeLists,
                 activeChangeList = activeChangeList,
                 inclusionItems = inclusionItems,
+                selectedPaths = selectedPaths,
             )
         } else {
             CommitWorkflowSelectionResult.UnsupportedWorkflow("The Commit tool window workflow could not be activated.")
@@ -120,10 +122,12 @@ internal class CommitWorkflowSelectionService @JvmOverloads constructor(
         changeLists: List<LocalChangeList>,
         activeChangeList: LocalChangeList,
         inclusionItems: Collection<Any>,
+        selectedPaths: List<FilePath>,
     ): CommitWorkflowSelectionResult {
         val synchronizationResult = dependencies.selectionSynchronizer.synchronize(
             workflowHandler = input.workflowHandler,
             changeLists = changeLists,
+            selectedPaths = selectedPaths,
             unversionedFiles = selection.unversionedFiles,
             activeChangeList = activeChangeList,
             inclusionItems = inclusionItems,
@@ -178,6 +182,7 @@ internal fun interface CommitWorkflowSelectionSynchronizer {
     fun synchronize(
         workflowHandler: CommitWorkflowHandler,
         changeLists: List<LocalChangeList>,
+        selectedPaths: List<FilePath>,
         unversionedFiles: List<FilePath>,
         activeChangeList: LocalChangeList,
         inclusionItems: Collection<Any>,
@@ -188,12 +193,14 @@ private object ReflectiveCommitWorkflowSelectionSynchronizer : CommitWorkflowSel
     override fun synchronize(
         workflowHandler: CommitWorkflowHandler,
         changeLists: List<LocalChangeList>,
+        selectedPaths: List<FilePath>,
         unversionedFiles: List<FilePath>,
         activeChangeList: LocalChangeList,
         inclusionItems: Collection<Any>,
     ): CommitWorkflowSynchronizationResult = ReflectiveCommitWorkflowSynchronizer.synchronize(
         workflowHandler = workflowHandler,
         changeLists = changeLists,
+        selectedPaths = selectedPaths,
         unversionedFiles = unversionedFiles,
         activeChangeList = activeChangeList,
         inclusionItems = inclusionItems,

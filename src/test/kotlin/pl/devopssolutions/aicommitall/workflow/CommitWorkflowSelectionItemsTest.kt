@@ -126,6 +126,27 @@ internal class CommitWorkflowSelectionItemsTest {
         assertEquals(listOf(firstRootPath, secondRootPath), result)
     }
 
+    @Test
+    fun `selected paths keep both sides of a rename and deduplicate modified paths`() {
+        val modified = modification("/repo/modified.txt")
+        val renameSource = TestFilePath("/repo/old-name.txt")
+        val renameTarget = TestFilePath("/repo/new-name.txt")
+        val renamed = Change(
+            TestContentRevision(renameSource),
+            TestContentRevision(renameTarget),
+            FileStatus.MODIFIED,
+        )
+
+        val result = CommitWorkflowSelectionItems.selectedPaths(
+            GitChangeSelection(trackedChanges = listOf(modified, renamed)),
+        )
+
+        assertEquals(
+            listOf(modified.afterRevision!!.file, renameSource, renameTarget),
+            result,
+        )
+    }
+
     private fun modification(path: String): Change {
         val filePath = TestFilePath(path)
         return Change(TestContentRevision(filePath), TestContentRevision(filePath), FileStatus.MODIFIED)

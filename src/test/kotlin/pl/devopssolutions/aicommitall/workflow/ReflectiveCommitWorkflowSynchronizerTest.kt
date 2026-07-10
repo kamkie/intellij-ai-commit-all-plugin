@@ -19,22 +19,73 @@ import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.FilePath
+import com.intellij.openapi.vcs.FileStatus
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.CommitExecutor
+import com.intellij.openapi.vcs.changes.ContentRevision
 import com.intellij.openapi.vcs.changes.LocalChangeList
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.testFramework.LightVirtualFile
 import com.intellij.vcs.commit.AmendCommitHandler
 import com.intellij.vcs.commit.CommitWorkflowHandler
+import com.intellij.vcs.commit.CommitWorkflowUi
+import git4idea.index.GitFileStatus
+import git4idea.index.GitStageTracker
 import java.io.File
+import java.lang.reflect.Proxy
 import java.nio.charset.Charset
 import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 internal class ReflectiveCommitWorkflowSynchronizerTest {
+    @Test
+    fun `authoritative tracked paths constrain confirmation when tracker state is stale`() {
+        val root = LightVirtualFile("repo")
+        val trackerVisible = TestFilePath("/repo/A.txt")
+        val trackerMissing = TestFilePath("/repo/B.txt")
+        val staleState = GitStageTracker.State(
+            mapOf(
+                root to GitStageTracker.RootState(
+                    root,
+                    true,
+                    mapOf(trackerVisible to GitFileStatus(' ', 'M', trackerVisible, null)),
+                ),
+            ),
+        )
+
+        val result = ReflectiveCommitWorkflowSynchronizer.gitStageSelectionPaths(
+            state = staleState,
+            selectedPaths = listOf(trackerVisible, trackerMissing),
+            unversionedFiles = emptyList(),
+        )
+
+        assertEquals(listOf(trackerVisible, trackerMissing), result.expectedPathsByRoot[root])
+        assertEquals(listOf(trackerVisible), result.pathsToStageByRoot[root])
+        assertTrue(result.allSelectedPathsMapped)
+    }
+
+    @Test
+    fun `authoritative paths outside tracker roots cannot be confirmed`() {
+        val root = LightVirtualFile("repo")
+        val outsideRoot = TestFilePath("/other-repo/B.txt")
+
+        val result = ReflectiveCommitWorkflowSynchronizer.gitStageSelectionPaths(
+            state = GitStageTracker.State(
+                mapOf(root to GitStageTracker.RootState(root, true, emptyMap())),
+            ),
+            selectedPaths = listOf(outsideRoot),
+            unversionedFiles = emptyList(),
+        )
+
+        assertEquals(emptyMap(), result.expectedPathsByRoot)
+        assertEquals(false, result.allSelectedPathsMapped)
+    }
+
     @Test
     fun `synchronizes compatible commit workflow handlers`() {
         val handler = CompatibleHandler()
@@ -44,6 +95,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = handler,
             changeLists = listOf(changeList),
+            selectedPaths = emptyList(),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = items,
@@ -67,6 +119,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = handler,
             changeLists = listOf(changeList),
+            selectedPaths = listOf(unversionedFile),
             unversionedFiles = listOf(unversionedFile),
             activeChangeList = changeList,
             inclusionItems = items,
@@ -86,6 +139,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = IncompatibleHandler(),
             changeLists = listOf(changeList),
+            selectedPaths = emptyList(),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = listOf(Any()),
@@ -114,6 +168,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = handler,
             changeLists = listOf(changeList),
+            selectedPaths = emptyList(),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = emptyList(),
@@ -132,6 +187,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = MissingSetCommitStateHandler(),
             changeLists = listOf(changeList),
+            selectedPaths = emptyList(),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = listOf(Any()),
@@ -160,6 +216,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = MissingSynchronizeInclusionHandler(),
             changeLists = listOf(changeList),
+            selectedPaths = emptyList(),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = listOf(Any()),
@@ -188,6 +245,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = ThrowingHandler(),
             changeLists = listOf(changeList),
+            selectedPaths = emptyList(),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = listOf(Any()),
@@ -217,6 +275,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = SetCommitStateThrowingHandler(),
             changeLists = listOf(changeList),
+            selectedPaths = emptyList(),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = listOf(Any()),
@@ -248,6 +307,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = handler,
             changeLists = listOf(changeList),
+            selectedPaths = emptyList(),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = items,
@@ -313,6 +373,99 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         )
         assertEquals(1, diagnostics.queueDelays.size)
         assertTrue(diagnostics.queueDelays.single() >= 0L)
+    }
+
+    @Test
+    fun `required git stage UI handoff applies and verifies inclusion synchronously`() {
+        val diagnostics = CapturingGitStageDiagnostics()
+        val synchronization = GitStageWorkflowStateSynchronization(
+            uiScheduler = CapturingUiRefreshScheduler(),
+            diagnostics = diagnostics,
+        )
+        val events = mutableListOf<String>()
+
+        val result = synchronization.applyRequiredUiHandoff(
+            assignState = { events += "assign-state" },
+            setTrackerState = { events += "set-tracker-state" },
+            setIncludedRoots = { events += "set-included-roots" },
+            verifyIncludedPaths = {
+                events += "verify-included-paths"
+                true
+            },
+        )
+
+        assertTrue(result)
+        assertEquals(
+            listOf(
+                "assign-state",
+                "set-tracker-state",
+                "set-included-roots",
+                "verify-included-paths",
+            ),
+            events,
+        )
+        assertTrue("finished:EDT model handoff" in diagnostics.stepEvents)
+        assertTrue("finished:included-path verification" in diagnostics.stepEvents)
+    }
+
+    @Test
+    fun `git stage selection includes unversioned paths missing from tracker roots`() {
+        val firstRoot = LightVirtualFile("repo-a")
+        val secondRoot = LightVirtualFile("repo-b")
+        val firstUnversioned = TestFilePath("${firstRoot.path}/new-a.txt")
+        val secondUnversioned = TestFilePath("${secondRoot.path}/new-b.txt")
+
+        val result = includeAdditionalSelectionPathsByRoot(
+            pathsByRoot = emptyMap(),
+            roots = listOf(firstRoot, secondRoot),
+            additionalPaths = listOf(firstUnversioned, secondUnversioned),
+        )
+
+        assertEquals(
+            mapOf<VirtualFile, List<FilePath>>(
+                firstRoot to listOf(firstUnversioned),
+                secondRoot to listOf(secondUnversioned),
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `required git stage UI handoff fails closed when expected paths remain hidden`() {
+        val diagnostics = CapturingGitStageDiagnostics()
+        val synchronization = GitStageWorkflowStateSynchronization(
+            uiScheduler = CapturingUiRefreshScheduler(),
+            diagnostics = diagnostics,
+        )
+        val events = mutableListOf<String>()
+
+        val result = synchronization.applyRequiredUiHandoff(
+            assignState = { events += "assign-state" },
+            setTrackerState = { events += "set-tracker-state" },
+            setIncludedRoots = { events += "set-included-roots" },
+            verifyIncludedPaths = {
+                events += "verify-included-paths"
+                false
+            },
+        )
+
+        assertEquals(false, result)
+        assertEquals(
+            listOf(
+                "assign-state",
+                "set-tracker-state",
+                "set-included-roots",
+                "verify-included-paths",
+            ),
+            events,
+        )
+        assertEquals(
+            listOf(
+                "failed:included-path verification:IllegalStateException",
+                "failed:EDT model handoff:IllegalStateException",
+            ),
+            diagnostics.failures,
+        )
     }
 
     @Test
@@ -684,5 +837,238 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             maxAttempts = 1,
             retryInterval = Duration.ZERO,
         )
+    }
+}
+
+internal class GitStageSelectionBoundaryTest {
+    @Test
+    fun `mapped selection paths pass through without diagnostics`() {
+        val root = LightVirtualFile("repo")
+        val selected = BoundaryTestFilePath("/repo/selected.txt")
+        val diagnostics = BoundaryCapturingCompatibilityDiagnostics()
+
+        val result = ReflectiveCommitWorkflowSynchronizer.mappedGitStageSelectionPaths(
+            state = GitStageTracker.State(
+                mapOf(root to GitStageTracker.RootState(root, true, emptyMap())),
+            ),
+            selectedPaths = listOf(selected),
+            unversionedFiles = emptyList(),
+            diagnostics = diagnostics,
+            sourceClassName = "TestGitStageHandler",
+        ) ?: error("Expected mapped selection paths.")
+
+        assertEquals(listOf(selected), result.expectedPathsByRoot[root])
+        assertTrue(result.allSelectedPathsMapped)
+        assertEquals(emptyList(), diagnostics.events)
+    }
+
+    @Test
+    fun `unmapped selection paths fail closed with compatibility diagnostic`() {
+        val root = LightVirtualFile("repo")
+        val outsideRoot = BoundaryTestFilePath("/other-repo/selected.txt")
+        val diagnostics = BoundaryCapturingCompatibilityDiagnostics()
+
+        val result = ReflectiveCommitWorkflowSynchronizer.mappedGitStageSelectionPaths(
+            state = GitStageTracker.State(
+                mapOf(root to GitStageTracker.RootState(root, true, emptyMap())),
+            ),
+            selectedPaths = listOf(outsideRoot),
+            unversionedFiles = emptyList(),
+            diagnostics = diagnostics,
+            sourceClassName = "TestGitStageHandler",
+        )
+
+        assertEquals(null, result)
+        assertEquals(
+            listOf(
+                CommitWorkflowCompatibilityDiagnostic(
+                    sourceClassName = "TestGitStageHandler",
+                    methodName = "synchronizeGitStageWorkflow",
+                    reason = "selected paths could not be mapped to Git roots",
+                ),
+            ),
+            diagnostics.events,
+        )
+    }
+
+    @Test
+    fun `expected AI paths include staged rename sides and exclude unstaged and HEAD identical paths`() {
+        val root = LightVirtualFile("repo")
+        val renameSource = BoundaryTestFilePath("/repo/before.txt")
+        val renameTarget = BoundaryTestFilePath("/repo/after.txt")
+        val staged = BoundaryTestFilePath("/repo/staged.txt")
+        val unstaged = BoundaryTestFilePath("/repo/unstaged.txt")
+        val headIdentical = BoundaryTestFilePath("/repo/head-identical.txt")
+        val state = GitStageTracker.State(
+            mapOf(
+                root to GitStageTracker.RootState(
+                    root,
+                    true,
+                    mapOf(
+                        renameTarget to GitFileStatus('R', ' ', renameTarget, renameSource),
+                        staged to GitFileStatus('M', ' ', staged, null),
+                        unstaged to GitFileStatus(' ', 'M', unstaged, null),
+                    ),
+                ),
+            ),
+        )
+
+        val result = state.expectedStagedPathTexts(
+            listOf(renameSource, renameTarget, staged, unstaged, headIdentical),
+        )
+
+        assertEquals(
+            setOf(renameSource.path, renameTarget.path, staged.path),
+            result,
+        )
+    }
+
+    @Test
+    fun `additional selection paths use the deepest root and deduplicate normalized paths`() {
+        val root = LightVirtualFile("repo")
+        val nestedRoot = LightVirtualFile("repo/nested")
+        val nestedPath = BoundaryTestFilePath("${nestedRoot.path}/selected.txt")
+
+        val result = includeAdditionalSelectionPathsByRoot(
+            pathsByRoot = emptyMap(),
+            roots = listOf(root, nestedRoot),
+            additionalPaths = listOf(nestedPath, nestedPath),
+        )
+
+        assertEquals(mapOf<VirtualFile, List<FilePath>>(nestedRoot to listOf(nestedPath)), result)
+    }
+
+    @Test
+    fun `commit UI inclusion verification rejects unexpected visible paths`() {
+        val expected = BoundaryTestFilePath("/repo/expected.txt")
+        val unexpected = BoundaryTestFilePath("/repo/unexpected.txt")
+        val workflowUi = testWorkflowUi(
+            changes = listOf(testChange(expected), testChange(unexpected)),
+        )
+
+        val verification = workflowUi.verifyIncludedPathTexts(setOf(expected.path.replace('\\', '/')))
+
+        assertFalse(verification.matchesExactly)
+        assertEquals(setOf(unexpected.path.replace('\\', '/')), verification.unexpectedPathTexts)
+    }
+
+    @Test
+    fun `commit UI inclusion verification preserves rename sides and unversioned paths`() {
+        val renameSource = BoundaryTestFilePath("/repo/before.txt")
+        val renameTarget = BoundaryTestFilePath("/repo/after.txt")
+        val unversioned = BoundaryTestFilePath("/repo/new.txt")
+        val workflowUi = testWorkflowUi(
+            changes = listOf(
+                Change(
+                    BoundaryTestContentRevision(renameSource),
+                    BoundaryTestContentRevision(renameTarget),
+                    FileStatus.MODIFIED,
+                ),
+            ),
+            unversionedFiles = listOf(unversioned),
+        )
+
+        assertTrue(
+            workflowUi.verifyIncludedPathTexts(
+                expectedPathTexts = setOf(
+                    renameSource.path.replace('\\', '/'),
+                    renameTarget.path.replace('\\', '/'),
+                    unversioned.path.replace('\\', '/'),
+                ),
+            ).matchesExactly,
+        )
+    }
+
+    @Test
+    fun `tracker paths added after selection are excluded from confirmation`() {
+        val root = LightVirtualFile("repo")
+        val selected = BoundaryTestFilePath("/repo/selected.txt")
+        val addedAfterSelection = BoundaryTestFilePath("/repo/added-after-selection.txt")
+        val currentState = GitStageTracker.State(
+            mapOf(
+                root to GitStageTracker.RootState(
+                    root,
+                    true,
+                    mapOf(
+                        selected to GitFileStatus(' ', 'M', selected, null),
+                        addedAfterSelection to GitFileStatus(' ', 'M', addedAfterSelection, null),
+                    ),
+                ),
+            ),
+        )
+
+        val result = ReflectiveCommitWorkflowSynchronizer.gitStageSelectionPaths(
+            state = currentState,
+            selectedPaths = listOf(selected),
+            unversionedFiles = emptyList(),
+        )
+
+        assertEquals(listOf(selected), result.expectedPathsByRoot[root])
+        assertEquals(listOf(selected), result.pathsToStageByRoot[root])
+        assertTrue(result.allSelectedPathsMapped)
+    }
+
+    private class BoundaryTestContentRevision(private val filePath: FilePath) : ContentRevision {
+        override fun getFile(): FilePath = filePath
+
+        override fun getContent(): String? = null
+
+        override fun getRevisionNumber() = error("Not needed for inclusion verification tests.")
+    }
+
+    private class BoundaryCapturingCompatibilityDiagnostics : CommitWorkflowCompatibilityDiagnostics {
+        val events = mutableListOf<CommitWorkflowCompatibilityDiagnostic>()
+
+        override fun report(diagnostic: CommitWorkflowCompatibilityDiagnostic) {
+            events += diagnostic
+        }
+    }
+
+    private fun testChange(filePath: FilePath): Change = Change(
+        BoundaryTestContentRevision(filePath),
+        BoundaryTestContentRevision(filePath),
+        FileStatus.MODIFIED,
+    )
+
+    private fun testWorkflowUi(
+        changes: List<Change>,
+        unversionedFiles: List<FilePath> = emptyList(),
+    ): CommitWorkflowUi = Proxy.newProxyInstance(
+        CommitWorkflowUi::class.java.classLoader,
+        arrayOf(CommitWorkflowUi::class.java),
+    ) { _, method, _ ->
+        when (method.name) {
+            "getIncludedChanges" -> changes
+            "getIncludedUnversionedFiles" -> unversionedFiles
+            else -> error("Unexpected CommitWorkflowUi method: ${method.name}")
+        }
+    } as CommitWorkflowUi
+
+    private class BoundaryTestFilePath(private val rawPath: String) : FilePath {
+        override fun getVirtualFile(): VirtualFile? = null
+
+        override fun getVirtualFileParent(): VirtualFile? = null
+
+        override fun getIOFile(): File = File(rawPath)
+
+        override fun getName(): String = ioFile.name
+
+        override fun getPresentableUrl(): String = rawPath
+
+        override fun getCharset(): Charset = Charsets.UTF_8
+
+        override fun getCharset(project: Project?): Charset = Charsets.UTF_8
+
+        override fun getFileType(): FileType = PlainTextFileType.INSTANCE
+
+        override fun getPath(): String = rawPath
+
+        override fun isDirectory(): Boolean = false
+
+        override fun isUnder(parent: FilePath, strict: Boolean): Boolean = false
+
+        override fun getParentPath(): FilePath? = null
+
+        override fun isNonLocal(): Boolean = false
     }
 }

@@ -15,6 +15,7 @@
  */
 package pl.devopssolutions.aicommitall.workflow
 
+import com.intellij.openapi.vcs.FilePath
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.LocalChangeList
 import pl.devopssolutions.aicommitall.vcs.GitChangeSelection
@@ -34,4 +35,14 @@ internal object CommitWorkflowSelectionItems {
         selection.unversionedFiles +
         selection.resolvedConflictPaths +
         selection.stagingAreaPaths
+
+    fun selectedPaths(selection: GitChangeSelection): List<FilePath> = buildList {
+        selection.trackedChanges.forEach { change ->
+            change.beforeRevision?.file?.let(::add)
+            change.afterRevision?.file?.let(::add)
+        }
+        addAll(selection.unversionedFiles)
+        addAll(selection.resolvedConflictPaths)
+        addAll(selection.stagingAreaPaths)
+    }.distinctBy { path -> path.path.replace('\\', '/') }
 }

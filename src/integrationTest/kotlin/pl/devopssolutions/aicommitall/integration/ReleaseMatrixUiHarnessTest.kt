@@ -501,6 +501,70 @@ class ReleaseMatrixUiHarnessTest {
         commitSectionCreatesLocalCommitThroughCommitToolWindow(stagingAreaEnabled = true)
     }
 
+    @Test
+    @Tag(RELEASE_MATRIX_SMOKE_TAG)
+    fun stagingAreaAiInvocationSeesExactMultiRootCommitUiPaths() {
+        assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
+        val fixture = ReleaseMatrixGitFixtureBuilder.create(
+            tempDirectory.resolve("staging-ai-paths-fixture"),
+        )
+
+        runReleaseMatrixIdeWithFixture(
+            testName = "release-matrix-ui-staging-ai-paths",
+            fixture = fixture,
+        ) {
+            val probe = utility(RemoteFakeAiAssistantProbe::class)
+            probe.setGitStagingAreaEnabled(true)
+            val project = openReleaseMatrixCommitToolWindow()
+            waitForCommitWorkflowMode(project, stagingAreaEnabled = true)
+            val expectedStagingSelectionPaths = listOf(
+                fixture.primaryRepository.root.resolve("modified.txt"),
+                fixture.primaryRepository.root.resolve("delete-me.txt"),
+                fixture.primaryRepository.root.resolve("rename-target.txt"),
+                fixture.primaryRepository.root.resolve("already-staged.txt"),
+                fixture.primaryRepository.root.resolve("unversioned.txt"),
+                fixture.secondaryRepository.root.resolve("secondary-tracked.txt"),
+                fixture.secondaryRepository.root.resolve("secondary-unversioned.txt"),
+            ).map { path -> path.toString().replace('\\', '/') }.sorted()
+            waitFor(
+                message = "staging tracker exposes every intended fixture path",
+                timeout = 60.seconds,
+                interval = 100.milliseconds,
+                errorMessage = { "paths=${probe.stagingAreaSelectionPaths(project)}" },
+            ) {
+                probe.stagingAreaSelectionPaths(project) == expectedStagingSelectionPaths
+            }
+            val initialInvocationCount = probe.fakeAiInvocationCount()
+
+            activateAiCommitAllSection(project, "AI")
+            waitFor(
+                message = "fake AI action observes staging-area Commit UI paths",
+                timeout = 60.seconds,
+                interval = 100.milliseconds,
+                errorMessage = {
+                    "invocations=${probe.fakeAiInvocationCount()}, " +
+                        "paths=${probe.commitUiPathsAtFakeAiInvocation()}"
+                },
+            ) {
+                probe.fakeAiInvocationCount() > initialInvocationCount
+            }
+
+            val expectedPaths = listOf(
+                fixture.primaryRepository.root.resolve("modified.txt"),
+                fixture.primaryRepository.root.resolve("delete-me.txt"),
+                fixture.primaryRepository.root.resolve("rename-source.txt"),
+                fixture.primaryRepository.root.resolve("rename-target.txt"),
+                fixture.primaryRepository.root.resolve("already-staged.txt"),
+                fixture.primaryRepository.root.resolve("unversioned.txt"),
+                fixture.secondaryRepository.root.resolve("secondary-tracked.txt"),
+                fixture.secondaryRepository.root.resolve("secondary-unversioned.txt"),
+            ).map { path -> path.toString().replace('\\', '/') }.sorted()
+            assertEquals(expectedPaths, probe.commitUiPathsAtFakeAiInvocation())
+            waitForCommitMessage(project, GENERATED_COMMIT_MESSAGE)
+            waitForWorkflowIdle(project)
+        }
+    }
+
     private fun commitSectionCreatesLocalCommitThroughCommitToolWindow(stagingAreaEnabled: Boolean) {
         assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
         val fixture = ReleaseMatrixGitFixtureBuilder.createCommitOnly(
@@ -989,6 +1053,7 @@ private interface RemoteFakeAiAssistantProbe {
 
     fun hasOutgoingCommitsToPush(project: Project): Boolean
     fun hasCommittableContent(project: Project): Boolean
+    fun stagingAreaSelectionPaths(project: Project): List<String>
     fun setGitStagingAreaEnabled(enabled: Boolean)
     fun isGitStagingAreaEnabled(): Boolean
     fun commitWorkflowHandlerClassName(project: Project): String?
@@ -999,6 +1064,7 @@ private interface RemoteFakeAiAssistantProbe {
     fun setClearCommitMessageBeforeGeneration(enabled: Boolean)
     fun setFakeAiBehavior(behaviorName: String)
     fun fakeAiInvocationCount(): Int
+    fun commitUiPathsAtFakeAiInvocation(): List<String>
     fun unregisterFakeAiAction()
     fun replaceFakeAiActionWithUnavailableSignal()
     fun setCommitMessageText(project: Project, message: String): Boolean

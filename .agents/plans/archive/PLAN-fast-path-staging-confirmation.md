@@ -2,25 +2,30 @@
 
 Plan-ID: PLAN-fast-path-staging-confirmation
 
-Status: Approved
+Status: Closed
+
+Close-Reason: Archived
 
 Workers: 1
 
-Filename: `.agents/plans/PLAN-fast-path-staging-confirmation.md`
+Filename: `.agents/plans/archive/PLAN-fast-path-staging-confirmation.md`
 
 ## Readiness
 
-- Plan readiness: Approved and ready for implementation in the user-requested new Codex task.
+- Plan readiness: T1 is implemented, validated, self-reviewed, reconciled, and archived at the user's request.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-10T15:33:34+02:00
 - Open questions: No.
-- Implementation progress: Not started; handoff to a new Codex task requested.
+- Implementation progress: Complete; the plan no longer has active execution or release-preparation work.
 
 ## Status History
 
 - 2026-07-10T15:07:47+02:00: none -> Draft by Codex <codex@openai.com>; replaced the rejected timeout/cancellation approach with a staging-path fix.
 - 2026-07-10T15:32:00+02:00: Draft -> Draft by Codex <codex@openai.com>; corrected the AI handoff after verifying that the installed JetBrains AI action reads included changes from `CommitWorkflowUi`, not from the Git index or handler state.
 - 2026-07-10T15:33:34+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicitly requested implementation in a new Codex task.
+- 2026-07-10T15:37:15+02:00: Approved -> In Progress by Codex <codex@openai.com>; started orchestrated implementation of T1 in the approved new task.
+- 2026-07-10T16:22:39+02:00: In Progress -> Implemented by Codex <codex@openai.com>; reconciled W1 implementation, TDD, focused real-IDE integration, full validation, and self-review evidence.
+- 2026-07-10T16:22:40+02:00: Implemented -> Closed by Codex <codex@openai.com>; archived the completed plan at the user's request; Close-Reason: Archived.
 
 ## Goal
 
@@ -173,18 +178,18 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker: pending new-task dispatch
-- Changed files or reviewed diff: pending implementation
-- Validation evidence: pending implementation per `.agents/references/testing.md`
-- Self-review evidence: pending implementation per `.agents/references/reviews.md`
-- Commit: pending implementation
-- Worker events: pending implementation
-- Orchestrator reconciliation: pending implementation
-- Changelog/docs/spec/tasks updates: pending implementation
-- Blockers: none at approval handoff
-- Review risks: Commit UI inclusion state must be current before AI invocation; residual EDT starvation remains out of scope.
-- Handoff notes and next action: New Codex task moves the plan to `In Progress`, dispatches T1 to its implementation sub-agent, and completes validation and reconciliation.
+- Status: done
+- Worker: W1 `/root/t1_fast_path_staging` (implementation, mode code).
+- Changed files or reviewed diff: `GitStageConfirmation.kt`, `ReflectiveCommitWorkflowSynchronizer.kt`, `AiCommitAllWorkflowCoordinator.kt`, their focused unit tests, the fake AI action/probe, the focused release-matrix harness test, `docs/specification.md`, and `CHANGELOG.md`; plan lifecycle and catalog archived by the orchestrator.
+- Validation evidence: red tests captured the old blocking refresh path and absent/fail-open UI handoff; focused green suites passed 80 tests; full `test` passed 491 tests with 1 skip; `spotlessCheck detekt`, `buildPlugin`, docs validation, agent-artifact validation, and `git diff --check` passed; focused IU 2026.1.2 staging integration passed with exact equality of 8 expected and 8 `CommitWorkflowUi` paths.
+- Self-review evidence: W1 and orchestrator checked incomplete staging, HEAD-identical paths, rename source and target, unversioned files, multi-root selection, bounded fallback, same-EDT AI ordering, and platform compatibility; no remaining findings.
+- Commit: this T1 plan-task commit with `Project-Worker: W1`, `Project-Orchestrator: O1`, and plan-task metadata.
+- Worker events: structured W1 start and stop events recorded in the orchestrator chat; active worker count returned to zero before reconciliation.
+- Orchestrator reconciliation: final diff stayed within the packet, worker validation claims matched result XML/artifacts, IntelliJ IDEA 2026.1.2 bytecode confirmed tracker state retains every configured Git root, and the changelog/archive decisions were applied by O1.
+- Changelog/docs/spec/tasks updates: `REQ-SEL-008` and traceability updated; an Unreleased Fixed entry added; plan closed and archived; no `TASKS.md` change applies because T1 exists only in this approved plan.
+- Blockers: none.
+- Review risks: the required Git staging UI APIs remain a 2026.x IntelliJ compatibility boundary covered by the real-IDE test; manual focus-switch sandbox was not run; a separately starved EDT remains outside this fix.
+- Handoff notes and next action: no plan work remains. Release preparation stays separate and was not requested.
 
 ## Execution Model
 
@@ -196,24 +201,24 @@ Result summary:
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, `## Readiness`, `## Execution Model`, current task packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; and `.gitmessage` before committing.
-- Current task or wave: approved; awaiting implementation task startup.
-- Completed commits: diagnostic baseline `0a3820f`.
-- Plan status and readiness: Approved; ready for implementation in the new Codex task.
-- Validation and self-review state: plan validation pending.
-- Worker event state: no implementation worker dispatched.
-- Orchestrator reconciliation state: not applicable until implementation.
-- Changelog, docs, spec, task, or plan updates: plan and active-plan catalog only.
+- Current task or wave: none; T1 complete.
+- Completed commits: diagnostic baseline originally executed from `0a3820f`; PR rebase replaced it with patch-equivalent `544cade` from `main`, followed by this T1 plan-task commit.
+- Plan status and readiness: Closed and archived; Close-Reason: Archived.
+- Validation and self-review state: complete; required automated checks passed, with the manual focus-switch sandbox skipped because Starter coverage proves the plugin-owned boundary but cannot reproduce external EDT starvation.
+- Worker event state: W1 stopped successfully; active worker count zero.
+- Orchestrator reconciliation state: complete; no findings or unresolved scope conflicts.
+- Changelog, docs, spec, task, or plan updates: Unreleased changelog and `REQ-SEL-008` updated; plan and catalog archived; no task-list change applies.
 - Blockers or open questions: none.
-- Next action: the new Codex task moves the plan to `In Progress` and dispatches T1 to its implementation sub-agent.
-- Context handoff notes: the rejected timeout/cancellation plan was removed. This plan changes only staging confirmation order and preserves normal AI execution.
+- Next action: optional later release preparation; do not treat this archive as a release action.
+- Context handoff notes: direct index confirmation now removes plugin-owned refresh waiting, but the required same-EDT Commit UI handoff still waits for its EDT turn and cannot solve a separately starved EDT.
 
 ## Execution Graph
 
 ```mermaid
 flowchart TD
-  O1["O1[code]<br/>orchestrator"]
-  W1["W1[code]<br/>T1-fast-path-staging-confirmation"]
-  O1 --> W1
+    O1["O1[code]<br/>orchestrator"]
+    W1["W1[code]<br/>T1-fast-path-staging-confirmation"]
+    O1 --> W1
 ```
 
 ## Validation
@@ -228,9 +233,10 @@ flowchart TD
 - HEAD-identical paths: they must remain satisfied without creating synthetic staged content.
 - Fallback regression: any unconfirmed path must still take the bounded refresh/retry path and eventually stop rather than invoking AI.
 - AI visibility: the installed AI action reads the Commit UI inclusion model, so handler-only state assignment or a later best-effort `setTrackerState` callback would produce stale or empty AI input.
-- Residual EDT delay: eliminating plugin-owned refresh waits saves the bounded refresh time but cannot make a starved EDT execute sooner; the historical 134-second EDT queue delay remains a separate problem and the diagnostics from `0a3820f` remain necessary.
+- Residual EDT delay: eliminating plugin-owned refresh waits saves the bounded refresh time but cannot make a starved EDT execute sooner; the historical 134-second EDT queue delay remains a separate problem and the diagnostics originally authored in `0a3820f` and retained as `544cade` remain necessary.
 
 ## Handoff Notes
 
 - No ADR is required: `REQ-SEL-008` already authorizes index-confirmed state and asynchronous best-effort visual refresh; this plan moves that confirmation earlier.
 - This plan deliberately does not cancel delayed AI work. It also does not claim that Git index confirmation alone is visible to JetBrains AI; the required Commit UI model handoff is part of the fix.
+- Implementation completed with exact-path evidence from the fake `Vcs.LLMCommitMessageAction` through `CommitWorkflowUi`; manual focus-switch reproduction remains a separate sandbox gap.

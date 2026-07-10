@@ -10,6 +10,10 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ## [Unreleased]
 
+### Fixed
+
+- Continue staging-area workflows immediately when direct Git index confirmation proves every selected path is staged or HEAD-identical, while applying and verifying the current Commit UI inclusion model before AI invocation. This removes plugin-owned tracker refresh waits but cannot eliminate delays caused by a separately starved EDT.
+
 ## [v0.1.0-beta.8] - 2026-06-26
 
 ### Changed
