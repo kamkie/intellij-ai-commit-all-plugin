@@ -22,10 +22,9 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- `PLAN-fast-path-staging-confirmation` - Fast-Path Staging Confirmation ([PLAN-fast-path-staging-confirmation.md](PLAN-fast-path-staging-confirmation.md)), approved and awaiting implementation task startup.
-
 ## Archived Plans
 
+- `PLAN-fast-path-staging-confirmation` - Fast-Path Staging Confirmation ([archive/PLAN-fast-path-staging-confirmation.md](archive/PLAN-fast-path-staging-confirmation.md)), archived as of 2026-07-10.
 - `PLAN-workflow-stop-feedback-and-push-alignment` - Workflow Stop Feedback And Push Alignment ([archive/PLAN-workflow-stop-feedback-and-push-alignment.md](archive/PLAN-workflow-stop-feedback-and-push-alignment.md)), archived as of 2026-06-12.
 - `PLAN-test-coverage-growth` - Test Coverage Growth ([archive/PLAN-test-coverage-growth.md](archive/PLAN-test-coverage-growth.md)), archived as of 2026-05-25.
 - `PLAN-premature-stop-reliability` - Premature Stop Reliability ([archive/PLAN-premature-stop-reliability.md](archive/PLAN-premature-stop-reliability.md)), archived as of 2026-05-25.

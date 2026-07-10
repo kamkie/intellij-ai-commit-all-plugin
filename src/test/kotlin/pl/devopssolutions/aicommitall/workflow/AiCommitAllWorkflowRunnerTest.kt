@@ -38,6 +38,47 @@ import kotlin.test.assertTrue
 
 internal class AiCommitAllWorkflowRunnerTest {
     @Test
+    fun `applies commit ui handoff before invoking AI on the same EDT turn`() {
+        val dependencies = CapturingWorkflowDependencies(recordCommitUiHandoff = true)
+
+        val result = runner(dependencies)
+            .start(AiCommitAllWorkflowMode.Ai, testDataContext())
+            .join()
+
+        assertEquals(AiCommitAllWorkflowResult.Started, result)
+        assertEquals(
+            listOf("readiness", "prepare", "commit-ui-handoff", "ai:Ai"),
+            dependencies.events,
+        )
+    }
+
+    @Test
+    fun `fails closed without invoking AI when commit ui handoff cannot expose staged paths`() {
+        val dependencies = CapturingWorkflowDependencies(
+            commitUiHandoffResult = false,
+            recordCommitUiHandoff = true,
+        )
+
+        val result = runner(dependencies)
+            .start(AiCommitAllWorkflowMode.Ai, testDataContext())
+            .join()
+
+        assertEquals(
+            AiCommitAllWorkflowResult.Stopped(AiCommitAllWorkflowStopReason.StagingConfirmationFailed),
+            result,
+        )
+        assertEquals(
+            listOf(
+                "readiness",
+                "prepare",
+                "commit-ui-handoff",
+                "stop:StagingConfirmationFailed",
+            ),
+            dependencies.events,
+        )
+    }
+
+    @Test
     fun `ai mode prepares the shared selection before AI generation and does not commit`() {
         val dependencies = CapturingWorkflowDependencies()
 
@@ -684,6 +725,8 @@ internal class AiCommitAllWorkflowRunnerTest {
         pushResults: List<CommitWorkflowExecutionResult> = listOf(pushResult),
         pushOnlyResults: List<CommitWorkflowExecutionResult> = listOf(pushOnlyResult),
         private val hasOutgoingCommitsToPush: Boolean = false,
+        private val commitUiHandoffResult: Boolean = true,
+        private val recordCommitUiHandoff: Boolean = false,
         prepareFailures: List<RuntimeException> = emptyList(),
         aiGenerationFailures: List<RuntimeException> = emptyList(),
     ) : AiCommitAllWorkflowDependencies {
@@ -738,6 +781,16 @@ internal class AiCommitAllWorkflowRunnerTest {
                 lastSelectionResult = selectionResultQueue.removeFirst()
             }
             return lastSelectionResult
+        }
+
+        override fun prepareCommitUiForAi(
+            workflowHandler: CommitWorkflowHandler,
+            workflowUi: CommitWorkflowUi,
+        ): Boolean {
+            if (recordCommitUiHandoff) {
+                events += "commit-ui-handoff"
+            }
+            return commitUiHandoffResult
         }
 
         override fun runAiGeneration(

@@ -70,35 +70,38 @@ internal class GitStageConfirmation(
             return null
         }
 
-        val pathsToStageCount = pathsToStageByRoot.values.sumOf { paths -> paths.size }
-        logger.info(
-            "AI Commit All diagnostic: staging confirmation started, " +
-                "attempts=$attempts, roots=${pathsToStageByRoot.size}, " +
-                "pathsToStage=$pathsToStageCount, expectedPaths=${distinctExpectedPaths.size}",
-        )
+        logStarted(pathsToStageByRoot, distinctExpectedPaths)
 
         var confirmedState: GitStageTracker.State? = null
         var attempt = 0
         while (attempt < attempts && confirmedState == null) {
-            val refreshedState = refreshAfterStaging(
+            val staged = stagePaths(
                 pathsToStageByRoot = pathsToStageByRoot,
-                distinctExpectedPaths = distinctExpectedPaths,
                 attempt = attempt,
             )
+            if (staged) {
+                confirmedState = directlyConfirmedState(distinctExpectedPathsByRoot)
+                if (confirmedState == null) {
+                    val refreshedState = refreshAfterDirectConfirmation(
+                        distinctExpectedPaths = distinctExpectedPaths,
+                        attempt = attempt,
+                    )
 
-            val expectedPathsAreStaged = refreshedState.confirmsExpectedPaths(distinctExpectedPaths)
-            logger.info(
-                "AI Commit All diagnostic: staging confirmation attempt completed, " +
-                    "attempt=${attempt + 1}/$attempts, " +
-                    "refreshedState=${refreshedState != null}, confirmed=$expectedPathsAreStaged",
-            )
-            confirmedState = confirmedStateAfterFallback(
-                refreshedState = refreshedState,
-                distinctExpectedPaths = distinctExpectedPaths,
-                distinctExpectedPathsByRoot = distinctExpectedPathsByRoot,
-            )
-            if (confirmedState == null && refreshedState != null && refreshedState.hasStatusEntries()) {
-                pathsToStageByRoot = refreshedState.pathsToStageByRoot(distinctExpectedPaths)
+                    val expectedPathsAreStaged = refreshedState.confirmsExpectedPaths(distinctExpectedPaths)
+                    logger.info(
+                        "AI Commit All diagnostic: staging confirmation fallback attempt completed, " +
+                            "attempt=${attempt + 1}/$attempts, " +
+                            "refreshedState=${refreshedState != null}, confirmed=$expectedPathsAreStaged",
+                    )
+                    confirmedState = confirmedStateAfterFallback(
+                        refreshedState = refreshedState,
+                        distinctExpectedPaths = distinctExpectedPaths,
+                        distinctExpectedPathsByRoot = distinctExpectedPathsByRoot,
+                    )
+                    if (confirmedState == null && refreshedState != null && refreshedState.hasStatusEntries()) {
+                        pathsToStageByRoot = refreshedState.pathsToStageByRoot(distinctExpectedPaths)
+                    }
+                }
             }
 
             if (confirmedState == null && attempt < attempts - 1 && retryDelay.isPositive()) {
@@ -107,11 +110,30 @@ internal class GitStageConfirmation(
             attempt += 1
         }
 
+        logFinished(confirmedState, attempt)
+        return confirmedState
+    }
+
+    private fun logStarted(
+        pathsToStageByRoot: Map<VirtualFile, List<FilePath>>,
+        distinctExpectedPaths: Collection<FilePath>,
+    ) {
+        val pathsToStageCount = pathsToStageByRoot.values.sumOf { paths -> paths.size }
+        logger.info(
+            "AI Commit All diagnostic: staging confirmation started, " +
+                "attempts=$attempts, roots=${pathsToStageByRoot.size}, " +
+                "pathsToStage=$pathsToStageCount, expectedPaths=${distinctExpectedPaths.size}",
+        )
+    }
+
+    private fun logFinished(
+        confirmedState: GitStageTracker.State?,
+        attemptsUsed: Int,
+    ) {
         logger.info(
             "AI Commit All diagnostic: staging confirmation finished, " +
-                "confirmed=${confirmedState != null}, attemptsUsed=$attempt",
+                "confirmed=${confirmedState != null}, attemptsUsed=$attemptsUsed",
         )
-        return confirmedState
     }
 
     private fun GitStageTracker.State?.confirmsExpectedPaths(
@@ -132,9 +154,17 @@ internal class GitStageConfirmation(
         }
     }
 
+    private fun directlyConfirmedState(
+        distinctExpectedPathsByRoot: Map<VirtualFile, List<FilePath>>,
+    ): GitStageTracker.State? = confirmGitIndexState(distinctExpectedPathsByRoot)?.let { confirmationsByPath ->
+        operations.currentTrackerState()
+            .withGitIndexConfirmations(distinctExpectedPathsByRoot, confirmationsByPath)
+    }
+
     private fun confirmGitIndexState(
         expectedPathsByRoot: Map<VirtualFile, List<FilePath>>,
     ): Map<String, GitIndexConfirmation>? = runCatching {
+        val startedAtNanos = System.nanoTime()
         if (expectedPathsByRoot.isEmpty()) {
             return@runCatching null
         }
@@ -158,14 +188,15 @@ internal class GitStageConfirmation(
             }
         }
         logger.info(
-            "AI Commit All diagnostic: staging confirmation index fallback completed, " +
+            "AI Commit All diagnostic: staging confirmation direct index check completed, " +
                 "confirmed=${unconfirmedPaths.isEmpty()}, " +
-                "confirmedPaths=$confirmedCount, unconfirmedPaths=${unconfirmedPaths.size}",
+                "confirmedPaths=$confirmedCount, unconfirmedPaths=${unconfirmedPaths.size}, " +
+                "elapsedMs=${elapsedMillisSince(startedAtNanos)}",
         )
         confirmationsByPath.takeIf { unconfirmedPaths.isEmpty() }
     }.getOrElse { exception ->
         logger.info(
-            "AI Commit All diagnostic: staging confirmation index fallback failed, " +
+            "AI Commit All diagnostic: staging confirmation direct index check failed, " +
                 "exception=${exception.javaClass.name}, " +
                 "cause=${exception.cause?.javaClass?.name ?: "<none>"}",
         )
@@ -186,18 +217,47 @@ internal class GitStageConfirmation(
     private fun GitStageTracker.State.hasStatusEntries(): Boolean = rootStates.values
         .any { rootState -> rootState.statuses.isNotEmpty() }
 
-    private fun refreshAfterStaging(
+    private fun stagePaths(
         pathsToStageByRoot: Map<VirtualFile, List<FilePath>>,
-        distinctExpectedPaths: Collection<FilePath>,
         attempt: Int,
-    ): GitStageTracker.State? = runCatching {
+    ): Boolean = runCatching {
+        val startedAtNanos = System.nanoTime()
         pathsToStageByRoot.forEach { (root, paths) ->
             operations.stagePaths(root, paths)
         }
+        logger.info(
+            "AI Commit All diagnostic: staging confirmation git add completed, " +
+                "attempt=${attempt + 1}/$attempts, roots=${pathsToStageByRoot.size}, " +
+                "paths=${pathsToStageByRoot.values.sumOf { paths -> paths.size }}, " +
+                "elapsedMs=${elapsedMillisSince(startedAtNanos)}",
+        )
+    }.fold(
+        onSuccess = { true },
+        onFailure = { exception ->
+            logger.info(
+                "AI Commit All diagnostic: staging confirmation git add failed, " +
+                    "attempt=${attempt + 1}/$attempts, " +
+                    "exception=${exception.javaClass.name}, " +
+                    "cause=${exception.cause?.javaClass?.name ?: "<none>"}",
+            )
+            false
+        },
+    )
+
+    private fun refreshAfterDirectConfirmation(
+        distinctExpectedPaths: Collection<FilePath>,
+        attempt: Int,
+    ): GitStageTracker.State? = runCatching {
+        val startedAtNanos = System.nanoTime()
         operations.reloadExternalFiles(distinctExpectedPaths)
         operations.markPathsDirty(distinctExpectedPaths)
         operations.waitForStatusRefresh()
-        operations.refreshTrackerState()
+        operations.refreshTrackerState().also {
+            logger.info(
+                "AI Commit All diagnostic: staging confirmation fallback IDE refresh completed, " +
+                    "attempt=${attempt + 1}/$attempts, elapsedMs=${elapsedMillisSince(startedAtNanos)}",
+            )
+        }
     }.getOrElse { exception ->
         logger.info(
             "AI Commit All diagnostic: staging confirmation attempt failed, " +
@@ -289,6 +349,8 @@ internal interface GitStageConfirmationOperations {
 
     fun refreshTrackerState(): GitStageTracker.State
 
+    fun currentTrackerState(): GitStageTracker.State
+
     fun confirmIndexPath(root: VirtualFile, path: FilePath): GitIndexConfirmation = GitIndexConfirmation.UNCONFIRMED
 }
 
@@ -360,6 +422,8 @@ internal class IntellijGitStageConfirmationOperations(
         }
     }
 
+    override fun currentTrackerState(): GitStageTracker.State = tracker.state
+
     override fun confirmIndexPath(root: VirtualFile, path: FilePath): GitIndexConfirmation = when {
         hasStagedIndexContent(root, path) -> GitIndexConfirmation.STAGED
         hasAnyStatus(root, path) -> GitIndexConfirmation.UNCONFIRMED
@@ -411,3 +475,6 @@ internal class IntellijGitStageConfirmationOperations(
         val TRACKER_REFRESH_TIMEOUT: Duration = Duration.ofSeconds(2)
     }
 }
+
+private fun elapsedMillisSince(startedAtNanos: Long): Long = Duration.ofNanos(System.nanoTime() - startedAtNanos)
+    .toMillis()

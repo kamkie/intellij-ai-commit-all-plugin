@@ -232,13 +232,21 @@ internal class AiCommitAllWorkflowRunner(
                 "AI Commit All diagnostic: AI generation phase started on EDT, " +
                     "mode=$mode, queueDelayMs=${elapsedMillisSince(scheduledAtNanos)}",
             )
-            dependencies.runAiGeneration(
-                phase = AiGenerationActivityPhase.Ai,
-                workflowHandler = workflowHandler,
-                workflowUi = workflowUi,
-                parentDataContext = dataContext,
-                inputEvent = inputEvent,
-            )
+            if (!dependencies.prepareCommitUiForAi(workflowHandler, workflowUi)) {
+                logger.info(
+                    "AI Commit All diagnostic: AI generation stopped before invocation, " +
+                        "mode=$mode, reason=commit UI handoff verification failed",
+                )
+                AiCommitAllAiGenerationResult.Stopped(AiCommitAllWorkflowStopReason.StagingConfirmationFailed)
+            } else {
+                dependencies.runAiGeneration(
+                    phase = AiGenerationActivityPhase.Ai,
+                    workflowHandler = workflowHandler,
+                    workflowUi = workflowUi,
+                    parentDataContext = dataContext,
+                    inputEvent = inputEvent,
+                )
+            }
         }.thenCompose { generationResult ->
             logger.info(
                 "AI Commit All diagnostic: AI generation invocation completed, " +
@@ -506,6 +514,11 @@ internal interface AiCommitAllWorkflowDependencies {
         workflowUi: CommitWorkflowUi,
     ): CommitWorkflowSelectionResult
 
+    fun prepareCommitUiForAi(
+        workflowHandler: CommitWorkflowHandler,
+        workflowUi: CommitWorkflowUi,
+    ): Boolean = true
+
     fun runAiGeneration(
         phase: AiGenerationActivityPhase,
         workflowHandler: CommitWorkflowHandler,
@@ -588,6 +601,11 @@ private class ProjectAiCommitAllWorkflowDependencies(private val project: Projec
         workflowUi: CommitWorkflowUi,
     ): CommitWorkflowSelectionResult = CommitWorkflowSelectionService.getInstance(project)
         .prepareAllFilesSelection(workflowHandler, workflowUi)
+
+    override fun prepareCommitUiForAi(
+        workflowHandler: CommitWorkflowHandler,
+        workflowUi: CommitWorkflowUi,
+    ): Boolean = ReflectiveCommitWorkflowSynchronizer.prepareCommitUiForAi(workflowHandler, workflowUi)
 
     override fun runAiGeneration(
         phase: AiGenerationActivityPhase,

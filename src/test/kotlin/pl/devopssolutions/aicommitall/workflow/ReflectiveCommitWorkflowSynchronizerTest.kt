@@ -23,6 +23,7 @@ import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.CommitExecutor
 import com.intellij.openapi.vcs.changes.LocalChangeList
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.testFramework.LightVirtualFile
 import com.intellij.vcs.commit.AmendCommitHandler
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import java.io.File
@@ -313,6 +314,99 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         )
         assertEquals(1, diagnostics.queueDelays.size)
         assertTrue(diagnostics.queueDelays.single() >= 0L)
+    }
+
+    @Test
+    fun `required git stage UI handoff applies and verifies inclusion synchronously`() {
+        val diagnostics = CapturingGitStageDiagnostics()
+        val synchronization = GitStageWorkflowStateSynchronization(
+            uiScheduler = CapturingUiRefreshScheduler(),
+            diagnostics = diagnostics,
+        )
+        val events = mutableListOf<String>()
+
+        val result = synchronization.applyRequiredUiHandoff(
+            assignState = { events += "assign-state" },
+            setTrackerState = { events += "set-tracker-state" },
+            setIncludedRoots = { events += "set-included-roots" },
+            verifyIncludedPaths = {
+                events += "verify-included-paths"
+                true
+            },
+        )
+
+        assertTrue(result)
+        assertEquals(
+            listOf(
+                "assign-state",
+                "set-tracker-state",
+                "set-included-roots",
+                "verify-included-paths",
+            ),
+            events,
+        )
+        assertTrue("finished:EDT model handoff" in diagnostics.stepEvents)
+        assertTrue("finished:included-path verification" in diagnostics.stepEvents)
+    }
+
+    @Test
+    fun `git stage selection includes unversioned paths missing from tracker roots`() {
+        val firstRoot = LightVirtualFile("repo-a")
+        val secondRoot = LightVirtualFile("repo-b")
+        val firstUnversioned = TestFilePath("${firstRoot.path}/new-a.txt")
+        val secondUnversioned = TestFilePath("${secondRoot.path}/new-b.txt")
+
+        val result = includeAdditionalSelectionPathsByRoot(
+            pathsByRoot = emptyMap(),
+            roots = listOf(firstRoot, secondRoot),
+            additionalPaths = listOf(firstUnversioned, secondUnversioned),
+        )
+
+        assertEquals(
+            mapOf<VirtualFile, List<FilePath>>(
+                firstRoot to listOf(firstUnversioned),
+                secondRoot to listOf(secondUnversioned),
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `required git stage UI handoff fails closed when expected paths remain hidden`() {
+        val diagnostics = CapturingGitStageDiagnostics()
+        val synchronization = GitStageWorkflowStateSynchronization(
+            uiScheduler = CapturingUiRefreshScheduler(),
+            diagnostics = diagnostics,
+        )
+        val events = mutableListOf<String>()
+
+        val result = synchronization.applyRequiredUiHandoff(
+            assignState = { events += "assign-state" },
+            setTrackerState = { events += "set-tracker-state" },
+            setIncludedRoots = { events += "set-included-roots" },
+            verifyIncludedPaths = {
+                events += "verify-included-paths"
+                false
+            },
+        )
+
+        assertEquals(false, result)
+        assertEquals(
+            listOf(
+                "assign-state",
+                "set-tracker-state",
+                "set-included-roots",
+                "verify-included-paths",
+            ),
+            events,
+        )
+        assertEquals(
+            listOf(
+                "failed:included-path verification:IllegalStateException",
+                "failed:EDT model handoff:IllegalStateException",
+            ),
+            diagnostics.failures,
+        )
     }
 
     @Test

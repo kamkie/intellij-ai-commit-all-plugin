@@ -281,14 +281,10 @@ internal class GitStageConfirmationTest {
         assertEquals(
             listOf(
                 "stage:/repo/modified.txt",
-                "reload:/repo/modified.txt",
-                "dirty:/repo/modified.txt",
-                "wait-status",
-                "refresh",
             ),
             operations.refreshBoundaryEvents,
         )
-        assertEquals(1, operations.refreshCallCount)
+        assertEquals(0, operations.refreshCallCount)
     }
 
     @Test
@@ -308,7 +304,7 @@ internal class GitStageConfirmationTest {
         val confirmed = result ?: error("Expected index-confirmed tracker state.")
         assertTrue(GitStageSelectionItems.containsAllStagedPaths(confirmed, listOf(modified)))
         assertEquals(setOf(root), confirmed.rootStates.keys)
-        assertEquals(1, operations.refreshCallCount)
+        assertEquals(0, operations.refreshCallCount)
     }
 
     @Test
@@ -365,7 +361,13 @@ internal class GitStageConfirmationTest {
             )
 
         assertNull(result)
-        assertEquals(listOf("index:repo:/repo/modified.txt"), operations.indexConfirmationEvents)
+        assertEquals(
+            listOf(
+                "index:repo:/repo/modified.txt",
+                "index:repo:/repo/modified.txt",
+            ),
+            operations.indexConfirmationEvents,
+        )
     }
 
     @Test
@@ -644,74 +646,6 @@ internal class GitStageConfirmationTest {
         sleeper = sleeper,
     )
 
-    private class CapturingSleeper : GitStageConfirmationSleeper {
-        val delays = mutableListOf<Duration>()
-
-        override fun sleep(duration: Duration) {
-            delays += duration
-        }
-    }
-
-    private class CapturingOperations(
-        vararg states: GitStageTracker.State,
-    ) : GitStageConfirmationOperations {
-        private val states = ArrayDeque(states.toList())
-        val events = mutableListOf<String>()
-        val refreshBoundaryEvents = mutableListOf<String>()
-        val failStageCalls = mutableSetOf<Int>()
-        val failReloadCalls = mutableSetOf<Int>()
-        val failRefreshCalls = mutableSetOf<Int>()
-        val indexConfirmations = mutableMapOf<String, GitIndexConfirmation>()
-        val indexConfirmationEvents = mutableListOf<String>()
-        val reloadedPaths = mutableListOf<List<FilePath>>()
-        var stageCallCount = 0
-        var reloadCallCount = 0
-        var refreshCallCount = 0
-
-        override fun stagePaths(root: VirtualFile, paths: List<FilePath>) {
-            stageCallCount += 1
-            events += "stage:${root.name}:${pathEventText(paths)}"
-            refreshBoundaryEvents += "stage:${pathEventText(paths)}"
-            if (stageCallCount in failStageCalls) {
-                error("staging failed")
-            }
-        }
-
-        override fun reloadExternalFiles(paths: Collection<FilePath>) {
-            reloadCallCount += 1
-            val pathList = paths.toList()
-            reloadedPaths += pathList
-            events += "reload:${pathEventText(pathList)}"
-            refreshBoundaryEvents += "reload:${pathEventText(pathList)}"
-            if (reloadCallCount in failReloadCalls) {
-                error("reload failed")
-            }
-        }
-
-        override fun markPathsDirty(paths: Collection<FilePath>) {
-            refreshBoundaryEvents += "dirty:${pathEventText(paths)}"
-        }
-
-        override fun waitForStatusRefresh() {
-            refreshBoundaryEvents += "wait-status"
-        }
-
-        override fun refreshTrackerState(): GitStageTracker.State {
-            refreshCallCount += 1
-            events += "refresh"
-            refreshBoundaryEvents += "refresh"
-            if (refreshCallCount in failRefreshCalls) {
-                error("tracker refresh failed")
-            }
-            return states.removeFirstOrNull() ?: GitStageTracker.State(emptyMap())
-        }
-
-        override fun confirmIndexPath(root: VirtualFile, path: FilePath): GitIndexConfirmation {
-            indexConfirmationEvents += "index:${root.name}:${path.path}"
-            return indexConfirmations[path.normalizedPath()] ?: GitIndexConfirmation.UNCONFIRMED
-        }
-    }
-
     private fun stageState(
         root: VirtualFile,
         vararg statuses: GitFileStatus,
@@ -735,36 +669,217 @@ internal class GitStageConfirmationTest {
     private companion object {
         val RETRY_DELAY: Duration = Duration.ofMillis(250)
 
-        fun pathEventText(paths: Collection<FilePath>): String = paths.joinToString(",") { path -> path.path }
-
         fun FilePath.normalizedPath(): String = path.replace('\\', '/')
     }
+}
 
-    private class TestFilePath(private val rawPath: String) : FilePath {
-        override fun getVirtualFile(): VirtualFile? = null
+internal class GitStageConfirmationFastPathTest {
+    @Test
+    fun `direct confirmation handles staged and head-identical paths across roots without IDE refresh`() {
+        val firstRoot = LightVirtualFile("repo-a")
+        val secondRoot = LightVirtualFile("repo-b")
+        val modified = TestFilePath("/repo-a/modified.txt")
+        val added = TestFilePath("/repo-b/added.txt")
+        val headIdentical = TestFilePath("/repo-b/line-endings-only.txt")
+        val stale = GitStageTracker.State(
+            mapOf(
+                firstRoot to GitStageTracker.RootState(
+                    firstRoot,
+                    true,
+                    mapOf(modified to gitStatus(' ', 'M', modified)),
+                ),
+                secondRoot to GitStageTracker.RootState(
+                    secondRoot,
+                    true,
+                    mapOf(added to gitStatus('?', '?', added)),
+                ),
+            ),
+        )
+        val operations = CapturingOperations(stale)
+        operations.indexConfirmations[modified.normalizedPath()] = GitIndexConfirmation.STAGED
+        operations.indexConfirmations[added.normalizedPath()] = GitIndexConfirmation.STAGED
+        operations.indexConfirmations[headIdentical.normalizedPath()] = GitIndexConfirmation.HEAD_IDENTICAL
 
-        override fun getVirtualFileParent(): VirtualFile? = null
+        val expectedPathsByRoot = linkedMapOf<VirtualFile, List<FilePath>>(
+            firstRoot to listOf(modified),
+            secondRoot to listOf(added, headIdentical),
+        )
+        val result = confirmation(operations, attempts = 2).confirm(
+            pathsByRoot = expectedPathsByRoot,
+            expectedPathsByRoot = expectedPathsByRoot,
+        )
 
-        override fun getIOFile(): File = File(rawPath)
-
-        override fun getName(): String = ioFile.name
-
-        override fun getPresentableUrl(): String = rawPath
-
-        override fun getCharset(): Charset = Charsets.UTF_8
-
-        override fun getCharset(project: Project?): Charset = Charsets.UTF_8
-
-        override fun getFileType(): FileType = PlainTextFileType.INSTANCE
-
-        override fun getPath(): String = rawPath
-
-        override fun isDirectory(): Boolean = false
-
-        override fun isUnder(parent: FilePath, strict: Boolean): Boolean = false
-
-        override fun getParentPath(): FilePath? = null
-
-        override fun isNonLocal(): Boolean = false
+        val confirmed = result ?: error("Expected index-confirmed multi-root tracker state.")
+        assertTrue(
+            GitStageSelectionItems.containsAllStagedPaths(
+                confirmed,
+                listOf(modified, added, headIdentical),
+            ),
+        )
+        assertEquals(0, operations.refreshCallCount)
+        assertEquals(
+            listOf(
+                "stage:/repo-a/modified.txt",
+                "stage:/repo-b/added.txt,/repo-b/line-endings-only.txt",
+            ),
+            operations.refreshBoundaryEvents,
+        )
     }
+
+    @Test
+    fun `falls back to bounded IDE refresh when direct index confirmation fails`() {
+        val root = LightVirtualFile("repo")
+        val modified = TestFilePath("/repo/modified.txt")
+        val confirmed = stageState(root, gitStatus('M', ' ', modified))
+        val operations = CapturingOperations(confirmed)
+        operations.failIndexConfirmationPaths += modified.normalizedPath()
+
+        val result = confirmation(operations, attempts = 1).confirm(
+            pathsByRoot = mapOf(root to listOf(modified)),
+            expectedPathsByRoot = mapOf(root to listOf(modified)),
+        )
+
+        assertSame(confirmed, result)
+        assertEquals(1, operations.refreshCallCount)
+        assertEquals(
+            listOf(
+                "stage:/repo/modified.txt",
+                "reload:/repo/modified.txt",
+                "dirty:/repo/modified.txt",
+                "wait-status",
+                "refresh",
+            ),
+            operations.refreshBoundaryEvents,
+        )
+    }
+
+    private fun confirmation(
+        operations: CapturingOperations,
+        attempts: Int,
+    ): GitStageConfirmation = GitStageConfirmation(
+        attempts = attempts,
+        operations = operations,
+        retryDelay = Duration.ofMillis(250),
+        sleeper = CapturingSleeper(),
+    )
+
+    private fun stageState(
+        root: VirtualFile,
+        vararg statuses: GitFileStatus,
+    ): GitStageTracker.State = GitStageTracker.State(
+        mapOf(root to GitStageTracker.RootState(root, true, statuses.associateBy { status -> status.path })),
+    )
+
+    private fun gitStatus(
+        index: Char,
+        workTree: Char,
+        path: FilePath,
+    ): GitFileStatus = GitFileStatus(index, workTree, path, null)
+}
+
+private class CapturingSleeper : GitStageConfirmationSleeper {
+    val delays = mutableListOf<Duration>()
+
+    override fun sleep(duration: Duration) {
+        delays += duration
+    }
+}
+
+private class CapturingOperations(
+    vararg states: GitStageTracker.State,
+) : GitStageConfirmationOperations {
+    private val states = ArrayDeque(states.toList())
+    val events = mutableListOf<String>()
+    val refreshBoundaryEvents = mutableListOf<String>()
+    val failStageCalls = mutableSetOf<Int>()
+    val failReloadCalls = mutableSetOf<Int>()
+    val failRefreshCalls = mutableSetOf<Int>()
+    val indexConfirmations = mutableMapOf<String, GitIndexConfirmation>()
+    val failIndexConfirmationPaths = mutableSetOf<String>()
+    val indexConfirmationEvents = mutableListOf<String>()
+    val reloadedPaths = mutableListOf<List<FilePath>>()
+    var stageCallCount = 0
+    var reloadCallCount = 0
+    var refreshCallCount = 0
+
+    override fun stagePaths(root: VirtualFile, paths: List<FilePath>) {
+        stageCallCount += 1
+        events += "stage:${root.name}:${pathEventText(paths)}"
+        refreshBoundaryEvents += "stage:${pathEventText(paths)}"
+        if (stageCallCount in failStageCalls) {
+            error("staging failed")
+        }
+    }
+
+    override fun reloadExternalFiles(paths: Collection<FilePath>) {
+        reloadCallCount += 1
+        val pathList = paths.toList()
+        reloadedPaths += pathList
+        events += "reload:${pathEventText(pathList)}"
+        refreshBoundaryEvents += "reload:${pathEventText(pathList)}"
+        if (reloadCallCount in failReloadCalls) {
+            error("reload failed")
+        }
+    }
+
+    override fun markPathsDirty(paths: Collection<FilePath>) {
+        refreshBoundaryEvents += "dirty:${pathEventText(paths)}"
+    }
+
+    override fun waitForStatusRefresh() {
+        refreshBoundaryEvents += "wait-status"
+    }
+
+    override fun refreshTrackerState(): GitStageTracker.State {
+        refreshCallCount += 1
+        events += "refresh"
+        refreshBoundaryEvents += "refresh"
+        if (refreshCallCount in failRefreshCalls) {
+            error("tracker refresh failed")
+        }
+        return states.removeFirstOrNull() ?: GitStageTracker.State(emptyMap())
+    }
+
+    override fun currentTrackerState(): GitStageTracker.State = states.firstOrNull()
+        ?: GitStageTracker.State(emptyMap())
+
+    override fun confirmIndexPath(root: VirtualFile, path: FilePath): GitIndexConfirmation {
+        indexConfirmationEvents += "index:${root.name}:${path.path}"
+        if (path.normalizedPath() in failIndexConfirmationPaths) {
+            error("index confirmation failed")
+        }
+        return indexConfirmations[path.normalizedPath()] ?: GitIndexConfirmation.UNCONFIRMED
+    }
+}
+
+private fun pathEventText(paths: Collection<FilePath>): String = paths.joinToString(",") { path -> path.path }
+
+private fun FilePath.normalizedPath(): String = path.replace('\\', '/')
+
+private class TestFilePath(private val rawPath: String) : FilePath {
+    override fun getVirtualFile(): VirtualFile? = null
+
+    override fun getVirtualFileParent(): VirtualFile? = null
+
+    override fun getIOFile(): File = File(rawPath)
+
+    override fun getName(): String = ioFile.name
+
+    override fun getPresentableUrl(): String = rawPath
+
+    override fun getCharset(): Charset = Charsets.UTF_8
+
+    override fun getCharset(project: Project?): Charset = Charsets.UTF_8
+
+    override fun getFileType(): FileType = PlainTextFileType.INSTANCE
+
+    override fun getPath(): String = rawPath
+
+    override fun isDirectory(): Boolean = false
+
+    override fun isUnder(parent: FilePath, strict: Boolean): Boolean = false
+
+    override fun getParentPath(): FilePath? = null
+
+    override fun isNonLocal(): Boolean = false
 }
