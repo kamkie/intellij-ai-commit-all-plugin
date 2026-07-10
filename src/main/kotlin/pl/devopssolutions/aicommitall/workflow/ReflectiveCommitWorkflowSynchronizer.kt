@@ -43,6 +43,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
     fun synchronize(
         workflowHandler: CommitWorkflowHandler,
         changeLists: List<LocalChangeList>,
+        selectedPaths: List<FilePath>,
         unversionedFiles: List<FilePath>,
         activeChangeList: LocalChangeList,
         inclusionItems: Collection<Any>,
@@ -50,6 +51,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         synchronizationRetry: CommitWorkflowSynchronizationRetry = CommitWorkflowSynchronizationRetry.DEFAULT,
     ): CommitWorkflowSynchronizationResult = synchronizeGitStageWorkflow(
         workflowHandler,
+        selectedPaths,
         unversionedFiles,
         diagnostics,
     )
@@ -159,6 +161,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
 
     private fun synchronizeGitStageWorkflow(
         workflowHandler: CommitWorkflowHandler,
+        selectedPaths: List<FilePath>,
         unversionedFiles: List<FilePath>,
         diagnostics: CommitWorkflowCompatibilityDiagnostics,
     ): CommitWorkflowSynchronizationResult? {
@@ -169,7 +172,13 @@ internal object ReflectiveCommitWorkflowSynchronizer {
             val tracker = GitStageTracker.getInstance(project)
             tracker.updateTrackerState()
             val currentState = tracker.state
-            val selectionPaths = gitStageSelectionPaths(currentState, unversionedFiles)
+            val selectionPaths = mappedGitStageSelectionPaths(
+                currentState,
+                selectedPaths,
+                unversionedFiles,
+                diagnostics,
+                gitStageHandler.javaClass.name,
+            ) ?: return@runCatching CommitWorkflowSynchronizationResult.StagingConfirmationFailed
             val expectedPathsByRoot = selectionPaths.expectedPathsByRoot
             if (expectedPathsByRoot.isEmpty()) {
                 return@runCatching CommitWorkflowSynchronizationResult.Incompatible
@@ -181,16 +190,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
                 pathsByRoot = selectionPaths.pathsToStageByRoot,
                 expectedPathsByRoot = expectedPathsByRoot,
                 expectedPaths = expectedPathsByRoot.values.flatten(),
-            ) ?: run {
-                diagnostics.report(
-                    CommitWorkflowCompatibilityDiagnostic(
-                        sourceClassName = gitStageHandler.javaClass.name,
-                        methodName = "synchronizeGitStageWorkflow",
-                        reason = "staging state confirmation failed",
-                    ),
-                )
-                return@runCatching CommitWorkflowSynchronizationResult.StagingConfirmationFailed
-            }
+            ) ?: return@runCatching stagingConfirmationFailed(diagnostics, gitStageHandler.javaClass.name)
             val includedRoots = expectedPathsByRoot.keys
             val expectedStagedPathTexts = refreshedState.expectedStagedPathTexts(
                 expectedPathsByRoot.values.flatten(),
@@ -222,21 +222,64 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         }
     }
 
-    private fun gitStageSelectionPaths(
+    private fun stagingConfirmationFailed(
+        diagnostics: CommitWorkflowCompatibilityDiagnostics,
+        sourceClassName: String,
+    ): CommitWorkflowSynchronizationResult.StagingConfirmationFailed {
+        diagnostics.report(
+            CommitWorkflowCompatibilityDiagnostic(
+                sourceClassName = sourceClassName,
+                methodName = "synchronizeGitStageWorkflow",
+                reason = "staging state confirmation failed",
+            ),
+        )
+        return CommitWorkflowSynchronizationResult.StagingConfirmationFailed
+    }
+
+    private fun mappedGitStageSelectionPaths(
         state: GitStageTracker.State,
+        selectedPaths: List<FilePath>,
         unversionedFiles: List<FilePath>,
-    ): GitStageSelectionPaths = GitStageSelectionPaths(
-        expectedPathsByRoot = includeAdditionalSelectionPathsByRoot(
+        diagnostics: CommitWorkflowCompatibilityDiagnostics,
+        sourceClassName: String,
+    ): GitStageSelectionPaths? {
+        val selectionPaths = gitStageSelectionPaths(state, selectedPaths, unversionedFiles)
+        if (!selectionPaths.allSelectedPathsMapped) {
+            diagnostics.report(
+                CommitWorkflowCompatibilityDiagnostic(
+                    sourceClassName = sourceClassName,
+                    methodName = "synchronizeGitStageWorkflow",
+                    reason = "selected paths could not be mapped to Git roots",
+                ),
+            )
+            return null
+        }
+        return selectionPaths
+    }
+
+    internal fun gitStageSelectionPaths(
+        state: GitStageTracker.State,
+        selectedPaths: List<FilePath>,
+        unversionedFiles: List<FilePath>,
+    ): GitStageSelectionPaths {
+        val expectedPathsByRoot = includeAdditionalSelectionPathsByRoot(
             pathsByRoot = GitStageSelectionItems.committablePathsByRoot(state),
             roots = state.rootStates.keys,
-            additionalPaths = unversionedFiles,
-        ),
-        pathsToStageByRoot = includeAdditionalSelectionPathsByRoot(
-            pathsByRoot = GitStageSelectionItems.pathsToStageByRoot(state),
-            roots = state.rootStates.keys,
-            additionalPaths = unversionedFiles,
-        ),
-    )
+            additionalPaths = selectedPaths,
+        )
+        val mappedPathTexts = expectedPathsByRoot.values
+            .flatten()
+            .mapTo(mutableSetOf()) { path -> path.normalizedPath() }
+        return GitStageSelectionPaths(
+            expectedPathsByRoot = expectedPathsByRoot,
+            pathsToStageByRoot = includeAdditionalSelectionPathsByRoot(
+                pathsByRoot = GitStageSelectionItems.pathsToStageByRoot(state),
+                roots = state.rootStates.keys,
+                additionalPaths = unversionedFiles,
+            ),
+            allSelectedPathsMapped = selectedPaths.all { path -> path.normalizedPath() in mappedPathTexts },
+        )
+    }
 
     private fun confirmStagedState(
         project: Project,
@@ -448,9 +491,10 @@ private data class GitStageCommitUiHandoff(
     val expectedStagedPathTexts: Set<String>,
 )
 
-private data class GitStageSelectionPaths(
+internal data class GitStageSelectionPaths(
     val expectedPathsByRoot: Map<VirtualFile, List<FilePath>>,
     val pathsToStageByRoot: Map<VirtualFile, List<FilePath>>,
+    val allSelectedPathsMapped: Boolean,
 )
 
 private fun GitStageTracker.State.expectedStagedPathTexts(

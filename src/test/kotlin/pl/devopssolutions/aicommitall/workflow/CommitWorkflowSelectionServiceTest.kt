@@ -145,12 +145,13 @@ internal class CommitWorkflowSelectionServiceTest {
     @Test
     fun `successful synchronization returns prepared selection with collected inclusion state`() {
         val trackedChange = modification("/repo/src/App.kt")
+        val secondTrackedChange = modification("/repo/src/Feature.kt")
         val unversionedFile = TestFilePath("/repo/new-file.txt")
         val selection = GitChangeSelection(
-            trackedChanges = listOf(trackedChange),
+            trackedChanges = listOf(trackedChange, secondTrackedChange),
             unversionedFiles = listOf(unversionedFile),
         )
-        val changeList = TestChangeList("Feature", listOf(trackedChange))
+        val changeList = TestChangeList("Feature", listOf(trackedChange, secondTrackedChange))
         val synchronizer = CapturingSelectionSynchronizer(
             result = CommitWorkflowSynchronizationResult.Synchronized,
         )
@@ -167,7 +168,15 @@ internal class CommitWorkflowSelectionServiceTest {
         assertSame(workflowHandler, synchronizer.workflowHandler)
         assertEquals(listOf(changeList), synchronizer.changeLists)
         assertSame(changeList, synchronizer.activeChangeList)
-        assertEquals(listOf(trackedChange, unversionedFile), synchronizer.inclusionItems)
+        assertEquals(listOf(trackedChange, secondTrackedChange, unversionedFile), synchronizer.inclusionItems)
+        assertEquals(
+            listOf(
+                trackedChange.afterRevision!!.file,
+                secondTrackedChange.afterRevision!!.file,
+                unversionedFile,
+            ),
+            synchronizer.selectedPaths,
+        )
         assertEquals(listOf(unversionedFile), synchronizer.unversionedFiles)
     }
 
@@ -300,6 +309,7 @@ internal class CommitWorkflowSelectionServiceTest {
         var callCount = 0
         var workflowHandler: CommitWorkflowHandler? = null
         var changeLists: List<LocalChangeList>? = null
+        var selectedPaths: List<FilePath>? = null
         var unversionedFiles: List<FilePath>? = null
         var activeChangeList: LocalChangeList? = null
         var inclusionItems: Collection<Any>? = null
@@ -307,6 +317,7 @@ internal class CommitWorkflowSelectionServiceTest {
         override fun synchronize(
             workflowHandler: CommitWorkflowHandler,
             changeLists: List<LocalChangeList>,
+            selectedPaths: List<FilePath>,
             unversionedFiles: List<FilePath>,
             activeChangeList: LocalChangeList,
             inclusionItems: Collection<Any>,
@@ -314,6 +325,7 @@ internal class CommitWorkflowSelectionServiceTest {
             callCount += 1
             this.workflowHandler = workflowHandler
             this.changeLists = changeLists
+            this.selectedPaths = selectedPaths
             this.unversionedFiles = unversionedFiles
             this.activeChangeList = activeChangeList
             this.inclusionItems = inclusionItems

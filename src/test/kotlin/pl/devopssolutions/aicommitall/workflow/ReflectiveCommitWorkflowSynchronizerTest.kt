@@ -26,6 +26,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.vcs.commit.AmendCommitHandler
 import com.intellij.vcs.commit.CommitWorkflowHandler
+import git4idea.index.GitFileStatus
+import git4idea.index.GitStageTracker
 import java.io.File
 import java.nio.charset.Charset
 import java.time.Duration
@@ -37,6 +39,49 @@ import kotlin.test.assertTrue
 
 internal class ReflectiveCommitWorkflowSynchronizerTest {
     @Test
+    fun `authoritative tracked paths constrain confirmation when tracker state is stale`() {
+        val root = LightVirtualFile("repo")
+        val trackerVisible = TestFilePath("/repo/A.txt")
+        val trackerMissing = TestFilePath("/repo/B.txt")
+        val staleState = GitStageTracker.State(
+            mapOf(
+                root to GitStageTracker.RootState(
+                    root,
+                    true,
+                    mapOf(trackerVisible to GitFileStatus(' ', 'M', trackerVisible, null)),
+                ),
+            ),
+        )
+
+        val result = ReflectiveCommitWorkflowSynchronizer.gitStageSelectionPaths(
+            state = staleState,
+            selectedPaths = listOf(trackerVisible, trackerMissing),
+            unversionedFiles = emptyList(),
+        )
+
+        assertEquals(listOf(trackerVisible, trackerMissing), result.expectedPathsByRoot[root])
+        assertEquals(listOf(trackerVisible), result.pathsToStageByRoot[root])
+        assertTrue(result.allSelectedPathsMapped)
+    }
+
+    @Test
+    fun `authoritative paths outside tracker roots cannot be confirmed`() {
+        val root = LightVirtualFile("repo")
+        val outsideRoot = TestFilePath("/other-repo/B.txt")
+
+        val result = ReflectiveCommitWorkflowSynchronizer.gitStageSelectionPaths(
+            state = GitStageTracker.State(
+                mapOf(root to GitStageTracker.RootState(root, true, emptyMap())),
+            ),
+            selectedPaths = listOf(outsideRoot),
+            unversionedFiles = emptyList(),
+        )
+
+        assertEquals(emptyMap(), result.expectedPathsByRoot)
+        assertEquals(false, result.allSelectedPathsMapped)
+    }
+
+    @Test
     fun `synchronizes compatible commit workflow handlers`() {
         val handler = CompatibleHandler()
         val changeList = TestChangeList("Default")
@@ -45,6 +90,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = handler,
             changeLists = listOf(changeList),
+            selectedPaths = emptyList(),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = items,
@@ -68,6 +114,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = handler,
             changeLists = listOf(changeList),
+            selectedPaths = listOf(unversionedFile),
             unversionedFiles = listOf(unversionedFile),
             activeChangeList = changeList,
             inclusionItems = items,
@@ -87,6 +134,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = IncompatibleHandler(),
             changeLists = listOf(changeList),
+            selectedPaths = emptyList(),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = listOf(Any()),
@@ -115,6 +163,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = handler,
             changeLists = listOf(changeList),
+            selectedPaths = emptyList(),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = emptyList(),
@@ -133,6 +182,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = MissingSetCommitStateHandler(),
             changeLists = listOf(changeList),
+            selectedPaths = emptyList(),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = listOf(Any()),
@@ -161,6 +211,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = MissingSynchronizeInclusionHandler(),
             changeLists = listOf(changeList),
+            selectedPaths = emptyList(),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = listOf(Any()),
@@ -189,6 +240,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = ThrowingHandler(),
             changeLists = listOf(changeList),
+            selectedPaths = emptyList(),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = listOf(Any()),
@@ -218,6 +270,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = SetCommitStateThrowingHandler(),
             changeLists = listOf(changeList),
+            selectedPaths = emptyList(),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = listOf(Any()),
@@ -249,6 +302,7 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         val result = ReflectiveCommitWorkflowSynchronizer.synchronize(
             workflowHandler = handler,
             changeLists = listOf(changeList),
+            selectedPaths = emptyList(),
             unversionedFiles = emptyList(),
             activeChangeList = changeList,
             inclusionItems = items,
