@@ -19,6 +19,7 @@ import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import git4idea.push.GitPushListener
@@ -65,6 +66,7 @@ internal class GitPushCompletionService @JvmOverloads constructor(
 
 internal class GitPushCompletionTracker(
     private val timeoutScheduler: GitPushCompletionTimeoutScheduler,
+    private val diagnostics: GitPushCompletionDiagnostics = IntelliJGitPushCompletionDiagnostics,
 ) {
     private val lock = Any()
     private val waiters = mutableListOf<GitPushCompletionWaiter>()
@@ -76,8 +78,15 @@ internal class GitPushCompletionTracker(
     ): CompletableFuture<GitPushCompletionResult> {
         val remainingRepositories = repositories.toSet()
         if (remainingRepositories.isEmpty()) {
+            diagnostics.report(
+                "push completion wait skipped, repositories=0, result=success",
+            )
             return CompletableFuture.completedFuture(GitPushCompletionResult.Success(emptyMap()))
         }
+
+        diagnostics.report(
+            "push completion wait started, repositories=${remainingRepositories.size}, timeoutMs=$timeoutMillis",
+        )
 
         val waiter = GitPushCompletionWaiter(
             remainingRepositories = remainingRepositories.toMutableSet(),
@@ -120,6 +129,7 @@ internal class GitPushCompletionTracker(
         pushResult: GitPushRepoResult,
     ) {
         val completedWaiters = mutableListOf<GitPushCompletionWaiterCompletion>()
+        var matchedWaiterCount = 0
         val completionListeners = synchronized(lock) {
             val iterator = waiters.iterator()
             while (iterator.hasNext()) {
@@ -127,6 +137,7 @@ internal class GitPushCompletionTracker(
                 if (!waiter.remainingRepositories.remove(repository)) {
                     continue
                 }
+                matchedWaiterCount += 1
                 waiter.completedResults[repository] = pushResult
                 if (waiter.remainingRepositories.isEmpty()) {
                     iterator.remove()
@@ -139,6 +150,11 @@ internal class GitPushCompletionTracker(
             }
             listeners.map { registration -> registration.listener }
         }
+
+        diagnostics.report(
+            "push completion callback received, result=${pushResult.type}, " +
+                "matchedWaiters=$matchedWaiterCount, completedWaiters=${completedWaiters.size}",
+        )
 
         completedWaiters.forEach { waiterCompletion -> waiterCompletion.complete() }
         completionListeners.forEach { listener -> listener() }
@@ -158,6 +174,13 @@ internal class GitPushCompletionTracker(
             } else {
                 null
             }
+        }
+        completion?.let { waiterCompletion ->
+            val timedOut = waiterCompletion.result as GitPushCompletionResult.TimedOut
+            diagnostics.report(
+                "push completion wait timed out, completedRepositories=${timedOut.completedResults.size}, " +
+                    "pendingRepositories=${timedOut.pendingRepositories.size}",
+            )
         }
         completion?.complete()
     }
@@ -182,6 +205,21 @@ internal class GitPushCompletionTracker(
                 ),
             )
         }
+        if (pendingWaiters.isNotEmpty()) {
+            diagnostics.report("push completion tracker disposed, cancelledWaiters=${pendingWaiters.size}")
+        }
+    }
+}
+
+internal fun interface GitPushCompletionDiagnostics {
+    fun report(message: String)
+}
+
+private object IntelliJGitPushCompletionDiagnostics : GitPushCompletionDiagnostics {
+    private val logger = Logger.getInstance(GitPushCompletionTracker::class.java)
+
+    override fun report(message: String) {
+        logger.info("AI Commit All diagnostic: $message")
     }
 }
 

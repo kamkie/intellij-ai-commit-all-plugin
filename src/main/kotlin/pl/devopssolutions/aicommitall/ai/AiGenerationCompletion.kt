@@ -72,6 +72,7 @@ internal class AiGenerationCompletionService {
 internal class AiGenerationCompletionObserver(
     private val timeSource: AiCompletionTimeSource = SystemAiCompletionTimeSource,
     private val sleeper: AiCompletionSleeper = ThreadAiCompletionSleeper,
+    private val diagnostics: AiGenerationCompletionDiagnostics = IntelliJAiGenerationCompletionDiagnostics,
 ) {
     fun awaitCompletion(
         snapshot: AiCommitMessageSnapshot,
@@ -81,8 +82,9 @@ internal class AiGenerationCompletionObserver(
         options: AiGenerationCompletionOptions = AiGenerationCompletionOptions.DEFAULT,
     ): AiGenerationCompletionResult {
         val startedAtMillis = timeSource.nowMillis()
-        val observation = AiGenerationCompletionObservation()
+        val observation = AiGenerationCompletionObservation(startedAtMillis = startedAtMillis)
         var result: AiGenerationCompletionResult? = null
+        diagnostics.started(options)
 
         while (result == null && timeSource.nowMillis() - startedAtMillis <= options.timeout.toMillis()) {
             result = observeCompletionResult(
@@ -109,10 +111,17 @@ internal class AiGenerationCompletionObserver(
                 )
             }
 
-        return result ?: unavailableSignalResult ?: AiGenerationCompletionResult.Timeout(
+        val finalResult = result ?: unavailableSignalResult ?: AiGenerationCompletionResult.Timeout(
             timeout = options.timeout,
             latestMessage = messageReader.readMessage(),
         )
+        diagnostics.finished(
+            result = finalResult,
+            elapsedMillis = timeSource.nowMillis() - startedAtMillis,
+            observationCount = observation.observationCount,
+            observedRunning = observation.observedRunning,
+        )
+        return finalResult
     }
 
     private fun observeCompletionResult(
@@ -124,6 +133,15 @@ internal class AiGenerationCompletionObserver(
         observation: AiGenerationCompletionObservation,
     ): AiGenerationCompletionResult? {
         val signalState = runningSignal.state()
+        observation.observationCount += 1
+        if (signalState != observation.lastReportedSignalState) {
+            diagnostics.signalStateChanged(
+                state = signalState,
+                elapsedMillis = timeSource.nowMillis() - observation.startedAtMillis,
+                observationCount = observation.observationCount,
+            )
+            observation.lastReportedSignalState = signalState
+        }
         val currentMessage = messageReader.readMessage()
         if (userEditSignal.isUserEdited()) {
             return AiGenerationCompletionResult.UserEditedMessage(
@@ -253,10 +271,65 @@ internal class AiGenerationCompletionObserver(
     }
 
     private data class AiGenerationCompletionObservation(
+        val startedAtMillis: Long,
         var observedRunning: Boolean = false,
         var stoppedWithUnusableMessageAtMillis: Long? = null,
         var unavailableSignalStartedAtMillis: Long? = null,
+        var lastReportedSignalState: AiGenerationRunningState? = null,
+        var observationCount: Int = 0,
     )
+}
+
+internal interface AiGenerationCompletionDiagnostics {
+    fun started(options: AiGenerationCompletionOptions)
+
+    fun signalStateChanged(
+        state: AiGenerationRunningState,
+        elapsedMillis: Long,
+        observationCount: Int,
+    )
+
+    fun finished(
+        result: AiGenerationCompletionResult,
+        elapsedMillis: Long,
+        observationCount: Int,
+        observedRunning: Boolean,
+    )
+}
+
+private object IntelliJAiGenerationCompletionDiagnostics : AiGenerationCompletionDiagnostics {
+    private val logger = Logger.getInstance(AiGenerationCompletionObserver::class.java)
+
+    override fun started(options: AiGenerationCompletionOptions) {
+        logger.info(
+            "AI Commit All diagnostic: AI completion observation started, " +
+                "timeoutMs=${options.timeout.toMillis()}, checkIntervalMs=${options.checkInterval.toMillis()}",
+        )
+    }
+
+    override fun signalStateChanged(
+        state: AiGenerationRunningState,
+        elapsedMillis: Long,
+        observationCount: Int,
+    ) {
+        logger.info(
+            "AI Commit All diagnostic: AI completion signal state changed, " +
+                "state=$state, elapsedMs=$elapsedMillis, observation=$observationCount",
+        )
+    }
+
+    override fun finished(
+        result: AiGenerationCompletionResult,
+        elapsedMillis: Long,
+        observationCount: Int,
+        observedRunning: Boolean,
+    ) {
+        logger.info(
+            "AI Commit All diagnostic: AI completion observation finished, " +
+                "result=${result.javaClass.simpleName}, elapsedMs=$elapsedMillis, " +
+                "observations=$observationCount, observedRunning=$observedRunning",
+        )
+    }
 }
 
 internal data class AiCommitMessageSnapshot(
@@ -331,9 +404,35 @@ internal fun interface AiCommitMessageReader {
 internal class CommitMessageUiReader(
     private val commitMessageUi: CommitMessageUi,
     private val textAccess: CommitMessageUiTextAccess = EdtCommitMessageUiTextAccess,
+    private val diagnostics: CommitMessageUiReadDiagnostics = IntelliJCommitMessageUiReadDiagnostics,
+    private val nanoTime: () -> Long = System::nanoTime,
 ) : AiCommitMessageReader {
-    override fun readMessage(): String = textAccess.readText { commitMessageUi.text }
+    override fun readMessage(): String {
+        val startedAtNanos = nanoTime()
+        return textAccess.readText { commitMessageUi.text }.also {
+            val elapsedMillis = Duration.ofNanos(nanoTime() - startedAtNanos).toMillis()
+            if (elapsedMillis >= SLOW_COMMIT_MESSAGE_UI_READ_MILLIS) {
+                diagnostics.slowRead(elapsedMillis)
+            }
+        }
+    }
 }
+
+internal fun interface CommitMessageUiReadDiagnostics {
+    fun slowRead(elapsedMillis: Long)
+}
+
+private object IntelliJCommitMessageUiReadDiagnostics : CommitMessageUiReadDiagnostics {
+    private val logger = Logger.getInstance(CommitMessageUiReader::class.java)
+
+    override fun slowRead(elapsedMillis: Long) {
+        logger.info(
+            "AI Commit All diagnostic: commit message UI read completed slowly, elapsedMs=$elapsedMillis",
+        )
+    }
+}
+
+private const val SLOW_COMMIT_MESSAGE_UI_READ_MILLIS = 1_000L
 
 internal fun interface CommitMessageUiTextAccess {
     fun readText(readNow: () -> String): String

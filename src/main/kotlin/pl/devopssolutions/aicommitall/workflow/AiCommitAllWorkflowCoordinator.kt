@@ -222,11 +222,16 @@ internal class AiCommitAllWorkflowRunner(
         inputEvent: InputEvent?,
         activity: AiCommitAllWorkflowActivity,
     ): CompletableFuture<AiCommitAllWorkflowResult> {
+        val scheduledAtNanos = System.nanoTime()
         logger.info(
             "AI Commit All diagnostic: AI generation phase scheduled, " +
                 "mode=$mode, selection=${selection.diagnosticSummary()}",
         )
         return scheduler.supplyEdt {
+            logger.info(
+                "AI Commit All diagnostic: AI generation phase started on EDT, " +
+                    "mode=$mode, queueDelayMs=${elapsedMillisSince(scheduledAtNanos)}",
+            )
             dependencies.runAiGeneration(
                 phase = AiGenerationActivityPhase.Ai,
                 workflowHandler = workflowHandler,
@@ -470,6 +475,10 @@ private object IntellijAiCommitAllWorkflowScheduler : AiCommitAllWorkflowSchedul
         return future
     }
 }
+
+private fun elapsedMillisSince(startedAtNanos: Long): Long = (System.nanoTime() - startedAtNanos).nanosToMillis()
+
+private fun Long.nanosToMillis(): Long = Duration.ofNanos(this).toMillis()
 
 private fun <T> completedFrom(action: () -> T): CompletableFuture<T> {
     val future = CompletableFuture<T>()

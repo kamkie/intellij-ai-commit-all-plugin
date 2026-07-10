@@ -311,6 +311,8 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
             ),
             diagnostics.stepEvents,
         )
+        assertEquals(1, diagnostics.queueDelays.size)
+        assertTrue(diagnostics.queueDelays.single() >= 0L)
     }
 
     @Test
@@ -605,9 +607,14 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
     private class CapturingGitStageDiagnostics : GitStageWorkflowStateSynchronizationDiagnostics {
         val stepEvents = mutableListOf<String>()
         val failures = mutableListOf<String>()
+        val queueDelays = mutableListOf<Long>()
 
         override fun started(step: String) {
             stepEvents += "started:$step"
+        }
+
+        override fun startedAfterQueue(step: String, queueDelayMillis: Long) {
+            queueDelays += queueDelayMillis
         }
 
         override fun finished(step: String, elapsedMillis: Long) {

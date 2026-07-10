@@ -355,6 +355,36 @@ internal class AiGenerationCompletionObserverTest {
     }
 
     @Test
+    fun `diagnostics record signal transitions and wall elapsed time without message content`() {
+        val timeSource = MutableTimeSource()
+        val diagnostics = CapturingAiGenerationCompletionDiagnostics()
+        val result = AiGenerationCompletionObserver(
+            timeSource = timeSource,
+            sleeper = AdvancingSleeper(timeSource),
+            diagnostics = diagnostics,
+        ).awaitCompletion(
+            snapshot = AiCommitMessageSnapshot("old message"),
+            messageReader = AiCommitMessageReader { "generated message" },
+            runningSignal = SequenceRunningSignal(
+                AiGenerationRunningState.Running,
+                AiGenerationRunningState.NotRunning,
+            ),
+            options = testOptions(),
+        )
+
+        assertIs<AiGenerationCompletionResult.Completed>(result)
+        assertEquals(1, diagnostics.startCount)
+        assertEquals(
+            listOf(
+                Triple(AiGenerationRunningState.Running, 0L, 1),
+                Triple(AiGenerationRunningState.NotRunning, 500L, 2),
+            ),
+            diagnostics.signalChanges,
+        )
+        assertEquals(listOf("Completed:500:2:true"), diagnostics.finishedEvents)
+    }
+
+    @Test
     fun `fails closed when action stops with unchanged message`() {
         val timeSource = MutableTimeSource()
         val result = AiGenerationCompletionObserver(
@@ -570,6 +600,34 @@ internal class AiGenerationCompletionObserverTest {
     private class AdvancingSleeper(private val timeSource: MutableTimeSource) : AiCompletionSleeper {
         override fun sleep(duration: Duration) {
             timeSource.nowMillis += duration.toMillis()
+        }
+    }
+
+    private class CapturingAiGenerationCompletionDiagnostics : AiGenerationCompletionDiagnostics {
+        var startCount = 0
+        val signalChanges = mutableListOf<Triple<AiGenerationRunningState, Long, Int>>()
+        val finishedEvents = mutableListOf<String>()
+
+        override fun started(options: AiGenerationCompletionOptions) {
+            startCount += 1
+        }
+
+        override fun signalStateChanged(
+            state: AiGenerationRunningState,
+            elapsedMillis: Long,
+            observationCount: Int,
+        ) {
+            signalChanges += Triple(state, elapsedMillis, observationCount)
+        }
+
+        override fun finished(
+            result: AiGenerationCompletionResult,
+            elapsedMillis: Long,
+            observationCount: Int,
+            observedRunning: Boolean,
+        ) {
+            finishedEvents +=
+                "${result.javaClass.simpleName}:$elapsedMillis:$observationCount:$observedRunning"
         }
     }
 

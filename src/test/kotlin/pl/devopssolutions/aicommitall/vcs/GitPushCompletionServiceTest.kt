@@ -213,7 +213,8 @@ internal class GitPushCompletionServiceTest {
     @Test
     fun `await completion times out with completed results and pending repositories`() {
         val timeoutScheduler = ManualGitPushCompletionTimeoutScheduler()
-        val tracker = GitPushCompletionTracker(timeoutScheduler)
+        val diagnostics = CapturingGitPushCompletionDiagnostics()
+        val tracker = GitPushCompletionTracker(timeoutScheduler, diagnostics)
         val completedRepository = testRepository("completed")
         val pendingRepository = testRepository("pending")
         val completedResult = pushResult(GitPushRepoResult.Type.SUCCESS)
@@ -232,6 +233,14 @@ internal class GitPushCompletionServiceTest {
                 pendingRepositories = setOf(pendingRepository),
             ),
             completion.join(),
+        )
+        assertEquals(
+            listOf(
+                "push completion wait started, repositories=2, timeoutMs=1000",
+                "push completion callback received, result=SUCCESS, matchedWaiters=1, completedWaiters=0",
+                "push completion wait timed out, completedRepositories=1, pendingRepositories=1",
+            ),
+            diagnostics.messages,
         )
     }
 
@@ -335,6 +344,14 @@ internal class GitPushCompletionServiceTest {
 
         fun runNextTimeout() {
             scheduled.first { handle -> !handle.cancelled }.run()
+        }
+    }
+
+    private class CapturingGitPushCompletionDiagnostics : GitPushCompletionDiagnostics {
+        val messages = mutableListOf<String>()
+
+        override fun report(message: String) {
+            messages += message
         }
     }
 

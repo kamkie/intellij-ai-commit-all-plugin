@@ -57,6 +57,21 @@ internal class CommitMessageUiReaderTest {
     }
 
     @Test
+    fun `reports only slow commit message UI reads without exposing message text`() {
+        val diagnostics = CapturingCommitMessageUiReadDiagnostics()
+        val times = ArrayDeque(listOf(0L, 1_500_000_000L))
+        val reader = CommitMessageUiReader(
+            commitMessageUi = TestPublicCommitMessageUi("private generated message"),
+            textAccess = CapturingCommitMessageUiTextAccess(),
+            diagnostics = diagnostics,
+            nanoTime = times::removeFirst,
+        )
+
+        assertEquals("private generated message", reader.readMessage())
+        assertEquals(listOf(1_500L), diagnostics.slowReads)
+    }
+
+    @Test
     fun `clears public commit message text through default mutation access outside an application`() {
         val commitMessageUi = TestPublicCommitMessageUi("stale message")
 
@@ -116,6 +131,14 @@ internal class CommitMessageUiReaderTest {
         override fun readText(readNow: () -> String): String {
             readCallCount++
             return readNow().also { message -> observedMessage = message }
+        }
+    }
+
+    private class CapturingCommitMessageUiReadDiagnostics : CommitMessageUiReadDiagnostics {
+        val slowReads = mutableListOf<Long>()
+
+        override fun slowRead(elapsedMillis: Long) {
+            slowReads += elapsedMillis
         }
     }
 

@@ -79,8 +79,10 @@ internal class CommitWorkflowExecutionService(
             )
         }
         scheduler.schedule {
+            logger.info("AI Commit All diagnostic: default commit scheduler callback started")
             completeExceptionallyOnFailure(completion) {
                 defaultCommitExecutionGate.runWhenReady(execution.workflowHandler) {
+                    logger.info("AI Commit All diagnostic: default commit readiness gate opened")
                     val registration = registerCompletion(execution.workflowHandler, completion)
                     logger.info(
                         "AI Commit All diagnostic: invoking default commit executor, " +
@@ -149,6 +151,7 @@ internal class CommitWorkflowExecutionService(
             )
         }
         scheduler.schedule {
+            logger.info("AI Commit All diagnostic: commit-and-push scheduler callback started")
             if (execution.workflowHandler.isExecutorEnabled(execution.executor)) {
                 val immediatePushAttempt = executeImmediatePushWhenSafe(
                     workflowHandler = execution.workflowHandler,
@@ -228,9 +231,12 @@ internal class CommitWorkflowExecutionService(
             onPushStarted = onPushStarted,
             completion = completion,
         ) ?: return ImmediatePushAttempt.Fallback(RESULT_LISTENER_UNAVAILABLE_FALLBACK_REASON)
+        logger.info("AI Commit All diagnostic: immediate push commit result listener registered")
         completeExceptionallyOnFailure(completion, registration) {
             defaultCommitExecutionGate.runWhenReady(workflowHandler) {
+                logger.info("AI Commit All diagnostic: immediate push commit readiness gate opened")
                 completeExceptionallyOnFailure(completion, registration) {
+                    logger.info("AI Commit All diagnostic: invoking default commit executor before immediate push")
                     executorListener.executorCalled(null)
                 }
             }
@@ -356,14 +362,17 @@ private class CompletionResultHandler(
     private val completion: CompletableFuture<Unit>,
 ) : CommitWorkflowResultHandler {
     override fun onSuccess() {
+        commitWorkflowResultLogger.info("AI Commit All diagnostic: default commit result callback, result=success")
         completion.complete(Unit)
     }
 
     override fun onCancel() {
+        commitWorkflowResultLogger.info("AI Commit All diagnostic: default commit result callback, result=cancel")
         completion.complete(Unit)
     }
 
     override fun onFailure() {
+        commitWorkflowResultLogger.info("AI Commit All diagnostic: default commit result callback, result=failure")
         completion.complete(Unit)
     }
 }
@@ -377,19 +386,27 @@ private class CommitAndPushResultHandler(
     private var commitSucceeded = false
 
     override fun onSuccess() {
+        commitWorkflowResultLogger.info(
+            "AI Commit All diagnostic: commit-and-push result callback, result=success, waitingForAfterRefresh=true",
+        )
         commitSucceeded = true
         onPushStarted()
     }
 
     override fun onCancel() {
+        commitWorkflowResultLogger.info("AI Commit All diagnostic: commit-and-push result callback, result=cancel")
         completion.complete(Unit)
     }
 
     override fun onFailure() {
+        commitWorkflowResultLogger.info("AI Commit All diagnostic: commit-and-push result callback, result=failure")
         completion.complete(Unit)
     }
 
     override fun onAfterRefresh() {
+        commitWorkflowResultLogger.info(
+            "AI Commit All diagnostic: commit-and-push after-refresh callback, commitSucceeded=$commitSucceeded",
+        )
         if (commitSucceeded) {
             completion.complete(Unit)
         }
@@ -404,16 +421,25 @@ private class PostCommitPushResultHandler(
     private val completion: CompletableFuture<Unit>,
 ) : CommitWorkflowResultHandler {
     override fun onSuccess() {
+        commitWorkflowResultLogger.info(
+            "AI Commit All diagnostic: immediate push commit result callback, result=success, schedulingPush=true",
+        )
         onPushStarted()
         pushScheduler.schedule {
+            commitWorkflowResultLogger.info("AI Commit All diagnostic: immediate push scheduler callback started")
             executePush()
         }
     }
 
     private fun executePush() {
         completeExceptionallyOnFailure(completion) {
+            commitWorkflowResultLogger.info("AI Commit All diagnostic: immediate push invoked")
             immediatePushExecutor.push(pushPlan)
                 .whenComplete { _, throwable ->
+                    commitWorkflowResultLogger.info(
+                        "AI Commit All diagnostic: immediate push future completed, " +
+                            "outcome=${throwable?.diagnosticOutcome() ?: "completed"}",
+                    )
                     if (throwable != null) {
                         completion.completeExceptionally(throwable)
                     } else {
@@ -424,10 +450,16 @@ private class PostCommitPushResultHandler(
     }
 
     override fun onCancel() {
+        commitWorkflowResultLogger.info(
+            "AI Commit All diagnostic: immediate push commit result callback, result=cancel",
+        )
         completion.complete(Unit)
     }
 
     override fun onFailure() {
+        commitWorkflowResultLogger.info(
+            "AI Commit All diagnostic: immediate push commit result callback, result=failure",
+        )
         completion.complete(Unit)
     }
 }
@@ -528,3 +560,5 @@ private inline fun completeExceptionallyOnFailure(
 
 private fun Throwable.diagnosticOutcome(): String = "exception=${javaClass.name}, " +
     "cause=${cause?.javaClass?.name ?: "<none>"}"
+
+private val commitWorkflowResultLogger: Logger = Logger.getInstance(CommitWorkflowExecutionService::class.java)

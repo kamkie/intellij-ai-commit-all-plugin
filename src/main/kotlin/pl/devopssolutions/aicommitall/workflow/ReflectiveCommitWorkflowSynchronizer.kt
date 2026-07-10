@@ -204,6 +204,10 @@ internal class GitStageWorkflowStateSynchronization(
         val startedAtNanos = System.nanoTime()
         runCatching {
             uiScheduler.schedule {
+                diagnostics.startedAfterQueue(
+                    step = "ui refresh completion",
+                    queueDelayMillis = elapsedMillisSince(startedAtNanos),
+                )
                 runBestEffortStep("ui refresh completion") {
                     GitStageWorkflowUiRefresh(diagnostics).refreshUi()
                 }
@@ -287,6 +291,8 @@ private object IntellijCommitWorkflowUiRefreshScheduler : CommitWorkflowUiRefres
 internal interface GitStageWorkflowStateSynchronizationDiagnostics {
     fun started(step: String)
 
+    fun startedAfterQueue(step: String, queueDelayMillis: Long) = Unit
+
     fun finished(step: String, elapsedMillis: Long)
 
     fun failed(step: String, elapsedMillis: Long, exception: Throwable)
@@ -298,6 +304,13 @@ private object IntelliJGitStageWorkflowStateSynchronizationDiagnostics :
 
     override fun started(step: String) {
         logger.info("AI Commit All diagnostic: git-stage workflow state synchronization started, step=$step")
+    }
+
+    override fun startedAfterQueue(step: String, queueDelayMillis: Long) {
+        logger.info(
+            "AI Commit All diagnostic: git-stage workflow state synchronization callback started, " +
+                "step=$step, queueDelayMs=$queueDelayMillis",
+        )
     }
 
     override fun finished(step: String, elapsedMillis: Long) {
