@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-staging-enabled-commit-ui-reliability
 
-Status: In Progress
+Status: Implemented
 
 Workers: 1
 
@@ -10,17 +10,18 @@ Filename: `.agents/plans/PLAN-staging-enabled-commit-ui-reliability.md`
 
 ## Readiness
 
-- Plan readiness: Approved and in progress; T1 and T2 are complete, with exact-head hosted validation pending.
+- Plan readiness: Implemented; T1 and T2 are complete and the required consecutive hosted CI executions passed at the exact fixed head.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-13T11:38:44+02:00
 - Open questions: None. The exact failing boundary is an evidence dependency handled by T1, not a product decision.
-- Implementation progress: T1 captured the hosted failure, T2 implemented and reviewed the default-Commit handoff fix, and PR #36 is ready for its fixed-head CI run and one same-head rerun.
+- Implementation progress: Complete. PR #36 CI run `29243715751` passed on attempt 1 and manual rerun attempt 2 at fixed head `53d8d54662040402ade18dc512be240f63b239cf`.
 
 ## Status History
 
 - 2026-07-13T11:27:08+02:00: none -> Draft by Codex <codex@openai.com>; evidence-first fix plan created.
 - 2026-07-13T11:38:44+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
 - 2026-07-13T11:38:57+02:00: Approved -> In Progress by Codex <codex@openai.com>; approved implementation started.
+- 2026-07-13T13:10:26+02:00: In Progress -> Implemented by Codex <codex@openai.com>; both plan tasks and two consecutive hosted CI executions at the exact fixed head completed successfully.
 
 ## Goal
 
@@ -267,18 +268,18 @@ Expected output:
 
 Result summary:
 
-- Status: completed; exact-head hosted validation remains an orchestrator gate.
+- Status: completed, including exact-head hosted validation.
 - Worker: `/root/t2_fix_demonstrated_stall`
 - Changed files or reviewed diff: `AiCommitAllWorkflowCoordinator.kt`, `CommitWorkflowExecutionService.kt`, `ReflectiveCommitWorkflowSynchronizer.kt`, `CommitWorkflowExecutionServiceTest.kt`, `docs/specification.md`, and `CHANGELOG.md`; the exact confirmed staging handoff is retained through AI and consumed, reapplied, and verified at the default Commit executor boundary.
-- Validation evidence: The focused regression failed before the fix and passed after it; affected unit classes passed 40/40; the broad suite passed 511 with one pending; `spotlessCheck`, `detekt`, and `buildPlugin` passed; the exact PyCharm 2026.1.2 staging UI method passed 1/1 in 26.5 seconds with two commits and a clean fixture; the follow-up fail-closed class passed 18/18; documentation and diff validation passed.
+- Validation evidence: The focused regression failed before the fix and passed after it; affected unit classes passed 40/40; the broad suite passed 511 with one pending; `spotlessCheck`, `detekt`, and `buildPlugin` passed; the exact PyCharm 2026.1.2 staging UI method passed 1/1 in 26.5 seconds with two commits and a clean fixture; the follow-up fail-closed class passed 18/18; documentation and diff validation passed. Hosted CI run [29243715751](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/29243715751) passed twice at `53d8d54662040402ade18dc512be240f63b239cf`: attempt 1 UI coverage passed in 9m45s and manual rerun attempt 2 passed in 9m08s.
 - Self-review evidence from `.agents/references/reviews.md`: Verified exact selection reuse, fail-closed behavior before listener registration or executor invocation, IDE safeguard preservation, no direct Git commit replacement, no timeout or retry, default-Commit-only scope, threading and dumb-mode gate preservation, nullable API handling, and IntelliJ 261 contract compatibility.
 - Commit: `e533163e18122d90a5d8fdb1572dc9b991ec0762`; review follow-up `b1a1e25d192938e4f726ec0c90d5cb9798ab92a0`.
 - Worker events: Initial start `2026-07-13T12:09:05+02:00`, stop `2026-07-13T12:32:56+02:00`; review follow-up start `2026-07-13T12:38:18+02:00`, stop `2026-07-13T12:41:01+02:00`; all recorded in chat.
 - Orchestrator reconciliation: Production and test diffs, commit metadata, local validation, and the read-only review were independently inspected. The review's Push observation was reconciled against the approved default-Commit goal and explicit adjacent-Push non-goal by narrowing the specification and changelog claims; its fail-closed test gap was fixed.
 - Changelog/docs/spec/tasks updates: `REQ-SEL-008` traceability and `CHANGELOG.md` now describe only the default Commit workflow; no task-list update applies.
-- Blockers: None in local implementation; two consecutive hosted CI executions at the exact pushed head remain required.
+- Blockers: None.
 - Review risks: The staging handler is an IntelliJ internal API, mitigated by primary-source 261 contract review and exact 261 runtime validation. Push paths are intentionally unchanged and not claimed by this plan.
-- Handoff notes and next action: Push PR #36, require its initial full checks and one manual same-head rerun, then complete the plan readiness and merge gates if both remain green.
+- Handoff notes and next action: Validate the plan-finalization-only PR head, re-fetch review threads and readiness state, then mark PR #36 ready and merge if the gate remains clean.
 
 ## Execution Model
 
@@ -293,15 +294,15 @@ Result summary:
 
 - Resume docs reread:
   - After compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, continuity, execution model, current packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before a commit; and the exact owner files for the next action.
-- Current task or wave: T1 and T2 are complete; orchestrator-owned exact-head hosted validation for PR #36 is next.
+- Current task or wave: Implementation and exact fixed-head hosted validation are complete; PR readiness and merge are next.
 - Completed commits: `3a5f98e` plan approval; `188b173` T1 artifact capture; `ebad950` T1 result; `8783f47` draft-PR record; `5751363` hosted-failure evidence; `34d4e29` T2 scope reconciliation; `e533163` T2 fix; `b1a1e25` review follow-up.
-- Plan status and readiness: In Progress; explicitly approved by Kamil Kiewisz <kamkie@outlook.com>.
-- Validation and self-review state: T1 workflow validation passed; T2 red/green, 511-test broad suite, static checks, `buildPlugin`, focused PyCharm UI test, follow-up 18-test fail-closed suite, docs validation, and diff checks passed. Independent review is reconciled with no unresolved in-scope finding.
+- Plan status and readiness: Implemented; explicitly approved by Kamil Kiewisz <kamkie@outlook.com> and completed after exact-head hosted repetition.
+- Validation and self-review state: T1 workflow validation passed; T2 red/green, 511-test broad suite, static checks, `buildPlugin`, focused PyCharm UI test, follow-up 18-test fail-closed suite, docs validation, and diff checks passed. Independent review is reconciled with no unresolved in-scope finding. CI run `29243715751` attempts 1 and 2 passed at fixed head `53d8d54662040402ade18dc512be240f63b239cf`.
 - Worker event state: T1 and both T2 worker intervals are stopped and recorded; no active write worker.
 - Orchestrator reconciliation state: T1 artifact proves roots disappeared after the initial AI handoff and before the default executor. T2 restores the exact confirmed handoff at that boundary, and the review follow-up proves the failure path remains closed.
 - Changelog, docs, spec, task, or plan updates: Plan, `REQ-SEL-008`, traceability, and changelog are updated; task-list changes are not applicable.
-- Blockers or open questions: No implementation blocker; hosted exact-head repetition is the remaining completion gate.
-- Next action: Push the fixed head to PR #36 and babysit its initial CI plus one same-head rerun.
+- Blockers or open questions: None.
+- Next action: Push this documentation-only finalization, validate the resulting PR head, inspect current review threads, then make PR #36 ready and merge.
 - Context handoff notes: Branch starts at `938b56a329e2d23e11f1e758d39f3be42b75d1ed`; PR #34 is out of scope.
 
 ## Execution Graph
