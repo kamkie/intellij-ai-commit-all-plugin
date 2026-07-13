@@ -605,7 +605,11 @@ private class ProjectAiCommitAllWorkflowDependencies(private val project: Projec
     override fun prepareCommitUiForAi(
         workflowHandler: CommitWorkflowHandler,
         workflowUi: CommitWorkflowUi,
-    ): Boolean = ReflectiveCommitWorkflowSynchronizer.prepareCommitUiForAi(workflowHandler, workflowUi)
+    ): Boolean = ReflectiveCommitWorkflowSynchronizer.prepareCommitUi(
+        workflowHandler = workflowHandler,
+        workflowUi = workflowUi,
+        consumeConfirmedHandoff = false,
+    )
 
     override fun runAiGeneration(
         phase: AiGenerationActivityPhase,

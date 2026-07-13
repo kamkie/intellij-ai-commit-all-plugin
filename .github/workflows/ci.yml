@@ -206,6 +206,19 @@ jobs:
           -PideProducts=PY
           -PideVersion=2026.1.2
 
+      - name: Upload release-matrix UI failure evidence
+        if: ${{ !env.ACT && failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-commit-all-ui-coverage-failure-evidence
+          path: |
+            build/test-results/releaseMatrixUiTest/*.xml
+            build/reports/tests/releaseMatrixUiTest/**
+            build/reports/releaseMatrixUiTest/**
+            build/idea-sandbox/**/log/**
+            out/ide-tests/tests/**/log/**
+          if-no-files-found: warn
+
       - name: Verify CI coverage inputs
         if: ${{ !env.ACT && success() }}
         run: |

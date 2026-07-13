@@ -48,6 +48,7 @@ internal class CommitWorkflowExecutionService(
     private val immediatePushExecutor: ImmediatePushExecutor = IntellijImmediatePushExecutor,
     private val commitResultRegistrar: CommitWorkflowResultRegistrar = IntellijCommitWorkflowResultRegistrar,
     private val defaultCommitExecutionGate: DefaultCommitExecutionGate = IntellijDefaultCommitExecutionGate,
+    private val defaultCommitUiHandoff: DefaultCommitUiHandoff = IntellijDefaultCommitUiHandoff,
 ) {
     fun canExecuteCommit(workflowHandler: CommitWorkflowHandler?): Boolean = workflowHandler is CommitExecutorListener
 
@@ -83,6 +84,10 @@ internal class CommitWorkflowExecutionService(
             completeExceptionallyOnFailure(completion) {
                 defaultCommitExecutionGate.runWhenReady(execution.workflowHandler) {
                     logger.info("AI Commit All diagnostic: default commit readiness gate opened")
+                    completeExceptionallyOnFailure(completion) {
+                        defaultCommitUiHandoff.apply(execution.workflowHandler)
+                    }
+                    logger.info("AI Commit All diagnostic: default commit UI handoff applied")
                     val registration = registerCompletion(execution.workflowHandler, completion)
                     logger.info(
                         "AI Commit All diagnostic: invoking default commit executor, " +
@@ -486,6 +491,10 @@ internal fun interface DefaultCommitExecutionGate {
     )
 }
 
+internal fun interface DefaultCommitUiHandoff {
+    fun apply(workflowHandler: CommitWorkflowHandler)
+}
+
 private object IntellijCommitWorkflowExecutionScheduler : CommitWorkflowExecutionScheduler {
     override fun schedule(action: () -> Unit) {
         val application = ApplicationManager.getApplication()
@@ -517,6 +526,20 @@ private object IntellijDefaultCommitExecutionGate : DefaultCommitExecutionGate {
         }
 
         DumbService.getInstance(project).smartInvokeLater(action)
+    }
+}
+
+private object IntellijDefaultCommitUiHandoff : DefaultCommitUiHandoff {
+    override fun apply(workflowHandler: CommitWorkflowHandler) {
+        check(
+            ReflectiveCommitWorkflowSynchronizer.prepareCommitUi(
+                workflowHandler = workflowHandler,
+                workflowUi = null,
+                consumeConfirmedHandoff = true,
+            ),
+        ) {
+            "Confirmed git-stage Commit UI handoff is unavailable before commit execution"
+        }
     }
 }
 
