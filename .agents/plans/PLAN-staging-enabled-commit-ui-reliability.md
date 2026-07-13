@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-staging-enabled-commit-ui-reliability.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-13T11:38:44+02:00
 - Open questions: None. The exact failing boundary is an evidence dependency handled by T1, not a product decision.
-- Implementation progress: T1 complete; draft PR #35 is open and T2 remains gated on its hosted failure evidence.
+- Implementation progress: T1 and its hosted evidence gate are complete; T2 is ready for worker dispatch on the demonstrated executor boundary.
 
 ## Status History
 
@@ -151,15 +151,15 @@ Result summary:
 - Status: completed
 - Worker: `/root/t1_capture_ci_failure_evidence`
 - Changed files or reviewed diff: `.github/workflows/ci.yml`; 13-line failure-only artifact upload after the UI smoke step.
-- Validation evidence: `actionlint .github/workflows/ci.yml`, `scripts/validate-docs.ps1`, and `git diff --check` passed.
+- Validation evidence: `actionlint .github/workflows/ci.yml`, `scripts/validate-docs.ps1`, and `git diff --check` passed. PR #36 CI run `29240581327` reproduced the exact failure at `8783f47` and uploaded artifact `8275585480`.
 - Self-review evidence from `.agents/references/reviews.md`: Conditions, paths, action version, primary-failure preservation, artifact scope, and PR #34 isolation checked.
 - Commit: `188b173d24324b93519768afb5e770b04e5ab5ad`
 - Worker events: Start `2026-07-13T11:40:40+02:00`; stop `2026-07-13T11:42:12+02:00`; both recorded in chat.
 - Orchestrator reconciliation: Commit and diff independently inspected; only the reserved workflow file changed and required commit metadata is present.
 - Changelog/docs/spec/tasks updates: Not applicable; T1 is CI observability only.
 - Blockers: None for hosted artifact capture.
-- Review risks: Failure-only evidence remains unavailable if the hosted scenario does not reproduce.
-- Handoff notes and next action: Push the branch, open a separate draft PR, and inspect the hosted failure artifact before T2.
+- Review risks: The implicated default commit executor is version-sensitive and requires primary-source contract verification plus runtime validation.
+- Handoff notes and next action: The last marker is `invoking default commit executor, resultListenerRegistered=true`; no result callback or Git commit command follows, and the timeout screenshot shows an empty staging panel with `Stage files to commit`. Dispatch T2 at this demonstrated executor or harness seam.
 
 ### Task Packet: T2-fix-demonstrated-stall
 
@@ -293,15 +293,15 @@ Result summary:
 
 - Resume docs reread:
   - After compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, continuity, execution model, current packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before a commit; and the exact owner files for the next action.
-- Current task or wave: T1 complete; hosted artifact gate on draft PR #35 in progress before T2.
-- Completed commits: `3a5f98e` plan approval; `188b173` T1 artifact capture.
+- Current task or wave: T1 and the hosted artifact gate are complete; T2 is ready for dispatch.
+- Completed commits: `3a5f98e` plan approval; `188b173` T1 artifact capture; `ebad950` T1 result; `8783f47` draft-PR record.
 - Plan status and readiness: In Progress; explicitly approved by Kamil Kiewisz <kamkie@outlook.com>.
 - Validation and self-review state: Agent-artifact validation, documentation validation, `git diff --check`, and plan-only scope review passed on 2026-07-13.
 - Worker event state: T1 start and stop events recorded; no active worker.
-- Orchestrator reconciliation state: T1 commit and diff reconciled with its packet; GitHub evidence pending.
+- Orchestrator reconciliation state: T1 diff and hosted artifact reconciled; evidence ends after default executor invocation with no callback or Git commit command.
 - Changelog, docs, spec, task, or plan updates: Plan and plan catalog only.
-- Blockers or open questions: None for T1; T2 remains gated on hosted failure evidence.
-- Next action: Monitor draft PR #35 and dispatch T2 only if its hosted failure evidence identifies a safe seam.
+- Blockers or open questions: None; the evidence satisfies the T2 executor-boundary gate.
+- Next action: Dispatch T2 with the PR #36 run, artifact, last marker, screenshot state, and exact-head context.
 - Context handoff notes: Branch starts at `938b56a329e2d23e11f1e758d39f3be42b75d1ed`; PR #34 is out of scope.
 
 ## Execution Graph
@@ -336,6 +336,6 @@ flowchart TD
 - Read-only triage found the same timeout on PR #34, its rerun, and a concurrent `main` control, while all other PR #34 checks passed.
 - The focused local Windows method passed once in 49.8 seconds with `--no-daemon`; this is diagnostic contrast, not fix validation.
 - The first local attempt was invalidated by an external Gradle daemon stop and was retried once with `--no-daemon`.
-- Draft PR #35 is the separate evidence-and-fix PR; PR #34 remains dependency-only and out of scope.
+- Draft PR #36 is the separate evidence-and-fix PR; PR #35 was closed because its bot authorship made it invisible to the owner and produced no Actions runs. PR #34 remains dependency-only and out of scope.
 - No ADR is required at draft time because T1 reuses existing CI evidence handling and T2 is constrained to an already specified behavior. Reassess only if evidence requires a durable architectural decision.
 - The Learning Capture checkpoint found no validated new workflow guidance to add beyond this active plan; repeat it after T1 failure evidence or any repeated validation failure.
