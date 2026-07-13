@@ -148,18 +148,18 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Worker events:
-- Orchestrator reconciliation:
-- Changelog/docs/spec/tasks updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: completed
+- Worker: `/root/t1_capture_ci_failure_evidence`
+- Changed files or reviewed diff: `.github/workflows/ci.yml`; 13-line failure-only artifact upload after the UI smoke step.
+- Validation evidence: `actionlint .github/workflows/ci.yml`, `scripts/validate-docs.ps1`, and `git diff --check` passed.
+- Self-review evidence from `.agents/references/reviews.md`: Conditions, paths, action version, primary-failure preservation, artifact scope, and PR #34 isolation checked.
+- Commit: `188b173d24324b93519768afb5e770b04e5ab5ad`
+- Worker events: Start `2026-07-13T11:40:40+02:00`; stop `2026-07-13T11:42:12+02:00`; both recorded in chat.
+- Orchestrator reconciliation: Commit and diff independently inspected; only the reserved workflow file changed and required commit metadata is present.
+- Changelog/docs/spec/tasks updates: Not applicable; T1 is CI observability only.
+- Blockers: None for hosted artifact capture.
+- Review risks: Failure-only evidence remains unavailable if the hosted scenario does not reproduce.
+- Handoff notes and next action: Push the branch, open a separate draft PR, and inspect the hosted failure artifact before T2.
 
 ### Task Packet: T2-fix-demonstrated-stall
 
@@ -293,15 +293,15 @@ Result summary:
 
 - Resume docs reread:
   - After compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, continuity, execution model, current packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before a commit; and the exact owner files for the next action.
-- Current task or wave: T1 approved and pending worker dispatch.
-- Completed commits: None.
+- Current task or wave: T1 complete; hosted artifact gate in progress before T2.
+- Completed commits: `3a5f98e` plan approval; `188b173` T1 artifact capture.
 - Plan status and readiness: In Progress; explicitly approved by Kamil Kiewisz <kamkie@outlook.com>.
 - Validation and self-review state: Agent-artifact validation, documentation validation, `git diff --check`, and plan-only scope review passed on 2026-07-13.
-- Worker event state: No approved-plan worker events yet.
-- Orchestrator reconciliation state: Read-only CI triage reconciled; implementation not started.
+- Worker event state: T1 start and stop events recorded; no active worker.
+- Orchestrator reconciliation state: T1 commit and diff reconciled with its packet; GitHub evidence pending.
 - Changelog, docs, spec, task, or plan updates: Plan and plan catalog only.
 - Blockers or open questions: None for T1; T2 remains gated on hosted failure evidence.
-- Next action: Dispatch T1 and stop before T2 unless hosted failure evidence identifies a safe seam.
+- Next action: Push and open the separate draft PR; dispatch T2 only if hosted failure evidence identifies a safe seam.
 - Context handoff notes: Branch starts at `938b56a329e2d23e11f1e758d39f3be42b75d1ed`; PR #34 is out of scope.
 
 ## Execution Graph
