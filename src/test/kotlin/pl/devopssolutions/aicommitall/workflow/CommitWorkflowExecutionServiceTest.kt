@@ -15,6 +15,7 @@
  */
 package pl.devopssolutions.aicommitall.workflow
 
+import com.intellij.vcs.commit.CommitWorkflowHandler
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -80,6 +81,26 @@ internal class CommitWorkflowExecutionServiceTest {
         assertTrue(started.completion.isDone)
         assertEquals(1, workflowHandler.executorCallCount)
         assertNull(workflowHandler.executor)
+    }
+
+    @Test
+    fun `reapplies confirmed commit ui handoff immediately before default executor`() {
+        val scheduler = CapturingScheduler()
+        val defaultCommitExecutionGate = CapturingDefaultCommitExecutionGate()
+        val defaultCommitUiHandoff = CapturingDefaultCommitUiHandoff()
+        val service = CommitWorkflowExecutionService(
+            scheduler = scheduler,
+            defaultCommitExecutionGate = defaultCommitExecutionGate,
+            defaultCommitUiHandoff = defaultCommitUiHandoff,
+        )
+        val workflowHandler = CapturingCommitWorkflowHandler()
+
+        service.executeCommit(workflowHandler).asStarted()
+        scheduler.runScheduledActions()
+        defaultCommitExecutionGate.runReadyActions()
+
+        assertEquals(1, defaultCommitUiHandoff.applyCallCount)
+        assertEquals(1, workflowHandler.executorCallCount)
     }
 
     @Test
@@ -302,5 +323,13 @@ internal class CommitWorkflowExecutionServiceTest {
             scheduler.runScheduledActions()
         }
         assertEquals(1, workflowHandler.executeCallCount)
+    }
+}
+
+private class CapturingDefaultCommitUiHandoff : DefaultCommitUiHandoff {
+    var applyCallCount = 0
+
+    override fun apply(workflowHandler: CommitWorkflowHandler) {
+        applyCallCount += 1
     }
 }

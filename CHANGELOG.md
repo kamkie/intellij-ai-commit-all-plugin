@@ -10,6 +10,10 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ## [Unreleased]
 
+### Fixed
+
+- Preserve the confirmed staging-area Commit UI selection through AI generation and reapply it immediately before IDE commit execution, preventing a later tracker refresh from turning a staged commit into a no-op.
+
 ## [v0.1.0-beta.9] - 2026-07-10
 
 ### Fixed

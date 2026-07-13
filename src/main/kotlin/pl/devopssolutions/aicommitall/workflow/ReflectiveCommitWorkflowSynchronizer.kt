@@ -65,20 +65,35 @@ internal object ReflectiveCommitWorkflowSynchronizer {
             synchronizationRetry = synchronizationRetry,
         )
 
-    fun prepareCommitUiForAi(
+    fun prepareCommitUi(
         workflowHandler: CommitWorkflowHandler,
-        workflowUi: CommitWorkflowUi,
+        workflowUi: CommitWorkflowUi?,
+        consumeConfirmedHandoff: Boolean,
     ): Boolean {
         val gitStageHandler = workflowHandler as? GitStageCommitWorkflowHandler
         return if (gitStageHandler == null) {
             true
         } else {
-            val handoff = pendingGitStageUiHandoffs.remove(workflowHandler)
+            val handoff = if (consumeConfirmedHandoff) {
+                pendingGitStageUiHandoffs.remove(workflowHandler)
+            } else {
+                pendingGitStageUiHandoffs[workflowHandler]
+            }
             handoff?.let { confirmedHandoff ->
-                applyCommitUiHandoff(gitStageHandler, workflowUi, confirmedHandoff)
+                applyCommitUiHandoff(
+                    gitStageHandler,
+                    workflowUi ?: gitStageHandler.ui,
+                    confirmedHandoff,
+                )
             } ?: false.also {
+                val preparationBoundary = if (consumeConfirmedHandoff) {
+                    "commit execution"
+                } else {
+                    "AI invocation"
+                }
                 logger.warn(
-                    "AI Commit All diagnostic: required git-stage Commit UI handoff missing before AI invocation",
+                    "AI Commit All diagnostic: required git-stage Commit UI handoff missing " +
+                        "before $preparationBoundary",
                 )
             }
         }
