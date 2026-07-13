@@ -22,6 +22,8 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
+- `PLAN-staging-enabled-commit-ui-reliability` - Staging-Enabled Commit UI Reliability ([PLAN-staging-enabled-commit-ui-reliability.md](PLAN-staging-enabled-commit-ui-reliability.md)).
+
 ## Archived Plans
 
 - `PLAN-fast-path-staging-confirmation` - Fast-Path Staging Confirmation ([archive/PLAN-fast-path-staging-confirmation.md](archive/PLAN-fast-path-staging-confirmation.md)), archived as of 2026-07-10.
