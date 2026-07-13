@@ -104,6 +104,33 @@ internal class CommitWorkflowExecutionServiceTest {
     }
 
     @Test
+    fun `fails closed when default commit ui handoff is unavailable`() {
+        val failure = IllegalStateException("handoff unavailable")
+        val scheduler = CapturingScheduler()
+        val defaultCommitExecutionGate = CapturingDefaultCommitExecutionGate()
+        val registrar = CapturingCommitResultRegistrar()
+        val service = CommitWorkflowExecutionService(
+            scheduler = scheduler,
+            commitResultRegistrar = registrar,
+            defaultCommitExecutionGate = defaultCommitExecutionGate,
+            defaultCommitUiHandoff = ThrowingDefaultCommitUiHandoff(failure),
+        )
+        val workflowHandler = CapturingCommitWorkflowHandler()
+
+        val result = service.executeCommit(workflowHandler).asStarted()
+        scheduler.runScheduledActions()
+
+        val thrown = assertFailsWith<IllegalStateException> {
+            defaultCommitExecutionGate.runReadyActions()
+        }
+
+        assertSame(failure, thrown)
+        assertTrue(result.completion.isCompletedExceptionally)
+        assertEquals(0, registrar.registerCallCount)
+        assertEquals(0, workflowHandler.executorCallCount)
+    }
+
+    @Test
     fun `stops when workflow is missing`() {
         val result = CommitWorkflowExecutionService(CapturingScheduler())
             .executeCommit(null)
@@ -332,4 +359,10 @@ private class CapturingDefaultCommitUiHandoff : DefaultCommitUiHandoff {
     override fun apply(workflowHandler: CommitWorkflowHandler) {
         applyCallCount += 1
     }
+}
+
+private class ThrowingDefaultCommitUiHandoff(
+    private val failure: RuntimeException,
+) : DefaultCommitUiHandoff {
+    override fun apply(workflowHandler: CommitWorkflowHandler): Unit = throw failure
 }
