@@ -10,11 +10,11 @@ Filename: `.agents/plans/PLAN-staging-enabled-commit-ui-reliability.md`
 
 ## Readiness
 
-- Plan readiness: Approved and in progress; T1 is ready for worker dispatch.
+- Plan readiness: Approved and in progress; T1 and T2 are complete, with exact-head hosted validation pending.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-13T11:38:44+02:00
 - Open questions: None. The exact failing boundary is an evidence dependency handled by T1, not a product decision.
-- Implementation progress: T1 and its hosted evidence gate are complete; T2 is ready for worker dispatch on the demonstrated executor boundary.
+- Implementation progress: T1 captured the hosted failure, T2 implemented and reviewed the default-Commit handoff fix, and PR #36 is ready for its fixed-head CI run and one same-head rerun.
 
 ## Status History
 
@@ -267,18 +267,18 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Worker events:
-- Orchestrator reconciliation:
-- Changelog/docs/spec/tasks updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: completed; exact-head hosted validation remains an orchestrator gate.
+- Worker: `/root/t2_fix_demonstrated_stall`
+- Changed files or reviewed diff: `AiCommitAllWorkflowCoordinator.kt`, `CommitWorkflowExecutionService.kt`, `ReflectiveCommitWorkflowSynchronizer.kt`, `CommitWorkflowExecutionServiceTest.kt`, `docs/specification.md`, and `CHANGELOG.md`; the exact confirmed staging handoff is retained through AI and consumed, reapplied, and verified at the default Commit executor boundary.
+- Validation evidence: The focused regression failed before the fix and passed after it; affected unit classes passed 40/40; the broad suite passed 511 with one pending; `spotlessCheck`, `detekt`, and `buildPlugin` passed; the exact PyCharm 2026.1.2 staging UI method passed 1/1 in 26.5 seconds with two commits and a clean fixture; the follow-up fail-closed class passed 18/18; documentation and diff validation passed.
+- Self-review evidence from `.agents/references/reviews.md`: Verified exact selection reuse, fail-closed behavior before listener registration or executor invocation, IDE safeguard preservation, no direct Git commit replacement, no timeout or retry, default-Commit-only scope, threading and dumb-mode gate preservation, nullable API handling, and IntelliJ 261 contract compatibility.
+- Commit: `e533163e18122d90a5d8fdb1572dc9b991ec0762`; review follow-up `b1a1e25d192938e4f726ec0c90d5cb9798ab92a0`.
+- Worker events: Initial start `2026-07-13T12:09:05+02:00`, stop `2026-07-13T12:32:56+02:00`; review follow-up start `2026-07-13T12:38:18+02:00`, stop `2026-07-13T12:41:01+02:00`; all recorded in chat.
+- Orchestrator reconciliation: Production and test diffs, commit metadata, local validation, and the read-only review were independently inspected. The review's Push observation was reconciled against the approved default-Commit goal and explicit adjacent-Push non-goal by narrowing the specification and changelog claims; its fail-closed test gap was fixed.
+- Changelog/docs/spec/tasks updates: `REQ-SEL-008` traceability and `CHANGELOG.md` now describe only the default Commit workflow; no task-list update applies.
+- Blockers: None in local implementation; two consecutive hosted CI executions at the exact pushed head remain required.
+- Review risks: The staging handler is an IntelliJ internal API, mitigated by primary-source 261 contract review and exact 261 runtime validation. Push paths are intentionally unchanged and not claimed by this plan.
+- Handoff notes and next action: Push PR #36, require its initial full checks and one manual same-head rerun, then complete the plan readiness and merge gates if both remain green.
 
 ## Execution Model
 
@@ -293,15 +293,15 @@ Result summary:
 
 - Resume docs reread:
   - After compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, continuity, execution model, current packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before a commit; and the exact owner files for the next action.
-- Current task or wave: T1 and the hosted artifact gate are complete; T2 is tracing the demonstrated loss of confirmed staging roots before default execution.
-- Completed commits: `3a5f98e` plan approval; `188b173` T1 artifact capture; `ebad950` T1 result; `8783f47` draft-PR record.
+- Current task or wave: T1 and T2 are complete; orchestrator-owned exact-head hosted validation for PR #36 is next.
+- Completed commits: `3a5f98e` plan approval; `188b173` T1 artifact capture; `ebad950` T1 result; `8783f47` draft-PR record; `5751363` hosted-failure evidence; `34d4e29` T2 scope reconciliation; `e533163` T2 fix; `b1a1e25` review follow-up.
 - Plan status and readiness: In Progress; explicitly approved by Kamil Kiewisz <kamkie@outlook.com>.
-- Validation and self-review state: Agent-artifact validation, documentation validation, `git diff --check`, and plan-only scope review passed on 2026-07-13.
-- Worker event state: T1 start and stop events recorded; no active worker.
-- Orchestrator reconciliation state: T1 diff and hosted artifact reconciled; evidence ends after default executor invocation with no callback or Git commit command.
-- Changelog, docs, spec, task, or plan updates: Plan and plan catalog only.
-- Blockers or open questions: None; the evidence satisfies the T2 executor-boundary gate.
-- Next action: Permit T2's named synchronizer escalation scope and require red/green proof that the confirmed handoff is restored before default execution.
+- Validation and self-review state: T1 workflow validation passed; T2 red/green, 511-test broad suite, static checks, `buildPlugin`, focused PyCharm UI test, follow-up 18-test fail-closed suite, docs validation, and diff checks passed. Independent review is reconciled with no unresolved in-scope finding.
+- Worker event state: T1 and both T2 worker intervals are stopped and recorded; no active write worker.
+- Orchestrator reconciliation state: T1 artifact proves roots disappeared after the initial AI handoff and before the default executor. T2 restores the exact confirmed handoff at that boundary, and the review follow-up proves the failure path remains closed.
+- Changelog, docs, spec, task, or plan updates: Plan, `REQ-SEL-008`, traceability, and changelog are updated; task-list changes are not applicable.
+- Blockers or open questions: No implementation blocker; hosted exact-head repetition is the remaining completion gate.
+- Next action: Push the fixed head to PR #36 and babysit its initial CI plus one same-head rerun.
 - Context handoff notes: Branch starts at `938b56a329e2d23e11f1e758d39f3be42b75d1ed`; PR #34 is out of scope.
 
 ## Execution Graph
