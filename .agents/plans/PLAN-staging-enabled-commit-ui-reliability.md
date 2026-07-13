@@ -219,7 +219,7 @@ Write scope:
   - `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/fakeai/FakeLlmCommitMessageAction.kt`
   - `docs/specification.md`
   - `CHANGELOG.md`
-- Escalation-only write scope, permitted only when the artifact ends before AI scheduling and directly implicates staging synchronization:
+- Escalation-only write scope, permitted only when the artifact directly implicates loss of the confirmed staging handoff before AI scheduling or between AI completion and default commit execution:
   - `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/ReflectiveCommitWorkflowSynchronizer.kt`
   - `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/ReflectiveCommitWorkflowSynchronizerTest.kt`
 
@@ -293,7 +293,7 @@ Result summary:
 
 - Resume docs reread:
   - After compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, continuity, execution model, current packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before a commit; and the exact owner files for the next action.
-- Current task or wave: T1 and the hosted artifact gate are complete; T2 is ready for dispatch.
+- Current task or wave: T1 and the hosted artifact gate are complete; T2 is tracing the demonstrated loss of confirmed staging roots before default execution.
 - Completed commits: `3a5f98e` plan approval; `188b173` T1 artifact capture; `ebad950` T1 result; `8783f47` draft-PR record.
 - Plan status and readiness: In Progress; explicitly approved by Kamil Kiewisz <kamkie@outlook.com>.
 - Validation and self-review state: Agent-artifact validation, documentation validation, `git diff --check`, and plan-only scope review passed on 2026-07-13.
@@ -301,7 +301,7 @@ Result summary:
 - Orchestrator reconciliation state: T1 diff and hosted artifact reconciled; evidence ends after default executor invocation with no callback or Git commit command.
 - Changelog, docs, spec, task, or plan updates: Plan and plan catalog only.
 - Blockers or open questions: None; the evidence satisfies the T2 executor-boundary gate.
-- Next action: Dispatch T2 with the PR #36 run, artifact, last marker, screenshot state, and exact-head context.
+- Next action: Permit T2's named synchronizer escalation scope and require red/green proof that the confirmed handoff is restored before default execution.
 - Context handoff notes: Branch starts at `938b56a329e2d23e11f1e758d39f3be42b75d1ed`; PR #34 is out of scope.
 
 ## Execution Graph
