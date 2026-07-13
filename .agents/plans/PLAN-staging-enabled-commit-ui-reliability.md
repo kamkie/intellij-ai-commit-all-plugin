@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-staging-enabled-commit-ui-reliability.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-13T11:38:44+02:00
 - Open questions: None. The exact failing boundary is an evidence dependency handled by T1, not a product decision.
-- Implementation progress: T1 pending worker dispatch; T2 remains gated on hosted failure evidence.
+- Implementation progress: T1 complete; draft PR #35 is open and T2 remains gated on its hosted failure evidence.
 
 ## Status History
 
@@ -293,7 +293,7 @@ Result summary:
 
 - Resume docs reread:
   - After compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, continuity, execution model, current packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before a commit; and the exact owner files for the next action.
-- Current task or wave: T1 complete; hosted artifact gate in progress before T2.
+- Current task or wave: T1 complete; hosted artifact gate on draft PR #35 in progress before T2.
 - Completed commits: `3a5f98e` plan approval; `188b173` T1 artifact capture.
 - Plan status and readiness: In Progress; explicitly approved by Kamil Kiewisz <kamkie@outlook.com>.
 - Validation and self-review state: Agent-artifact validation, documentation validation, `git diff --check`, and plan-only scope review passed on 2026-07-13.
@@ -301,7 +301,7 @@ Result summary:
 - Orchestrator reconciliation state: T1 commit and diff reconciled with its packet; GitHub evidence pending.
 - Changelog, docs, spec, task, or plan updates: Plan and plan catalog only.
 - Blockers or open questions: None for T1; T2 remains gated on hosted failure evidence.
-- Next action: Push and open the separate draft PR; dispatch T2 only if hosted failure evidence identifies a safe seam.
+- Next action: Monitor draft PR #35 and dispatch T2 only if its hosted failure evidence identifies a safe seam.
 - Context handoff notes: Branch starts at `938b56a329e2d23e11f1e758d39f3be42b75d1ed`; PR #34 is out of scope.
 
 ## Execution Graph
@@ -336,5 +336,6 @@ flowchart TD
 - Read-only triage found the same timeout on PR #34, its rerun, and a concurrent `main` control, while all other PR #34 checks passed.
 - The focused local Windows method passed once in 49.8 seconds with `--no-daemon`; this is diagnostic contrast, not fix validation.
 - The first local attempt was invalidated by an external Gradle daemon stop and was retried once with `--no-daemon`.
+- Draft PR #35 is the separate evidence-and-fix PR; PR #34 remains dependency-only and out of scope.
 - No ADR is required at draft time because T1 reuses existing CI evidence handling and T2 is constrained to an already specified behavior. Reassess only if evidence requires a durable architectural decision.
 - The Learning Capture checkpoint found no validated new workflow guidance to add beyond this active plan; repeat it after T1 failure evidence or any repeated validation failure.
