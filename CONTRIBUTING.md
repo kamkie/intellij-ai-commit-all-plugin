@@ -14,7 +14,7 @@ This repository is an unreleased IntelliJ Platform plugin project. Keep contribu
 
 ## Prerequisites
 
-- JDK 21.
+- JDK 25.
 - Node.js with `npx` for Markdown linting in documentation validation.
 - Git for local repository validation and development fixtures.
 
@@ -58,8 +58,13 @@ Run the IntelliJ Plugin Verifier locally with the default verifier target from `
 
 ```powershell
 .\gradlew.bat verifyPlugin
-.\gradlew.bat verifyPlugin -PpluginVerifierIdeVersions="IU-2026.1.1,PY-2026.1.1,WS-2026.1.1"
+.\gradlew.bat verifyPlugin -PpluginVerifierIdeVersions="IU-2026.2,PY-2026.2,WS-2026.2"
 ```
+
+PyCharm 2026.2 is not yet published, so the complete verifier command is
+expected to fail while resolving that required target. Do not remove, skip, or
+ignore the PyCharm lane; release readiness waits for it to become available and
+pass with the unchanged matrix.
 
 To run the pull-request CI workflow locally through `nektos/act`, keep Docker running and use:
 
@@ -79,7 +84,7 @@ Pass `act` arguments after the script name for narrower checks, for example:
 
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\run-act.ps1 pull_request --list
-pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\run-act.ps1 pull_request --workflows .github/workflows/plugin-verifier.yml --job verify --matrix ide:IU-2026.1.1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\run-act.ps1 pull_request --workflows .github/workflows/plugin-verifier.yml --job verify --matrix ide:IU-2026.2
 ```
 
 Local `act` runs skip GitHub-hosted reporting and artifact-upload steps such as CodeQL SARIF upload, unit-test check publishing, and Codecov OIDC upload. Release-matrix UI runs also prepare the local `act` container with Xvfb and the Linux UI libraries needed by the IDE, restore the Gradle wrapper execute bit after the Windows-to-Linux file copy, and skip the per-product coverage report build and Codecov upload because `act` does not provide GitHub's Codecov OIDC token. Reports and plugin ZIPs remain in `build/` locally. Release publication, dependency submission, and Marketplace signing still require GitHub-hosted workflows and repository secrets.

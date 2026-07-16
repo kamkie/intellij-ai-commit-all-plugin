@@ -14,9 +14,13 @@
 GitHub prerelease. The plugin has not been published to JetBrains
 Marketplace yet. Latest tag: `v0.1.0-beta.9`.
 
+The 2026.2 baseline is not release-ready until the required PyCharm 2026.2
+validation target is published and the complete IntelliJ IDEA, PyCharm, and
+WebStorm 2026.2 matrix passes. The unavailable PyCharm lane remains required.
+
 ## Requirements
 
-- A JetBrains IDE on the `2026.1` IntelliJ Platform line with the non-modal Commit tool window.
+- A JetBrains IDE on the `2026.2` IntelliJ Platform line with the non-modal Commit tool window.
 - Git as the active VCS.
 - JetBrains AI Assistant installed, enabled, and signed in.
 

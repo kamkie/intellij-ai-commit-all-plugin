@@ -15,11 +15,13 @@ it does not repeat the troubleshooting FAQ.
   prerelease.
 - Current `main` branch state: AI Commit All workflow implementation and release
   automation are present but not Marketplace-published.
-- Current IntelliJ Platform target: `2026.1`; automated compatibility validation
-  currently uses `2026.1.1`.
+- Current IntelliJ Platform target: `2026.2`, build branch `262`.
 - Current IDE scope: JetBrains IDEs with the VCS Commit tool window and
   compatible commit workflow APIs. The release verifier gate covers IntelliJ
-  IDEA, PyCharm, and WebStorm `2026.1.1`.
+  IDEA, PyCharm, and WebStorm `2026.2`.
+- PyCharm 2026.2 is not yet published. Its required dependency-resolution
+  failure remains visible and blocks release readiness; the lane is not skipped
+  or treated as passed.
 - Current VCS scope: Git only, including multiple Git roots.
 - JetBrains AI Assistant is declared as a required plugin dependency.
 - Release validation checklist execution remains required before release-readiness claims for

@@ -12,7 +12,7 @@ body:
     id: ide
     attributes:
       label: IDE product and build
-      description: Example: IntelliJ IDEA Ultimate 2026.1.1, build IU-261.x.
+      description: "Example: IntelliJ IDEA Ultimate 2026.2, build IU-262.x."
     validations:
       required: true
   - type: input
