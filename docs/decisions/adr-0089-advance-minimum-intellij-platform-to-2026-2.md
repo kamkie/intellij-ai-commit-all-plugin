@@ -1,6 +1,7 @@
 ---
-status: proposed
+status: accepted
 date: 2026-07-16
+accepted_at: 2026-07-16T21:17:58+02:00
 decision-makers: Kamil Kiewisz <kamkie@outlook.com>
 consulted: Codex
 informed: Repository contributors
@@ -43,7 +44,7 @@ Sources:
 
 Chosen option: "Advance to 2026.2 now and keep the pull request draft until PyCharm 2026.2 validation passes", because it makes the requested migration reviewable immediately without weakening the representative product matrix or publishing an incompletely validated release.
 
-If accepted:
+The project will:
 
 * IntelliJ Platform 2026.2, build branch 262, becomes the minimum supported platform and supersedes the 2026.1 minimum from ADR 0008.
 * The plugin continues to target all JetBrains IDEs that expose the VCS Commit tool window and compatible Git commit workflow APIs.
@@ -97,6 +98,5 @@ Compliance is confirmed when:
 
 ## More Information
 
-- Supersedes ADR 0008 if accepted. The all-JetBrains-IDE scope is preserved; the minimum release line and rollout timing change.
-- Companion draft plan: `PLAN-intellij-2026-2-sdk-upgrade`. Implementation is blocked until this ADR is explicitly accepted and the companion plan is explicitly approved.
-- After acceptance, update the ADR index and implementation tracker in `docs/decisions/README.md`, and mark ADR 0008 as `superseded by adr-0089` before implementation starts.
+- Supersedes ADR 0008. The all-JetBrains-IDE scope is preserved; the minimum release line and rollout timing change.
+- Companion approved plan: `PLAN-intellij-2026-2-sdk-upgrade`.

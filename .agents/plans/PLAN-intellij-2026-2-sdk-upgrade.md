@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-intellij-2026-2-sdk-upgrade
 
-Status: Draft
+Status: In Progress
 
 Workers: 1
 
@@ -10,15 +10,17 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 
 ## Readiness
 
-- Plan readiness: Blocked on explicit acceptance of proposed ADR 0089 and later explicit approval of this plan.
-- Approved by:
-- Approved at:
+- Plan readiness: Ready; ADR 0089 is accepted and this plan is explicitly approved.
+- Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: Not started. No SDK, source, workflow, or user-documentation changes are authorized yet.
+- Implementation progress: T1 is ready for dispatch; no implementation packet has completed yet.
 
 ## Status History
 
 - 2026-07-16T21:02:39+02:00: none -> Draft by Codex <codex@openai.com>; companion plan created for proposed ADR 0089.
+- 2026-07-16T21:17:58+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
+- 2026-07-16T21:18:00+02:00: Approved -> In Progress by Codex <codex@openai.com>; approved implementation started.
 
 ## Goal
 
@@ -61,18 +63,68 @@ Task id: T1-platform-and-vcs-migration
 
 Lane: implementation
 
-- Required skills: `intellij-plugin-development`, `kotlin-plugin-style`, `platform-docs-research`, and `plugin-test-tdd`.
-- Goal: Produce a Java 25, `since-build=262` plugin that compiles, tests, and packages against IDEA 2026.2 without changing Commit, staging, or push behavior.
-- Initial context budget: Read `AGENTS.md`, accepted ADR 0089, this packet, `build.gradle.kts`, `gradle.properties`, `src/main/resources/META-INF/plugin.xml`, `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/ReflectiveCommitWorkflowSynchronizer.kt`, and its matching test; escalate to exact IntelliJ 262 source and owner guides when required.
-- Allowed inputs: The files in the write scope, accepted ADR 0089, JetBrains 262 source and documentation, and focused Gradle validation output.
-- Forbidden inputs: Unrelated archived plans, unrelated feature code, and prior worker transcripts beyond the orchestrator handoff.
-- Write scope: `build.gradle.kts`, `gradle.properties`, `src/main/resources/META-INF/plugin.xml`, `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/ReflectiveCommitWorkflowSynchronizer.kt`, and `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/ReflectiveCommitWorkflowSynchronizerTest.kt`.
-- Dependencies: Accepted ADR 0089, approved plan, and no prior task.
-- Validation: Capture focused red evidence; run affected tests, full `test`, `buildPlugin`, `verifyPluginProjectConfiguration`, `spotlessCheck detekt`, self-review, and `git diff --check`; commit T1 before T2.
-- Escalation triggers: No narrow 262 staging boundary preserves behavior; runtime modules alter product scope; or another dependency upgrade is required.
-- Stop conditions: A new product decision, behavior change, or broad compatibility abstraction is required.
-- Expected output: Passing 262 build foundation, regression evidence, task commit, risks, worker events, and orchestrator reconciliation.
-- Result summary: Status pending; worker, diff, validation, review, commit, events, docs/spec/tasks, blockers, risks, reconciliation, and next action to be recorded.
+Required skills:
+
+- `intellij-plugin-development`
+- `kotlin-plugin-style`
+- `platform-docs-research`
+- `plugin-test-tdd`
+
+Goal:
+
+- Produce a Java 25, `since-build=262` plugin that compiles, tests, and packages against IDEA 2026.2 without changing Commit, staging, or push behavior.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, accepted ADR 0089, this plan's readiness and execution graph, this packet, `build.gradle.kts`, `gradle.properties`, `src/main/resources/META-INF/plugin.xml`, `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/ReflectiveCommitWorkflowSynchronizer.kt`, and its matching test.
+- Escalate to: exact IntelliJ 262 source, `.agents/references/code-style.md`, `.agents/references/testing.md`, and `.agents/references/reviews.md` when compile or validation evidence requires them.
+
+Allowed inputs:
+
+- The files in the write scope, accepted ADR 0089, JetBrains 262 source and documentation, and focused Gradle validation output.
+
+Forbidden inputs:
+
+- Unrelated archived plans, unrelated feature code, and prior worker transcripts beyond the orchestrator handoff.
+
+Write scope:
+
+- `build.gradle.kts`, `gradle.properties`, `src/main/resources/META-INF/plugin.xml`, `src/main/kotlin/pl/devopssolutions/aicommitall/workflow/ReflectiveCommitWorkflowSynchronizer.kt`, and `src/test/kotlin/pl/devopssolutions/aicommitall/workflow/ReflectiveCommitWorkflowSynchronizerTest.kt`.
+
+Dependencies:
+
+- Accepted ADR 0089, approved plan, and no prior task.
+
+Validation:
+
+- Capture focused red evidence; run affected tests, full `test`, `buildPlugin`, `verifyPluginProjectConfiguration`, `spotlessCheck detekt`, self-review, and `git diff --check`; commit T1 before T2.
+
+Escalation triggers:
+
+- Escalate when no narrow 262 staging boundary preserves behavior, runtime modules alter product scope, or another dependency upgrade is required.
+
+Stop conditions:
+
+- A new product decision, behavior change, or broad compatibility abstraction is required.
+
+Expected output:
+
+- Passing 262 build foundation, regression evidence, task commit, risks, worker events, and orchestrator reconciliation.
+
+Result summary:
+
+- Status: pending
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence:
+- Self-review evidence from `.agents/references/reviews.md`:
+- Commit:
+- Worker events:
+- Orchestrator reconciliation:
+- Changelog/docs/spec/tasks updates:
+- Blockers:
+- Review risks:
+- Handoff notes and next action:
 
 ### Task Packet: T2-ci-and-release-matrix
 
@@ -80,18 +132,67 @@ Task id: T2-ci-and-release-matrix
 
 Lane: implementation
 
-- Required skills: `intellij-plugin-development`, `plugin-test-tdd`, and `repository-documentation`.
-- Goal: Move automation and local prerelease validation to JDK 25 and the required 2026.2 IDEA/PyCharm/WebStorm matrix without bypassing PyCharm.
-- Initial context budget: Read `AGENTS.md`, accepted ADR 0089, this packet, the seven workflows and prerelease script in the write scope, and the three CI contract tests; escalate to release/testing guidance and exact failures.
-- Allowed inputs: The files in the write scope, accepted ADR 0089, and their focused validation output.
-- Forbidden inputs: Plugin behavior source, unrelated workflows, and prior worker transcripts beyond the handoff.
-- Write scope: `.github/workflows/ci.yml`, `.github/workflows/codeql.yml`, `.github/workflows/dependency-submission.yml`, `.github/workflows/github-release.yml`, `.github/workflows/plugin-verifier.yml`, `.github/workflows/release.yml`, `.github/workflows/release-matrix-ui.yml`, `scripts/run-local-prerelease-validation.ps1`, and `src/test/kotlin/pl/devopssolutions/aicommitall/ci/`.
-- Dependencies: T1 committed and reconciled.
-- Validation: Run focused workflow tests and any shared suite, docs validation for executable docs, self-review that `PY-2026.2` is required with no skip or `continue-on-error`, and `git diff --check`; commit T2 before T3.
-- Escalation triggers: A workflow tool cannot run on JDK 25 or an accepted product identifier is wrong.
-- Stop conditions: Passing CI would require hiding or weakening the PyCharm gate.
-- Expected output: Updated automation, contract-test evidence, expected unavailable-product behavior, task commit, events, and reconciliation.
-- Result summary: Status pending; worker, diff, validation, review, commit, events, docs/spec/tasks, blockers, risks, reconciliation, and next action to be recorded.
+Required skills:
+
+- `intellij-plugin-development`
+- `plugin-test-tdd`
+- `repository-documentation`
+
+Goal:
+
+- Move automation and local prerelease validation to JDK 25 and the required 2026.2 IDEA/PyCharm/WebStorm matrix without bypassing PyCharm.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, accepted ADR 0089, this plan's readiness and execution graph, this packet, the seven workflows and prerelease script in the write scope, and the three CI contract tests.
+- Escalate to: release/testing guidance and exact validation failures when required.
+
+Allowed inputs:
+
+- The files in the write scope, accepted ADR 0089, and their focused validation output.
+
+Forbidden inputs:
+
+- Plugin behavior source, unrelated workflows, and prior worker transcripts beyond the handoff.
+
+Write scope:
+
+- `.github/workflows/ci.yml`, `.github/workflows/codeql.yml`, `.github/workflows/dependency-submission.yml`, `.github/workflows/github-release.yml`, `.github/workflows/plugin-verifier.yml`, `.github/workflows/release.yml`, `.github/workflows/release-matrix-ui.yml`, `scripts/run-local-prerelease-validation.ps1`, and `src/test/kotlin/pl/devopssolutions/aicommitall/ci/`.
+
+Dependencies:
+
+- T1 committed and reconciled.
+
+Validation:
+
+- Run focused workflow tests and any shared suite, docs validation for executable docs, self-review that `PY-2026.2` is required with no skip or `continue-on-error`, and `git diff --check`; commit T2 before T3.
+
+Escalation triggers:
+
+- Escalate when a workflow tool cannot run on JDK 25 or an accepted product identifier is wrong.
+
+Stop conditions:
+
+- Passing CI would require hiding or weakening the PyCharm gate.
+
+Expected output:
+
+- Updated automation, contract-test evidence, expected unavailable-product behavior, task commit, events, and reconciliation.
+
+Result summary:
+
+- Status: pending
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence:
+- Self-review evidence from `.agents/references/reviews.md`:
+- Commit:
+- Worker events:
+- Orchestrator reconciliation:
+- Changelog/docs/spec/tasks updates:
+- Blockers:
+- Review risks:
+- Handoff notes and next action:
 
 ### Task Packet: T3-support-and-product-docs
 
@@ -99,18 +200,66 @@ Task id: T3-support-and-product-docs
 
 Lane: implementation
 
-- Required skills: `repository-documentation` and `intellij-plugin-development`.
-- Goal: Align all current compatibility statements with the accepted 2026.2 baseline and draft-readiness condition.
-- Initial context budget: Read `AGENTS.md`, accepted ADR 0089, this packet, the files in the write scope, and landed T1/T2 configuration; escalate to documentation/release guidance for generated artifacts.
-- Allowed inputs: The files in the write scope, accepted ADR 0089, and landed T1/T2 configuration.
-- Forbidden inputs: Unrelated archived plans, historical reports, and unrelated changelog sections.
-- Write scope: `README.md`, `docs/SUPPORT.md`, `docs/specification.md`, `docs/user-guide.md`, `docs/troubleshooting.md`, `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/bug_report.yml`, and `config/intellij-platform/description.html`.
-- Dependencies: T2 committed and reconciled.
-- Validation: Run docs validation, relevant documentation/spec tests, self-review that no PyCharm pass is claimed, and `git diff --check`; commit T3 before T4.
-- Escalation triggers: Marketplace description cannot be reproduced or a new support/release decision appears.
-- Stop conditions: Correct wording contradicts ADR 0089 or landed configuration.
-- Expected output: Aligned docs, a suggested public compatibility changelog entry for the orchestrator, validation evidence, task commit, events, and reconciliation.
-- Result summary: Status pending; worker, diff, validation, review, commit, events, docs/spec/tasks, blockers, risks, reconciliation, and next action to be recorded.
+Required skills:
+
+- `repository-documentation`
+- `intellij-plugin-development`
+
+Goal:
+
+- Align all current compatibility statements with the accepted 2026.2 baseline and draft-readiness condition.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, accepted ADR 0089, this plan's readiness and execution graph, this packet, the files in the write scope, and landed T1/T2 configuration.
+- Escalate to: documentation/release guidance for generated artifacts when required.
+
+Allowed inputs:
+
+- The files in the write scope, accepted ADR 0089, and landed T1/T2 configuration.
+
+Forbidden inputs:
+
+- Unrelated archived plans, historical reports, and unrelated changelog sections.
+
+Write scope:
+
+- `README.md`, `docs/SUPPORT.md`, `docs/specification.md`, `docs/user-guide.md`, `docs/troubleshooting.md`, `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/bug_report.yml`, and `config/intellij-platform/description.html`.
+
+Dependencies:
+
+- T2 committed and reconciled.
+
+Validation:
+
+- Run docs validation, relevant documentation/spec tests, self-review that no PyCharm pass is claimed, and `git diff --check`; commit T3 before T4.
+
+Escalation triggers:
+
+- Escalate when the Marketplace description cannot be reproduced or a new support/release decision appears.
+
+Stop conditions:
+
+- Correct wording contradicts ADR 0089 or landed configuration.
+
+Expected output:
+
+- Aligned docs, a suggested public compatibility changelog entry for the orchestrator, validation evidence, task commit, events, and reconciliation.
+
+Result summary:
+
+- Status: pending
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence:
+- Self-review evidence from `.agents/references/reviews.md`:
+- Commit:
+- Worker events:
+- Orchestrator reconciliation:
+- Changelog/docs/spec/tasks updates:
+- Blockers:
+- Review risks:
+- Handoff notes and next action:
 
 ### Task Packet: T4-available-product-validation
 
@@ -118,18 +267,67 @@ Task id: T4-available-product-validation
 
 Lane: testing
 
-- Required skills: `intellij-plugin-development`, `plugin-review`, and `repository-documentation`.
-- Goal: Prove current head against every available 2026.2 gate, record PyCharm's external availability failure, and leave no other failure unresolved.
-- Initial context budget: Read `AGENTS.md`, accepted ADR 0089, this packet, current diff, testing/review guidance, and current product data; escalate only to files needed to attribute a failure.
-- Allowed inputs: Current-head repository state, validation output, JetBrains feeds, and available local IDEs.
-- Forbidden inputs: Unrelated archived evidence and implementation changes outside a separately dispatched remediation packet.
-- Write scope: `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`.
-- Dependencies: T3 committed and reconciled.
-- Validation: Run full unit, coverage, formatting, Detekt, packaging, configuration, docs, and agent checks; verifier and UI checks for available IDEA/WebStorm 2026.2; manual staging/AI smoke where possible; invoke `PY-2026.2` and accept only product-unavailable resolution failure; review the full diff; commit evidence before T5.
-- Escalation triggers: Any non-PyCharm failure or a changed head.
-- Stop conditions: A non-PyCharm failure remains or the head changes without full revalidation.
-- Expected output: Current-head report, exact blocker, review findings, task commit, events, and reconciliation.
-- Result summary: Status pending; worker, diff, validation, review, commit, events, docs/spec/tasks, blockers, risks, reconciliation, and next action to be recorded.
+Required skills:
+
+- `intellij-plugin-development`
+- `plugin-review`
+- `repository-documentation`
+
+Goal:
+
+- Prove current head against every available 2026.2 gate, record PyCharm's external availability failure, and leave no other failure unresolved.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, accepted ADR 0089, this plan's readiness and execution graph, this packet, current diff, testing/review guidance, and current product data.
+- Escalate to: files required to attribute a validation failure.
+
+Allowed inputs:
+
+- Current-head repository state, validation output, JetBrains feeds, and available local IDEs.
+
+Forbidden inputs:
+
+- Unrelated archived evidence and implementation changes outside a separately dispatched remediation packet.
+
+Write scope:
+
+- `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`.
+
+Dependencies:
+
+- T3 committed and reconciled.
+
+Validation:
+
+- Run full unit, coverage, formatting, Detekt, packaging, configuration, docs, and agent checks; verifier and UI checks for available IDEA/WebStorm 2026.2; manual staging/AI smoke where possible; invoke `PY-2026.2` and accept only product-unavailable resolution failure; review the full diff; commit evidence before T5.
+
+Escalation triggers:
+
+- Escalate on any non-PyCharm failure or a changed head.
+
+Stop conditions:
+
+- A non-PyCharm failure remains or the head changes without full revalidation.
+
+Expected output:
+
+- Current-head report, exact blocker, review findings, task commit, events, and reconciliation.
+
+Result summary:
+
+- Status: pending
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence:
+- Self-review evidence from `.agents/references/reviews.md`:
+- Commit:
+- Worker events:
+- Orchestrator reconciliation:
+- Changelog/docs/spec/tasks updates:
+- Blockers:
+- Review risks:
+- Handoff notes and next action:
 
 ### Task Packet: T5-pycharm-release-gate
 
@@ -137,18 +335,67 @@ Task id: T5-pycharm-release-gate
 
 Lane: testing
 
-- Required skills: `intellij-plugin-development`, `plugin-review`, and `repository-documentation`.
-- Goal: After PyCharm 2026.2 is published, prove its unchanged required lane and the full current-head readiness gate.
-- Initial context budget: Read `AGENTS.md`, accepted ADR 0089, this packet, T4 report, current PR head/checks/reviews, and product data; escalate only to failing files.
-- Allowed inputs: Current-head repository/PR state, PyCharm 2026.2 metadata, and T4 evidence.
-- Forbidden inputs: Earlier-head approvals as current evidence and unrelated history.
-- Write scope: `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`; remediation requires a separate approved packet.
-- Dependencies: T4 committed and PyCharm 2026.2 published.
-- Validation: Run PyCharm verifier/UI and the complete current-head matrix; re-fetch head, checks, reviews, and threads; commit final evidence and complete the plan only after all gates pass.
-- Escalation triggers: Published PyCharm changes accepted identifiers, Java, modules, compatibility, or any current-head gate fails.
-- Stop conditions: PyCharm remains unavailable, a check fails, the head changes, or current-head review blocks readiness.
-- Expected output: Passing full-matrix evidence, final task commit, plan update, events, reconciliation, and PR readiness result.
-- Result summary: Status pending; worker, diff, validation, review, commit, events, docs/spec/tasks, blockers, risks, reconciliation, and next action to be recorded.
+Required skills:
+
+- `intellij-plugin-development`
+- `plugin-review`
+- `repository-documentation`
+
+Goal:
+
+- After PyCharm 2026.2 is published, prove its unchanged required lane and the full current-head readiness gate.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, accepted ADR 0089, this plan's readiness and execution graph, this packet, T4 report, current PR head/checks/reviews, and product data.
+- Escalate to: files required to attribute a validation failure.
+
+Allowed inputs:
+
+- Current-head repository/PR state, PyCharm 2026.2 metadata, and T4 evidence.
+
+Forbidden inputs:
+
+- Earlier-head approvals as current evidence and unrelated history.
+
+Write scope:
+
+- `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`; remediation requires a separate approved packet.
+
+Dependencies:
+
+- T4 committed and PyCharm 2026.2 published.
+
+Validation:
+
+- Run PyCharm verifier/UI and the complete current-head matrix; re-fetch head, checks, reviews, and threads; commit final evidence and complete the plan only after all gates pass.
+
+Escalation triggers:
+
+- Escalate when published PyCharm changes accepted identifiers, Java, modules, compatibility, or any current-head gate fails.
+
+Stop conditions:
+
+- PyCharm remains unavailable, a check fails, the head changes, or current-head review blocks readiness.
+
+Expected output:
+
+- Passing full-matrix evidence, final task commit, plan update, events, reconciliation, and PR readiness result.
+
+Result summary:
+
+- Status: pending
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence:
+- Self-review evidence from `.agents/references/reviews.md`:
+- Commit:
+- Worker events:
+- Orchestrator reconciliation:
+- Changelog/docs/spec/tasks updates:
+- Blockers:
+- Review risks:
+- Handoff notes and next action:
 
 ## Execution Model
 
@@ -160,15 +407,15 @@ Lane: testing
 
 ## Long-Run Continuity
 
-- Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; execution, orchestration, testing, and review guides; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: Governance draft only.
+- Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
+- Current task or wave: T1 platform and VCS migration.
 - Completed commits: None.
-- Plan status and readiness: Draft; blocked on ADR acceptance and explicit plan approval.
+- Plan status and readiness: In Progress; ADR accepted and plan approved.
 - Validation and self-review state: Research probes completed; implementation validation not authorized.
-- Worker event and reconciliation state: No implementation workers dispatched; reconciliation not started.
-- Changelog, docs, spec, task, or plan updates: Proposed ADR 0089 and this plan only.
-- Blockers or open questions: Lifecycle gates only; no open design questions.
-- Next action: User explicitly accepts ADR 0089 and then explicitly approves this plan.
+- Worker event and reconciliation state: T1 decision capsule recorded; worker dispatch pending.
+- Changelog, docs, spec, task, or plan updates: ADR 0089 accepted, ADR 0008 superseded, and this plan moved to In Progress.
+- Blockers or open questions: No lifecycle blocker and no open design questions.
+- Next action: Dispatch T1 to a fresh implementation worker.
 - Context handoff notes: Missing PyCharm is a future readiness blocker, not permission to weaken CI.
 
 ## Execution Graph
