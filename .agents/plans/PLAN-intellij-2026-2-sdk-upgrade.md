@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: T1 through T3 are complete; T3R is ready for dispatch; T4 restarts after its commit.
+- Implementation progress: T1 through T3 and T3R are complete; T4 is ready to restart from the remediated exact head.
 
 ## Status History
 
@@ -317,18 +317,18 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Worker events:
-- Orchestrator reconciliation:
-- Changelog/docs/spec/tasks updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: completed
+- Worker: `/root/t3r_change_notes`
+- Changed files or reviewed diff: `config/intellij-platform/change-notes.html` only; two current public Unreleased entries generated, with released content unchanged.
+- Validation evidence: Change-notes generator parity, docs validation, post-commit parity recheck, and `git diff --check` passed.
+- Self-review evidence from `.agents/references/reviews.md`: Exact one-file generated output; no internal plan content or released-note modification.
+- Commit: `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`
+- Worker events: Started from clean `562af0c`; ran the generator; verified exact one-file scope; completed parity/docs/diff checks and post-commit parity.
+- Orchestrator reconciliation: Worker claims match the committed five-line generated diff, clean worktree, required metadata, and validation output.
+- Changelog/docs/spec/tasks updates: Generated Marketplace change notes now match `CHANGELOG.md`.
+- Blockers: None.
+- Review risks: None beyond the T4/T5 product validation risks.
+- Handoff notes and next action: Restart T4 with a fresh validation worker.
 
 ### Task Packet: T4-available-product-validation
 
@@ -385,18 +385,18 @@ Expected output:
 
 Result summary:
 
-- Status: blocked; rerun required after T3R.
-- Worker: `/root/t4_available_product_validation`
+- Status: pending rerun after completed T3R.
+- Worker: Initial attempt `/root/t4_available_product_validation`; fresh rerun pending.
 - Changed files or reviewed diff: Blocked evidence report `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`; full `origin/main..c25e8f3` diff reviewed read-only.
 - Validation evidence: Managed prerelease job `20260716-221032-intellij-2026-2-t4-available-prerelease-912c5d` failed at the first required generator check because `config/intellij-platform/change-notes.html` is stale; later gates were correctly not run.
 - Self-review evidence from `.agents/references/reviews.md`: One confirmed high finding for stale generated Marketplace change notes; no additional confirmed diff issue.
-- Commit: No T4 completion commit; blocked report is included with the orchestrator's plan-amendment evidence.
+- Commit: No T4 completion commit; blocked report is included with the orchestrator's plan-amendment evidence and will be updated by the rerun.
 - Worker events: Started from clean `c25e8f3`; verified official IDEA/WebStorm/PyCharm release metadata; stopped on first non-PyCharm failure; completed findings-first branch review and report.
 - Orchestrator reconciliation: Worker claim matches the generator log, Unreleased changelog diff, stale generated file, report, clean tracked worktree, and packet stop condition.
 - Changelog/docs/spec/tasks updates: Blocked validation report records exact head, product feed data, failure, skipped gates, and required remediation.
-- Blockers: T3R requires explicit plan-amendment approval before its one-file generated-artifact write.
+- Blockers: Initial generated-metadata blocker resolved by T3R; no current non-PyCharm blocker known.
 - Review risks: Packaging, verifier, UI, and explicit PyCharm resolution remain unproven until T4 restarts from the remediated exact head.
-- Handoff notes and next action: Approve and execute T3R, then dispatch a fresh T4 worker for the complete sequence.
+- Handoff notes and next action: Dispatch a fresh T4 worker for the complete sequence from the remediated exact head.
 
 ### Task Packet: T5-pycharm-release-gate
 
@@ -477,14 +477,14 @@ Result summary:
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: T3R generated Marketplace change-notes remediation.
-- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`.
+- Current task or wave: T4 available-product validation rerun.
+- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`.
 - Plan status and readiness: In Progress; the original plan and T3R remediation packet are approved.
-- Validation and self-review state: T1 through T3 passed; initial T4 stopped on stale generated change notes and recorded one finding with no additional confirmed issue.
-- Worker event and reconciliation state: T1 through T3 complete; initial T4 start/failure/review/report evidence reconciled; T3R dispatch pending.
+- Validation and self-review state: T1 through T3R passed; initial T4 blocker is fixed; hosted IU/WS verifier gates pass and hosted PY verifier/UI resolution failures match the expected unavailable-product condition.
+- Worker event and reconciliation state: T1 through T3R complete; initial T4 evidence reconciled; fresh T4 dispatch pending.
 - Changelog, docs, spec, task, or plan updates: ADR state, compatibility docs/spec/support/Marketplace description, and Unreleased changelog are aligned with 2026.2/JDK 25; generated Marketplace change notes remain the recorded T3R blocker.
-- Blockers or open questions: No T3R blocker and no open product decision.
-- Next action: Dispatch a fresh T3R remediation worker, commit/reconcile it, then restart T4 with a fresh validation worker.
+- Blockers or open questions: No current non-PyCharm blocker and no open product decision.
+- Next action: Restart T4 with a fresh validation worker on the remediated exact head.
 - Context handoff notes: Missing PyCharm is a future readiness blocker, not permission to weaken CI.
 
 ## Execution Graph
