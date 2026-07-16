@@ -27,12 +27,15 @@ import com.intellij.ide.starter.ci.NoCIServer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
-import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.runner.Starter
+import com.intellij.platform.testFramework.teamCity.TeamCityReporter
+import com.intellij.tools.ide.starter.product.idea.ultimate.IdeaUltimate
+import com.intellij.tools.ide.starter.product.pycharm.PyCharm
+import com.intellij.tools.ide.starter.product.webstorm.WebStorm
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
@@ -72,7 +75,19 @@ class ReleaseMatrixUiHarnessTest {
                         message: String,
                         details: String,
                         linkToLogs: String?,
+                        kind: TeamCityReporter.SyntheticTestKind,
+                        generifyTestName: Boolean,
                     ) {
+                        val isIntellij2026Point2KnownError =
+                            testName == INTELLIJ_2026_2_ISLANDS_THEME_KNOWN_ERROR ||
+                                (
+                                    testName.startsWith(INTELLIJ_2026_2_DTRACE_PROFILER_KNOWN_ERROR_PREFIX) &&
+                                        details.contains(INTELLIJ_DTRACE_PROFILER_KNOWN_ERROR_STACK_FRAME)
+                                    ) ||
+                                isIntellij2026Point2WorkspaceCacheAccessDeniedError(testName, details)
+                        if (System.getProperty("aicommitall.ide.version") == "2026.2" && isIntellij2026Point2KnownError) {
+                            return
+                        }
                         fail { "$testName failed: $message\n$details" }
                     }
                 }
@@ -448,6 +463,13 @@ class ReleaseMatrixUiHarnessTest {
         ) {
             val project = openReleaseMatrixCommitToolWindow()
             val probe = utility(RemoteFakeAiAssistantProbe::class)
+            waitForGitSelectionPaths(
+                project = project,
+                expectedPaths = setOf(
+                    fixture.primaryRepository.root.resolve("modified.txt"),
+                    fixture.primaryRepository.root.resolve("push-flow.txt"),
+                ),
+            )
             probe.setAiCompletionOptions(timeoutMillis = 5_000, checkIntervalMillis = 100)
             probe.setClearCommitMessageBeforeGeneration(false)
             assertTrue(probe.setCommitMessageText(project, EXISTING_COMMIT_MESSAGE))
@@ -781,6 +803,24 @@ class ReleaseMatrixUiHarnessTest {
         }
     }
 
+    private fun Driver.waitForGitSelectionPaths(
+        project: Project,
+        expectedPaths: Set<Path>,
+    ) {
+        val expected = expectedPaths
+            .map { path -> path.toAbsolutePath().normalize().toString().replace('\\', '/') }
+            .toSet()
+        val probe = utility(RemoteFakeAiAssistantProbe::class)
+        waitFor(
+            message = "release matrix Git selection contains the complete fixture",
+            timeout = 60.seconds,
+            interval = 1.seconds,
+            errorMessage = { "expected=$expected, actual=${probe.gitSelectionPaths(project)}" },
+        ) {
+            probe.gitSelectionPaths(project).toSet().containsAll(expected)
+        }
+    }
+
     private fun Driver.waitForCommitWorkflowMode(
         project: Project,
         stagingAreaEnabled: Boolean,
@@ -1010,9 +1050,9 @@ class ReleaseMatrixUiHarnessTest {
     private fun releaseMatrixIdeProductCode(): String = requiredSystemProperty("aicommitall.ide.product")
 
     private fun ideProductProvider(productCode: String): IdeInfo = when (productCode) {
-        "IU" -> IdeProductProvider.IU
-        "PY" -> IdeProductProvider.PY
-        "WS" -> IdeProductProvider.WS
+        "IU" -> IdeInfo.IdeaUltimate
+        "PY" -> IdeInfo.PyCharm
+        "WS" -> IdeInfo.WebStorm
         else -> error("Unsupported release-matrix IDE product: $productCode")
     }
 
@@ -1056,6 +1096,7 @@ private interface RemoteFakeAiAssistantProbe {
     fun hasOutgoingCommitsToPush(project: Project): Boolean
     fun hasCommittableContent(project: Project): Boolean
     fun stagingAreaSelectionPaths(project: Project): List<String>
+    fun gitSelectionPaths(project: Project): List<String>
     fun setGitStagingAreaEnabled(enabled: Boolean)
     fun isGitStagingAreaEnabled(): Boolean
     fun commitWorkflowHandlerClassName(project: Project): String?
@@ -1129,6 +1170,29 @@ private const val USER_EDITED_COMMIT_MESSAGE = "User edited release matrix messa
 private const val FAKE_AI_ASSISTANT_PLUGIN_ID = "com.intellij.ml.llm"
 private const val RELEASE_MATRIX_SMOKE_TAG = "releaseMatrixSmoke"
 private const val RELEASE_MATRIX_PROBE_PLUGIN_ID = "pl.devopssolutions.aicommitall.integration.probe"
+private const val INTELLIJ_2026_2_ISLANDS_THEME_KNOWN_ERROR =
+    "java.lang.Throwable: Theme Islands Dark refers to unknown color scheme Islands Dark"
+private const val INTELLIJ_2026_2_DTRACE_PROFILER_KNOWN_ERROR_PREFIX =
+    "java.lang.Throwable: Can't write state 'displayName = JVM DTrace based profiler"
+private const val INTELLIJ_DTRACE_PROFILER_KNOWN_ERROR_STACK_FRAME =
+    "com.intellij.profiler.api.configurations.ProfilerRunConfigurationsManager.writeConfigurationSafely"
+private const val INTELLIJ_WORKSPACE_CACHE_ACCESS_DENIED_PREFIX = "java.nio.file.AccessDeniedException: "
+private const val INTELLIJ_WORKSPACE_CACHE_SOURCE_PATH = "\\project-model-cache\\cache"
+private const val INTELLIJ_WORKSPACE_CACHE_MOVE_SEPARATOR = ".tmp -> "
+private const val INTELLIJ_WORKSPACE_CACHE_TARGET_PATH = "\\project-model-cache\\cache.data"
+private const val INTELLIJ_WORKSPACE_CACHE_SAVE_STACK_FRAME =
+    "com.intellij.workspaceModel.ide.impl.WorkspaceModelCacheSerializer.saveCacheToFile"
+
+private fun isIntellij2026Point2WorkspaceCacheAccessDeniedError(
+    testName: String,
+    details: String,
+): Boolean = System.getProperty("os.name").startsWith("Windows", ignoreCase = true) &&
+    testName.startsWith(INTELLIJ_WORKSPACE_CACHE_ACCESS_DENIED_PREFIX) &&
+    testName.contains(INTELLIJ_WORKSPACE_CACHE_SOURCE_PATH) &&
+    testName.contains(INTELLIJ_WORKSPACE_CACHE_MOVE_SEPARATOR) &&
+    testName.endsWith(INTELLIJ_WORKSPACE_CACHE_TARGET_PATH) &&
+    details.contains(INTELLIJ_WORKSPACE_CACHE_SAVE_STACK_FRAME)
+
 private val RELEASE_MATRIX_PROBE_PLUGIN_XML = """
     <idea-plugin>
         <id>$RELEASE_MATRIX_PROBE_PLUGIN_ID</id>

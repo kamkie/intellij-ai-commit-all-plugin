@@ -18,6 +18,7 @@ package pl.devopssolutions.aicommitall.integration.fakeai
 import com.intellij.ide.DataManager
 import com.intellij.ide.IdeEventQueue
 import com.intellij.ide.plugins.PluginManagerCore
+import com.intellij.ide.plugins.PluginModuleId
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionUiKind
@@ -37,6 +38,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vcs.CommitMessageI
 import com.intellij.openapi.vcs.FilePath
 import com.intellij.openapi.vcs.VcsDataKeys
+import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.JBColor
@@ -44,11 +46,16 @@ import com.intellij.vcs.commit.CommitMessageUi
 import java.awt.AWTEvent
 import java.awt.Component
 import java.awt.Container
+import java.awt.Dialog
 import java.awt.Frame
 import java.awt.Graphics2D
 import java.awt.Point
+import java.awt.Toolkit
+import java.awt.Window
+import java.awt.event.AWTEventListener
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
+import java.awt.event.WindowEvent
 import java.awt.image.BufferedImage
 import java.nio.file.Files
 import java.nio.file.Path
@@ -57,6 +64,13 @@ import javax.imageio.ImageIO
 import javax.swing.JComponent
 
 object FakeAiAssistantProbe {
+    private var manageSubscriptionsDialogCloserInstalled = false
+    private val manageSubscriptionsDialogCloser = AWTEventListener { event ->
+        if (event.id == WindowEvent.WINDOW_OPENED) {
+            ((event as? WindowEvent)?.window as? Dialog)?.let(::closeManageSubscriptionsDialog)
+        }
+    }
+
     @JvmStatic
     fun isCommitMessageActionRegistered(): Boolean = ActionManager.getInstance().getAction("Vcs.LLMCommitMessageAction") != null
 
@@ -348,7 +362,33 @@ object FakeAiAssistantProbe {
     }
 
     @JvmStatic
+    fun gitSelectionPaths(project: Project): List<String> {
+        val serviceClass = aiCommitAllPluginClass("pl.devopssolutions.aicommitall.vcs.GitChangeSelectionService")
+        val companion = serviceClass.getDeclaredField("Companion").get(null)
+        val service = companion.javaClass.getDeclaredMethod("getInstance", Project::class.java).invoke(companion, project)
+        val selection = service.javaClass.getDeclaredMethod("collectSelection").invoke(service)
+
+        @Suppress("UNCHECKED_CAST")
+        val trackedChanges = selection.javaClass.getDeclaredMethod("getTrackedChanges").invoke(selection) as List<Change>
+
+        @Suppress("UNCHECKED_CAST")
+        val unversionedFiles = selection.javaClass
+            .getDeclaredMethod("getUnversionedFiles")
+            .invoke(selection) as List<FilePath>
+        return buildList {
+            trackedChanges.forEach { change ->
+                change.beforeRevision?.file?.let(::add)
+                change.afterRevision?.file?.let(::add)
+            }
+            addAll(unversionedFiles)
+        }.map { path -> path.path.replace('\\', '/') }.distinct().sorted()
+    }
+
+    @JvmStatic
     fun resetReleaseMatrixSettings() {
+        runOnEdt {
+            installManageSubscriptionsDialogCloser()
+        }
         registerFakeAiAction(FakeLlmCommitMessageAction())
         FakeLlmCommitMessageAction.reset()
         setAiCompletionOptions(
@@ -358,6 +398,25 @@ object FakeAiAssistantProbe {
         setClearCommitMessageBeforeGeneration(true)
         setUseVcsShortcutsForAiCommitAll(true)
         setGitStagingAreaEnabled(false)
+    }
+
+    private fun installManageSubscriptionsDialogCloser() {
+        if (!manageSubscriptionsDialogCloserInstalled) {
+            Toolkit.getDefaultToolkit().addAWTEventListener(
+                manageSubscriptionsDialogCloser,
+                AWTEvent.WINDOW_EVENT_MASK,
+            )
+            manageSubscriptionsDialogCloserInstalled = true
+        }
+        Window.getWindows()
+            .filterIsInstance<Dialog>()
+            .forEach(::closeManageSubscriptionsDialog)
+    }
+
+    private fun closeManageSubscriptionsDialog(dialog: Dialog) {
+        if (dialog.isShowing && dialog.title == MANAGE_SUBSCRIPTIONS_DIALOG_TITLE) {
+            dialog.dispose()
+        }
     }
 
     @JvmStatic
@@ -636,13 +695,18 @@ object FakeAiAssistantProbe {
     }
 
     private fun gitVcsApplicationSettings(): Any {
-        val gitPlugin = requireNotNull(PluginManagerCore.getPlugin(PluginId.getId(GIT_PLUGIN_ID))) {
-            "Git plugin descriptor was not found."
+        val settingsClassName = "git4idea.config.GitVcsApplicationSettings"
+        val gitModule = requireNotNull(
+            PluginManagerCore.getPluginSet().findEnabledModule(
+                PluginModuleId.getId(GIT_BACKEND_MODULE_ID, PluginModuleId.JETBRAINS_NAMESPACE),
+            ),
+        ) {
+            "Git settings module descriptor was not found."
         }
         val settingsClass = Class.forName(
-            "git4idea.config.GitVcsApplicationSettings",
+            settingsClassName,
             true,
-            gitPlugin.pluginClassLoader,
+            gitModule.pluginClassLoader,
         )
         return settingsClass.getDeclaredMethod("getInstance").invoke(null)
     }
@@ -672,8 +736,9 @@ object FakeAiAssistantProbe {
     private const val AI_COMMIT_ALL_COMMIT_SHORTCUT_ACTION_ID = "pl.devopssolutions.aicommitall.actions.CommitShortcut"
     private const val AI_COMMIT_ALL_PUSH_SHORTCUT_ACTION_ID = "pl.devopssolutions.aicommitall.actions.PushShortcut"
     private const val AI_COMMIT_ALL_PLUGIN_ID = "pl.devopssolutions.aicommitall"
-    private const val GIT_PLUGIN_ID = "Git4Idea"
-    private const val FAKE_GENERATION_TIMEOUT_MILLIS = 5_000L
+    private const val GIT_BACKEND_MODULE_ID = "intellij.vcs.git.backend"
+    private const val MANAGE_SUBSCRIPTIONS_DIALOG_TITLE = "Manage Subscriptions"
+    private const val FAKE_GENERATION_TIMEOUT_MILLIS = 30_000L
     private const val FAKE_GENERATION_POLL_MILLIS = 100L
     private const val DEFAULT_AI_COMPLETION_TIMEOUT_MILLIS = 30_000L
     private const val DEFAULT_AI_COMPLETION_CHECK_INTERVAL_MILLIS = 500L

@@ -136,6 +136,8 @@ val integrationTestRuntimeOnly by configurations.getting {
 dependencies {
     intellijPlatform {
         intellijIdea(providers.gradleProperty("platformVersion").get())
+        bundledModule("intellij.platform.vcs")
+        bundledModule("intellij.platform.vcs.core")
         bundledModule("intellij.platform.vcs.impl")
         bundledModule("intellij.platform.vcs.dvcs")
         bundledModule("intellij.platform.vcs.dvcs.impl")
@@ -154,6 +156,7 @@ dependencies {
     integrationTestImplementation("org.junit.jupiter:junit-jupiter:6.1.2")
     integrationTestImplementation("org.kodein.di:kodein-di-jvm:7.32.0")
     integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.11.0")
+    integrationTestRuntimeOnly("org.jetbrains.teamcity:serviceMessages:2024.07")
 }
 
 kotlin {
@@ -386,6 +389,7 @@ val releaseMatrixUiTest by intellijPlatformTesting.testIdeUi.registering {
         testClassesDirs = integrationTestSourceSet.output.classesDirs
         classpath = integrationTestSourceSet.runtimeClasspath
         useJUnitPlatform {
+            excludeEngines("junit-vintage")
             if (selectedProductCode in releaseMatrixSmokeProductCodes) {
                 includeTags(releaseMatrixSmokeTag)
             }
