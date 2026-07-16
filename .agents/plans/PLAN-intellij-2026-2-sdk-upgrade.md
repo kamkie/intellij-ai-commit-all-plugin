@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: T1 is complete; T2 is ready for dispatch.
+- Implementation progress: T1 and T2 are complete; T3 is ready for dispatch.
 
 ## Status History
 
@@ -181,18 +181,18 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Worker events:
-- Orchestrator reconciliation:
-- Changelog/docs/spec/tasks updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: completed
+- Worker: `/root/t2_ci_release_matrix`
+- Changed files or reviewed diff: Seven Gradle-running workflows, local prerelease validation script, and the three CI contract test classes.
+- Validation evidence: Focused red produced 5 expected failures; focused green passed 25 tests; shared validation passed 516 tests with 1 existing pending plus `spotlessCheck`; docs, PowerShell syntax, YAML syntax, and `git diff --check` passed.
+- Self-review evidence from `.agents/references/reviews.md`: Every Gradle workflow uses JDK 25; IU/PY/WS 2026.2 remain required; no PyCharm skip or `continue-on-error` was added.
+- Commit: `a29e97485a710c56306c637a8ce8578594f5992b`
+- Worker events: Started from clean `09e48eb`; red job `20260716-215419-intellij-2026-2-t2-contract-red-5b0258`; focused green `20260716-215608-intellij-2026-2-t2-contract-green-a29f69`; shared green `20260716-215741-intellij-2026-2-t2-shared-validation-9f67d8`.
+- Orchestrator reconciliation: Worker claims match the committed 11-file diff, clean worktree, required commit metadata, and managed-job evidence; the only existing `continue-on-error` is the unrelated Detekt reporting flow.
+- Changelog/docs/spec/tasks updates: Public compatibility changelog text suggested for orchestrator reconciliation after T3.
+- Blockers: None for T3.
+- Review risks: Missing PyCharm 2026.2 intentionally blocks the required CI/UI lanes until T5.
+- Handoff notes and next action: Dispatch T3 support and product documentation.
 
 ### Task Packet: T3-support-and-product-docs
 
@@ -408,14 +408,14 @@ Result summary:
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: T2 CI and release matrix.
-- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`.
+- Current task or wave: T3 support and product documentation.
+- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`.
 - Plan status and readiness: In Progress; ADR accepted and plan approved.
-- Validation and self-review state: T1 focused and full validation passed; T1 self-review and orchestrator reconciliation completed.
-- Worker event and reconciliation state: T1 complete with start/red/green/result evidence; T2 decision capsule pending.
+- Validation and self-review state: T1 and T2 focused/full validation, self-review, and orchestrator reconciliation completed.
+- Worker event and reconciliation state: T1 and T2 complete with start/red/green/result evidence; T3 decision capsule pending.
 - Changelog, docs, spec, task, or plan updates: ADR 0089 accepted, ADR 0008 superseded, and this plan moved to In Progress.
 - Blockers or open questions: No lifecycle blocker and no open design questions.
-- Next action: Record the T2 decision capsule and dispatch a fresh implementation worker.
+- Next action: Record the T3 decision capsule and dispatch a fresh implementation worker.
 - Context handoff notes: Missing PyCharm is a future readiness blocker, not permission to weaken CI.
 
 ## Execution Graph
