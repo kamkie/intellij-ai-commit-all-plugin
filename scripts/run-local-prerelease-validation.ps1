@@ -288,7 +288,7 @@ function Write-ValidationSummary
     {
         $record = $entry.Value
         $status = $record['Status']
-        $duration = if ( $record.ContainsKey('DurationSeconds'))
+        $duration = if ( $record.Contains('DurationSeconds'))
         {
             $record['DurationSeconds']
         }
