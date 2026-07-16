@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: T1 through T3, T3R, and the T2 prerelease-summary corrective fix are complete; T4 is ready for a fresh exact-head rerun.
+- Implementation progress: T1 through T3, T3R, the T2 prerelease-summary fix, and the T1 262 integration-fixture remediation are complete; T4 is ready for a fresh exact-head rerun.
 
 ## Status History
 
@@ -117,16 +117,16 @@ Expected output:
 Result summary:
 
 - Status: completed
-- Worker: `/root/t1_platform_vcs_migration`
-- Changed files or reviewed diff: `build.gradle.kts`, `gradle.properties`, `ReflectiveCommitWorkflowSynchronizer.kt`, and its test.
-- Validation evidence: Red compile captured missing 262 modules/internal handler; focused 25 tests passed; full 514 tests passed with 1 existing pending; `buildPlugin`, `verifyPluginProjectConfiguration`, `spotlessCheck`, `detekt`, and `git diff --check` passed.
-- Self-review evidence from `.agents/references/reviews.md`: Exact-class reflective boundary fails closed; Commit/staging/push semantics remain unchanged; no proprietary AI compile dependency or product-scope expansion was added.
-- Commit: `a7d4a5e635a1023b56f768d0bed915a278bce5b5`
-- Worker events: Started with clean dependency `773d9cf`; preserved red job `20260716-213137-intellij-2026-2-t1-focused-red-f286f8`; completed focused green `20260716-214234-intellij-2026-2-t1-refactor-focused-r3-f7c1da` and full green `20260716-214341-intellij-2026-2-t1-full-validation-r2-bf1529`.
-- Orchestrator reconciliation: Worker claims match the committed four-file diff, clean worktree, required commit metadata, generated `since-build=262` without `until-build`, and green managed-job evidence.
+- Worker: `/root/t1_platform_vcs_migration`; corrective worker `/root/t1_integration_262_fix`.
+- Changed files or reviewed diff: Initial `build.gradle.kts`, `gradle.properties`, `ReflectiveCommitWorkflowSynchronizer.kt`, and its test; corrective 262 Starter/VCS migration in `build.gradle.kts`, `ReleaseMatrixUiHarnessTest.kt`, and `FakeAiAssistantProbe.kt`.
+- Validation evidence: Initial red compile captured missing 262 modules/internal handler; focused 25 tests passed; full 514 tests passed with 1 existing pending; `buildPlugin` and `verifyPluginProjectConfiguration` passed. Corrective validation passed `compileIntegrationTestKotlin`, `spotlessCheck`, `detekt`, `git diff --check`, a focused UI scenario, and the full IU 2026.2 UI lane with 21/21 tests.
+- Self-review evidence from `.agents/references/reviews.md`: Exact-class reflective boundary fails closed; Commit/staging/push semantics remain unchanged; no proprietary AI compile dependency or product-scope expansion was added. The integration harness maps only exact, version-bounded upstream 2026.2 failures and synchronizes on observable VCS selection rather than sleeps or retries.
+- Commit: `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; corrective integration commit `bf3092218d3540650c27b23ccff2ad2ea04e8553`.
+- Worker events: Initial worker preserved red job `20260716-213137-intellij-2026-2-t1-focused-red-f286f8` and completed focused/full green jobs. Corrective worker preserved the first cache and VCS-refresh failures, proved both alternating patterns with three focused reruns each, and completed full green job `20260717-013913-intellij-2026-2-t1-integration-ui-iu-final-r5`.
+- Orchestrator reconciliation: Both workers' claims match their scoped commits, required commit metadata, generated `since-build=262` without `until-build`, and managed-job evidence; the final 21/21 run exercised the exact workspace-cache matcher while keeping unrelated failures red.
 - Changelog/docs/spec/tasks updates: None in T1; compatibility docs remain assigned to T3 and changelog ownership remains with the orchestrator.
 - Blockers: None.
-- Review risks: Real IDE staging UI behavior remains for T4 validation.
+- Review risks: Cross-product WebStorm smoke behavior remains for T4 validation.
 - Handoff notes and next action: Dispatch T2 CI and release matrix.
 
 ### Task Packet: T2-ci-and-release-matrix
@@ -385,16 +385,16 @@ Expected output:
 
 Result summary:
 
-- Status: pending fresh exact-head rerun after completed T3R and T2 corrective fix.
-- Worker: Attempts `/root/t4_available_product_validation` and `/root/t4_available_product_rerun`; final fresh rerun pending.
-- Changed files or reviewed diff: Blocked evidence report `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`; full `origin/main..c25e8f3` diff reviewed read-only.
-- Validation evidence: Initial job `20260716-221032-intellij-2026-2-t4-available-prerelease-912c5d` found stale generated change notes, fixed by T3R. Rerun `20260716-223227-intellij-2026-2-t4-rerun-available-prere-9949fa` completed all substantive prerelease gates and compatible IU/WS verifier results, then exposed the final-summary `ContainsKey` bug fixed by `ceb791e`; hosted exact-head IU/WS/build/CodeQL/Security passed and PY verifier/UI failed only on unavailable product resolution.
-- Self-review evidence from `.agents/references/reviews.md`: Two confirmed validation-loop findings were fixed; full branch review found no additional confirmed diff issue.
+- Status: pending fresh exact-head rerun after completed T3R, T2 summary fix, and T1 262 integration-fixture remediation.
+- Worker: Attempts `/root/t4_available_product_validation`, `/root/t4_available_product_rerun`, and `/root/t4_final_exact_head`; final fresh rerun pending.
+- Changed files or reviewed diff: Blocked evidence report `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`; full branch diffs through `1072f42` reviewed read-only.
+- Validation evidence: Initial job `20260716-221032-intellij-2026-2-t4-available-prerelease-912c5d` found stale generated change notes, fixed by T3R. Rerun `20260716-223227-intellij-2026-2-t4-rerun-available-prere-9949fa` completed substantive prerelease gates and compatible IU/WS verifier results, then exposed the final-summary bug fixed by `ceb791e`. The next exact-head prerelease passed all seven gates and hosted IU/WS/build/CodeQL/Security passed; its IU UI lane exposed unmigrated 262 integration APIs, fixed and validated by `bf30922`; hosted PY verifier/UI continued to fail only on unavailable product resolution.
+- Self-review evidence from `.agents/references/reviews.md`: Three confirmed validation-loop findings were fixed; full branch review through the pre-remediation head found no additional confirmed diff issue.
 - Commit: No T4 completion commit; blocked report is included with the orchestrator's plan-amendment evidence and will be updated by the rerun.
-- Worker events: Initial attempt stopped on generated metadata; second attempt verified official product metadata, completed substantive local gates and hosted reconciliation, then stopped on the final-summary bug; both preserved reports and logs.
-- Orchestrator reconciliation: Both findings match logs and scoped fixes; the report remains unstaged for the final exact-head rerun.
+- Worker events: Initial attempt stopped on generated metadata; second stopped on the final-summary bug; third passed fresh prerelease and hosted available-product gates, then stopped on IU integration compilation. Reports and logs were preserved for every stop.
+- Orchestrator reconciliation: All three findings match logs and scoped fixes; the report remains unstaged for replacement by the final exact-head rerun.
 - Changelog/docs/spec/tasks updates: Blocked validation report records exact head, product feed data, failure, skipped gates, and required remediation.
-- Blockers: Both known non-PyCharm blockers are resolved; no current non-PyCharm blocker known.
+- Blockers: All known non-PyCharm blockers are resolved; no current non-PyCharm blocker is known.
 - Review risks: Final exact-head local IU/WS UI and explicit local PyCharm resolution evidence remain pending.
 - Handoff notes and next action: Dispatch a fresh T4 worker for the complete sequence from the new exact head.
 
@@ -471,18 +471,18 @@ Result summary:
 - Use one active worker at a time and a fresh sub-agent for each task packet.
 - The orchestrator records a decision capsule, reserves each write scope, reconciles claims, and commits each completed task before the next.
 - After T3, the orchestrator decides and applies any eligible `CHANGELOG.md` entry during reconciliation; workers may only suggest the text.
-- T1 through T3 are complete. T3R requires explicit amendment approval, then T4 restarts from its commit. T5 waits for JetBrains to publish PyCharm 2026.2.
+- T1 through T3, T3R, and the T1/T2 corrective work are complete. T4 restarts from the remediated head. T5 waits for JetBrains to publish PyCharm 2026.2.
 - Follow `.agents/references/orchestration.md`; use the current upgrade worktree only.
 
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
 - Current task or wave: T4 available-product validation rerun.
-- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`.
+- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`.
 - Plan status and readiness: In Progress; the original plan and T3R remediation packet are approved.
-- Validation and self-review state: T1 through T3R and the T2 corrective fix passed; two T4-discovered defects are fixed; previous hosted IU/WS verifier gates passed and PY verifier/UI failures matched expected unavailable-product resolution.
-- Worker event and reconciliation state: Implementation and corrective workers complete; both stopped T4 attempts reconciled; final fresh T4 dispatch pending.
-- Changelog, docs, spec, task, or plan updates: ADR state, compatibility docs/spec/support/Marketplace description, and Unreleased changelog are aligned with 2026.2/JDK 25; generated Marketplace change notes remain the recorded T3R blocker.
+- Validation and self-review state: T1 through T3R and both corrective fixes passed; three T4-discovered defects are fixed; IU 2026.2 UI is 21/21 green; previous hosted IU/WS verifier gates passed and PY verifier/UI failures matched expected unavailable-product resolution.
+- Worker event and reconciliation state: Implementation and corrective workers complete; three stopped T4 attempts reconciled; final fresh T4 dispatch pending.
+- Changelog, docs, spec, task, or plan updates: ADR state, compatibility docs/spec/support/Marketplace description, Unreleased changelog, and generated Marketplace change notes are aligned with 2026.2/JDK 25.
 - Blockers or open questions: No current non-PyCharm blocker and no open product decision.
 - Next action: Restart T4 with a fresh validation worker on the remediated exact head.
 - Context handoff notes: Missing PyCharm is a future readiness blocker, not permission to weaken CI.
