@@ -22,6 +22,7 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
+- `PLAN-intellij-2026-2-sdk-upgrade` - IntelliJ 2026.2 SDK Upgrade ([PLAN-intellij-2026-2-sdk-upgrade.md](PLAN-intellij-2026-2-sdk-upgrade.md)).
 - `PLAN-staging-enabled-commit-ui-reliability` - Staging-Enabled Commit UI Reliability ([PLAN-staging-enabled-commit-ui-reliability.md](PLAN-staging-enabled-commit-ui-reliability.md)).
 
 ## Archived Plans
