@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: T1 is ready for dispatch; no implementation packet has completed yet.
+- Implementation progress: T1 is complete; T2 is ready for dispatch.
 
 ## Status History
 
@@ -113,18 +113,18 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Worker events:
-- Orchestrator reconciliation:
-- Changelog/docs/spec/tasks updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: completed
+- Worker: `/root/t1_platform_vcs_migration`
+- Changed files or reviewed diff: `build.gradle.kts`, `gradle.properties`, `ReflectiveCommitWorkflowSynchronizer.kt`, and its test.
+- Validation evidence: Red compile captured missing 262 modules/internal handler; focused 25 tests passed; full 514 tests passed with 1 existing pending; `buildPlugin`, `verifyPluginProjectConfiguration`, `spotlessCheck`, `detekt`, and `git diff --check` passed.
+- Self-review evidence from `.agents/references/reviews.md`: Exact-class reflective boundary fails closed; Commit/staging/push semantics remain unchanged; no proprietary AI compile dependency or product-scope expansion was added.
+- Commit: `a7d4a5e635a1023b56f768d0bed915a278bce5b5`
+- Worker events: Started with clean dependency `773d9cf`; preserved red job `20260716-213137-intellij-2026-2-t1-focused-red-f286f8`; completed focused green `20260716-214234-intellij-2026-2-t1-refactor-focused-r3-f7c1da` and full green `20260716-214341-intellij-2026-2-t1-full-validation-r2-bf1529`.
+- Orchestrator reconciliation: Worker claims match the committed four-file diff, clean worktree, required commit metadata, generated `since-build=262` without `until-build`, and green managed-job evidence.
+- Changelog/docs/spec/tasks updates: None in T1; compatibility docs remain assigned to T3 and changelog ownership remains with the orchestrator.
+- Blockers: None.
+- Review risks: Real IDE staging UI behavior remains for T4 validation.
+- Handoff notes and next action: Dispatch T2 CI and release matrix.
 
 ### Task Packet: T2-ci-and-release-matrix
 
@@ -408,14 +408,14 @@ Result summary:
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: T1 platform and VCS migration.
-- Completed commits: None.
+- Current task or wave: T2 CI and release matrix.
+- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`.
 - Plan status and readiness: In Progress; ADR accepted and plan approved.
-- Validation and self-review state: Research probes completed; implementation validation not authorized.
-- Worker event and reconciliation state: T1 decision capsule recorded; worker dispatch pending.
+- Validation and self-review state: T1 focused and full validation passed; T1 self-review and orchestrator reconciliation completed.
+- Worker event and reconciliation state: T1 complete with start/red/green/result evidence; T2 decision capsule pending.
 - Changelog, docs, spec, task, or plan updates: ADR 0089 accepted, ADR 0008 superseded, and this plan moved to In Progress.
 - Blockers or open questions: No lifecycle blocker and no open design questions.
-- Next action: Dispatch T1 to a fresh implementation worker.
+- Next action: Record the T2 decision capsule and dispatch a fresh implementation worker.
 - Context handoff notes: Missing PyCharm is a future readiness blocker, not permission to weaken CI.
 
 ## Execution Graph
