@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: T1 and T2 are complete; T3 is ready for dispatch.
+- Implementation progress: T1 through T3 are complete; T4 is ready for dispatch.
 
 ## Status History
 
@@ -248,18 +248,18 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Worker events:
-- Orchestrator reconciliation:
-- Changelog/docs/spec/tasks updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: completed
+- Worker: `/root/t3_support_product_docs`
+- Changed files or reviewed diff: Eight approved user, support, specification, contributor, issue-template, and generated Marketplace description files.
+- Validation evidence: Docs validation, Marketplace description parity, issue-template YAML parse, stale-version scan, scope check, and `git diff --check` passed.
+- Self-review evidence from `.agents/references/reviews.md`: No false PyCharm pass claim; compatibility/support wording matches branch 262, JDK 25, ADR 0089, and landed T1/T2 configuration.
+- Commit: `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`
+- Worker events: Started from clean `771c442`; mapped all eight scoped surfaces; generated Marketplace description from source docs; completed docs/parity/YAML/stale-version/scope validation.
+- Orchestrator reconciliation: Worker claims match the committed eight-file diff, clean worktree, required commit metadata, documentation ownership, and validation evidence.
+- Changelog/docs/spec/tasks updates: Specification and support/public docs aligned; orchestrator added the eligible Unreleased compatibility entry to `CHANGELOG.md`.
+- Blockers: None for T4.
+- Review risks: PyCharm 2026.2 availability remains the external readiness blocker; no product validation pass is claimed.
+- Handoff notes and next action: Dispatch T4 available-product validation.
 
 ### Task Packet: T4-available-product-validation
 
@@ -408,14 +408,14 @@ Result summary:
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: T3 support and product documentation.
-- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`.
+- Current task or wave: T4 available-product validation.
+- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`.
 - Plan status and readiness: In Progress; ADR accepted and plan approved.
-- Validation and self-review state: T1 and T2 focused/full validation, self-review, and orchestrator reconciliation completed.
-- Worker event and reconciliation state: T1 and T2 complete with start/red/green/result evidence; T3 decision capsule pending.
-- Changelog, docs, spec, task, or plan updates: ADR 0089 accepted, ADR 0008 superseded, and this plan moved to In Progress.
+- Validation and self-review state: T1 through T3 validation, self-review, and orchestrator reconciliation completed.
+- Worker event and reconciliation state: T1 through T3 complete with bounded event/result evidence; T4 decision capsule pending.
+- Changelog, docs, spec, task, or plan updates: ADR state, compatibility docs/spec/support/Marketplace description, and Unreleased changelog are aligned with 2026.2/JDK 25.
 - Blockers or open questions: No lifecycle blocker and no open design questions.
-- Next action: Record the T3 decision capsule and dispatch a fresh implementation worker.
+- Next action: Record the T4 decision capsule and dispatch a fresh validation worker.
 - Context handoff notes: Missing PyCharm is a future readiness blocker, not permission to weaken CI.
 
 ## Execution Graph

@@ -10,6 +10,10 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ## [Unreleased]
 
+### Changed
+
+- Raise the minimum supported IntelliJ Platform to 2026.2/build 262 and move development and CI to JDK 25. The required IntelliJ IDEA, PyCharm, and WebStorm 2026.2 matrix must pass before release readiness; PyCharm 2026.2 availability currently blocks that gate.
+
 ### Fixed
 
 - Preserve the confirmed staging-area Commit UI selection through AI generation in the default Commit workflow and reapply it immediately before the IDE default commit executor, preventing a later tracker refresh from turning a staged commit into a no-op.
