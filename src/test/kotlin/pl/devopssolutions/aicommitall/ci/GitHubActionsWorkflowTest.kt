@@ -26,6 +26,65 @@ private const val GRADLE_TASK_ROOT = "buildSrc/src/main/kotlin/pl/devopssolution
 
 internal class GitHubActionsWorkflowTest {
     @Test
+    fun `gradle automation and local prerelease validation require jdk 25`() {
+        val workflowPaths = listOf(
+            "ci.yml",
+            "codeql.yml",
+            "dependency-submission.yml",
+            "github-release.yml",
+            "plugin-verifier.yml",
+            "release.yml",
+            "release-matrix-ui.yml",
+        ).map { fileName -> Path.of(".github", "workflows", fileName) }
+
+        workflowPaths.forEach { workflow ->
+            val content = Files.readString(workflow)
+
+            assertTrue(
+                content.contains("name: Set up JDK 25") && content.contains("java-version: \"25\""),
+                "${workflow.name} must run Gradle automation on JDK 25.",
+            )
+        }
+
+        val localPrereleaseValidator = Files.readString(Path.of("scripts", "run-local-prerelease-validation.ps1"))
+        assertTrue(
+            localPrereleaseValidator.contains("Assert-JavaMajorVersion -ExpectedMajorVersion 25"),
+            "Local prerelease validation must fail before Gradle gates when the active Java runtime is not JDK 25.",
+        )
+    }
+
+    @Test
+    fun `plugin verifier keeps every 2026_2 product lane required`() {
+        val verifierWorkflow = Files.readString(Path.of(".github", "workflows", "plugin-verifier.yml"))
+        val releaseWorkflow = Files.readString(Path.of(".github", "workflows", "release.yml"))
+        val localPrereleaseValidator = Files.readString(Path.of("scripts", "run-local-prerelease-validation.ps1"))
+        val requiredIdeVersions = listOf("IU-2026.2", "PY-2026.2", "WS-2026.2")
+
+        requiredIdeVersions.forEach { ideVersion ->
+            assertTrue(
+                verifierWorkflow.contains("- $ideVersion"),
+                "Plugin Verifier workflow must keep $ideVersion in its required matrix.",
+            )
+        }
+        assertTrue(
+            releaseWorkflow.contains("-PpluginVerifierIdeVersions=${requiredIdeVersions.joinToString(",")}"),
+            "Release validation must require the complete 2026.2 product matrix.",
+        )
+        assertTrue(
+            localPrereleaseValidator.contains(
+                "PluginVerifierIdeVersions = '${requiredIdeVersions.joinToString(",")}'",
+            ),
+            "Local prerelease validation must default to the complete 2026.2 product matrix.",
+        )
+        listOf(verifierWorkflow, releaseWorkflow).forEach { content ->
+            assertFalse(
+                content.contains("continue-on-error"),
+                "Required 2026.2 compatibility lanes must not ignore a missing PyCharm release.",
+            )
+        }
+    }
+
+    @Test
     fun `gradle workflows use setup gradle wrapper validation`() {
         gradleWorkflows().forEach { workflow ->
             val content = Files.readString(workflow)
