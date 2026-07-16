@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-intellij-2026-2-sdk-upgrade
 
-Status: Blocked
+Status: In Progress
 
 Workers: 1
 
@@ -10,11 +10,11 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 
 ## Readiness
 
-- Plan readiness: Blocked on explicit approval of the one-file `T3R-regenerate-marketplace-change-notes` remediation packet added after T4 found stale generated metadata.
+- Plan readiness: Ready; the original plan and the one-file `T3R-regenerate-marketplace-change-notes` remediation packet are explicitly approved.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: T1 through T3 are complete; T4 stopped at its first required non-PyCharm gate and must restart after T3R.
+- Implementation progress: T1 through T3 are complete; T3R is ready for dispatch; T4 restarts after its commit.
 
 ## Status History
 
@@ -22,6 +22,7 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - 2026-07-16T21:17:58+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
 - 2026-07-16T21:18:00+02:00: Approved -> In Progress by Codex <codex@openai.com>; approved implementation started.
 - 2026-07-16T22:15:11+02:00: In Progress -> Blocked by Codex <codex@openai.com>; T4 found stale generated Marketplace change notes and requires an explicitly approved remediation packet.
+- 2026-07-16T22:25:25+02:00: Blocked -> In Progress by Kamil Kiewisz <kamkie@outlook.com>; explicit approval to execute T3R and continue the review-fix-validation loop recorded.
 
 ## Goal
 
@@ -476,14 +477,14 @@ Result summary:
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: T3R generated Marketplace change-notes remediation approval gate.
+- Current task or wave: T3R generated Marketplace change-notes remediation.
 - Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`.
-- Plan status and readiness: Blocked; the original plan is approved, but the newly added T3R remediation packet requires explicit approval.
+- Plan status and readiness: In Progress; the original plan and T3R remediation packet are approved.
 - Validation and self-review state: T1 through T3 passed; initial T4 stopped on stale generated change notes and recorded one finding with no additional confirmed issue.
-- Worker event and reconciliation state: T1 through T3 complete; initial T4 start/failure/review/report evidence reconciled; T3R not dispatched.
+- Worker event and reconciliation state: T1 through T3 complete; initial T4 start/failure/review/report evidence reconciled; T3R dispatch pending.
 - Changelog, docs, spec, task, or plan updates: ADR state, compatibility docs/spec/support/Marketplace description, and Unreleased changelog are aligned with 2026.2/JDK 25; generated Marketplace change notes remain the recorded T3R blocker.
-- Blockers or open questions: Explicit approval is required for T3R's one-file generated-artifact write; no product decision is open.
-- Next action: User approves T3R; dispatch a fresh remediation worker, commit/reconcile it, then restart T4 with a fresh validation worker.
+- Blockers or open questions: No T3R blocker and no open product decision.
+- Next action: Dispatch a fresh T3R remediation worker, commit/reconcile it, then restart T4 with a fresh validation worker.
 - Context handoff notes: Missing PyCharm is a future readiness blocker, not permission to weaken CI.
 
 ## Execution Graph
