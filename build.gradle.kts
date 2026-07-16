@@ -96,7 +96,7 @@ fun normalizedGitHash(gitHash: String): String {
 val gitDerivedBuildVersion = providers.provider { formatVersionDetails(versionDetails()) }
 val pluginVersion = gitDerivedBuildVersion.map { buildVersion -> buildVersion.pluginVersion }
 val pluginArchiveVersion = gitDerivedBuildVersion.map { buildVersion -> buildVersion.archiveVersion }
-val jdkVersion = JavaVersion.VERSION_21
+val jdkVersion = JavaVersion.VERSION_25
 val jdkVersionTarget = jdkVersion.majorVersion
 
 group = "pl.devopssolutions"
@@ -136,6 +136,10 @@ val integrationTestRuntimeOnly by configurations.getting {
 dependencies {
     intellijPlatform {
         intellijIdea(providers.gradleProperty("platformVersion").get())
+        bundledModule("intellij.platform.vcs.impl")
+        bundledModule("intellij.platform.vcs.dvcs")
+        bundledModule("intellij.platform.vcs.dvcs.impl")
+        bundledModule("intellij.platform.vcs.log")
         bundledPlugin("Git4Idea")
         plugin(
             providers.gradleProperty("aiAssistantPluginId").get(),

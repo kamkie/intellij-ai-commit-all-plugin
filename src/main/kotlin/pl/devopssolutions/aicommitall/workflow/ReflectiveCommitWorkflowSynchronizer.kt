@@ -23,7 +23,6 @@ import com.intellij.openapi.vcs.changes.LocalChangeList
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.vcs.commit.CommitWorkflowHandler
 import com.intellij.vcs.commit.CommitWorkflowUi
-import git4idea.index.GitStageCommitWorkflowHandler
 import git4idea.index.GitStageTracker
 import pl.devopssolutions.aicommitall.vcs.GitStageSelectionItems
 import java.lang.reflect.Method
@@ -32,6 +31,8 @@ import java.util.Collections
 import java.util.WeakHashMap
 
 private const val GIT_STAGE_CONFIRMATION_ATTEMPTS = 10
+private const val GIT_STAGE_HANDLER_CLASS_NAME =
+    "git4idea.index.GitStageCommitWorkflowHandler"
 
 internal object ReflectiveCommitWorkflowSynchronizer {
     private val logger = Logger.getInstance(ReflectiveCommitWorkflowSynchronizer::class.java)
@@ -70,10 +71,13 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         workflowUi: CommitWorkflowUi?,
         consumeConfirmedHandoff: Boolean,
     ): Boolean {
-        val gitStageHandler = workflowHandler as? GitStageCommitWorkflowHandler
-        return if (gitStageHandler == null) {
+        return if (!workflowHandler.isGitStageHandler()) {
             true
         } else {
+            val gitStageAccess = createGitStageCommitWorkflowAccess(
+                workflowHandler,
+                IntelliJCommitWorkflowCompatibilityDiagnostics,
+            ) ?: return false
             val handoff = if (consumeConfirmedHandoff) {
                 pendingGitStageUiHandoffs.remove(workflowHandler)
             } else {
@@ -81,8 +85,8 @@ internal object ReflectiveCommitWorkflowSynchronizer {
             }
             handoff?.let { confirmedHandoff ->
                 applyCommitUiHandoff(
-                    gitStageHandler,
-                    workflowUi ?: gitStageHandler.ui,
+                    gitStageAccess,
+                    workflowUi ?: gitStageAccess.workflowUi,
                     confirmedHandoff,
                 )
             } ?: false.also {
@@ -100,13 +104,13 @@ internal object ReflectiveCommitWorkflowSynchronizer {
     }
 
     private fun applyCommitUiHandoff(
-        gitStageHandler: GitStageCommitWorkflowHandler,
+        gitStageAccess: GitStageCommitWorkflowAccess,
         workflowUi: CommitWorkflowUi,
         handoff: GitStageCommitUiHandoff,
     ): Boolean = gitStageStateSynchronization.applyRequiredUiHandoff(
-        assignState = { gitStageHandler.state = handoff.state },
-        setTrackerState = { gitStageHandler.ui.setTrackerState(handoff.state) },
-        setIncludedRoots = { gitStageHandler.ui.setIncludedRoots(handoff.includedRoots) },
+        assignState = { gitStageAccess.assignState(handoff.state) },
+        setTrackerState = { gitStageAccess.setTrackerState(handoff.state) },
+        setIncludedRoots = { gitStageAccess.setIncludedRoots(handoff.includedRoots) },
         verifyIncludedPaths = {
             val verification = workflowUi.verifyIncludedPathTexts(handoff.expectedStagedPathTexts)
             logger.info(
@@ -181,10 +185,15 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         unversionedFiles: List<FilePath>,
         diagnostics: CommitWorkflowCompatibilityDiagnostics,
     ): CommitWorkflowSynchronizationResult? {
-        val gitStageHandler = workflowHandler as? GitStageCommitWorkflowHandler ?: return null
+        val isGitStageHandler = workflowHandler.isGitStageHandler()
+        val gitStageAccess = workflowHandler.takeIf { isGitStageHandler }
+            ?.let { createGitStageCommitWorkflowAccess(it, diagnostics) }
+        if (gitStageAccess == null) {
+            return if (isGitStageHandler) CommitWorkflowSynchronizationResult.Incompatible else null
+        }
 
         return runCatching {
-            val project = gitStageHandler.workflow.project
+            val project = gitStageAccess.project
             val tracker = GitStageTracker.getInstance(project)
             tracker.updateTrackerState()
             val currentState = tracker.state
@@ -193,7 +202,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
                 selectedPaths,
                 unversionedFiles,
                 diagnostics,
-                gitStageHandler.javaClass.name,
+                workflowHandler.javaClass.name,
             ) ?: return@runCatching CommitWorkflowSynchronizationResult.StagingConfirmationFailed
             val expectedPathsByRoot = selectionPaths.expectedPathsByRoot
             if (expectedPathsByRoot.isEmpty()) {
@@ -206,16 +215,16 @@ internal object ReflectiveCommitWorkflowSynchronizer {
                 pathsByRoot = selectionPaths.pathsToStageByRoot,
                 expectedPathsByRoot = expectedPathsByRoot,
                 expectedPaths = expectedPathsByRoot.values.flatten(),
-            ) ?: return@runCatching stagingConfirmationFailed(diagnostics, gitStageHandler.javaClass.name)
+            ) ?: return@runCatching stagingConfirmationFailed(diagnostics, workflowHandler.javaClass.name)
             val includedRoots = expectedPathsByRoot.keys
             val expectedStagedPathTexts = refreshedState.expectedStagedPathTexts(
                 expectedPathsByRoot.values.flatten(),
             )
             gitStageStateSynchronization.synchronize(
-                assignState = { gitStageHandler.state = refreshedState },
+                assignState = { gitStageAccess.assignState(refreshedState) },
                 refreshUi = {
-                    setTrackerState { gitStageHandler.ui.setTrackerState(refreshedState) }
-                    setIncludedRoots { gitStageHandler.ui.setIncludedRoots(includedRoots) }
+                    setTrackerState { gitStageAccess.setTrackerState(refreshedState) }
+                    setIncludedRoots { gitStageAccess.setIncludedRoots(includedRoots) }
                 },
             )
             pendingGitStageUiHandoffs[workflowHandler] = GitStageCommitUiHandoff(
@@ -227,7 +236,7 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         }.getOrElse { exception ->
             diagnostics.report(
                 CommitWorkflowCompatibilityDiagnostic(
-                    sourceClassName = gitStageHandler.javaClass.name,
+                    sourceClassName = workflowHandler.javaClass.name,
                     methodName = "synchronizeGitStageWorkflow",
                     reason = "git stage workflow synchronization failed",
                     exceptionClassName = exception.javaClass.name,
@@ -318,14 +327,162 @@ internal object ReflectiveCommitWorkflowSynchronizer {
         expectedPaths = expectedPaths,
         expectedPathsByRoot = expectedPathsByRoot,
     )
+}
 
-    private fun Class<*>.findMethod(
-        name: String,
-        vararg parameterTypes: Class<*>,
-    ): Method? = methods.firstOrNull { method ->
-        method.name == name &&
-            method.parameterTypes.contentEquals(parameterTypes)
+private fun CommitWorkflowHandler.isGitStageHandler(): Boolean = javaClass.name == GIT_STAGE_HANDLER_CLASS_NAME
+
+internal fun createGitStageCommitWorkflowAccess(
+    workflowHandler: CommitWorkflowHandler,
+    diagnostics: CommitWorkflowCompatibilityDiagnostics,
+): GitStageCommitWorkflowAccess? = workflowHandler.javaClass
+    .gitStageHandlerMethods(diagnostics)
+    ?.createAccess(workflowHandler, diagnostics)
+
+private fun Class<*>.gitStageHandlerMethods(
+    diagnostics: CommitWorkflowCompatibilityDiagnostics,
+): GitStageHandlerMethods? {
+    val getWorkflow = findMethod("getWorkflow")
+    val getUi = findMethod("getUi")
+    val setState = findMethod("setState", GitStageTracker.State::class.java)
+    val missingHandlerMethods = listOfNotNull(
+        "getWorkflow".takeIf { getWorkflow == null },
+        "getUi".takeIf { getUi == null },
+        "setState".takeIf { setState == null },
+    )
+    if (missingHandlerMethods.isNotEmpty()) {
+        diagnostics.reportGitStageAccessFailure(
+            sourceClassName = name,
+            reason = "required methods missing",
+            missingMethodNames = missingHandlerMethods,
+        )
+        return null
     }
+
+    return GitStageHandlerMethods(
+        getWorkflow = checkNotNull(getWorkflow),
+        getUi = checkNotNull(getUi),
+        setState = checkNotNull(setState),
+    )
+}
+
+private data class GitStageHandlerMethods(
+    val getWorkflow: Method,
+    val getUi: Method,
+    val setState: Method,
+) {
+    fun createAccess(
+        workflowHandler: CommitWorkflowHandler,
+        diagnostics: CommitWorkflowCompatibilityDiagnostics,
+    ): GitStageCommitWorkflowAccess? {
+        val boundaryObjects = runCatching {
+            GitStageBoundaryObjects(
+                workflow = checkNotNull(getWorkflow.invoke(workflowHandler)),
+                ui = checkNotNull(getUi.invoke(workflowHandler)),
+            )
+        }.getOrElse { exception ->
+            diagnostics.reportGitStageAccessFailure(
+                sourceClassName = workflowHandler.javaClass.name,
+                reason = "method invocation failed",
+                exception = exception,
+            )
+            return null
+        }
+        return boundaryObjects.createAccess(workflowHandler, setState, diagnostics)
+    }
+}
+
+private data class GitStageBoundaryObjects(
+    val workflow: Any,
+    val ui: Any,
+) {
+    fun createAccess(
+        workflowHandler: CommitWorkflowHandler,
+        setState: Method,
+        diagnostics: CommitWorkflowCompatibilityDiagnostics,
+    ): GitStageCommitWorkflowAccess? {
+        val getProject = workflow.javaClass.findMethod("getProject")
+        val setTrackerState = ui.javaClass.findMethod("setTrackerState", GitStageTracker.State::class.java)
+        val setIncludedRoots = ui.javaClass.findMethod("setIncludedRoots", Collection::class.java)
+        val missingBoundaryMethods = listOfNotNull(
+            "getProject".takeIf { getProject == null },
+            "setTrackerState".takeIf { setTrackerState == null },
+            "setIncludedRoots".takeIf { setIncludedRoots == null },
+        )
+        if (missingBoundaryMethods.isNotEmpty()) {
+            diagnostics.reportGitStageAccessFailure(
+                sourceClassName = workflowHandler.javaClass.name,
+                reason = "required methods missing",
+                missingMethodNames = missingBoundaryMethods,
+            )
+            return null
+        }
+
+        return runCatching {
+            GitStageCommitWorkflowAccess(
+                project = checkNotNull(getProject?.invoke(workflow) as? Project),
+                workflowUi = checkNotNull(ui as? CommitWorkflowUi),
+                workflowHandler = workflowHandler,
+                ui = ui,
+                setState = checkNotNull(setState),
+                setTrackerState = checkNotNull(setTrackerState),
+                setIncludedRoots = checkNotNull(setIncludedRoots),
+            )
+        }.getOrElse { exception ->
+            diagnostics.reportGitStageAccessFailure(
+                sourceClassName = workflowHandler.javaClass.name,
+                reason = "incompatible method result",
+                exception = exception,
+            )
+            null
+        }
+    }
+}
+
+private fun CommitWorkflowCompatibilityDiagnostics.reportGitStageAccessFailure(
+    sourceClassName: String,
+    reason: String,
+    missingMethodNames: List<String> = emptyList(),
+    exception: Throwable? = null,
+) {
+    report(
+        CommitWorkflowCompatibilityDiagnostic(
+            sourceClassName = sourceClassName,
+            methodName = "gitStageCommitWorkflowAccess",
+            reason = reason,
+            missingMethodNames = missingMethodNames,
+            exceptionClassName = exception?.javaClass?.name,
+            causeClassName = exception?.cause?.javaClass?.name,
+        ),
+    )
+}
+
+internal class GitStageCommitWorkflowAccess(
+    val project: Project,
+    val workflowUi: CommitWorkflowUi,
+    private val workflowHandler: CommitWorkflowHandler,
+    private val ui: Any,
+    private val setState: Method,
+    private val setTrackerState: Method,
+    private val setIncludedRoots: Method,
+) {
+    fun assignState(state: GitStageTracker.State) {
+        setState.invoke(workflowHandler, state)
+    }
+
+    fun setTrackerState(state: GitStageTracker.State) {
+        setTrackerState.invoke(ui, state)
+    }
+
+    fun setIncludedRoots(roots: Collection<VirtualFile>) {
+        setIncludedRoots.invoke(ui, roots)
+    }
+}
+
+private fun Class<*>.findMethod(
+    name: String,
+    vararg parameterTypes: Class<*>,
+): Method? = methods.firstOrNull { method ->
+    method.name == name && method.parameterTypes.contentEquals(parameterTypes)
 }
 
 internal class GitStageWorkflowStateSynchronization(

@@ -321,6 +321,50 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
     }
 
     @Test
+    fun `git stage reflection access invokes the 262 handler boundary`() {
+        val project = testProject()
+        val state = GitStageTracker.State(emptyMap())
+        val root = LightVirtualFile("repo")
+        val uiCalls = mutableListOf<String>()
+        val ui = testGitStageWorkflowUi { methodName -> uiCalls += methodName }
+        val handler = ReflectiveGitStageHandler(ReflectiveGitStageWorkflow(project), ui)
+        val diagnostics = CapturingCommitWorkflowCompatibilityDiagnostics()
+
+        val access = createGitStageCommitWorkflowAccess(handler, diagnostics)
+            ?: error("Expected compatible git-stage reflection access.")
+        access.assignState(state)
+        access.setTrackerState(state)
+        access.setIncludedRoots(listOf(root))
+
+        assertSame(project, access.project)
+        assertSame(ui, access.workflowUi)
+        assertSame(state, handler.assignedState)
+        assertEquals(listOf("setTrackerState", "setIncludedRoots"), uiCalls)
+        assertEquals(emptyList(), diagnostics.events)
+    }
+
+    @Test
+    fun `git stage reflection access fails closed when 262 members are missing`() {
+        val handler = IncompatibleHandler()
+        val diagnostics = CapturingCommitWorkflowCompatibilityDiagnostics()
+
+        val access = createGitStageCommitWorkflowAccess(handler, diagnostics)
+
+        assertEquals(null, access)
+        assertEquals(
+            listOf(
+                CommitWorkflowCompatibilityDiagnostic(
+                    sourceClassName = IncompatibleHandler::class.java.name,
+                    methodName = "gitStageCommitWorkflowAccess",
+                    reason = "required methods missing",
+                    missingMethodNames = listOf("getWorkflow", "getUi", "setState"),
+                ),
+            ),
+            diagnostics.events,
+        )
+    }
+
+    @Test
     fun `assigns git stage workflow state before scheduling visual UI refresh`() {
         val scheduler = CapturingUiRefreshScheduler()
         val diagnostics = CapturingGitStageDiagnostics()
@@ -726,6 +770,29 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
         }
     }
 
+    private class ReflectiveGitStageHandler(
+        private val workflowValue: ReflectiveGitStageWorkflow,
+        private val uiValue: TestGitStageWorkflowUi,
+    ) : TestCommitWorkflowHandler() {
+        var assignedState: GitStageTracker.State? = null
+
+        fun getWorkflow(): ReflectiveGitStageWorkflow = workflowValue
+
+        fun getUi(): TestGitStageWorkflowUi = uiValue
+
+        fun setState(state: GitStageTracker.State) {
+            assignedState = state
+        }
+    }
+
+    private class ReflectiveGitStageWorkflow(val project: Project)
+
+    private interface TestGitStageWorkflowUi : CommitWorkflowUi {
+        fun setTrackerState(state: GitStageTracker.State)
+
+        fun setIncludedRoots(roots: Collection<VirtualFile>)
+    }
+
     private class CapturingCommitWorkflowCompatibilityDiagnostics : CommitWorkflowCompatibilityDiagnostics {
         val events = mutableListOf<CommitWorkflowCompatibilityDiagnostic>()
 
@@ -831,6 +898,28 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
 
         override fun isNonLocal(): Boolean = false
     }
+
+    private fun testProject(): Project = Proxy.newProxyInstance(
+        Project::class.java.classLoader,
+        arrayOf(Project::class.java),
+    ) { proxy, method, args ->
+        when (method.name) {
+            "equals" -> proxy === args?.singleOrNull()
+            "hashCode" -> System.identityHashCode(proxy)
+            "toString" -> "TestProject"
+            else -> error("Unexpected Project method: ${method.name}")
+        }
+    } as Project
+
+    private fun testGitStageWorkflowUi(onCall: (String) -> Unit): TestGitStageWorkflowUi = Proxy.newProxyInstance(
+        TestGitStageWorkflowUi::class.java.classLoader,
+        arrayOf(TestGitStageWorkflowUi::class.java),
+    ) { _, method, _ ->
+        when (method.name) {
+            "setTrackerState", "setIncludedRoots" -> onCall(method.name)
+            else -> error("Unexpected git-stage UI method: ${method.name}")
+        }
+    } as TestGitStageWorkflowUi
 
     private companion object {
         private fun singleAttemptRetry(): CommitWorkflowSynchronizationRetry = CommitWorkflowSynchronizationRetry(
