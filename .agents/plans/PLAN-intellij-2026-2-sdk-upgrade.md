@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: T1 through T3, T3R, the T2 prerelease-summary fix, and the T1 262 integration-fixture remediation are complete; T4 is ready for a fresh exact-head rerun.
+- Implementation progress: T1 through T4 and both corrective fixes are complete; T5 waits for JetBrains to publish PyCharm 2026.2.
 
 ## Status History
 
@@ -385,18 +385,18 @@ Expected output:
 
 Result summary:
 
-- Status: pending fresh exact-head rerun after completed T3R, T2 summary fix, and T1 262 integration-fixture remediation.
-- Worker: Attempts `/root/t4_available_product_validation`, `/root/t4_available_product_rerun`, and `/root/t4_final_exact_head`; final fresh rerun pending.
-- Changed files or reviewed diff: Blocked evidence report `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`; full branch diffs through `1072f42` reviewed read-only.
-- Validation evidence: Initial job `20260716-221032-intellij-2026-2-t4-available-prerelease-912c5d` found stale generated change notes, fixed by T3R. Rerun `20260716-223227-intellij-2026-2-t4-rerun-available-prere-9949fa` completed substantive prerelease gates and compatible IU/WS verifier results, then exposed the final-summary bug fixed by `ceb791e`. The next exact-head prerelease passed all seven gates and hosted IU/WS/build/CodeQL/Security passed; its IU UI lane exposed unmigrated 262 integration APIs, fixed and validated by `bf30922`; hosted PY verifier/UI continued to fail only on unavailable product resolution.
-- Self-review evidence from `.agents/references/reviews.md`: Three confirmed validation-loop findings were fixed; full branch review through the pre-remediation head found no additional confirmed diff issue.
-- Commit: No T4 completion commit; blocked report is included with the orchestrator's plan-amendment evidence and will be updated by the rerun.
-- Worker events: Initial attempt stopped on generated metadata; second stopped on the final-summary bug; third passed fresh prerelease and hosted available-product gates, then stopped on IU integration compilation. Reports and logs were preserved for every stop.
-- Orchestrator reconciliation: All three findings match logs and scoped fixes; the report remains unstaged for replacement by the final exact-head rerun.
-- Changelog/docs/spec/tasks updates: Blocked validation report records exact head, product feed data, failure, skipped gates, and required remediation.
-- Blockers: All known non-PyCharm blockers are resolved; no current non-PyCharm blocker is known.
-- Review risks: Final exact-head local IU/WS UI and explicit local PyCharm resolution evidence remain pending.
-- Handoff notes and next action: Dispatch a fresh T4 worker for the complete sequence from the new exact head.
+- Status: completed
+- Worker: Final worker `/root/t4_final_after_262_remediation`; earlier stopped attempts `/root/t4_available_product_validation`, `/root/t4_available_product_rerun`, and `/root/t4_final_exact_head` supplied remediation evidence.
+- Changed files or reviewed diff: Final exact-head evidence in `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`; full 33-file `origin/main..a3a6cb9` diff reviewed read-only.
+- Validation evidence: On exact source `a3a6cb9`, fresh prerelease passed all seven gates with 516 tests and compatible IU/WS verifiers; forced `verifyPluginProjectConfiguration` passed; clean full IU UI rerun passed 21/21; WS smoke passed 13/13. Local and hosted PY lanes failed only while resolving unpublished `PyCharmProfessional` 2026.2, before verifier or IDE execution. Hosted build, CodeQL, Security, IU verifier, and WS verifier passed.
+- Self-review evidence from `.agents/references/reviews.md`: Full branch review found no confirmed defect; PR has no review threads or current-head changes requested. The initial forced IU run's single staging JMX/restart failure and 13 derived port cascades were preserved, reproduced as focused 1/1 green, and cleared by a clean full 21/21 rerun.
+- Commit: `8e4c78155b681f75521b45d3dd6b32d503ab8d40`.
+- Worker events: Earlier workers exposed and fixed generated metadata, final-summary, and 262 integration failures. Final worker completed exact-head prerelease/configuration, preserved and triaged one IU infrastructure flake, passed focused/full IU and WS UI, exercised local PY resolution, reconciled hosted checks, and committed the report.
+- Orchestrator reconciliation: Final worker claims match the report-only commit, exact managed-job logs, current hosted results, clean worktree, and required commit metadata. T4 is complete because every available product gate passed and PyCharm failed only at the approved external-availability boundary.
+- Changelog/docs/spec/tasks updates: Final validation report records exact head, product feed data, all local/hosted gates, review state, the triaged infrastructure flake, and the expected PyCharm blocker.
+- Blockers: PyCharm 2026.2 is unpublished; no non-PyCharm blocker remains.
+- Review risks: Published PyCharm 2026.2 may expose a new compatibility issue during T5; no current available-product risk is unresolved.
+- Handoff notes and next action: Keep PR #37 draft. After JetBrains publishes PyCharm 2026.2, dispatch T5 for its unchanged verifier/UI lanes and the full current-head readiness gate.
 
 ### Task Packet: T5-pycharm-release-gate
 
@@ -471,20 +471,20 @@ Result summary:
 - Use one active worker at a time and a fresh sub-agent for each task packet.
 - The orchestrator records a decision capsule, reserves each write scope, reconciles claims, and commits each completed task before the next.
 - After T3, the orchestrator decides and applies any eligible `CHANGELOG.md` entry during reconciliation; workers may only suggest the text.
-- T1 through T3, T3R, and the T1/T2 corrective work are complete. T4 restarts from the remediated head. T5 waits for JetBrains to publish PyCharm 2026.2.
+- T1 through T4, T3R, and the T1/T2 corrective work are complete. T5 waits for JetBrains to publish PyCharm 2026.2.
 - Follow `.agents/references/orchestration.md`; use the current upgrade worktree only.
 
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: T4 available-product validation rerun.
-- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`.
+- Current task or wave: T5 PyCharm release gate, waiting on external product publication.
+- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`.
 - Plan status and readiness: In Progress; the original plan and T3R remediation packet are approved.
-- Validation and self-review state: T1 through T3R and both corrective fixes passed; three T4-discovered defects are fixed; IU 2026.2 UI is 21/21 green; previous hosted IU/WS verifier gates passed and PY verifier/UI failures matched expected unavailable-product resolution.
-- Worker event and reconciliation state: Implementation and corrective workers complete; three stopped T4 attempts reconciled; final fresh T4 dispatch pending.
+- Validation and self-review state: T1 through T4 and both corrective fixes passed; exact-head IU UI is 21/21 and WS smoke is 13/13 green; hosted available-product gates passed; local/hosted PY failures match expected unavailable-product resolution.
+- Worker event and reconciliation state: Implementation, corrective, and T4 validation workers complete and reconciled; T5 has not started because its external dependency is unavailable.
 - Changelog, docs, spec, task, or plan updates: ADR state, compatibility docs/spec/support/Marketplace description, Unreleased changelog, and generated Marketplace change notes are aligned with 2026.2/JDK 25.
-- Blockers or open questions: No current non-PyCharm blocker and no open product decision.
-- Next action: Restart T4 with a fresh validation worker on the remediated exact head.
+- Blockers or open questions: PyCharm 2026.2 is unpublished; there is no non-PyCharm blocker and no open product decision.
+- Next action: Keep PR #37 draft and run T5 after PyCharm 2026.2 appears in JetBrains' stable product feed.
 - Context handoff notes: Missing PyCharm is a future readiness blocker, not permission to weaken CI.
 
 ## Execution Graph
