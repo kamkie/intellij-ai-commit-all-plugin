@@ -139,6 +139,96 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     @Test
+    fun intellij2026Point2ClosedIndexStorageClassifierRequiresExactNamePathAndFrames() {
+        val capturedShortcutDetails = listOf(
+            "at com.intellij.util.io.PagedFileStorage.doGetBufferWrapper(PagedFileStorage.java:461)",
+            "at com.intellij.util.indexing.impl.perFileVersion." +
+                "PersistentSubIndexerVersionEnumerator\$MyEnumerator.enumerate(" +
+                "PersistentSubIndexerVersionEnumerator.java:32)",
+            "at com.intellij.util.indexing.impl.storage.VfsAwareMapReduceIndex.getIndexingStateForFile(" +
+                "VfsAwareMapReduceIndex.java:235)",
+            "at com.intellij.util.indexing.UnindexedFilesScanner\$ScanningSession.scanFiles\$lambda\$0(" +
+                "UnindexedFilesScanner.kt:601)",
+        ).joinToString(separator = "\n")
+        val capturedStagingDetails = listOf(
+            "at com.intellij.util.io.PagedFileStorage.doGetBufferWrapper(PagedFileStorage.java:461)",
+            "at com.intellij.util.indexing.impl.perFileVersion." +
+                "PersistentSubIndexerVersionEnumerator\$MyEnumerator.enumerate(" +
+                "PersistentSubIndexerVersionEnumerator.java:32)",
+            "at com.intellij.util.indexing.impl.storage.VfsAwareMapReduceIndex.getIndexingStateForFile(" +
+                "VfsAwareMapReduceIndex.java:235)",
+            "at com.intellij.util.indexing.UnindexedFilesScanner\$ScanningSession.scanFiles(" +
+                "UnindexedFilesScanner.kt:577)",
+        ).joinToString(separator = "\n")
+        val capturedErrorNames = listOf(
+            INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PREFIX +
+                "/home/runner/work/plugin/out/ide-tests/tests/PY-262.8665.309/" +
+                "release-matrix-ui-commit-shortcut" +
+                INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PATH_SUFFIX,
+            INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PREFIX +
+                "/home/runner/work/plugin/out/ide-tests/tests/PY-262.8665.309/" +
+                "release-matrix-ui-commit-flow-staging" +
+                INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PATH_SUFFIX,
+        )
+
+        listOf(capturedShortcutDetails, capturedStagingDetails)
+            .zip(capturedErrorNames)
+            .forEach { (details, errorName) ->
+                assertTrue(
+                    isIntellij2026Point2KnownError(
+                        ideVersion = "2026.2",
+                        testName = errorName,
+                        details = details,
+                    ),
+                )
+            }
+
+        val capturedErrorName = capturedErrorNames.first()
+        assertFalse(
+            isIntellij2026Point2KnownError(
+                ideVersion = "2026.1",
+                testName = capturedErrorName,
+                details = capturedShortcutDetails,
+            ),
+        )
+        assertFalse(
+            isIntellij2026Point2KnownError(
+                ideVersion = "2026.2",
+                testName = capturedErrorName.replace(
+                    "com.intellij.util.io.ClosedStorageException",
+                    "java.lang.IllegalStateException",
+                ),
+                details = capturedShortcutDetails,
+            ),
+        )
+        assertFalse(
+            isIntellij2026Point2KnownError(
+                ideVersion = "2026.2",
+                testName = INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PREFIX +
+                    "/home/runner/work/plugin/system/index/idindex/IdIndex_inputs_i",
+                details = capturedShortcutDetails,
+            ),
+        )
+        assertFalse(
+            isIntellij2026Point2KnownError(
+                ideVersion = "2026.2",
+                testName = "com.intellij.util.io.ClosedStorageException: storage is already closed",
+                details = capturedShortcutDetails,
+            ),
+        )
+        INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_REQUIRED_STACK_FRAMES.forEach { requiredFrame ->
+            assertFalse(
+                isIntellij2026Point2KnownError(
+                    ideVersion = "2026.2",
+                    testName = capturedErrorName,
+                    details = capturedShortcutDetails.replace(requiredFrame, requiredFrame.drop(1)),
+                ),
+                "A near miss without '$requiredFrame' must not be classified as the known platform error.",
+            )
+        }
+    }
+
+    @Test
     fun fixtureBuilderCreatesReleaseMatrixGitStates() {
         assumeTrue(IntegrationGitCli.isAvailable(), "git executable is required for release-matrix UI fixtures")
         val fixture = ReleaseMatrixGitFixtureBuilder.create(tempDirectory.resolve("fixture"))
@@ -1248,6 +1338,16 @@ private val INTELLIJ_2026_2_SCHEME_RACE_REQUIRED_STACK_FRAMES = listOf(
     "com.intellij.openapi.editor.colors.impl.EditorColorsManagerImpl.getSchemeForCurrentUITheme",
     "com.intellij.openapi.vcs.FileStatusImpl.getColor",
 )
+private const val INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PREFIX =
+    "com.intellij.util.io.ClosedStorageException: storage is already closed; path "
+private const val INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PATH_SUFFIX =
+    "/system/index/stubs/.perFileVersion/indexed_versions/indexed_versions_i"
+private val INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_REQUIRED_STACK_FRAMES = listOf(
+    "com.intellij.util.io.PagedFileStorage.doGetBufferWrapper",
+    "com.intellij.util.indexing.impl.perFileVersion.PersistentSubIndexerVersionEnumerator\$MyEnumerator.enumerate",
+    "com.intellij.util.indexing.impl.storage.VfsAwareMapReduceIndex.getIndexingStateForFile",
+    "com.intellij.util.indexing.UnindexedFilesScanner\$ScanningSession.scanFiles",
+)
 private const val INTELLIJ_WORKSPACE_CACHE_ACCESS_DENIED_PREFIX = "java.nio.file.AccessDeniedException: "
 private const val INTELLIJ_WORKSPACE_CACHE_SOURCE_PATH = "\\project-model-cache\\cache"
 private const val INTELLIJ_WORKSPACE_CACHE_MOVE_SEPARATOR = ".tmp -> "
@@ -1267,6 +1367,7 @@ private fun isIntellij2026Point2KnownError(
                     details.contains(INTELLIJ_DTRACE_PROFILER_KNOWN_ERROR_STACK_FRAME)
                 ) ||
             isIntellij2026Point2SchemeRaceError(testName, details) ||
+            isIntellij2026Point2ClosedIndexStorageError(testName, details) ||
             isIntellij2026Point2WorkspaceCacheAccessDeniedError(testName, details)
         )
 
@@ -1275,6 +1376,15 @@ private fun isIntellij2026Point2SchemeRaceError(
     details: String,
 ): Boolean = testName == INTELLIJ_2026_2_SCHEME_RACE_KNOWN_ERROR &&
     INTELLIJ_2026_2_SCHEME_RACE_REQUIRED_STACK_FRAMES.all { requiredFrame ->
+        details.contains(requiredFrame)
+    }
+
+private fun isIntellij2026Point2ClosedIndexStorageError(
+    testName: String,
+    details: String,
+): Boolean = testName.startsWith(INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PREFIX) &&
+    testName.endsWith(INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PATH_SUFFIX) &&
+    INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_REQUIRED_STACK_FRAMES.all { requiredFrame ->
         details.contains(requiredFrame)
     }
 
