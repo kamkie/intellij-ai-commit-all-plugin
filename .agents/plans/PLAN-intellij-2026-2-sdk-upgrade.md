@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, and T5R11 are complete. T5R13 proved the outer Starter relaunch and full IU lane, then stopped when PyCharm reproduced the same exact license dialog outside the IU-only product gate. Execute T5R14 to extend the exact contract to the observed PyCharm 2026.2 product and complete full IU/PY validation.
+- Implementation progress: T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, T5R11, and T5R14 are complete. T5R14 committed the exact IU/PyCharm 2026.2 license-restart lifecycle as `ebe04440359812b75d05459b499e3cdf7ef5b6df`; synthetic and active-license PyCharm probes, full PyCharm 13/13, full IntelliJ IDEA 25/25, and focused/static checks passed. Push the reconciled head, then execute a fresh T5 exact-head gate.
 
 ## Status History
 
@@ -483,7 +483,7 @@ Expected output:
 
 Result summary:
 
-- Status: blocked pending T5R13 remediation and restart
+- Status: ready to restart after the T5R14 reconciliation is pushed
 - Worker: `/root/t5_pycharm_release_gate`
 - Changed files or reviewed diff: Appended the first published-PyCharm gate evidence to `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`; source head remained unchanged.
 - Validation evidence: On exact head `4ccc61b4196ff6932ec3daa97f2c8992758a0aa5`, full local prerelease passed all eight gates and every hosted check passed, including PyCharm UI 13/13, patch coverage 95.86%, and project coverage 90.51%. Local IU passed 10/23, then the next scenario stalled on the exact license-required `Confirm Restart` dialog; local PY/WS were not started.
@@ -492,9 +492,9 @@ Result summary:
 - Worker events: Initial worker stopped at the first published-PyCharm failure. Restarted workers preserved each later hosted failure. Worker `/root/t5_final_exact_head_r5` passed prerelease and every hosted gate, stopped local IU after 10/23 when the license restart modal blocked scenario 11, preserved exact log/thread/screenshot evidence, and stopped cleanly at `2026-07-23T18:05:09.4198028+02:00`.
 - Orchestrator reconciliation: Exact local, origin, and PR head remained `4ccc61b4196ff6932ec3daa97f2c8992758a0aa5`. The T5R6 observer and terminal Ultimate callbacks completed before `LicenseManager` disabled Ultimate and `BackendMessagesService` displayed the exact modal. The worker performed no manual interaction and stopped the managed process cleanly.
 - Changelog/docs/spec/tasks updates: T5D aligned README, contributor/support documentation, changelog, and generated Marketplace notes; the validation report now records the subsequent hosted scheme-race, coverage, and closed-index evidence through T5R9.
-- Blockers: T5R13 must relaunch a fresh Starter/Driver context after the exact marked restart rather than reusing the stale remote session.
-- Review risks: Only an exact pre-scenario restart fingerprint may trigger reacquisition; unrelated Driver/session failures must remain red, and the scenario must execute exactly once in the fresh context.
-- Handoff notes and next action: Execute T5R13, push its head, then restart the complete T5 gate.
+- Blockers: No remediation blocker remains; the complete current-head local, hosted, review, and readiness evidence still must pass together.
+- Review risks: Re-fetch the pushed head and review state before readiness; the fresh T5 gate must confirm the exact restart handling does not hide an unrelated platform or scenario failure.
+- Handoff notes and next action: Push the T5R14 implementation and reconciliation commits, then restart the complete T5 gate on that exact head.
 
 ### Task Packet: T5R-stabilize-pycharm-ui-startup
 
@@ -1461,18 +1461,18 @@ Expected output:
 
 Result summary:
 
-- Status: ready
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Worker events:
-- Orchestrator reconciliation:
-- Changelog/docs/spec/tasks updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: completed
+- Worker: `/root/t5r14_recovery`
+- Changed files or reviewed diff: Retained the T5R13 outer Starter restart/relaunch lifecycle in `ReleaseMatrixUiHarnessTest.kt` and `FakeAiAssistantProbe.kt`, and extended its exact product contract only to observed PyCharm 2026.2.
+- Validation evidence: Synthetic PyCharm restart job `20260723-200137-t5r14-py-synthetic-license-relaunch-02a3b9` passed 1/1 with supported shutdown, process exit, port release, a fresh Starter/Driver context, and exactly one scenario execution. Active-license PyCharm job `20260723-200428-t5r14-py-active-license-focused-f8167d` passed 1/1 without recovery. Full PyCharm job `20260723-205028-t5r14-full-py-2026-2-terminal-preflight-f1ab7a` passed 13/13, and exact-current IntelliJ IDEA job `20260723-205950-t5r14-final-current-full-iu-2026-2-120b05` passed 25/25. Focused/static job `20260723-211218-t5r14-focused-static-final-92a26f` passed compilation, both contract/state-machine tests, `spotlessCheck`, and `detekt`; `git diff --check` also passed.
+- Self-review evidence from `.agents/references/reviews.md`: IU and PyCharm require the exact 2026.2 product/version/title/body/action contract; wrong products and every dialog near miss remain red. Marker, stale-session, cleanup, and exactly-once boundaries remain explicit, generated `allure-results/` was removed, and the final commit contains only the two approved integration-test files. No production or user-facing plugin behavior changed.
+- Commit: `ebe04440359812b75d05459b499e3cdf7ef5b6df`
+- Worker events: The T5R14 worker sequence completed the five retained managed jobs, and the final recovery worker committed the clean two-file result; no T5R14 managed process remained active at handoff.
+- Orchestrator reconciliation: The commit, managed-job status records, logs, test results, generated-artifact cleanup, and final two-file scope agree.
+- Changelog/docs/spec/tasks updates: No changelog, specification, task, support, or user documentation change is required because the remediation affects only the release-matrix test harness and fake test plugin; this plan and the validation report own the evidence.
+- Blockers: None within T5R14; the fresh T5 exact-head local, hosted, review, and readiness gate remains.
+- Review risks: Preserve the exact IU/PyCharm 2026.2 boundary and fail closed for every unobserved product, dialog near miss, cleanup failure, unrelated Driver failure, or second scenario execution.
+- Handoff notes and next action: Push `ebe0444` and this reconciliation, then dispatch a fresh T5 worker against the exact pushed head.
 
 ### Task Packet: T5D-align-published-pycharm-documentation
 
@@ -1550,21 +1550,21 @@ Result summary:
 - Use one active worker at a time and a fresh sub-agent for each task packet.
 - The orchestrator records a decision capsule, reserves each write scope, reconciles claims, and commits each completed task before the next.
 - After T3, the orchestrator decides and applies any eligible `CHANGELOG.md` entry during reconciliation; workers may only suggest the text.
-- T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, T5R11, and the T1/T2 corrective work are complete. T5R2 through T5R5, T5R10, T5R12, and T5R13 stopped cleanly after producing bounded evidence; execute T5R14, then restart T5.
+- T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, T5R11, T5R14, and the T1/T2 corrective work are complete. T5R2 through T5R5, T5R10, T5R12, and T5R13 stopped cleanly after producing bounded evidence; push the reconciled head, then restart T5.
 - Follow `.agents/references/orchestration.md`; use the current upgrade worktree only.
 
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: T5R14 exact PyCharm extension of the proven outer Starter relaunch.
-- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`; T5R `234d91e18bda4b6028a594316ed1e2d90d57229c`; T5D `82abd9634effcc276b2d4821d8ee8b8657cd0ffe`; T5R6 `777cf177ca1ea7c54156c761b54ab1250fc002d4`; T5R7 `c3bae72f614e8e4fb224aa93bbd82f0b1eade3be`; T5R8 `c6cc0c390126d21a0a58633918a553639ae73bbe`; T5R9 `ae5aa6dba8fe01ea4a4d0bea3fb816a33f25baf4`; T5R11 `df5964eb83a54b128dc3883b884cf5c33e1fe256`.
-- Plan status and readiness: In Progress; the original plan and all bounded remediation packets through T5R14 are approved; T5R14 is ready.
-- Validation and self-review state: T5R13 proved exact IU restart/relaunch, process and port cleanup, exactly-once scenario execution, two active-license repetitions, and full IU 25/25; PyCharm reproduced the exact dialog outside the IU gate.
-- Worker event and reconciliation state: All prior tasks through stopped T5R13 worker `/root/t5r13_starter_relaunch` are reconciled; dispatch a fresh T5R14 worker.
+- Current task or wave: Push the reconciled T5R14 head, then run a fresh T5 exact-head gate.
+- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`; T5R `234d91e18bda4b6028a594316ed1e2d90d57229c`; T5D `82abd9634effcc276b2d4821d8ee8b8657cd0ffe`; T5R6 `777cf177ca1ea7c54156c761b54ab1250fc002d4`; T5R7 `c3bae72f614e8e4fb224aa93bbd82f0b1eade3be`; T5R8 `c6cc0c390126d21a0a58633918a553639ae73bbe`; T5R9 `ae5aa6dba8fe01ea4a4d0bea3fb816a33f25baf4`; T5R11 `df5964eb83a54b128dc3883b884cf5c33e1fe256`; T5R14 `ebe04440359812b75d05459b499e3cdf7ef5b6df`.
+- Plan status and readiness: In Progress; the original plan and all bounded remediation packets through T5R14 are approved; T5R14 is complete, but T5 exact-head validation and readiness remain.
+- Validation and self-review state: T5R14 passed synthetic and active-license PyCharm probes, full PyCharm 13/13, exact-current IntelliJ IDEA 25/25, focused contract/state-machine tests, compilation, formatting, Detekt, and diff checks. One upstream IU cyclic-extension initialization flake was preserved; its unchanged focused rerun and two later full IU runs passed.
+- Worker event and reconciliation state: All workers through completed T5R14 worker `/root/t5r14_recovery` are reconciled; implementation commit `ebe0444` and this documentation-only reconciliation are ready to push.
 - Changelog, docs, spec, task, or plan updates: Compatibility configuration, current public docs, changelog, and regenerated Marketplace notes are aligned with published 2026.2/JDK 25 state.
-- Blockers or open questions: No open product question; T5R14 and the complete final-head local/review/readiness gate remain required evidence.
-- Next action: Keep PR #37 draft, execute T5R14, push, and rerun the final T5 current-head gate.
-- Context handoff notes: Extend only to observed PyCharm 2026.2; preserve the exact IU/PY contract and supported fresh Starter context.
+- Blockers or open questions: No open product question; the complete pushed-head local, hosted, review, and readiness gate remains required evidence.
+- Next action: Keep PR #37 draft, push the T5R14 implementation and reconciliation commits, then dispatch a fresh T5 exact-head worker.
+- Context handoff notes: Re-fetch the pushed head and review threads before readiness; preserve the exact IU/PY restart contract and supported fresh Starter context.
 
 ## Execution Graph
 

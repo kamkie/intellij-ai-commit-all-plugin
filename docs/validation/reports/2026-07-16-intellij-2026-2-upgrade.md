@@ -497,3 +497,44 @@ code and produced no commit. The next bounded remediation must close the stale
 preflight context and acquire a new supported Starter/Driver context before
 running the scenario; it must not construct a Driver manually or swallow
 unrelated session failures.
+
+### Exact IU And PyCharm License-Restart Recovery
+
+T5R13 moved restart recovery outside the stale Starter context. Synthetic IU
+job `20260723-192107-t5r13-iu-synthetic-license-relaunch-r4-7d9c6d` proved the
+real platform restart, supported shutdown, first-process exit, release of ports
+7777/10500/11111, fresh Starter/Driver acquisition, and exactly one scenario
+execution. Two active-license IU repetitions and full IU job
+`20260723-192827-t5r13-full-iu-2026-2-c8e141` passed, with the full lane at
+25/25. PyCharm then reproduced the same exact license dialog outside T5R13's
+IU-only product gate, so the two-file implementation remained uncommitted for
+the bounded T5R14 extension.
+
+T5R14 extended that exact product contract only to observed PyCharm 2026.2.
+Synthetic PyCharm job
+`20260723-200137-t5r14-py-synthetic-license-relaunch-02a3b9` passed 1/1 with
+supported shutdown, process exit, port release, a fresh Starter/Driver context,
+and exactly one scenario execution. Active-license job
+`20260723-200428-t5r14-py-active-license-focused-f8167d` passed 1/1 without
+recovery. Final full PyCharm job
+`20260723-205028-t5r14-full-py-2026-2-terminal-preflight-f1ab7a` passed 13/13,
+and exact-current full IU job
+`20260723-205950-t5r14-final-current-full-iu-2026-2-120b05` passed 25/25.
+
+An earlier full IU attempt preserved one platform-only
+`PluginException: Cyclic extension initialization` between
+`SshEelMrfsBackend` and `GlobalEelMrfsBackendProvider`. No source change or
+assertion weakening followed: the unchanged focused scenario passed 1/1 in job
+`20260723-201819-t5r14-iu-empty-message-platform-error-re-1ea8bd`, and later
+full IU jobs `20260723-202003-t5r14-full-iu-2026-2-rerun-112c97` and
+`20260723-205950-t5r14-final-current-full-iu-2026-2-120b05` each passed 25/25.
+
+Focused/static job
+`20260723-211218-t5r14-focused-static-final-92a26f` passed integration-test
+compilation, both exact contract/state-machine tests, `spotlessCheck`, and
+`detekt`; `git diff --check` also passed. Generated `allure-results/` was
+removed before commit, and self-review confirmed the final change contains
+only `ReleaseMatrixUiHarnessTest.kt` and `FakeAiAssistantProbe.kt`. Commit
+`ebe04440359812b75d05459b499e3cdf7ef5b6df` changes no production or
+user-facing plugin behavior. The next gate is to push the reconciled head and
+rerun the complete T5 exact-head local, hosted, review, and readiness checks.
