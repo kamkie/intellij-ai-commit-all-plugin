@@ -411,3 +411,68 @@ Exact missing-method ordering and invocation/incompatible-result diagnostics
 remain unchanged. No reflection fallback, public behavior, coverage
 configuration, UI harness, documentation, specification, or changelog behavior
 changed. Hosted aggregate Codecov remains the decisive confirmation.
+
+### Final Exact-Head Restart After T5R11
+
+T5 restarted with clean source, origin, and PR head
+`4ccc61b4196ff6932ec3daa97f2c8992758a0aa5`. Local prerelease job
+`20260723-173518-intellij-2026-2-t5-final-4ccc61b-prerele-f54abc`
+passed all eight gates, including Plugin Verifier against IU
+`262.8665.258`, PyCharm `262.8665.309`, and WebStorm `262.8665.259`.
+
+Every hosted exact-head check passed:
+
+- CI [build job
+  89253725453](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30021105518/job/89253725453)
+  and [UI coverage job
+  89254879177](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30021105518/job/89254879177),
+  including all 13 PyCharm scenarios and the aggregate coverage upload.
+- [CodeQL job
+  89253725717](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30021105680/job/89253725717),
+  Detekt, Security, and both Trivy checks.
+- Plugin Verifier jobs for
+  [IU-2026.2](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30021105339/job/89253724132),
+  [PY-2026.2](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30021105339/job/89253724057),
+  and
+  [WS-2026.2](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30021105339/job/89253724142).
+- `codecov/patch` check `89259098530`: 95.86% of the diff covered
+  against the 90.27% target.
+- `codecov/project` check `89259093694`: 90.51%, up 0.24 percentage
+  points from base `753fda8`.
+
+The required local IntelliJ IDEA lane did not complete. Job
+`20260723-174706-intellij-2026-2-t5-final-4ccc61b-ui-iu-f-d88113`
+passed its first ten of 23 scenarios. Its next scenario,
+`pushSectionPushesOutgoingOnlyLocalCommitToTemporaryBareRemote()`, then
+stalled while opening the Commit tool window.
+
+The exact IDE log proves the T5R6 lifecycle observer ran before the stall:
+it was installed at `17:52:14.988`, then recorded three terminal
+`enabled=true`, `com.intellij.modules.ultimate` callbacks at
+`17:52:22.171`, `17:52:22.312`, and `17:52:22.322`. The generic
+action-registration readiness barrier also completed, because the scenario
+entered its Commit-tool-window block. The later failure was a separate
+license transition:
+
+- `LicenseManager` reported `License required for idea; details: N/A` at
+  `17:52:23.744`.
+- The platform marked `com.intellij.modules.ultimate` disabled at
+  `17:52:24.531`.
+- The test executor was blocked in
+  `openReleaseMatrixCommitToolWindow()` while the remote probe waited in
+  `FakeAiAssistantProbe.runOnEdt()`.
+- The IDE event-dispatch thread was inside `DialogWrapper.show()` and
+  `BackendMessagesService.showMessageDialog()`.
+- Starter heartbeat screenshot `008_heartbeat/dialog0.png` and live UI
+  automation both identified the modal as `Confirm Restart`, with the
+  message: “Application restart is necessary to disable features requiring
+  license. Click 'Restart' to continue using the product without these
+  features.”
+
+No modal button was clicked and no manually assisted result was counted as
+validation. The managed job was stopped cleanly at `18:01:06`; the local
+PyCharm and WebStorm UI lanes were not started after this first local gate
+failure. PR #37 remains draft. T5 is incomplete until the exact license
+restart transition is handled by a separately approved remediation packet
+and the complete exact-head local, hosted, review, and readiness gates pass
+together.

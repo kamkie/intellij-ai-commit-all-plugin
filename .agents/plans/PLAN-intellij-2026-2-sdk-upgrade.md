@@ -10,11 +10,11 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 
 ## Readiness
 
-- Plan readiness: Ready; the original plan and the bounded `T3R-regenerate-marketplace-change-notes`, `T5R-stabilize-pycharm-ui-startup`, `T5D-align-published-pycharm-documentation`, `T5R2-synchronize-pycharm-module-reload`, `T5R3-observe-pycharm-reload-at-startup`, `T5R4-observe-pycharm-loading-dialog`, `T5R5-await-pycharm-enable-attempt`, `T5R6-rebuild-pycharm-staging-workflow`, `T5R7-classify-2026-2-scheme-race`, `T5R8-cover-262-reflection-failures`, `T5R9-classify-2026-2-closed-index-storage`, `T5R10-cover-residual-reflection-branches`, and `T5R11-simplify-reflection-null-guards` remediation packets are explicitly approved.
+- Plan readiness: Ready; the original plan and the bounded `T3R-regenerate-marketplace-change-notes`, `T5R-stabilize-pycharm-ui-startup`, `T5D-align-published-pycharm-documentation`, `T5R2-synchronize-pycharm-module-reload`, `T5R3-observe-pycharm-reload-at-startup`, `T5R4-observe-pycharm-loading-dialog`, `T5R5-await-pycharm-enable-attempt`, `T5R6-rebuild-pycharm-staging-workflow`, `T5R7-classify-2026-2-scheme-race`, `T5R8-cover-262-reflection-failures`, `T5R9-classify-2026-2-closed-index-storage`, `T5R10-cover-residual-reflection-branches`, `T5R11-simplify-reflection-null-guards`, and `T5R12-handle-license-restart-transition` remediation packets are explicitly approved.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, and T5R11 are complete. T5R10's stopped experiment proved the residual coverage shape, and T5R11 removed only the dominated null guards while preserving exact fail-closed diagnostics. Restart T5 on the exact pushed head.
+- Implementation progress: T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, and T5R11 are complete. The restarted T5 passed every hosted gate, but local IU stalled on the recurring exact license-required `Confirm Restart` transition. The maintainer explicitly requested deterministic test-harness handling; execute T5R12 before restarting T5.
 
 ## Status History
 
@@ -35,6 +35,7 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - 2026-07-23T16:15:06+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R9 packet after exact-head hosted evidence proved Starter promotes a branch-262 stub-index storage race during PyCharm's dynamic plugin reload.
 - 2026-07-23T17:00:15+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R10 packet after exact-head Codecov proved the aggregate project gate green but the patch gate remained below target on residual reflection-method branches.
 - 2026-07-23T17:11:17+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R11 packet after T5R10 proved behavioral cases cannot execute compiler null guards dominated by prior missing-method checks.
+- 2026-07-23T18:05:09+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the maintainer explicitly requests recurring deterministic handling for the exact license-required `Confirm Restart` transition that blocked the local IU lane.
 
 ## Goal
 
@@ -81,6 +82,7 @@ No open plan questions. ADR acceptance and plan approval are required lifecycle 
 - `T5R9-classify-2026-2-closed-index-storage`: extend the version-gated test-reporter mapping to the exact stub per-file-version `ClosedStorageException` stack produced while branch 262 tumbles indexes during dynamic plugin reload.
 - `T5R10-cover-residual-reflection-branches`: add behavioral unit coverage for independently missing handler and nested-boundary methods in the branch-262 reflection boundary.
 - `T5R11-simplify-reflection-null-guards`: preserve the same reflection diagnostics while constructing access only from explicitly proven non-null methods, removing unreachable compiler guards from the patch.
+- `T5R12-handle-license-restart-transition`: handle the exact license-required restart lifecycle in the release-matrix harness before scenario actions, then re-establish IDE and plugin readiness without manual interaction or license bypass.
 
 ## Task Packets
 
@@ -477,18 +479,18 @@ Expected output:
 
 Result summary:
 
-- Status: ready to restart on the T5R11 head
+- Status: blocked pending T5R12 remediation and restart
 - Worker: `/root/t5_pycharm_release_gate`
 - Changed files or reviewed diff: Appended the first published-PyCharm gate evidence to `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`; source head remained unchanged.
-- Validation evidence: On exact head `489a901b8158fc9c1b6f39a3232ab1bb0b1b6ac3`, full local prerelease passed all eight gates. Hosted build, Security, Detekt, Trivy, IU/PY/WS verifier, and PyCharm UI 13/13 passed. `codecov/project` passed at 90.31%, but `codecov/patch` failed at 89.38% against a 90.27% target with three missing and nine partial diff lines in `ReflectiveCommitWorkflowSynchronizer.kt`.
+- Validation evidence: On exact head `4ccc61b4196ff6932ec3daa97f2c8992758a0aa5`, full local prerelease passed all eight gates and every hosted check passed, including PyCharm UI 13/13, patch coverage 95.86%, and project coverage 90.51%. Local IU passed 10/23, then the next scenario stalled on the exact license-required `Confirm Restart` dialog; local PY/WS were not started.
 - Self-review evidence from `.agents/references/reviews.md`: No production defect or compatibility change is confirmed; the failing IDE logs show IntelliJ declining an AI action because its target control stopped showing during dynamic plugin reconfiguration.
 - Commit:
-- Worker events: Initial worker stopped at the first published-PyCharm failure. Restarted worker `/root/t5_final_exact_head` preserved the branch-262 scheme failure. Worker `/root/t5_final_exact_head_r2` preserved the first late Codecov finding. Worker `/root/t5_final_exact_head_r3` preserved the closed-index race. Worker `/root/t5_final_exact_head_r4` passed prerelease and hosted UI, stopped local IU after 5/23 when the residual patch-coverage failure appeared, and stopped cleanly at `2026-07-23T17:00:15.2706707+02:00`.
-- Orchestrator reconciliation: Exact local, origin, and PR head remained `489a901b8158fc9c1b6f39a3232ab1bb0b1b6ac3`. The worker's report-only diff matches hosted check output: UI 13/13 and project coverage passed, while patch coverage alone failed. The local JaCoCo unit XML leaves the independently-missing handler and nested-boundary method predicates only partially covered.
+- Worker events: Initial worker stopped at the first published-PyCharm failure. Restarted workers preserved each later hosted failure. Worker `/root/t5_final_exact_head_r5` passed prerelease and every hosted gate, stopped local IU after 10/23 when the license restart modal blocked scenario 11, preserved exact log/thread/screenshot evidence, and stopped cleanly at `2026-07-23T18:05:09.4198028+02:00`.
+- Orchestrator reconciliation: Exact local, origin, and PR head remained `4ccc61b4196ff6932ec3daa97f2c8992758a0aa5`. The T5R6 observer and terminal Ultimate callbacks completed before `LicenseManager` disabled Ultimate and `BackendMessagesService` displayed the exact modal. The worker performed no manual interaction and stopped the managed process cleanly.
 - Changelog/docs/spec/tasks updates: T5D aligned README, contributor/support documentation, changelog, and generated Marketplace notes; the validation report now records the subsequent hosted scheme-race, coverage, and closed-index evidence through T5R9.
-- Blockers: None inside T5R11; the complete exact-head local and hosted gate, including delayed Codecov checks, remains required.
-- Review risks: Hosted aggregate coverage is decisive; the current local projection is 95.87% patch coverage against the unchanged 90.27% target.
-- Handoff notes and next action: Push the T5R11 head, then restart the complete T5 gate including Codecov.
+- Blockers: T5R12 must handle the exact recurring license restart transition and re-establish IDE/plugin readiness before scenario actions.
+- Review risks: The handler must trigger the platform's real restart rather than dismissing or bypassing license enforcement, must match the exact dialog contract, and must keep near-miss or unrelated modals red.
+- Handoff notes and next action: Execute T5R12, push its head, then restart the complete T5 gate.
 
 ### Task Packet: T5R-stabilize-pycharm-ui-startup
 
@@ -1256,6 +1258,77 @@ Result summary:
 - Review risks: The local projection exceeds the target, but only hosted aggregate Codecov can close the original failure.
 - Handoff notes and next action: Push T5R11 and reconciliation, then dispatch a fresh T5 worker for the complete exact-head gate.
 
+### Task Packet: T5R12-handle-license-restart-transition
+
+Task id: T5R12-handle-license-restart-transition
+
+Lane: testing
+
+Required skills:
+
+- `intellij-plugin-development`
+- `kotlin-plugin-style`
+- `platform-docs-research`
+- `plugin-test-tdd`
+- `triage-flaky-test`
+
+Goal:
+
+- Make release-matrix UI tests deterministically survive the exact IntelliJ 2026.2 license downgrade restart before entering a scenario, without manual interaction or bypassing platform license enforcement.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, this plan's readiness/execution graph/this packet, the T5 r5 report evidence, managed job `20260723-174706-intellij-2026-2-t5-final-4ccc61b-ui-iu-f-d88113`, heartbeat screenshot `008_heartbeat/dialog0.png`, `runReleaseMatrixIdeWithFixture`, `FakeAiAssistantProbe`'s early app-lifecycle listener and existing subscription-dialog handling, and exact branch-262 Starter/Driver restart APIs or source.
+- Escalate to: branch-262 `BackendMessagesService`, `DialogWrapper`, license transition, and Starter process-restart source only as needed to select a supported lifecycle.
+
+Allowed inputs:
+
+- The exact modal title/body/button, relevant IDE/Starter logs and thread dumps, current test-only lifecycle observers, official/source API evidence, and focused validation output.
+
+Forbidden inputs:
+
+- Production plugin code/resources, license bypass or spoofing, credentials, dismissing the dialog without applying the platform restart, generic dialog clicking, sleeps, retries as the fix, product skips, assertion weakening, and unrelated source.
+
+Write scope:
+
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt`
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/fakeai/FakeAiAssistantProbe.kt`
+
+Dependencies:
+
+- T5 r5 preserved exact local IU modal/log/thread evidence, stopped the managed job cleanly, and restored a report-only worktree diff; the maintainer explicitly requested recurring handling.
+
+Validation:
+
+- Add a red pure contract test proving only IntelliJ 2026.2's exact `Confirm Restart` title, full license-required body, and `Restart` action are accepted while near misses remain red. Implement the smallest supported test-only lifecycle that detects the transition before scenario work, invokes the real platform restart, waits for the restarted IDE/Driver/project, and reruns the existing plugin-action readiness barrier. Preserve an exact timeout/failure diagnostic for missing restart completion or any unexpected dialog. Run the formerly stalled IU scenario in three independent clean processes with evidence that at least one execution exercised the restart path, then the full IU lane; run a PyCharm smoke lane to prove no regression; run `compileIntegrationTestKotlin`, `spotlessCheck`, `detekt`, and `git diff --check`; commit T5R12 before restarting T5.
+
+Escalation triggers:
+
+- Escalate if Starter cannot follow a real IDE restart, the exact dialog cannot be observed before the EDT blocks, handling requires license bypass, the recurring path cannot be exercised deterministically, or a file outside the two-file scope is required.
+
+Stop conditions:
+
+- Passing requires manually assisted validation, generic dialog dismissal/clicking, license/configuration spoofing, a product skip, retry-only mitigation, sleeps, or production behavior changes.
+
+Expected output:
+
+- Exact dialog/restart lifecycle handling, positive/near-miss contract proof, repeated real IU evidence, full IU/PY validation, task commit, events, reconciliation, and clean handoff to T5.
+
+Result summary:
+
+- Status: ready
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence:
+- Self-review evidence from `.agents/references/reviews.md`:
+- Commit:
+- Worker events:
+- Orchestrator reconciliation:
+- Changelog/docs/spec/tasks updates:
+- Blockers:
+- Review risks:
+- Handoff notes and next action:
+
 ### Task Packet: T5D-align-published-pycharm-documentation
 
 Task id: T5D-align-published-pycharm-documentation
@@ -1332,21 +1405,21 @@ Result summary:
 - Use one active worker at a time and a fresh sub-agent for each task packet.
 - The orchestrator records a decision capsule, reserves each write scope, reconciles claims, and commits each completed task before the next.
 - After T3, the orchestrator decides and applies any eligible `CHANGELOG.md` entry during reconciliation; workers may only suggest the text.
-- T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, T5R11, and the T1/T2 corrective work are complete. T5R2 through T5R5 and T5R10 stopped cleanly after producing bounded evidence; restart T5.
+- T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, T5R11, and the T1/T2 corrective work are complete. T5R2 through T5R5 and T5R10 stopped cleanly after producing bounded evidence; execute T5R12, then restart T5.
 - Follow `.agents/references/orchestration.md`; use the current upgrade worktree only.
 
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: Restart T5 for the complete exact-head final gate.
+- Current task or wave: T5R12 recurring license restart handling.
 - Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`; T5R `234d91e18bda4b6028a594316ed1e2d90d57229c`; T5D `82abd9634effcc276b2d4821d8ee8b8657cd0ffe`; T5R6 `777cf177ca1ea7c54156c761b54ab1250fc002d4`; T5R7 `c3bae72f614e8e4fb224aa93bbd82f0b1eade3be`; T5R8 `c6cc0c390126d21a0a58633918a553639ae73bbe`; T5R9 `ae5aa6dba8fe01ea4a4d0bea3fb816a33f25baf4`; T5R11 `df5964eb83a54b128dc3883b884cf5c33e1fe256`.
-- Plan status and readiness: In Progress; the original plan and all bounded remediation packets through T5R11 are approved; T5R11 is complete.
-- Validation and self-review state: T5R11 passed focused/full/static checks, removed all seven missed branches in the changed reflection range, and projects 95.87% patch coverage.
-- Worker event and reconciliation state: All prior tasks through completed T5R11 worker `/root/t5r11_reflection_null_guards` are reconciled; dispatch a fresh T5 worker.
+- Plan status and readiness: In Progress; the original plan and all bounded remediation packets through T5R12 are approved; T5R12 is ready.
+- Validation and self-review state: Exact-head prerelease and every hosted gate pass; local IU alone is blocked by the exact recurring license restart modal after 10/23 passes.
+- Worker event and reconciliation state: All prior tasks through stopped T5 worker `/root/t5_final_exact_head_r5` are reconciled; dispatch a fresh T5R12 worker.
 - Changelog, docs, spec, task, or plan updates: Compatibility configuration, current public docs, changelog, and regenerated Marketplace notes are aligned with published 2026.2/JDK 25 state.
-- Blockers or open questions: No open question; the complete final-head gate, including delayed Codecov checks, remains required evidence.
-- Next action: Keep PR #37 draft, push T5R11 and reconciliation, and rerun the final T5 current-head gate.
-- Context handoff notes: Hosted Codecov is decisive; if it passes, complete all local IU/PY/WS lanes and readiness review before transitioning the PR.
+- Blockers or open questions: No open product question; T5R12 and the complete final-head local/review/readiness gate remain required evidence.
+- Next action: Keep PR #37 draft, execute T5R12, push, and rerun the final T5 current-head gate.
+- Context handoff notes: Every hosted check on `4ccc61b` is green; preserve that evidence, but require fresh exact-head checks after T5R12.
 
 ## Execution Graph
 
@@ -1372,7 +1445,8 @@ flowchart TD
     W5R9["W5R9[run-verify]<br/>T5R9 closed-index-storage classification"]
     W5R10["W5R10[run-verify]<br/>T5R10 residual reflection branches"]
     W5R11["W5R11[code]<br/>T5R11 simplify reflection null guards"]
-    O1 --> W1 --> W2 --> W3 --> W3R --> W4 --> G1 --> W5 --> W5R --> W5 --> W5D --> W5 --> W5R2 --> W5R3 --> W5R4 --> W5R5 --> W5R6 --> W5 --> W5R7 --> W5 --> W5R8 --> W5 --> W5R9 --> W5 --> W5R10 --> W5R11 --> W5 --> O1
+    W5R12["W5R12[run-verify]<br/>T5R12 license restart lifecycle"]
+    O1 --> W1 --> W2 --> W3 --> W3R --> W4 --> G1 --> W5 --> W5R --> W5 --> W5D --> W5 --> W5R2 --> W5R3 --> W5R4 --> W5R5 --> W5R6 --> W5 --> W5R7 --> W5 --> W5R8 --> W5 --> W5R9 --> W5 --> W5R10 --> W5R11 --> W5 --> W5R12 --> W5 --> O1
 ```
 
 ## Validation
