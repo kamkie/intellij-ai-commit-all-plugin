@@ -33,12 +33,15 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
+import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ex.ApplicationManagerEx
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vcs.CommitMessageI
 import com.intellij.openapi.vcs.FilePath
@@ -47,11 +50,14 @@ import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.JBColor
+import com.intellij.ui.LicensingFacade
+import com.intellij.ui.components.JBLabel
 import com.intellij.vcs.commit.CommitMessageUi
 import java.awt.AWTEvent
 import java.awt.Component
 import java.awt.Container
 import java.awt.Dialog
+import java.awt.Dialog.ModalityType
 import java.awt.Frame
 import java.awt.Graphics2D
 import java.awt.Point
@@ -64,13 +70,24 @@ import java.awt.event.WindowEvent
 import java.awt.image.BufferedImage
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption.ATOMIC_MOVE
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
+import java.nio.file.StandardWatchEventKinds.ENTRY_CREATE
+import java.util.Date
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.imageio.ImageIO
+import javax.swing.AbstractButton
 import javax.swing.JComponent
+import javax.swing.JLabel
+import javax.swing.text.JTextComponent
 
 object FakeAiAssistantProbe {
     private val logger = Logger.getInstance(FakeAiAssistantProbe::class.java)
+    private val licenseRestartObserverInstalled = AtomicBoolean()
+    private val licenseRestartHandled = AtomicBoolean()
+    private val syntheticLicenseRestartDialogShown = AtomicBoolean()
+    private val licenseRestartDiagnostic = AtomicReference("No modal dialog has been observed.")
     private val ultimateEnableObserverRegistrationStarted = AtomicBoolean()
     private val ultimateEnableObserverInstalled = AtomicBoolean()
     private val ultimateEnableAttemptCompleted = AtomicBoolean()
@@ -96,6 +113,15 @@ object FakeAiAssistantProbe {
             ((event as? WindowEvent)?.window as? Dialog)?.let(::closeManageSubscriptionsDialog)
         }
     }
+    private val licenseRestartObserver = AWTEventListener { event ->
+        if (event.id == WindowEvent.WINDOW_OPENED) {
+            ((event as? WindowEvent)?.window as? Dialog)?.let { dialog ->
+                ApplicationManager.getApplication().invokeLater {
+                    handleLicenseRestartDialog(dialog)
+                }
+            }
+        }
+    }
 
     @JvmStatic
     fun isCommitMessageActionRegistered(): Boolean = ActionManager.getInstance().getAction("Vcs.LLMCommitMessageAction") != null
@@ -107,6 +133,44 @@ object FakeAiAssistantProbe {
     fun isAiCommitAllThreeSectionActionRegistered(): Boolean = ActionManager
         .getInstance()
         .getAction(AI_COMMIT_ALL_THREE_SECTION_ACTION_ID) != null
+
+    @JvmStatic
+    fun installLicenseRestartObserver() {
+        if (licenseRestartObserverInstalled.compareAndSet(false, true)) {
+            Toolkit.getDefaultToolkit().addAWTEventListener(
+                licenseRestartObserver,
+                AWTEvent.WINDOW_EVENT_MASK,
+            )
+            logger.info("AI Commit All test plugin license restart observer installed")
+        }
+        continueRestartedLicensePreflightIfNeeded()
+        Window.getWindows().filterIsInstance<Dialog>().forEach(::handleLicenseRestartDialog)
+        ApplicationManager.getApplication().invokeLater(::showSyntheticLicenseRestartDialogIfRequested)
+    }
+
+    @JvmStatic
+    fun isIntellij2026Point2LicenseRestartDialog(
+        productCode: String,
+        ideVersion: String,
+        title: String,
+        body: String,
+        action: String,
+    ): Boolean = productCode in LICENSE_RESTART_PRODUCT_CODES &&
+        ideVersion == INTELLIJ_2026_2_VERSION &&
+        title == LICENSE_RESTART_DIALOG_TITLE &&
+        body == LICENSE_RESTART_DIALOG_BODY &&
+        action == LICENSE_RESTART_ACTION
+
+    @JvmStatic
+    fun licenseRestartHandlingDiagnostic(): String = licenseRestartDiagnostic.get()
+
+    @JvmStatic
+    fun isIdeLicenseActive(): Boolean {
+        val licensingFacade = LicensingFacade.getInstance() ?: return false
+        val licensedTo = licensingFacade.licensedTo ?: return false
+        val productReleaseDate = Date(ApplicationInfo.getInstance().buildDate.timeInMillis)
+        return licensedTo.isNotBlank() && licensingFacade.isApplicableForProduct(productReleaseDate)
+    }
 
     @JvmStatic
     fun installUltimateEnableAttemptObserver() {
@@ -463,6 +527,232 @@ object FakeAiAssistantProbe {
         }
     }
 
+    private fun handleLicenseRestartDialog(dialog: Dialog) {
+        if (!dialog.isShowing || dialog.modalityType == ModalityType.MODELESS) {
+            return
+        }
+
+        val applicationInfo = ApplicationInfo.getInstance()
+        val bodyFragments = dialog.descendants()
+            .mapNotNull { component ->
+                when (component) {
+                    is JLabel -> component.text
+                    is JTextComponent -> component.text
+                    else -> null
+                }
+            }
+            .map(::normalizeDialogText)
+            .filter(String::isNotBlank)
+            .toList()
+        val body = bodyFragments.firstOrNull { fragment -> fragment == LICENSE_RESTART_DIALOG_BODY }
+            ?: normalizeDialogText(bodyFragments.joinToString(separator = " "))
+        val actionButtons = dialog.descendants()
+            .filterIsInstance<AbstractButton>()
+            .filter(AbstractButton::isShowing)
+            .toList()
+        val actionTexts = actionButtons.map { button -> normalizeDialogText(button.text.orEmpty()) }
+        val restartButtons = actionButtons.filter { button ->
+            normalizeDialogText(button.text.orEmpty()) == LICENSE_RESTART_ACTION
+        }
+        val isSyntheticLifecycleProof = dialog.descendants()
+            .filterIsInstance<JComponent>()
+            .any { component ->
+                component.getClientProperty(SYNTHETIC_LICENSE_RESTART_PROOF_COMPONENT_KEY) == true
+            }
+        val source = if (isSyntheticLifecycleProof) {
+            SYNTHETIC_LICENSE_RESTART_SOURCE
+        } else {
+            PLATFORM_LICENSE_RESTART_SOURCE
+        }
+        val diagnostic = "source=$source, product=${applicationInfo.build.productCode}, " +
+            "version=${applicationInfo.shortVersion}, title=${dialog.title}, body=$body, actions=$actionTexts"
+        val restartAction = restartButtons.singleOrNull()?.text.orEmpty()
+
+        if (
+            !isIntellij2026Point2LicenseRestartDialog(
+                productCode = applicationInfo.build.productCode,
+                ideVersion = applicationInfo.shortVersion,
+                title = dialog.title,
+                body = body,
+                action = restartAction,
+            )
+        ) {
+            licenseRestartDiagnostic.set("Observed modal did not match the exact license restart contract: $diagnostic")
+            return
+        }
+        if (!licenseRestartHandled.compareAndSet(false, true)) {
+            return
+        }
+
+        val markerPath = licenseRestartMarkerPath()
+            ?: error("The exact license restart dialog was shown without a configured restart marker path: $diagnostic")
+        val existingMarker = readLicenseRestartMarker(markerPath)
+        if (existingMarker != null) {
+            writeLicenseRestartMarker(
+                markerPath,
+                existingMarker + ("state" to LICENSE_RESTART_LOOP_STATE),
+            )
+            licenseRestartDiagnostic.set("Refusing a second license restart: $diagnostic")
+            return
+        }
+
+        val marker = linkedMapOf(
+            "state" to LICENSE_RESTART_REQUESTED_STATE,
+            "source" to source,
+            "product" to applicationInfo.build.productCode,
+            "version" to applicationInfo.shortVersion,
+            "title" to dialog.title,
+            "body" to body,
+            "action" to restartAction,
+            "jmxPort" to requiredLicenseRestartSystemProperty(JMX_PORT_PROPERTY),
+            "rmiPort" to requiredLicenseRestartSystemProperty(RMI_PORT_PROPERTY),
+            "rpcPort" to requiredLicenseRestartSystemProperty(RPC_PORT_PROPERTY),
+            "originalPid" to ProcessHandle.current().pid().toString(),
+        )
+        writeLicenseRestartMarker(markerPath, marker)
+        licenseRestartDiagnostic.set("Invoking the exact platform Restart action: $diagnostic")
+        logger.info("AI Commit All test plugin invoking exact license Restart action: $diagnostic")
+        restartButtons.single().doClick()
+    }
+
+    private fun continueRestartedLicensePreflightIfNeeded() {
+        val markerPath = licenseRestartMarkerPath() ?: return
+        val marker = readLicenseRestartMarker(markerPath) ?: return
+        val productCode = ApplicationInfo.getInstance().build.productCode
+        if (!marker.hasExactLicenseRestartContract(LICENSE_RESTART_REQUESTED_STATE, productCode)) {
+            return
+        }
+
+        val restartedMarker = marker +
+            ("state" to LICENSE_RESTART_STARTED_STATE) +
+            ("restartPid" to ProcessHandle.current().pid().toString())
+        writeLicenseRestartMarker(markerPath, restartedMarker)
+        licenseRestartDiagnostic.set("License restart process is waiting for host cleanup: $restartedMarker")
+        ApplicationManager.getApplication().executeOnPooledThread {
+            markerPath.parent.fileSystem.newWatchService().use { watchService ->
+                val shutdownRequestPath = licenseRestartShutdownRequestPath(markerPath)
+                markerPath.parent.register(watchService, ENTRY_CREATE)
+                if (acceptLicenseRestartShutdown(markerPath)) {
+                    return@executeOnPooledThread
+                }
+                while (true) {
+                    val key = watchService.take()
+                    val shutdownRequested = key.pollEvents().any { event ->
+                        event.context() == shutdownRequestPath.fileName
+                    }
+                    check(key.reset()) {
+                        "License restart marker watch key became invalid: $markerPath"
+                    }
+                    if (shutdownRequested && acceptLicenseRestartShutdown(markerPath)) {
+                        return@executeOnPooledThread
+                    }
+                }
+            }
+        }
+    }
+
+    private fun acceptLicenseRestartShutdown(markerPath: Path): Boolean {
+        if (!Files.isRegularFile(licenseRestartShutdownRequestPath(markerPath))) {
+            return false
+        }
+        val marker = readLicenseRestartMarker(markerPath) ?: return false
+        val productCode = ApplicationInfo.getInstance().build.productCode
+        if (!marker.hasExactLicenseRestartContract(LICENSE_RESTART_SHUTDOWN_REQUESTED_STATE, productCode)) {
+            return false
+        }
+        writeLicenseRestartMarker(
+            markerPath,
+            marker + ("state" to LICENSE_RESTART_SHUTDOWN_ACCEPTED_STATE),
+        )
+        licenseRestartDiagnostic.set("License restart process accepted host cleanup: $marker")
+        ApplicationManager.getApplication().invokeLater {
+            ApplicationManager.getApplication().exit()
+        }
+        return true
+    }
+
+    private fun licenseRestartShutdownRequestPath(markerPath: Path): Path = markerPath.resolveSibling("${markerPath.fileName}.shutdown-requested")
+
+    private fun showSyntheticLicenseRestartDialogIfRequested() {
+        if (System.getProperty(SYNTHETIC_LICENSE_RESTART_PROOF_PROPERTY) != "true") {
+            return
+        }
+        val applicationInfo = ApplicationInfo.getInstance()
+        if (
+            applicationInfo.build.productCode !in LICENSE_RESTART_PRODUCT_CODES ||
+            applicationInfo.shortVersion != INTELLIJ_2026_2_VERSION
+        ) {
+            return
+        }
+        val markerPath = licenseRestartMarkerPath() ?: return
+        if (!Files.exists(markerPath) && syntheticLicenseRestartDialogShown.compareAndSet(false, true)) {
+            SyntheticLicenseRestartDialog().show()
+        }
+    }
+
+    private fun normalizeDialogText(text: String): String = text
+        .replace(HTML_TAG_REGEX, " ")
+        .replace(WHITESPACE_REGEX, " ")
+        .trim()
+
+    private fun licenseRestartMarkerPath(): Path? = System
+        .getProperty(LICENSE_RESTART_MARKER_PROPERTY)
+        ?.takeIf(String::isNotBlank)
+        ?.let(Path::of)
+
+    private fun requiredLicenseRestartSystemProperty(name: String): String = requireNotNull(
+        System.getProperty(name)?.takeIf(String::isNotBlank),
+    ) {
+        "The exact license restart dialog requires IDE system property '$name'."
+    }
+
+    private fun readLicenseRestartMarker(markerPath: Path): Map<String, String>? {
+        if (!Files.isRegularFile(markerPath)) {
+            return null
+        }
+        return Files.readAllLines(markerPath)
+            .mapNotNull { line ->
+                val separator = line.indexOf('=')
+                if (separator <= 0) null else line.substring(0, separator) to line.substring(separator + 1)
+            }
+            .toMap()
+    }
+
+    private fun writeLicenseRestartMarker(
+        markerPath: Path,
+        marker: Map<String, String>,
+    ) {
+        markerPath.parent?.let(Files::createDirectories)
+        val nextMarkerPath = markerPath.resolveSibling("${markerPath.fileName}.next")
+        Files.write(
+            nextMarkerPath,
+            LICENSE_RESTART_MARKER_KEYS.mapNotNull { key ->
+                marker[key]?.let { value -> "$key=$value" }
+            },
+        )
+        Files.move(nextMarkerPath, markerPath, ATOMIC_MOVE, REPLACE_EXISTING)
+    }
+
+    private fun Map<String, String>.hasExactLicenseRestartContract(
+        state: String,
+        productCode: String,
+    ): Boolean = this["state"] == state &&
+        this["source"] in LICENSE_RESTART_SOURCES &&
+        productCode in LICENSE_RESTART_PRODUCT_CODES &&
+        this["product"] == productCode &&
+        this["version"] == INTELLIJ_2026_2_VERSION &&
+        this["title"] == LICENSE_RESTART_DIALOG_TITLE &&
+        this["body"] == LICENSE_RESTART_DIALOG_BODY &&
+        this["action"] == LICENSE_RESTART_ACTION &&
+        this["jmxPort"]?.toIntOrNull() in 1..65535 &&
+        this["rmiPort"]?.toIntOrNull() in 1..65535 &&
+        this["rpcPort"]?.toIntOrNull() in 1..65535 &&
+        this["originalPid"]?.toLongOrNull()?.let { pid -> pid > 0 } == true &&
+        (
+            state == LICENSE_RESTART_REQUESTED_STATE ||
+                this["restartPid"]?.toLongOrNull()?.let { pid -> pid > 0 } == true
+            )
+
     @JvmStatic
     fun setGitStagingAreaEnabled(enabled: Boolean) = runOnEdt {
         val gitModule = requireNotNull(
@@ -795,16 +1085,90 @@ object FakeAiAssistantProbe {
     private const val GIT_BACKEND_MODULE_ID = "intellij.vcs.git.backend"
     private const val GIT_STAGE_MANAGER_CLASS_NAME = "git4idea.index.GitStageManagerKt"
     private const val MANAGE_SUBSCRIPTIONS_DIALOG_TITLE = "Manage Subscriptions"
+    private const val LICENSE_RESTART_MARKER_PROPERTY = "aicommitall.license.restart.marker"
+    private const val SYNTHETIC_LICENSE_RESTART_PROOF_PROPERTY = "aicommitall.license.restart.synthetic.proof"
+    private const val SYNTHETIC_LICENSE_RESTART_PROOF_COMPONENT_KEY =
+        "aicommitall.license.restart.synthetic.proof.component"
+    private const val INTELLIJ_2026_2_VERSION = "2026.2"
+    private const val LICENSE_RESTART_DIALOG_TITLE = "Confirm Restart"
+    private const val LICENSE_RESTART_DIALOG_BODY =
+        "Application restart is necessary to disable features requiring license. " +
+            "Click 'Restart' to continue using the product without these features."
+    private const val LICENSE_RESTART_ACTION = "Restart"
+    private const val BACK_TO_SUBSCRIPTIONS_ACTION = "Back to Subscriptions"
+    private const val PLATFORM_LICENSE_RESTART_SOURCE = "platform-license-dialog"
+    private const val SYNTHETIC_LICENSE_RESTART_SOURCE = "synthetic-lifecycle-proof"
+    private const val LICENSE_RESTART_REQUESTED_STATE = "restart-requested"
+    private const val LICENSE_RESTART_STARTED_STATE = "restart-started"
+    private const val LICENSE_RESTART_SHUTDOWN_REQUESTED_STATE = "shutdown-requested"
+    private const val LICENSE_RESTART_SHUTDOWN_ACCEPTED_STATE = "shutdown-accepted"
+    private const val LICENSE_RESTART_LOOP_STATE = "restart-loop"
+    private const val JMX_PORT_PROPERTY = "com.sun.management.jmxremote.port"
+    private const val RMI_PORT_PROPERTY = "com.sun.management.jmxremote.rmi.port"
+    private const val RPC_PORT_PROPERTY = "rpc.port"
     private const val FAKE_GENERATION_TIMEOUT_MILLIS = 30_000L
     private const val FAKE_GENERATION_POLL_MILLIS = 100L
     private const val DEFAULT_AI_COMPLETION_TIMEOUT_MILLIS = 30_000L
     private const val DEFAULT_AI_COMPLETION_CHECK_INTERVAL_MILLIS = 500L
     private const val FAKE_AI_ACTION_ID = "Vcs.LLMCommitMessageAction"
     private const val USER_EDIT_SENTINEL_KEY = '\u001D'
+    private val LICENSE_RESTART_SOURCES = setOf(
+        PLATFORM_LICENSE_RESTART_SOURCE,
+        SYNTHETIC_LICENSE_RESTART_SOURCE,
+    )
+    private val LICENSE_RESTART_PRODUCT_CODES = setOf("IU", "PY")
+    private val LICENSE_RESTART_MARKER_KEYS = listOf(
+        "state",
+        "source",
+        "product",
+        "version",
+        "title",
+        "body",
+        "action",
+        "jmxPort",
+        "rmiPort",
+        "rpcPort",
+        "originalPid",
+        "restartPid",
+    )
+    private val HTML_TAG_REGEX = Regex("<[^>]+>")
+    private val WHITESPACE_REGEX = Regex("\\s+")
+}
+
+private class SyntheticLicenseRestartDialog : DialogWrapper(false) {
+    private val message = JBLabel(LICENSE_RESTART_DIALOG_BODY).apply {
+        putClientProperty(SYNTHETIC_LICENSE_RESTART_PROOF_COMPONENT_KEY, true)
+    }
+
+    init {
+        title = LICENSE_RESTART_DIALOG_TITLE
+        setOKButtonText(LICENSE_RESTART_ACTION)
+        setCancelButtonText(BACK_TO_SUBSCRIPTIONS_ACTION)
+        init()
+    }
+
+    override fun createCenterPanel(): JComponent = message
+
+    override fun doOKAction() {
+        close(OK_EXIT_CODE)
+        ApplicationManagerEx.getApplicationEx().restart(true)
+    }
+
+    companion object {
+        private const val LICENSE_RESTART_DIALOG_TITLE = "Confirm Restart"
+        private const val LICENSE_RESTART_DIALOG_BODY =
+            "Application restart is necessary to disable features requiring license. " +
+                "Click 'Restart' to continue using the product without these features."
+        private const val LICENSE_RESTART_ACTION = "Restart"
+        private const val BACK_TO_SUBSCRIPTIONS_ACTION = "Back to Subscriptions"
+        private const val SYNTHETIC_LICENSE_RESTART_PROOF_COMPONENT_KEY =
+            "aicommitall.license.restart.synthetic.proof.component"
+    }
 }
 
 class FakeAiAssistantAppLifecycleListener : AppLifecycleListener {
     override fun appStarted() {
+        FakeAiAssistantProbe.installLicenseRestartObserver()
         FakeAiAssistantProbe.installUltimateEnableAttemptObserver()
     }
 }
