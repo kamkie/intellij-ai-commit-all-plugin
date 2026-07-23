@@ -308,3 +308,20 @@ Two delayed Codecov checks then failed. `codecov/patch` check `89214533481` repo
 T5R8 commit `c6cc0c390126d21a0a58633918a553639ae73bbe` adds seven unit tests for observable fail-closed behavior: handler invocation failure and cause, null workflow, null UI, missing nested methods, incompatible project, incompatible UI, and nested project invocation failure and cause. Every case requires null access and the exact `gitStageCommitWorkflowAccess` diagnostic.
 
 For inserted production lines 330-457, unit coverage improved from 65/81 lines and 45/72 branches to 81/81 lines and 66/72 branches. The remaining six branches are compiler null guards dominated by required-method checks. Targeted tests passed 32/32; the full unit suite passed 523 with one existing pending test; `jacocoTestReport`, `verifyJacocoCoverageReport`, `spotlessCheck`, `detekt`, and `git diff --check` passed. No production, threshold, exclusion, Codecov configuration, UI-harness, documentation, or changelog behavior changed. PR #37 remains draft until hosted aggregate Codecov and the complete exact-head gate confirm the remediation.
+
+The complete T5 restart on exact head `37abdab54c635e1a680d05d5e73f49ac45f8d558` passed the full local prerelease gate in job `20260723-155138-intellij-2026-2-t5-final-37abdab-prerele-67fcb4`. Hosted build, Security, CodeQL, Detekt, and all three Plugin Verifier jobs also passed. Hosted PyCharm UI coverage job [89226997462](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30012892593/job/89226997462) ran all 13 scenarios: 11 passed and two otherwise-successful commit scenarios promoted the same platform-only `ClosedStorageException`.
+
+Failure artifact `8566451340` showed both failures during nested `FileBasedIndexTumbler` plugin-loaded/unloaded cycles approximately 13 seconds before plugin workflow entry. Each stack named the branch-262 stub per-file-version storage path and contained:
+
+- `com.intellij.util.io.PagedFileStorage.doGetBufferWrapper`
+- `com.intellij.util.indexing.impl.perFileVersion.PersistentSubIndexerVersionEnumerator$MyEnumerator.enumerate`
+- `com.intellij.util.indexing.impl.storage.VfsAwareMapReduceIndex.getIndexingStateForFile`
+- `com.intellij.util.indexing.UnindexedFilesScanner$ScanningSession.scanFiles`
+
+Neither stack contained a plugin frame. Both plugin workflows subsequently created the expected commit, reached commit count two, and left a clean Git state. Raw closed-storage text appeared in four of the 13 IDE logs but was promoted by Starter in only the two failed scenarios.
+
+T5R9 commit `ae5aa6dba8fe01ea4a4d0bea3fb816a33f25baf4` changes only the release-matrix integration harness. Inside the existing exact `2026.2` gate, the new classifier requires the precise `ClosedStorageException` prefix, exact `/system/index/stubs/.perFileVersion/indexed_versions/indexed_versions_i` path suffix, and all four distinguishing frames above.
+
+Synthetic proof accepts both captured promoted forms and rejects non-2026.2, arbitrary exceptions, wrong index paths, generic closed-storage failures, and each single-frame near miss. The red classifier test rejected the captured diagnostic before implementation; the green classifier passed 1/1. The two formerly failed scenarios then passed 6/6 across three independent IDE processes (`20260723-162217-intellij-2026-2-t5r9-py-two-scenarios-r1-50250f`, `20260723-162342-intellij-2026-2-t5r9-py-two-scenarios-r2-4f304c`, and `20260723-162530-intellij-2026-2-t5r9-py-two-scenarios-r3-de138d`), followed by a full 13/13 PyCharm smoke pass in `20260723-162708-intellij-2026-2-t5r9-py-full-71bd67`. `compileIntegrationTestKotlin`, `spotlessCheck`, `detekt`, and `git diff --check` passed.
+
+No production, index, plugin-loading, retry, sleep, product-skip, or workflow-assertion behavior changed. PR #37 remains draft until the complete exact-head local, hosted, Codecov, review, and readiness gates pass.

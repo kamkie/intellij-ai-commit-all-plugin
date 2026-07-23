@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: T1 through T4, T3R, T5R, T5D, T5R6, T5R7, and T5R8 are complete. The restarted T5 passed prerelease, but hosted PyCharm UI promoted an exact branch-262 stub-index `ClosedStorageException` in two otherwise-successful scenarios. T5R9 must version-gate only that exact platform stack before T5 restarts.
+- Implementation progress: T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, and T5R9 are complete. T5R9 version-gates only the exact branch-262 stub-index `ClosedStorageException` and passed focused and full PyCharm validation. Restart T5 on the exact pushed head and require every local, hosted, coverage, review, and readiness gate.
 
 ## Status History
 
@@ -473,7 +473,7 @@ Expected output:
 
 Result summary:
 
-- Status: blocked pending T5R9 remediation and restart
+- Status: ready to restart on the T5R9 head
 - Worker: `/root/t5_pycharm_release_gate`
 - Changed files or reviewed diff: Appended the first published-PyCharm gate evidence to `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`; source head remained unchanged.
 - Validation evidence: On exact head `37abdab54c635e1a680d05d5e73f49ac45f8d558`, full local prerelease passed all eight gates and IU/PY/WS were compatible. Hosted build, Security, CodeQL, Detekt, and all three verifier jobs passed. Hosted PyCharm UI ran all 13 scenarios: 11 passed; the commit-shortcut and staging-enabled commit scenarios completed the intended commit successfully but Starter promoted the same platform `ClosedStorageException`.
@@ -481,10 +481,10 @@ Result summary:
 - Commit:
 - Worker events: Initial worker stopped at the first published-PyCharm failure. Restarted worker `/root/t5_final_exact_head` preserved the branch-262 scheme failure. Worker `/root/t5_final_exact_head_r2` preserved the late Codecov finding. Worker `/root/t5_final_exact_head_r3` started at `2026-07-23T15:49:08+02:00`, passed prerelease, stopped local IU at 19/22 after the hosted UI failure appeared, preserved artifact `8566451340`, and stopped cleanly at `2026-07-23T16:15:06+02:00`.
 - Orchestrator reconciliation: Exact local, origin, and PR head remained `37abdab54c635e1a680d05d5e73f49ac45f8d558`; worktree was clean. The two promoted failures contain no plugin frame. Both occur during nested `FileBasedIndexTumbler` plugin-loaded/unloaded cycles approximately 13 seconds before the plugin workflow, which subsequently commits successfully with the expected subject and clean Git state.
-- Changelog/docs/spec/tasks updates: T5D aligned README, contributor/support documentation, changelog, and generated Marketplace notes; the validation report records the earlier timing failures and must add the T5R hosted modal evidence.
-- Blockers: T5R9 must classify the exact known branch-262 closed-storage diagnostic without suppressing arbitrary storage failures or changing production/index behavior.
-- Review risks: The mapping must require the exact exception prefix, exact stub-index path suffix, and distinguishing PagedFileStorage/PersistentSubIndexer/VfsAwareMapReduceIndex/UnindexedFilesScanner frames, remain version-gated to 2026.2, and leave every near miss red.
-- Handoff notes and next action: Execute T5R9, push its head, then restart the complete T5 gate including Codecov.
+- Changelog/docs/spec/tasks updates: T5D aligned README, contributor/support documentation, changelog, and generated Marketplace notes; the validation report now records the subsequent hosted scheme-race, coverage, and closed-index evidence through T5R9.
+- Blockers: None inside T5R9; the complete exact-head local and hosted gate, including delayed Codecov checks, remains required.
+- Review risks: Hosted Linux startup behavior and aggregate Codecov results remain decisive until they pass on the exact current head.
+- Handoff notes and next action: Push the T5R9 head, then restart the complete T5 gate including Codecov.
 
 ### Task Packet: T5R-stabilize-pycharm-ui-startup
 
@@ -1103,18 +1103,18 @@ Expected output:
 
 Result summary:
 
-- Status: ready
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Worker events:
-- Orchestrator reconciliation:
-- Changelog/docs/spec/tasks updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: completed
+- Worker: `/root/t5r9_closed_index_classifier`
+- Changed files or reviewed diff: Changed only `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt`; added one exact branch-262 classifier and synthetic positive/negative coverage.
+- Validation evidence: The red classifier proof rejected the first captured diagnostic before implementation. The green pure classifier test passed 1/1. The two formerly failed PyCharm scenarios passed 6/6 across three independent IDE processes (`20260723-162217-intellij-2026-2-t5r9-py-two-scenarios-r1-50250f`, `20260723-162342-intellij-2026-2-t5r9-py-two-scenarios-r2-4f304c`, and `20260723-162530-intellij-2026-2-t5r9-py-two-scenarios-r3-de138d`), and the full PyCharm lane passed 13/13 in `20260723-162708-intellij-2026-2-t5r9-py-full-71bd67`. `compileIntegrationTestKotlin`, `spotlessCheck`, `detekt`, and `git diff --check` passed.
+- Self-review evidence from `.agents/references/reviews.md`: Classification remains inside the exact `2026.2` gate and requires the exact exception prefix, stub-index path suffix, and all four distinguishing platform frames. Tests leave non-2026.2, arbitrary storage errors, wrong paths, generic closed-storage errors, and every missing-frame near miss red. No production, index, plugin-loading, retry, sleep, skip, or workflow-assertion behavior changed.
+- Commit: `ae5aa6dba8fe01ea4a4d0bea3fb816a33f25baf4`
+- Worker events: Worker started at `2026-07-23T16:17:07.1735403+02:00`, completed the bounded one-file packet, and stopped successfully at `2026-07-23T16:35:13.7065745+02:00`.
+- Orchestrator reconciliation: Worker claims match the one-file 110-line test-harness diff, managed-job results, clean worktree, and required contiguous commit metadata.
+- Changelog/docs/spec/tasks updates: No user-facing behavior changed; this plan and the validation report record task-local evidence. Existing changelog and generated Marketplace notes remain current.
+- Blockers: None; restart T5 on the exact pushed head and require the complete local, hosted, Codecov, review, and readiness gate.
+- Review risks: Only the exact hosted branch-262 stack is classified; any new or near-miss diagnostic remains a failure and requires separate triage.
+- Handoff notes and next action: Push T5R9 and this reconciliation, then dispatch a fresh T5 worker for the complete current-head gate.
 
 ### Task Packet: T5D-align-published-pycharm-documentation
 
@@ -1192,21 +1192,21 @@ Result summary:
 - Use one active worker at a time and a fresh sub-agent for each task packet.
 - The orchestrator records a decision capsule, reserves each write scope, reconciles claims, and commits each completed task before the next.
 - After T3, the orchestrator decides and applies any eligible `CHANGELOG.md` entry during reconciliation; workers may only suggest the text.
-- T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, and the T1/T2 corrective work are complete. T5R2 through T5R5 stopped cleanly after producing successively narrower platform evidence used by T5R6; execute T5R9, then restart T5.
+- T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, and the T1/T2 corrective work are complete. T5R2 through T5R5 stopped cleanly after producing successively narrower platform evidence used by T5R6; restart T5.
 - Follow `.agents/references/orchestration.md`; use the current upgrade worktree only.
 
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: T5R9 exact branch-262 closed-index-storage classification.
-- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`; T5R `234d91e18bda4b6028a594316ed1e2d90d57229c`; T5D `82abd9634effcc276b2d4821d8ee8b8657cd0ffe`; T5R6 `777cf177ca1ea7c54156c761b54ab1250fc002d4`; T5R7 `c3bae72f614e8e4fb224aa93bbd82f0b1eade3be`; T5R8 `c6cc0c390126d21a0a58633918a553639ae73bbe`.
-- Plan status and readiness: In Progress; the original plan, T3R, T5R, T5D, T5R2, T5R3, T5R4, T5R5, T5R6, and T5R7 remediation packets are approved.
-- Validation and self-review state: Exact-head prerelease and every hosted gate except UI coverage pass; hosted PyCharm UI passed 11/13 and exposed two promoted instances of the same exact platform index-storage race before workflow entry.
-- Worker event and reconciliation state: All prior tasks through completed T5R8 and stopped exact-head T5 worker `/root/t5_final_exact_head_r3` are reconciled; dispatch T5R9 with a fresh worker.
+- Current task or wave: Restart T5 for the complete exact-head final gate.
+- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`; T5R `234d91e18bda4b6028a594316ed1e2d90d57229c`; T5D `82abd9634effcc276b2d4821d8ee8b8657cd0ffe`; T5R6 `777cf177ca1ea7c54156c761b54ab1250fc002d4`; T5R7 `c3bae72f614e8e4fb224aa93bbd82f0b1eade3be`; T5R8 `c6cc0c390126d21a0a58633918a553639ae73bbe`; T5R9 `ae5aa6dba8fe01ea4a4d0bea3fb816a33f25baf4`.
+- Plan status and readiness: In Progress; the original plan and all bounded remediation packets through T5R9 are approved and complete.
+- Validation and self-review state: T5R9's exact classifier passed positive/negative proof, the two formerly failing scenarios in three independent IDE processes, and the full 13/13 PyCharm lane. The complete exact-head gate has not yet restarted.
+- Worker event and reconciliation state: All prior tasks through completed T5R9 and stopped exact-head T5 worker `/root/t5_final_exact_head_r3` are reconciled; dispatch a fresh T5 worker.
 - Changelog, docs, spec, task, or plan updates: Compatibility configuration, current public docs, changelog, and regenerated Marketplace notes are aligned with published 2026.2/JDK 25 state.
-- Blockers or open questions: No open question; T5R9 and the complete final-head gate, including delayed Codecov checks, remain required evidence.
-- Next action: Keep PR #37 draft, execute T5R9, push, and rerun the final T5 current-head gate.
-- Context handoff notes: The exact closed-storage error occurs while branch 262 tumbles the stub index for plugin reload, contains no plugin frame, and precedes two successful plugin commit workflows.
+- Blockers or open questions: No open question; the complete final-head gate, including delayed Codecov checks, remains required evidence.
+- Next action: Keep PR #37 draft, push T5R9 and reconciliation, and rerun the final T5 current-head gate.
+- Context handoff notes: The exact classifier requires the captured branch-262 stub-index path and four distinguishing platform frames; arbitrary and near-miss closed-storage errors remain failures.
 
 ## Execution Graph
 
