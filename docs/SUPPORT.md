@@ -19,9 +19,8 @@ it does not repeat the troubleshooting FAQ.
 - Current IDE scope: JetBrains IDEs with the VCS Commit tool window and
   compatible commit workflow APIs. The release verifier gate covers IntelliJ
   IDEA, PyCharm, and WebStorm `2026.2`.
-- PyCharm 2026.2 is not yet published. Its required dependency-resolution
-  failure remains visible and blocks release readiness; the lane is not skipped
-  or treated as passed.
+- PyCharm 2026.2 is published and its local verifier and UI lanes pass. Its
+  required lane remains part of the full release-readiness matrix.
 - Current VCS scope: Git only, including multiple Git roots.
 - JetBrains AI Assistant is declared as a required plugin dependency.
 - Release validation checklist execution remains required before release-readiness claims for

@@ -12,7 +12,7 @@ This changelog records plugin source and runtime behavior changes, public plugin
 
 ### Changed
 
-- Raise the minimum supported IntelliJ Platform to 2026.2/build 262 and move development and CI to JDK 25. The required IntelliJ IDEA, PyCharm, and WebStorm 2026.2 matrix must pass before release readiness; PyCharm 2026.2 availability currently blocks that gate.
+- Raise the minimum supported IntelliJ Platform to 2026.2/build 262 and move development and CI to JDK 25. The required IntelliJ IDEA, PyCharm, and WebStorm 2026.2 matrix must pass before release readiness; PyCharm 2026.2 is now published and has passed its local verifier and UI lanes.
 
 ### Fixed
 

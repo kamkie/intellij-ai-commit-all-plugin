@@ -61,10 +61,9 @@ Run the IntelliJ Plugin Verifier locally with the default verifier target from `
 .\gradlew.bat verifyPlugin -PpluginVerifierIdeVersions="IU-2026.2,PY-2026.2,WS-2026.2"
 ```
 
-PyCharm 2026.2 is not yet published, so the complete verifier command is
-expected to fail while resolving that required target. Do not remove, skip, or
-ignore the PyCharm lane; release readiness waits for it to become available and
-pass with the unchanged matrix.
+PyCharm 2026.2 is published, so the complete verifier command now covers all
+three required targets. Do not remove, skip, or ignore the PyCharm lane;
+release readiness requires the unchanged matrix to pass.
 
 To run the pull-request CI workflow locally through `nektos/act`, keep Docker running and use:
 
