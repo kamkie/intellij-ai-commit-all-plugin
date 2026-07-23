@@ -1,6 +1,6 @@
 # Release Validation Checklist
 
-Last updated: 2026-07-10
+Last updated: 2026-07-24
 
 This reusable checklist owns manual release-readiness validation for AI Commit
 All. Use it when preparing a release candidate, validating a release-matrix
@@ -95,6 +95,17 @@ deferred to GitHub. Do not use the remote-first path for stable releases,
 Marketplace publication, signing changes, Gradle or workflow changes, plugin
 runtime changes that have not already passed `main` CI, or any release where
 local artifact inspection is required.
+
+Choose the local or remote-first path before starting a long-running validation
+job. Fetch `origin/main` and inspect the required workflow runs for the exact
+release-base commit. Run the full local prerelease or release-matrix UI gates
+only for unpushed executable changes or commits that lack equivalent exact-head
+validation. If the pushed commit already passed the required main CI, coverage
+UI, security, and Plugin Verifier gates, reuse that evidence instead of
+repeating the same local lanes. Use the remote-first script's focused local
+checks for unpushed release metadata and documentation. Run a missing lane only
+when the existing exact-head evidence does not cover the release candidate or
+a release requirement explicitly needs local-only evidence.
 
 After pushing `main` and the release tag, use the GitHub release-validation
 watcher instead of manually polling each workflow:
@@ -346,6 +357,7 @@ it as release-readiness evidence.
 
 ## Existing Reports
 
+- [2026-07-24 v0.1.0-beta.10 Release Preparation](reports/2026-07-24-v0.1.0-beta.10.md)
 - [2026-07-10 v0.1.0-beta.9 Release Preparation](reports/2026-07-10-v0.1.0-beta.9.md)
 - [2026-06-26 v0.1.0-beta.8 Release Preparation](reports/2026-06-26-v0.1.0-beta.8.md)
 - [2026-06-25 v0.1.0-beta.7 Release Preparation](reports/2026-06-25-v0.1.0-beta.7.md)

@@ -22,11 +22,12 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- `PLAN-intellij-2026-2-sdk-upgrade` - IntelliJ 2026.2 SDK Upgrade ([PLAN-intellij-2026-2-sdk-upgrade.md](PLAN-intellij-2026-2-sdk-upgrade.md)).
-- `PLAN-staging-enabled-commit-ui-reliability` - Staging-Enabled Commit UI Reliability ([PLAN-staging-enabled-commit-ui-reliability.md](PLAN-staging-enabled-commit-ui-reliability.md)).
+No active plans.
 
 ## Archived Plans
 
+- `PLAN-intellij-2026-2-sdk-upgrade` - IntelliJ 2026.2 SDK Upgrade ([archive/PLAN-intellij-2026-2-sdk-upgrade.md](archive/PLAN-intellij-2026-2-sdk-upgrade.md)), released and archived as of 2026-07-24.
+- `PLAN-staging-enabled-commit-ui-reliability` - Staging-Enabled Commit UI Reliability ([archive/PLAN-staging-enabled-commit-ui-reliability.md](archive/PLAN-staging-enabled-commit-ui-reliability.md)), released and archived as of 2026-07-24.
 - `PLAN-fast-path-staging-confirmation` - Fast-Path Staging Confirmation ([archive/PLAN-fast-path-staging-confirmation.md](archive/PLAN-fast-path-staging-confirmation.md)), archived as of 2026-07-10.
 - `PLAN-workflow-stop-feedback-and-push-alignment` - Workflow Stop Feedback And Push Alignment ([archive/PLAN-workflow-stop-feedback-and-push-alignment.md](archive/PLAN-workflow-stop-feedback-and-push-alignment.md)), archived as of 2026-06-12.
 - `PLAN-test-coverage-growth` - Test Coverage Growth ([archive/PLAN-test-coverage-growth.md](archive/PLAN-test-coverage-growth.md)), archived as of 2026-05-25.

@@ -11,7 +11,7 @@ it does not repeat the troubleshooting FAQ.
 ## Current Support Status
 
 - Support is best-effort until the first official JetBrains Marketplace release.
-- Current release candidate target: `v0.1.0-beta.7`, an implementation
+- Current release candidate target: `v0.1.0-beta.10`, an implementation
   prerelease.
 - Current `main` branch state: AI Commit All workflow implementation and release
   automation are present but not Marketplace-published.

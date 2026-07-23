@@ -4,15 +4,18 @@ All notable public plugin-facing changes are documented in this file.
 
 The format is based on Keep a Changelog. Release tags should use semantic version tags in the form `vMAJOR.MINOR.PATCH` for stable releases or `vMAJOR.MINOR.PATCH-PRERELEASE` for prereleases.
 
-This repository has no Marketplace-published plugin version yet. `v0.1.0-beta.9` is the current implementation prerelease candidate prepared from this repository.
+This repository has no Marketplace-published plugin version yet. `v0.1.0-beta.10` is the current implementation prerelease candidate prepared from this repository.
 
 This changelog records plugin source and runtime behavior changes, public plugin documentation changes, compatibility and support changes, and CI or release pipeline changes that affect the plugin artifact or publication. Internal AI-agent documentation, repository workflow notes, plans, proposals, ADR maintenance, scenario-register tracking, and test-case inventory changes are intentionally omitted unless they also change public plugin behavior or release artifacts.
 
 ## [Unreleased]
 
+## [v0.1.0-beta.10] - 2026-07-24
+
 ### Changed
 
-- Raise the minimum supported IntelliJ Platform to 2026.2/build 262 and move development and CI to JDK 25. The required IntelliJ IDEA, PyCharm, and WebStorm 2026.2 matrix must pass before release readiness; PyCharm 2026.2 is now published and has passed its local verifier and UI lanes.
+- Raise the minimum supported IntelliJ Platform to 2026.2/build 262 and move development and CI to JDK 25, with compatible IntelliJ IDEA, PyCharm, and WebStorm 2026.2 verifier and UI gates.
+- Reuse green exact-head CI during beta release preparation and reserve the full local prerelease and UI matrices for unpushed executable changes or commits without equivalent validation.
 
 ### Fixed
 

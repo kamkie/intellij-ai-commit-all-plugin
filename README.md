@@ -12,12 +12,10 @@
 ## Status
 
 GitHub prerelease. The plugin has not been published to JetBrains
-Marketplace yet. Latest tag: `v0.1.0-beta.9`.
+Marketplace yet. Latest tag: `v0.1.0-beta.10`.
 
-The 2026.2 baseline is not release-ready until the complete IntelliJ IDEA,
-PyCharm, and WebStorm 2026.2 matrix passes. PyCharm 2026.2 is now published,
-has passed its local verifier and UI lanes, and remains required in the full
-release gate.
+The 2026.2 baseline passed the required IntelliJ IDEA, PyCharm, and WebStorm
+2026.2 verifier and UI matrix for this prerelease.
 
 ## Requirements
 

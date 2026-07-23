@@ -2,19 +2,21 @@
 
 Plan-ID: PLAN-intellij-2026-2-sdk-upgrade
 
-Status: Implemented
+Status: Closed
+
+Close-Reason: Released
 
 Workers: 1
 
-Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
+Filename: `.agents/plans/archive/PLAN-intellij-2026-2-sdk-upgrade.md`
 
 ## Readiness
 
-- Plan readiness: Implemented; T1 through T5 and every approved bounded remediation packet are complete.
+- Plan readiness: Closed; T1 through T5 and every approved bounded remediation packet were released in `v0.1.0-beta.10`.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: Complete. On merged `main` commit `a384f2fe0bb62e56bc1e35ff165698e71a041ddd`, the fresh eight-gate local prerelease validator and full IntelliJ IDEA 25/25 lane passed. At the user's direction, the duplicate local PyCharm lane was stopped after 12 passing scenarios and WebStorm was not started because the exact merge commit's hosted PyCharm UI 13/13 and IU/PY/WS verifier jobs were already green. Final PR-head and merged-main hosted checks, reviews, threads, and the full release diff review expose no implementation blocker.
+- Implementation progress: Complete. On merged `main` commit `a384f2fe0bb62e56bc1e35ff165698e71a041ddd`, the eight-gate local prerelease validator and full IntelliJ IDEA 25/25 lane passed. At the user's direction, exact-commit hosted PyCharm UI 13/13 and IU/PY/WS verifier evidence replaced duplicate local lanes. Final checks, review, and release closeout passed; no active plan work remains.
 
 ## Status History
 
@@ -39,6 +41,7 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - 2026-07-23T18:40:31+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same explicit recurring-handling request and normal fix loop approve T5R13 after runtime proof showed a real restart needs outer Starter context reacquisition.
 - 2026-07-23T19:52:30+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same recurring-handling request and normal fix loop approve T5R14 after PyCharm 2026.2 reproduced the exact license restart dialog and write-intent lock outside T5R13's IU-only gate.
 - 2026-07-24T00:31:45+02:00: In Progress -> Implemented by Codex <codex@openai.com>; the user-directed remote-first T5 gate passed on merged `main` after fresh local prerelease and full IU validation, with exact-commit hosted PyCharm UI and IU/PY/WS verifier evidence replacing redundant local lanes.
+- 2026-07-24T00:36:00+02:00: Implemented -> Closed by Kamil Kiewisz <kamkie@outlook.com>; `v0.1.0-beta.10` release preparation closed and archived the plan; Close-Reason: Released.
 
 ## Goal
 
@@ -489,7 +492,7 @@ Result summary:
 - Changed files or reviewed diff: Appended the final merged-main evidence to `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`, updated this plan, and reviewed all 39 files in `v0.1.0-beta.9..a384f2f`.
 - Validation evidence: Managed prerelease job `20260724-000015-t5-main-a384f2f-full-prerelease-7d6789` passed all eight gates against IU/PY/WS 2026.2. Managed IU job `20260724-001053-t5-main-a384f2f-ui-iu-full-414c55` passed 25/25. The user stopped duplicate local UI validation after managed PY job `20260724-002237-t5-main-a384f2f-ui-py-smoke-12ed30` reached 12 passing scenarios; WS was not started. Exact-commit hosted UI coverage passed PyCharm 13/13, and all IU/PY/WS verifier plus build, security, CodeQL, Detekt, Codecov, and dependency checks passed.
 - Self-review evidence from `.agents/references/reviews.md`: No introduced correctness, commit-selection, AI-invocation, push, security, platform-compatibility, or validation defect remains. The two existing experimental `GitPushListener.onCompleted` verifier usages and unavailable real signed-in AI Assistant smoke remain explicit residual risks.
-- Commit: This T5 plan-task evidence commit; see Git history and the worker handoff for its SHA.
+- Commit: `a0b497665e89720855c5068bf784bd0d0a713858`.
 - Worker events: Worker `/root/release_t5_gate` started the final gate on 2026-07-24, completed prerelease and IU, then stopped the active PY managed job safely at `2026-07-24T00:30:20+02:00` on the user's remote-first correction; no WS job was started.
 - Orchestrator reconciliation: Final re-fetch confirmed local HEAD and `origin/main` at merge commit `a384f2fe0bb62e56bc1e35ff165698e71a041ddd`, PR #37 final head `9ec700a29d58d4f7aa18f05a79ef08ef0f542598`, zero review threads, and every final PR-head and merged-main hosted check green.
 - Changelog/docs/spec/tasks updates: Not part of T5; release closeout remains reserved to `/root`.
@@ -1557,14 +1560,14 @@ Result summary:
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: T5 is complete; release closeout is reserved to `/root`.
-- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`; T5R `234d91e18bda4b6028a594316ed1e2d90d57229c`; T5D `82abd9634effcc276b2d4821d8ee8b8657cd0ffe`; T5R6 `777cf177ca1ea7c54156c761b54ab1250fc002d4`; T5R7 `c3bae72f614e8e4fb224aa93bbd82f0b1eade3be`; T5R8 `c6cc0c390126d21a0a58633918a553639ae73bbe`; T5R9 `ae5aa6dba8fe01ea4a4d0bea3fb816a33f25baf4`; T5R11 `df5964eb83a54b128dc3883b884cf5c33e1fe256`; T5R14 `ebe04440359812b75d05459b499e3cdf7ef5b6df`.
-- Plan status and readiness: Implemented; all approved tasks and remediation packets are complete, and T5 has passed under the user's exact-merge remote-first decision.
+- Current task or wave: None; the implemented plan was released in `v0.1.0-beta.10`.
+- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`; T5R `234d91e18bda4b6028a594316ed1e2d90d57229c`; T5D `82abd9634effcc276b2d4821d8ee8b8657cd0ffe`; T5R6 `777cf177ca1ea7c54156c761b54ab1250fc002d4`; T5R7 `c3bae72f614e8e4fb224aa93bbd82f0b1eade3be`; T5R8 `c6cc0c390126d21a0a58633918a553639ae73bbe`; T5R9 `ae5aa6dba8fe01ea4a4d0bea3fb816a33f25baf4`; T5R11 `df5964eb83a54b128dc3883b884cf5c33e1fe256`; T5R14 `ebe04440359812b75d05459b499e3cdf7ef5b6df`; T5 `a0b497665e89720855c5068bf784bd0d0a713858`.
+- Plan status and readiness: Closed and released; no further plan work is expected.
 - Validation and self-review state: Exact merged `main` passed the full local prerelease validator and IU 25/25. Exact-commit hosted PyCharm UI 13/13 and IU/PY/WS verifier checks replace duplicate local lanes by explicit user direction. The 39-file release diff has no unresolved introduced defect.
 - Worker event and reconciliation state: All workers through final T5 worker `/root/release_t5_gate` are reconciled; the stopped duplicate PY job preserved 12 passing scenarios and no WS job was started.
 - Changelog, docs, spec, task, or plan updates: Compatibility configuration, current public docs, changelog, and regenerated Marketplace notes are aligned with published 2026.2/JDK 25 state.
-- Blockers or open questions: None for the implemented plan. Release closeout and the next-beta release workflow remain separate orchestrator work.
-- Next action: `/root` performs release closeout without closing or archiving this plan until its own release-preparation gate is satisfied.
+- Blockers or open questions: None.
+- Next action: None; preserved as released plan history.
 - Context handoff notes: Re-fetch `main` after the T5 evidence commit; preserve the exact IU/PY restart contract, supported fresh Starter context, and explicit remote-first validation record.
 
 ## Execution Graph

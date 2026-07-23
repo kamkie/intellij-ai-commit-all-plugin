@@ -2,19 +2,21 @@
 
 Plan-ID: PLAN-staging-enabled-commit-ui-reliability
 
-Status: Implemented
+Status: Closed
+
+Close-Reason: Released
 
 Workers: 1
 
-Filename: `.agents/plans/PLAN-staging-enabled-commit-ui-reliability.md`
+Filename: `.agents/plans/archive/PLAN-staging-enabled-commit-ui-reliability.md`
 
 ## Readiness
 
-- Plan readiness: Implemented; T1 and T2 are complete and the required consecutive hosted CI executions passed at the exact fixed head.
+- Plan readiness: Closed; T1 and T2 were released in `v0.1.0-beta.10`.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-13T11:38:44+02:00
 - Open questions: None. The exact failing boundary is an evidence dependency handled by T1, not a product decision.
-- Implementation progress: Complete. PR #36 CI run `29243715751` passed on attempt 1 and manual rerun attempt 2 at fixed head `53d8d54662040402ade18dc512be240f63b239cf`.
+- Implementation progress: Complete. PR #36 merged, its exact-head validation passed, and no active execution or release-preparation work remains.
 
 ## Status History
 
@@ -22,6 +24,7 @@ Filename: `.agents/plans/PLAN-staging-enabled-commit-ui-reliability.md`
 - 2026-07-13T11:38:44+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
 - 2026-07-13T11:38:57+02:00: Approved -> In Progress by Codex <codex@openai.com>; approved implementation started.
 - 2026-07-13T13:10:26+02:00: In Progress -> Implemented by Codex <codex@openai.com>; both plan tasks and two consecutive hosted CI executions at the exact fixed head completed successfully.
+- 2026-07-24T00:36:00+02:00: Implemented -> Closed by Kamil Kiewisz <kamkie@outlook.com>; `v0.1.0-beta.10` release preparation closed and archived the plan; Close-Reason: Released.
 
 ## Goal
 
@@ -294,15 +297,15 @@ Result summary:
 
 - Resume docs reread:
   - After compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, continuity, execution model, current packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before a commit; and the exact owner files for the next action.
-- Current task or wave: Implementation and exact fixed-head hosted validation are complete; PR readiness and merge are next.
+- Current task or wave: None; the implemented plan was released in `v0.1.0-beta.10`.
 - Completed commits: `3a5f98e` plan approval; `188b173` T1 artifact capture; `ebad950` T1 result; `8783f47` draft-PR record; `5751363` hosted-failure evidence; `34d4e29` T2 scope reconciliation; `e533163` T2 fix; `b1a1e25` review follow-up.
-- Plan status and readiness: Implemented; explicitly approved by Kamil Kiewisz <kamkie@outlook.com> and completed after exact-head hosted repetition.
+- Plan status and readiness: Closed and released; no further plan work is expected.
 - Validation and self-review state: T1 workflow validation passed; T2 red/green, 511-test broad suite, static checks, `buildPlugin`, focused PyCharm UI test, follow-up 18-test fail-closed suite, docs validation, and diff checks passed. Independent review is reconciled with no unresolved in-scope finding. CI run `29243715751` attempts 1 and 2 passed at fixed head `53d8d54662040402ade18dc512be240f63b239cf`.
 - Worker event state: T1 and both T2 worker intervals are stopped and recorded; no active write worker.
 - Orchestrator reconciliation state: T1 artifact proves roots disappeared after the initial AI handoff and before the default executor. T2 restores the exact confirmed handoff at that boundary, and the review follow-up proves the failure path remains closed.
 - Changelog, docs, spec, task, or plan updates: Plan, `REQ-SEL-008`, traceability, and changelog are updated; task-list changes are not applicable.
 - Blockers or open questions: None.
-- Next action: Push this documentation-only finalization, validate the resulting PR head, inspect current review threads, then make PR #36 ready and merge.
+- Next action: None; preserved as released plan history.
 - Context handoff notes: Branch starts at `938b56a329e2d23e11f1e758d39f3be42b75d1ed`; PR #34 is out of scope.
 
 ## Execution Graph

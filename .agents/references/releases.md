@@ -106,6 +106,18 @@ mode for stable releases, Marketplace publication, signing changes, Gradle or
 workflow changes, plugin runtime changes that have not already passed `main`
 CI, or any release where local artifact inspection is required.
 
+Choose the local or remote-first path before launching a long-running
+validation job. Fetch `origin/main` and inspect the required workflow runs for
+the exact release-base commit. Run the full local prerelease or release-matrix
+UI gates only for unpushed executable changes or commits that lack equivalent
+exact-head validation. When the pushed commit already passed the required main
+CI, coverage UI, security, and Plugin Verifier gates, reuse that evidence
+instead of repeating the same local lanes. Validate unpushed release metadata
+and documentation with the remote-first script's focused local checks.
+Reconcile stale active plan wording against the exact-head evidence; repeat a
+gate only when its accepted criteria require local-only evidence or the
+existing run does not cover the release candidate.
+
 After pushing `main` and the release tag, prefer
 `scripts/watch-github-release-validation.ps1 -Tag <tag>` over manual `gh run
 list`, `gh run watch`, and one-off rerun commands. The watcher waits for the
