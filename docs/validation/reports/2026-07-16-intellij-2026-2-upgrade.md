@@ -538,3 +538,68 @@ only `ReleaseMatrixUiHarnessTest.kt` and `FakeAiAssistantProbe.kt`. Commit
 `ebe04440359812b75d05459b499e3cdf7ef5b6df` changes no production or
 user-facing plugin behavior. The next gate is to push the reconciled head and
 rerun the complete T5 exact-head local, hosted, review, and readiness checks.
+
+### Final Merged-Main T5 Gate
+
+T5 restarted on 2026-07-24 from clean merged `main` commit
+`a384f2fe0bb62e56bc1e35ff165698e71a041ddd`. PR #37 final head
+`9ec700a29d58d4f7aa18f05a79ef08ef0f542598` was already merged as that commit.
+The final re-fetch kept local HEAD and `origin/main` equal. The PR has zero
+review threads; its two `COMMENTED` `LGTM` reviews target earlier heads
+`1072f42` and `4ccc61b`.
+
+Fresh local prerelease job
+`20260724-000015-t5-main-a384f2f-full-prerelease-7d6789` passed all eight
+gates:
+
+- Marketplace change-note and description parity.
+- Documentation and agent-artifact validation.
+- Formatting, Detekt, 529 passing unit tests with one existing pending test,
+  coverage, plugin structure, and packaging.
+- Plugin Verifier compatibility against IU `262.8665.258`, PyCharm
+  `262.8665.309`, and WebStorm `262.8665.259`. Each report retains the same two
+  existing experimental `GitPushListener.onCompleted` usages.
+
+The complete local IntelliJ IDEA lane then passed 25/25 in 10 minutes 49
+seconds:
+
+- Job: `20260724-001053-t5-main-a384f2f-ui-iu-full-414c55`.
+- Log:
+  `C:\Users\kamki\.agent-customizations\managed-jobs\logs\20260724-001053-t5-main-a384f2f-ui-iu-full-414c55.log`.
+- Command: `.\gradlew.bat --no-configuration-cache --rerun-tasks releaseMatrixUiTest -PideProducts=IU -PideVersion=2026.2`.
+
+The user then directed T5 to avoid duplicating already-green exact-merge
+hosted validation. PyCharm job
+`20260724-002237-t5-main-a384f2f-ui-py-smoke-12ed30` was stopped safely after
+12 scenarios passed; no failing scenario was present. Its log is
+`C:\Users\kamki\.agent-customizations\managed-jobs\logs\20260724-002237-t5-main-a384f2f-ui-py-smoke-12ed30.log`.
+The local WebStorm lane was not started.
+
+Exact merge-commit hosted evidence supplies the intentionally skipped
+duplication:
+
+- CI [build job
+  89318410308](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30040338455/job/89318410308)
+  passed 529 tests, coverage, structure, and packaging.
+- CI [UI coverage job
+  89319497279](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30040338455/job/89319497279)
+  passed all 13 PyCharm smoke scenarios.
+- Plugin Verifier passed
+  [IU-2026.2](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30040339368/job/89318413576),
+  [PY-2026.2](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30040339368/job/89318413711),
+  and
+  [WS-2026.2](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30040339368/job/89318413599).
+- [CodeQL](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30040338411/job/89318410044),
+  [Security](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30040338412/job/89318410057),
+  Detekt, dependency submission, and all Dependabot checks passed.
+- Every final PR-head check also passed, including `codecov/patch` and
+  `codecov/project`.
+
+The complete `v0.1.0-beta.9..a384f2f` release diff contains 39 files, 4,893
+insertions, and 124 deletions. Review found no introduced correctness,
+commit-selection, AI-invocation, push, security, platform-compatibility, or
+validation defect. Real signed-in JetBrains AI Assistant smoke remains
+unavailable, and the two experimental push-listener API usages remain the
+explicit compatibility risks. Under the user's recorded remote-first
+direction, T5 and the IntelliJ 2026.2 upgrade plan are implemented; release
+closeout remains separate.
