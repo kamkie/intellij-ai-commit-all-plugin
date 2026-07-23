@@ -929,6 +929,239 @@ internal class ReflectiveCommitWorkflowSynchronizerTest {
     }
 }
 
+internal class GitStageReflectionAccessFailureTest {
+    @Test
+    fun `git stage reflection access reports handler invocation failure and cause`() {
+        val handlerFailure = IllegalStateException("workflow unavailable")
+        val handler = BoundaryThrowingGitStageHandler(
+            handlerFailure,
+            testGitStageWorkflowUi { error("UI should not be used after the workflow lookup fails.") },
+        )
+
+        assertAccessFailure(
+            handler = handler,
+            reason = "method invocation failed",
+            exceptionClass = java.lang.reflect.InvocationTargetException::class.java,
+            causeClass = handlerFailure.javaClass,
+        )
+    }
+
+    @Test
+    fun `git stage reflection access reports null workflow result`() {
+        val handler = BoundaryReflectiveGitStageHandler(
+            workflowValue = null,
+            uiValue = testGitStageWorkflowUi { error("UI should not be used without a workflow.") },
+        )
+
+        assertAccessFailure(
+            handler = handler,
+            reason = "method invocation failed",
+            exceptionClass = IllegalStateException::class.java,
+        )
+    }
+
+    @Test
+    fun `git stage reflection access reports null UI result`() {
+        val handler = BoundaryReflectiveGitStageHandler(
+            workflowValue = BoundaryReflectiveGitStageWorkflow(testProject()),
+            uiValue = null,
+        )
+
+        assertAccessFailure(
+            handler = handler,
+            reason = "method invocation failed",
+            exceptionClass = IllegalStateException::class.java,
+        )
+    }
+
+    @Test
+    fun `git stage reflection access reports missing nested boundary methods`() {
+        val handler = BoundaryReflectiveGitStageHandler(
+            workflowValue = Any(),
+            uiValue = Any(),
+        )
+
+        assertAccessFailure(
+            handler = handler,
+            reason = "required methods missing",
+            missingMethodNames = listOf("getProject", "setTrackerState", "setIncludedRoots"),
+        )
+    }
+
+    @Test
+    fun `git stage reflection access reports incompatible project result`() {
+        val handler = BoundaryReflectiveGitStageHandler(
+            workflowValue = BoundaryIncompatibleGitStageWorkflow(Any()),
+            uiValue = testGitStageWorkflowUi { error("UI should not be used with an incompatible project.") },
+        )
+
+        assertAccessFailure(
+            handler = handler,
+            reason = "incompatible method result",
+            exceptionClass = IllegalStateException::class.java,
+        )
+    }
+
+    @Test
+    fun `git stage reflection access reports incompatible UI result`() {
+        val handler = BoundaryReflectiveGitStageHandler(
+            workflowValue = BoundaryReflectiveGitStageWorkflow(testProject()),
+            uiValue = BoundaryGitStageUiWithoutCommitWorkflowUi(),
+        )
+
+        assertAccessFailure(
+            handler = handler,
+            reason = "incompatible method result",
+            exceptionClass = IllegalStateException::class.java,
+        )
+    }
+
+    @Test
+    fun `git stage reflection access reports nested invocation failure and cause`() {
+        val projectFailure = IllegalArgumentException("project unavailable")
+        val handler = BoundaryReflectiveGitStageHandler(
+            workflowValue = BoundaryThrowingGitStageWorkflow(projectFailure),
+            uiValue = testGitStageWorkflowUi { error("UI should not be used after the project lookup fails.") },
+        )
+
+        assertAccessFailure(
+            handler = handler,
+            reason = "incompatible method result",
+            exceptionClass = java.lang.reflect.InvocationTargetException::class.java,
+            causeClass = projectFailure.javaClass,
+        )
+    }
+
+    private fun assertAccessFailure(
+        handler: CommitWorkflowHandler,
+        reason: String,
+        missingMethodNames: List<String> = emptyList(),
+        exceptionClass: Class<out Throwable>? = null,
+        causeClass: Class<out Throwable>? = null,
+    ) {
+        val diagnostics = BoundaryCapturingCommitWorkflowCompatibilityDiagnostics()
+
+        val access = createGitStageCommitWorkflowAccess(handler, diagnostics)
+
+        assertEquals(null, access)
+        assertEquals(
+            listOf(
+                CommitWorkflowCompatibilityDiagnostic(
+                    sourceClassName = handler.javaClass.name,
+                    methodName = "gitStageCommitWorkflowAccess",
+                    reason = reason,
+                    missingMethodNames = missingMethodNames,
+                    exceptionClassName = exceptionClass?.name,
+                    causeClassName = causeClass?.name,
+                ),
+            ),
+            diagnostics.events,
+        )
+    }
+
+    private open class BoundaryCommitWorkflowHandler : CommitWorkflowHandler {
+        override val amendCommitHandler: AmendCommitHandler
+            get() = error("Not needed for reflection tests.")
+
+        override fun getExecutor(executorId: String): CommitExecutor? = null
+
+        override fun isExecutorEnabled(executor: CommitExecutor): Boolean = false
+
+        override fun execute(executor: CommitExecutor) = Unit
+    }
+
+    private class BoundaryThrowingGitStageHandler(
+        private val failure: RuntimeException,
+        private val uiValue: BoundaryTestGitStageWorkflowUi,
+    ) : BoundaryCommitWorkflowHandler() {
+        var assignedState: GitStageTracker.State? = null
+
+        fun getWorkflow(): Any = throw failure
+
+        fun getUi(): BoundaryTestGitStageWorkflowUi = uiValue
+
+        fun setState(state: GitStageTracker.State) {
+            assignedState = state
+        }
+    }
+
+    private class BoundaryReflectiveGitStageHandler(
+        private val workflowValue: Any?,
+        private val uiValue: Any?,
+    ) : BoundaryCommitWorkflowHandler() {
+        var assignedState: GitStageTracker.State? = null
+
+        fun getWorkflow(): Any? = workflowValue
+
+        fun getUi(): Any? = uiValue
+
+        fun setState(state: GitStageTracker.State) {
+            assignedState = state
+        }
+    }
+
+    private class BoundaryReflectiveGitStageWorkflow(val project: Project)
+
+    private class BoundaryIncompatibleGitStageWorkflow(val project: Any)
+
+    private class BoundaryThrowingGitStageWorkflow(
+        private val failure: RuntimeException,
+    ) {
+        fun getProject(): Project = throw failure
+    }
+
+    private interface BoundaryTestGitStageWorkflowUi : CommitWorkflowUi {
+        fun setTrackerState(state: GitStageTracker.State)
+
+        fun setIncludedRoots(roots: Collection<VirtualFile>)
+    }
+
+    private class BoundaryGitStageUiWithoutCommitWorkflowUi {
+        var capturedTrackerState: GitStageTracker.State? = null
+        var capturedIncludedRoots: Collection<VirtualFile> = emptyList()
+
+        fun setTrackerState(state: GitStageTracker.State) {
+            capturedTrackerState = state
+        }
+
+        fun setIncludedRoots(roots: Collection<VirtualFile>) {
+            capturedIncludedRoots = roots
+        }
+    }
+
+    private class BoundaryCapturingCommitWorkflowCompatibilityDiagnostics : CommitWorkflowCompatibilityDiagnostics {
+        val events = mutableListOf<CommitWorkflowCompatibilityDiagnostic>()
+
+        override fun report(diagnostic: CommitWorkflowCompatibilityDiagnostic) {
+            events += diagnostic
+        }
+    }
+
+    private fun testProject(): Project = Proxy.newProxyInstance(
+        Project::class.java.classLoader,
+        arrayOf(Project::class.java),
+    ) { proxy, method, args ->
+        when (method.name) {
+            "equals" -> proxy === args?.singleOrNull()
+            "hashCode" -> System.identityHashCode(proxy)
+            "toString" -> "TestProject"
+            else -> error("Unexpected Project method: ${method.name}")
+        }
+    } as Project
+
+    private fun testGitStageWorkflowUi(
+        onCall: (String) -> Unit,
+    ): BoundaryTestGitStageWorkflowUi = Proxy.newProxyInstance(
+        BoundaryTestGitStageWorkflowUi::class.java.classLoader,
+        arrayOf(BoundaryTestGitStageWorkflowUi::class.java),
+    ) { _, method, _ ->
+        when (method.name) {
+            "setTrackerState", "setIncludedRoots" -> onCall(method.name)
+            else -> error("Unexpected git-stage UI method: ${method.name}")
+        }
+    } as BoundaryTestGitStageWorkflowUi
+}
+
 internal class GitStageSelectionBoundaryTest {
     @Test
     fun `mapped selection paths pass through without diagnostics`() {
