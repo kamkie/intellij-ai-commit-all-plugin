@@ -989,6 +989,88 @@ internal class GitStageReflectionAccessFailureTest {
     }
 
     @Test
+    fun `git stage reflection access rejects wrong workflow method signature`() {
+        val handler = BoundaryGitStageHandlerWithWrongWorkflowSignature(
+            testGitStageWorkflowUi { error("UI should not be used without a compatible workflow method.") },
+        )
+
+        assertAccessFailure(
+            handler = handler,
+            reason = "required methods missing",
+            missingMethodNames = listOf("getWorkflow"),
+        )
+    }
+
+    @Test
+    fun `git stage reflection access reports missing handler UI method`() {
+        val handler = BoundaryGitStageHandlerWithoutUi(
+            BoundaryReflectiveGitStageWorkflow(testProject()),
+        )
+
+        assertAccessFailure(
+            handler = handler,
+            reason = "required methods missing",
+            missingMethodNames = listOf("getUi"),
+        )
+    }
+
+    @Test
+    fun `git stage reflection access reports missing handler state method`() {
+        val handler = BoundaryGitStageHandlerWithoutState(
+            BoundaryReflectiveGitStageWorkflow(testProject()),
+            testGitStageWorkflowUi { error("UI should not be used without a compatible state method.") },
+        )
+
+        assertAccessFailure(
+            handler = handler,
+            reason = "required methods missing",
+            missingMethodNames = listOf("setState"),
+        )
+    }
+
+    @Test
+    fun `git stage reflection access reports missing nested project method`() {
+        val handler = BoundaryReflectiveGitStageHandler(
+            workflowValue = BoundaryGitStageWorkflowWithoutProject(),
+            uiValue = testGitStageWorkflowUi { error("UI should not be used without a project method.") },
+        )
+
+        assertAccessFailure(
+            handler = handler,
+            reason = "required methods missing",
+            missingMethodNames = listOf("getProject"),
+        )
+    }
+
+    @Test
+    fun `git stage reflection access reports missing nested tracker state method`() {
+        val handler = BoundaryReflectiveGitStageHandler(
+            workflowValue = BoundaryReflectiveGitStageWorkflow(testProject()),
+            uiValue = BoundaryGitStageUiWithoutTrackerState(),
+        )
+
+        assertAccessFailure(
+            handler = handler,
+            reason = "required methods missing",
+            missingMethodNames = listOf("setTrackerState"),
+        )
+    }
+
+    @Test
+    fun `git stage reflection access reports missing nested included roots method`() {
+        val handler = BoundaryReflectiveGitStageHandler(
+            workflowValue = BoundaryReflectiveGitStageWorkflow(testProject()),
+            uiValue = BoundaryGitStageUiWithoutIncludedRoots(),
+        )
+
+        assertAccessFailure(
+            handler = handler,
+            reason = "required methods missing",
+            missingMethodNames = listOf("setIncludedRoots"),
+        )
+    }
+
+    @Test
     fun `git stage reflection access reports incompatible project result`() {
         val handler = BoundaryReflectiveGitStageHandler(
             workflowValue = BoundaryIncompatibleGitStageWorkflow(Any()),
@@ -1085,6 +1167,41 @@ internal class GitStageReflectionAccessFailureTest {
         }
     }
 
+    private class BoundaryGitStageHandlerWithWrongWorkflowSignature(
+        private val uiValue: BoundaryTestGitStageWorkflowUi,
+    ) : BoundaryCommitWorkflowHandler() {
+        var assignedState: GitStageTracker.State? = null
+
+        fun getWorkflow(parameter: String): Any = parameter
+
+        fun getUi(): BoundaryTestGitStageWorkflowUi = uiValue
+
+        fun setState(state: GitStageTracker.State) {
+            assignedState = state
+        }
+    }
+
+    private class BoundaryGitStageHandlerWithoutUi(
+        private val workflowValue: Any,
+    ) : BoundaryCommitWorkflowHandler() {
+        var assignedState: GitStageTracker.State? = null
+
+        fun getWorkflow(): Any = workflowValue
+
+        fun setState(state: GitStageTracker.State) {
+            assignedState = state
+        }
+    }
+
+    private class BoundaryGitStageHandlerWithoutState(
+        private val workflowValue: Any,
+        private val uiValue: BoundaryTestGitStageWorkflowUi,
+    ) : BoundaryCommitWorkflowHandler() {
+        fun getWorkflow(): Any = workflowValue
+
+        fun getUi(): BoundaryTestGitStageWorkflowUi = uiValue
+    }
+
     private class BoundaryReflectiveGitStageHandler(
         private val workflowValue: Any?,
         private val uiValue: Any?,
@@ -1101,6 +1218,8 @@ internal class GitStageReflectionAccessFailureTest {
     }
 
     private class BoundaryReflectiveGitStageWorkflow(val project: Project)
+
+    private class BoundaryGitStageWorkflowWithoutProject
 
     private class BoundaryIncompatibleGitStageWorkflow(val project: Any)
 
@@ -1126,6 +1245,22 @@ internal class GitStageReflectionAccessFailureTest {
 
         fun setIncludedRoots(roots: Collection<VirtualFile>) {
             capturedIncludedRoots = roots
+        }
+    }
+
+    private class BoundaryGitStageUiWithoutTrackerState {
+        var capturedIncludedRoots: Collection<VirtualFile> = emptyList()
+
+        fun setIncludedRoots(roots: Collection<VirtualFile>) {
+            capturedIncludedRoots = roots
+        }
+    }
+
+    private class BoundaryGitStageUiWithoutIncludedRoots {
+        var capturedTrackerState: GitStageTracker.State? = null
+
+        fun setTrackerState(state: GitStageTracker.State) {
+            capturedTrackerState = state
         }
     }
 

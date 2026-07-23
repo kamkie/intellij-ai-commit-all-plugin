@@ -344,25 +344,25 @@ private fun Class<*>.gitStageHandlerMethods(
     val getWorkflow = findMethod("getWorkflow")
     val getUi = findMethod("getUi")
     val setState = findMethod("setState", GitStageTracker.State::class.java)
+    if (getWorkflow != null && getUi != null && setState != null) {
+        return GitStageHandlerMethods(
+            getWorkflow = getWorkflow,
+            getUi = getUi,
+            setState = setState,
+        )
+    }
+
     val missingHandlerMethods = listOfNotNull(
         "getWorkflow".takeIf { getWorkflow == null },
         "getUi".takeIf { getUi == null },
         "setState".takeIf { setState == null },
     )
-    if (missingHandlerMethods.isNotEmpty()) {
-        diagnostics.reportGitStageAccessFailure(
-            sourceClassName = name,
-            reason = "required methods missing",
-            missingMethodNames = missingHandlerMethods,
-        )
-        return null
-    }
-
-    return GitStageHandlerMethods(
-        getWorkflow = checkNotNull(getWorkflow),
-        getUi = checkNotNull(getUi),
-        setState = checkNotNull(setState),
+    diagnostics.reportGitStageAccessFailure(
+        sourceClassName = name,
+        reason = "required methods missing",
+        missingMethodNames = missingHandlerMethods,
     )
+    return null
 }
 
 private data class GitStageHandlerMethods(
@@ -403,12 +403,18 @@ private data class GitStageBoundaryObjects(
         val getProject = workflow.javaClass.findMethod("getProject")
         val setTrackerState = ui.javaClass.findMethod("setTrackerState", GitStageTracker.State::class.java)
         val setIncludedRoots = ui.javaClass.findMethod("setIncludedRoots", Collection::class.java)
-        val missingBoundaryMethods = listOfNotNull(
-            "getProject".takeIf { getProject == null },
-            "setTrackerState".takeIf { setTrackerState == null },
-            "setIncludedRoots".takeIf { setIncludedRoots == null },
-        )
-        if (missingBoundaryMethods.isNotEmpty()) {
+        val boundaryMethods = if (getProject != null && setTrackerState != null && setIncludedRoots != null) {
+            GitStageBoundaryMethods(
+                getProject = getProject,
+                setTrackerState = setTrackerState,
+                setIncludedRoots = setIncludedRoots,
+            )
+        } else {
+            val missingBoundaryMethods = listOfNotNull(
+                "getProject".takeIf { getProject == null },
+                "setTrackerState".takeIf { setTrackerState == null },
+                "setIncludedRoots".takeIf { setIncludedRoots == null },
+            )
             diagnostics.reportGitStageAccessFailure(
                 sourceClassName = workflowHandler.javaClass.name,
                 reason = "required methods missing",
@@ -419,13 +425,13 @@ private data class GitStageBoundaryObjects(
 
         return runCatching {
             GitStageCommitWorkflowAccess(
-                project = checkNotNull(getProject?.invoke(workflow) as? Project),
+                project = checkNotNull(boundaryMethods.getProject.invoke(workflow) as? Project),
                 workflowUi = checkNotNull(ui as? CommitWorkflowUi),
                 workflowHandler = workflowHandler,
                 ui = ui,
-                setState = checkNotNull(setState),
-                setTrackerState = checkNotNull(setTrackerState),
-                setIncludedRoots = checkNotNull(setIncludedRoots),
+                setState = setState,
+                setTrackerState = boundaryMethods.setTrackerState,
+                setIncludedRoots = boundaryMethods.setIncludedRoots,
             )
         }.getOrElse { exception ->
             diagnostics.reportGitStageAccessFailure(
@@ -437,6 +443,12 @@ private data class GitStageBoundaryObjects(
         }
     }
 }
+
+private data class GitStageBoundaryMethods(
+    val getProject: Method,
+    val setTrackerState: Method,
+    val setIncludedRoots: Method,
+)
 
 private fun CommitWorkflowCompatibilityDiagnostics.reportGitStageAccessFailure(
     sourceClassName: String,
