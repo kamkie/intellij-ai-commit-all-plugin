@@ -10,11 +10,11 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 
 ## Readiness
 
-- Plan readiness: Ready; the original plan and the bounded `T3R-regenerate-marketplace-change-notes`, `T5R-stabilize-pycharm-ui-startup`, `T5D-align-published-pycharm-documentation`, `T5R2-synchronize-pycharm-module-reload`, `T5R3-observe-pycharm-reload-at-startup`, `T5R4-observe-pycharm-loading-dialog`, `T5R5-await-pycharm-enable-attempt`, and `T5R6-rebuild-pycharm-staging-workflow` remediation packets are explicitly approved.
+- Plan readiness: Ready; the original plan and the bounded `T3R-regenerate-marketplace-change-notes`, `T5R-stabilize-pycharm-ui-startup`, `T5D-align-published-pycharm-documentation`, `T5R2-synchronize-pycharm-module-reload`, `T5R3-observe-pycharm-reload-at-startup`, `T5R4-observe-pycharm-loading-dialog`, `T5R5-await-pycharm-enable-attempt`, `T5R6-rebuild-pycharm-staging-workflow`, and `T5R7-classify-2026-2-scheme-race` remediation packets are explicitly approved.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: T1 through T4, T3R, T5R, T5D, and T5R6 are complete. T5R2 through T5R5 produced the platform evidence used by T5R6, which now removes the paid-startup option, awaits the exact Ultimate enable-attempt completion, and applies staging mode through the real Commit workflow lifecycle. Restart T5 on the current head.
+- Implementation progress: T1 through T4, T3R, T5R, T5D, T5R6, and T5R7 are complete. T5R7 version-gates only the exact branch-262 SchemeManager concurrent-mutation stack, passes focused and full PyCharm validation, and is ready for the complete exact-head T5 restart.
 
 ## Status History
 
@@ -30,6 +30,7 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - 2026-07-23T12:45:18+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R4 packet after T5R3 proved `PlatformTaskSupport` does not publish `ProgressManagerListener` for the startup loading dialog.
 - 2026-07-23T12:57:24+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R5 packet after T5R4 proved the loading modal lives in the split frontend and cannot be observed from the backend fake-plugin process.
 - 2026-07-23T13:14:12+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R6 packet after T5R5 proved completion of rejected Ultimate loading is deterministic but does not itself restore the staging workflow fixture.
+- 2026-07-23T14:26:40+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R7 packet after exact-head hosted evidence proved Starter promotes one branch-262 `SchemeManagerImpl` concurrent-mutation diagnostic during the already-known Islands Dark scheme lifecycle.
 
 ## Goal
 
@@ -71,6 +72,7 @@ No open plan questions. ADR acceptance and plan approval are required lifecycle 
 - `T5R4-observe-pycharm-loading-dialog`: install an AWT observer from an app-start listener and record the actual `Loading Plugins` dialog open/close lifecycle.
 - `T5R5-await-pycharm-enable-attempt`: register an early `DynamicPluginEnabler` state listener in the fake AI plugin and wait until the Ultimate-module enable/load attempt has returned before a PyCharm scenario can begin.
 - `T5R6-rebuild-pycharm-staging-workflow`: retain the exact enable-attempt barrier and deterministically create or rebuild the requested Git staging Commit workflow after PyCharm's rejected Ultimate-module reload.
+- `T5R7-classify-2026-2-scheme-race`: extend the existing version-gated test-reporter mapping to the exact `SchemeManagerImpl`/`EditorColorsManagerImpl`/`FileStatusImpl` concurrent-mutation stack produced by the known Islands Dark startup lifecycle.
 
 ## Task Packets
 
@@ -467,18 +469,18 @@ Expected output:
 
 Result summary:
 
-- Status: ready to restart on the T5R6 head
+- Status: ready to restart on the T5R7 head
 - Worker: `/root/t5_pycharm_release_gate`
 - Changed files or reviewed diff: Appended the first published-PyCharm gate evidence to `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`; source head remained unchanged.
-- Validation evidence: Local PyCharm verifier passed and classified `PY-262.8665.309` as compatible; local PyCharm UI passed 13/13 before and after T5R; hosted PyCharm verifier passed; pre-T5R hosted PyCharm UI passed 10/13 then 12/13; T5R hosted UI hit its 45-minute limit after three 10-minute modal-dialog timeouts and one fake-action failure.
+- Validation evidence: On exact integrated head `5d45025f9cc55573a90980b03a9165a99fbd9d73`, full local prerelease passed all eight gates and IU/PY/WS were compatible. Hosted build, Security, CodeQL, Detekt, and all three verifier jobs passed. Hosted PyCharm UI ran all 13 scenarios: 12 passed and `emptyGeneratedMessageStopsWithoutCommitOrPush()` was promoted as failed only because Starter captured one platform `ConcurrentModificationException` in `SchemeManagerImpl.findSchemeByName -> EditorColorsManagerImpl.getSchemeForCurrentUITheme -> FileStatusImpl.getColor`.
 - Self-review evidence from `.agents/references/reviews.md`: No production defect or compatibility change is confirmed; the failing IDE logs show IntelliJ declining an AI action because its target control stopped showing during dynamic plugin reconfiguration.
 - Commit:
-- Worker events: Worker stopped at the first failing current-head gate as required; the orchestrator preserved the hosted artifact and dispatched read-only flaky-test diagnosis.
-- Orchestrator reconciliation: Exact local, origin, and PR head was `e276ec09b1b91e4b64871b7a15c5c00579a0451a`; local and hosted verifier evidence agrees, while Windows completes the same product reconfiguration before workflow activation and hosted Linux overlaps it.
+- Worker events: Initial worker stopped at the first published-PyCharm failure. Restarted worker `/root/t5_final_exact_head` started at `2026-07-23T14:03:59+02:00`, passed prerelease, stopped local IU after the hosted failure appeared, preserved artifact `8563226012`, and stopped cleanly at `2026-07-23T14:24:56+02:00`.
+- Orchestrator reconciliation: Exact local, origin, and PR head was `5d45025f9cc55573a90980b03a9165a99fbd9d73`. In the failing process the observer installed at `12:19:09.065`, `Loading Plugins` began at `12:19:13.890`, Islands Dark missing-scheme errors and the concurrent modification appeared around `12:19:15.157`, and the first terminal Ultimate callback arrived only at `12:19:18.442`; no plugin frame appears in the captured stack.
 - Changelog/docs/spec/tasks updates: T5D aligned README, contributor/support documentation, changelog, and generated Marketplace notes; the validation report records the earlier timing failures and must add the T5R hosted modal evidence.
-- Blockers: None locally; current-head base integration, full local validation, hosted checks, and final review/readiness remain.
-- Review risks: The replacement must synchronize with normal PyCharm module reconfiguration without sleeps, retries, weakened assertions, paid licensing, or production changes.
-- Handoff notes and next action: Integrate current `main`, then restart T5 on the unlicensed-runner-safe and documentation-aligned exact head.
+- Blockers: None inside T5R7; the complete exact-head local, hosted, review, and readiness gate remains required.
+- Review risks: Hosted Linux remains the decisive proof that the exact diagnostic is classified without hiding arbitrary concurrent modification or plugin behavior failures.
+- Handoff notes and next action: Push the T5R7 head, then restart the complete T5 gate.
 
 ### Task Packet: T5R-stabilize-pycharm-ui-startup
 
@@ -903,6 +905,75 @@ Result summary:
 - Review risks: Hosted Linux remains the decisive environment proof, followed by exact-head review and readiness gates.
 - Handoff notes and next action: Integrate current `main`, restart T5, keep PR #37 draft until every exact-head gate passes.
 
+### Task Packet: T5R7-classify-2026-2-scheme-race
+
+Task id: T5R7-classify-2026-2-scheme-race
+
+Lane: testing
+
+Required skills:
+
+- `intellij-plugin-development`
+- `kotlin-plugin-style`
+- `plugin-test-tdd`
+- `triage-flaky-test`
+
+Goal:
+
+- Extend the existing branch-262 test-reporter compatibility mapping so Starter does not fail a successful scenario for the exact Islands Dark scheme-manager concurrent-mutation diagnostic observed before harness entry.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, accepted ADR 0089, this plan's readiness and execution graph, this packet, the exact hosted job log/artifact stack, and the reporter/constants in `ReleaseMatrixUiHarnessTest.kt`.
+- Escalate to: exact IntelliJ 262 `SchemeManagerImpl.findSchemeByName`, `EditorColorsManagerImpl.getSchemeForCurrentUITheme`, and `FileStatusImpl.getColor` stack contracts only.
+
+Allowed inputs:
+
+- Hosted artifact `8563226012`, the exact synthetic test name and stack, the existing branch-262 reporter mapping, and focused validation output.
+
+Forbidden inputs:
+
+- Production code/resources/descriptors, fallback color schemes, theme or user-setting mutation, arbitrary `ConcurrentModificationException` suppression, product skips, retries, sleeps, assertion weakening, and unrelated source.
+
+Write scope:
+
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt`
+
+Dependencies:
+
+- Restarted T5 preserved the exact hosted failure and restored a clean worktree; this bounded reporter-remediation packet is approved by the maintainer's standing normal review-fix continuation directive and current merge request.
+
+Validation:
+
+- Add a dedicated predicate that requires the exact `java.util.ConcurrentModificationException` synthetic name and all distinguishing `ArrayList$Itr`, `SchemeManagerImpl.findSchemeByName`, `EditorColorsManagerImpl.getSchemeForCurrentUITheme`, and `FileStatusImpl.getColor` stack frames; keep the existing exact `aicommitall.ide.version == 2026.2` gate; prove the captured hosted error is accepted while arbitrary concurrent modification and each distinguishing-frame near miss remain rejected; compile integration tests; rerun the previously failed PyCharm scenario at least three times and the full PyCharm smoke lane; run `spotlessCheck`, `detekt`, and `git diff --check`; commit T5R7 before restarting T5.
+
+Escalation triggers:
+
+- Escalate if exact classification cannot be tested without a production change, another diagnostic appears, the scenario fails for plugin behavior, or a file outside the one-file scope is required.
+
+Stop conditions:
+
+- Passing requires a generic exception suppression, fallback/theme replacement, timing workaround, product skip, or weakened workflow assertion.
+
+Expected output:
+
+- Exact version-gated platform diagnostic classification, positive/negative proof, focused/full PyCharm evidence, task commit, events, reconciliation, and a clean handoff back to T5.
+
+Result summary:
+
+- Status: completed
+- Worker: `/root/t5r7_scheme_race_classifier`
+- Changed files or reviewed diff: Changed only `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt`; refactored the existing exact IntelliJ 2026.2 reporter gate through a dedicated predicate and added an exact synthetic-name plus four-frame classifier and near-miss coverage.
+- Validation evidence: `compileIntegrationTestKotlin` passed; the pure classifier test passed 1/1; the formerly failed PyCharm scenario passed 1/1 in three independent processes (`20260723-143215-intellij-2026-2-t5r7-py-empty-r1-56e6de`, `20260723-143315-intellij-2026-2-t5r7-py-empty-r2-248cbd`, and `20260723-143408-intellij-2026-2-t5r7-py-empty-r3-89db7e`); full PyCharm smoke passed 13/13 in `20260723-143500-intellij-2026-2-t5r7-py-full-637ff3`; `spotlessCheck`, `detekt`, and `git diff --check` passed.
+- Self-review evidence from `.agents/references/reviews.md`: The classifier requires exact IDE version `2026.2`, exact synthetic test name `java.util.ConcurrentModificationException: null`, and every distinguishing `ArrayList$Itr`, `SchemeManagerImpl`, `EditorColorsManagerImpl`, and `FileStatusImpl` frame. Production code/resources, fallback schemes, theme/user settings, product skips, retries, sleeps, and workflow assertions are unchanged.
+- Commit: `c3bae72f614e8e4fb224aa93bbd82f0b1eade3be`
+- Worker events: Worker started at `2026-07-23T14:30:58.3509502+02:00`, completed the bounded one-file packet and all validation, and stopped successfully at `2026-07-23T14:43:30.3744018+02:00`.
+- Orchestrator reconciliation: The worker claims match the exact one-file diff, test counts, managed-job evidence, clean task scope, and required commit metadata.
+- Changelog/docs/spec/tasks updates: No user-facing behavior changed; the task-local platform-diagnostic evidence is recorded in this plan and validation report. T5D already updated `CHANGELOG.md` and generated Marketplace notes for the PyCharm release.
+- Blockers: None; restart T5 on the exact pushed head.
+- Review risks: Hosted Linux and the full three-product exact-head gate remain required before readiness.
+- Handoff notes and next action: Push T5R7 and this reconciliation, then dispatch a fresh T5 worker for the complete current-head gate.
+
 ### Task Packet: T5D-align-published-pycharm-documentation
 
 Task id: T5D-align-published-pycharm-documentation
@@ -979,21 +1050,21 @@ Result summary:
 - Use one active worker at a time and a fresh sub-agent for each task packet.
 - The orchestrator records a decision capsule, reserves each write scope, reconciles claims, and commits each completed task before the next.
 - After T3, the orchestrator decides and applies any eligible `CHANGELOG.md` entry during reconciliation; workers may only suggest the text.
-- T1 through T4, T3R, T5R, T5D, T5R6, and the T1/T2 corrective work are complete. T5R2 through T5R5 stopped cleanly after producing successively narrower platform evidence used by T5R6; integrate current `main`, then restart T5.
+- T1 through T4, T3R, T5R, T5D, T5R6, T5R7, and the T1/T2 corrective work are complete. T5R2 through T5R5 stopped cleanly after producing successively narrower platform evidence used by T5R6; restart T5.
 - Follow `.agents/references/orchestration.md`; use the current upgrade worktree only.
 
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: Integrate current `main`, then restart T5 exact-head readiness.
-- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`; T5R `234d91e18bda4b6028a594316ed1e2d90d57229c`; T5D `82abd9634effcc276b2d4821d8ee8b8657cd0ffe`.
-- Plan status and readiness: In Progress; the original plan, T3R, T5R, T5D, T5R2, T5R3, T5R4, T5R5, and T5R6 remediation packets are approved.
-- Validation and self-review state: Published PyCharm verifier passes locally and hosted; T5R6 passed narrow staging 3/3, focused 6/6 twice, both commit modes, and full local PyCharm 13/13 twice without the paid-startup option.
-- Worker event and reconciliation state: The first T5 worker, diagnosis, T5R, final review, T5D, post-T5D gate, stopped-clean T5R2/T5R3/T5R4/T5R5, and completed T5R6 are reconciled.
+- Current task or wave: T5 complete exact-head readiness restart.
+- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`; T5R `234d91e18bda4b6028a594316ed1e2d90d57229c`; T5D `82abd9634effcc276b2d4821d8ee8b8657cd0ffe`; T5R6 `777cf177ca1ea7c54156c761b54ab1250fc002d4`; T5R7 `c3bae72f614e8e4fb224aa93bbd82f0b1eade3be`.
+- Plan status and readiness: In Progress; the original plan, T3R, T5R, T5D, T5R2, T5R3, T5R4, T5R5, T5R6, and T5R7 remediation packets are approved.
+- Validation and self-review state: T5R7 exact positive/negative classification, three focused PyCharm reruns, full 13/13 PyCharm smoke, formatting, static analysis, and diff checks pass. Complete exact-head local and hosted validation must now restart.
+- Worker event and reconciliation state: All prior tasks through completed T5R7 and the stopped earlier exact-head T5 worker are reconciled; dispatch a fresh T5 worker.
 - Changelog, docs, spec, task, or plan updates: Compatibility configuration, current public docs, changelog, and regenerated Marketplace notes are aligned with published 2026.2/JDK 25 state.
-- Blockers or open questions: No open question; base integration, hosted Linux, and the complete final-head gate remain required evidence.
-- Next action: Keep PR #37 draft, integrate current `main`, and rerun the final T5 current-head gate.
-- Context handoff notes: T5R6 supersedes T5R's unsuitable paid-startup flag by combining T5R5's exact post-load callback with the real Git staging Commit workflow lifecycle.
+- Blockers or open questions: No open question; only the complete final-head gate remains required evidence.
+- Next action: Keep PR #37 draft, push T5R7, and rerun the final T5 current-head gate.
+- Context handoff notes: T5R6 fixes plugin-workflow startup; T5R7 classifies only the exact platform scheme-manager error that occurs before the first terminal callback and is already paired with the known Islands Dark diagnostic. No fallback colors or user/theme mutation were added.
 
 ## Execution Graph
 
@@ -1014,7 +1085,8 @@ flowchart TD
     W5R4["W5R4[run-verify]<br/>T5R4 loading-dialog observer"]
     W5R5["W5R5[run-verify]<br/>T5R5 enable-attempt completion"]
     W5R6["W5R6[run-verify]<br/>T5R6 staging-workflow rebuild"]
-    O1 --> W1 --> W2 --> W3 --> W3R --> W4 --> G1 --> W5 --> W5R --> W5 --> W5D --> W5 --> W5R2 --> W5R3 --> W5R4 --> W5R5 --> W5R6 --> W5 --> O1
+    W5R7["W5R7[run-verify]<br/>T5R7 scheme-race classification"]
+    O1 --> W1 --> W2 --> W3 --> W3R --> W4 --> G1 --> W5 --> W5R --> W5 --> W5D --> W5 --> W5R2 --> W5R3 --> W5R4 --> W5R5 --> W5R6 --> W5 --> W5R7 --> W5 --> O1
 ```
 
 ## Validation

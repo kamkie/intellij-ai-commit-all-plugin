@@ -272,3 +272,25 @@ Validation on T5R6 commit `777cf177ca1ea7c54156c761b54ab1250fc002d4` passed:
 - `spotlessCheck`, `detekt`, and `git diff --check`.
 
 T5R6 is locally complete. PR #37 must remain draft while current `main` is integrated and the complete exact-head local, hosted, review, and readiness gates are repeated.
+
+Current `main` was integrated in merge commit `5d45025f9cc55573a90980b03a9165a99fbd9d73`, adding only the `actions/setup-node` 6-to-7 update from PR #38. On that exact pushed head:
+
+- Full local prerelease job `20260723-140615-intellij-2026-2-t5-final-5d45025-prerele-f770ef` passed all eight gates, including IU/PY/WS compatibility.
+- Hosted build, Security, CodeQL, Detekt, and all three Plugin Verifier jobs passed.
+- Hosted UI coverage job [89201220085](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30005459240/job/89201220085) ran all 13 PyCharm smoke scenarios. Twelve passed. `emptyGeneratedMessageStopsWithoutCommitOrPush()` completed its plugin workflow but Starter promoted one synthetic platform error from a fresh IDE process.
+- Failure artifact `ai-commit-all-ui-coverage-failure-evidence` (`8563226012`) records `java.util.ConcurrentModificationException` at `ArrayList$Itr.checkForComodification -> SchemeManagerImpl.findSchemeByName -> EditorColorsManagerImpl.getSchemeForCurrentUITheme -> FileStatusImpl.getColor`, with no plugin frame.
+- In that process the T5R6 observer installed at `12:19:09.065`, the `Loading Plugins` operation began at `12:19:13.890`, the already-known Islands Dark missing-scheme diagnostics and concurrent modification appeared around `12:19:15.157`, and the first terminal Ultimate callback arrived only at `12:19:18.442`. The error therefore occurs during platform scheme mutation before the test harness can enter.
+- Across the 13 hosted IDE logs, the existing exact Islands Dark diagnostic appeared in ten processes; the concurrent modification appeared once.
+
+The release-matrix reporter already version-gates the exact Islands Dark branch-262 diagnostic. T5R7 must add the paired concurrent-mutation classification only when the synthetic name and the complete distinguishing SchemeManager/EditorColors/FileStatus stack match. Arbitrary concurrent modification, near-miss stacks, fallback color schemes, and production/theme changes remain forbidden. PR #37 stays draft until T5R7 and the complete exact-head gate pass.
+
+T5R7 completed on commit `c3bae72f614e8e4fb224aa93bbd82f0b1eade3be`. It changes only the release-matrix integration harness and retains the existing exact `2026.2` gate. The new classifier accepts the captured hosted diagnostic only when the synthetic test name is exactly `java.util.ConcurrentModificationException: null` and its details contain all four distinguishing frames:
+
+- `java.util.ArrayList$Itr.checkForComodification`
+- `com.intellij.configurationStore.schemeManager.SchemeManagerImpl.findSchemeByName`
+- `com.intellij.openapi.editor.colors.impl.EditorColorsManagerImpl.getSchemeForCurrentUITheme`
+- `com.intellij.openapi.vcs.FileStatusImpl.getColor`
+
+Synthetic coverage proves the captured form is accepted while a non-2026.2 IDE, an arbitrary test name, a generic concurrent modification, and every single-frame near miss remain rejected. `compileIntegrationTestKotlin` and the pure classifier test passed. The formerly failed PyCharm scenario passed in three independent IDE processes (`20260723-143215-intellij-2026-2-t5r7-py-empty-r1-56e6de`, `20260723-143315-intellij-2026-2-t5r7-py-empty-r2-248cbd`, and `20260723-143408-intellij-2026-2-t5r7-py-empty-r3-89db7e`), followed by a full 13/13 PyCharm smoke pass in `20260723-143500-intellij-2026-2-t5r7-py-full-637ff3`. `spotlessCheck`, `detekt`, and `git diff --check` also passed.
+
+No production code or resources changed. T5R7 does not bundle fallback colors, clone or register a color scheme, modify a theme or user setting, retry or sleep, skip a product, or weaken a workflow assertion. PR #37 remains draft until the complete exact-head local, hosted, review, and readiness gates pass.
