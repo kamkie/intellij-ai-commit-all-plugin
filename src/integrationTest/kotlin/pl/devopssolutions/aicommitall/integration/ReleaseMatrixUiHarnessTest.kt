@@ -920,7 +920,6 @@ class ReleaseMatrixUiHarnessTest {
                 LocalProjectInfo(fixture.projectDirectory),
             ).withVersion(ideVersion),
         ).apply {
-            doNotDisablePaidPluginsOnStartup()
             attachCoverageAgentIfRequested()
             val pluginConfigurator = PluginConfigurator(this)
             Files.deleteIfExists(pluginConfigurator.disabledPluginsPath)
@@ -935,7 +934,23 @@ class ReleaseMatrixUiHarnessTest {
                 .installPluginFromPath(pluginPath)
         }.runIdeWithDriver().useDriverAndCloseIde {
             if (installFakeAiPlugin) {
-                utility(RemoteFakeAiAssistantProbe::class).resetReleaseMatrixSettings()
+                val probe = utility(RemoteFakeAiAssistantProbe::class)
+                waitFor(
+                    message = "release matrix plugin actions are stable after product-plugin enablement",
+                    timeout = 120.seconds,
+                    interval = 1.seconds,
+                ) {
+                    val productPluginsStable = ideProductCode != "PY" ||
+                        (
+                            probe.isUltimateEnableAttemptObserverInstalled() &&
+                                (probe.isUltimateModuleLoaded() || probe.isUltimateEnableAttemptCompleted())
+                            )
+                    productPluginsStable &&
+                        probe.isAiCommitAllPluginEnabled() &&
+                        probe.isAiCommitAllThreeSectionActionRegistered() &&
+                        probe.isCommitMessageActionRegistered()
+                }
+                probe.resetReleaseMatrixSettings()
             }
             var blockCompleted = false
             try {
@@ -1068,6 +1083,11 @@ class ReleaseMatrixUiHarnessTest {
 @Remote("pl.devopssolutions.aicommitall.integration.fakeai.FakeAiAssistantProbe", plugin = "com.intellij.ml.llm")
 private interface RemoteFakeAiAssistantProbe {
     fun isCommitMessageActionRegistered(): Boolean
+    fun isAiCommitAllPluginEnabled(): Boolean
+    fun isAiCommitAllThreeSectionActionRegistered(): Boolean
+    fun isUltimateEnableAttemptObserverInstalled(): Boolean
+    fun isUltimateModuleLoaded(): Boolean
+    fun isUltimateEnableAttemptCompleted(): Boolean
     fun primaryCommitActionsContain(actionId: String): Boolean
     fun primaryCommitActionIds(): List<String>
     fun openCommitToolWindow(project: Project): Boolean

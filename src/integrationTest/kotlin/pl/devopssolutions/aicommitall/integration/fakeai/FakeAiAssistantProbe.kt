@@ -15,8 +15,12 @@
  */
 package pl.devopssolutions.aicommitall.integration.fakeai
 
+import com.intellij.ide.AppLifecycleListener
 import com.intellij.ide.DataManager
 import com.intellij.ide.IdeEventQueue
+import com.intellij.ide.plugins.DynamicPluginEnabler
+import com.intellij.ide.plugins.IdeaPluginDescriptor
+import com.intellij.ide.plugins.PluginEnableStateChangedListener
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.ide.plugins.PluginModuleId
 import com.intellij.openapi.actionSystem.ActionManager
@@ -30,6 +34,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.DumbService
@@ -59,11 +64,32 @@ import java.awt.event.WindowEvent
 import java.awt.image.BufferedImage
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.imageio.ImageIO
 import javax.swing.JComponent
 
 object FakeAiAssistantProbe {
+    private val logger = Logger.getInstance(FakeAiAssistantProbe::class.java)
+    private val ultimateEnableObserverRegistrationStarted = AtomicBoolean()
+    private val ultimateEnableObserverInstalled = AtomicBoolean()
+    private val ultimateEnableAttemptCompleted = AtomicBoolean()
+    private val pluginEnableStateChangedListener = object : PluginEnableStateChangedListener {
+        override fun stateChanged(
+            pluginDescriptors: Collection<IdeaPluginDescriptor>,
+            enable: Boolean,
+        ) {
+            val pluginIds = pluginDescriptors.map { descriptor -> descriptor.pluginId.idString }
+            val isUltimateEnableAttempt = enable && ULTIMATE_MODULE_ID in pluginIds
+            logger.info(
+                "AI Commit All test plugin enablement callback: enabled=$enable, " +
+                    "pluginIds=$pluginIds, ultimateEnableAttempt=$isUltimateEnableAttempt",
+            )
+            if (isUltimateEnableAttempt) {
+                ultimateEnableAttemptCompleted.set(true)
+            }
+        }
+    }
     private var manageSubscriptionsDialogCloserInstalled = false
     private val manageSubscriptionsDialogCloser = AWTEventListener { event ->
         if (event.id == WindowEvent.WINDOW_OPENED) {
@@ -81,6 +107,24 @@ object FakeAiAssistantProbe {
     fun isAiCommitAllThreeSectionActionRegistered(): Boolean = ActionManager
         .getInstance()
         .getAction(AI_COMMIT_ALL_THREE_SECTION_ACTION_ID) != null
+
+    @JvmStatic
+    fun installUltimateEnableAttemptObserver() {
+        if (ultimateEnableObserverRegistrationStarted.compareAndSet(false, true)) {
+            DynamicPluginEnabler.addPluginStateChangedListener(pluginEnableStateChangedListener)
+            ultimateEnableObserverInstalled.set(true)
+            logger.info("AI Commit All test plugin enablement observer installed")
+        }
+    }
+
+    @JvmStatic
+    fun isUltimateEnableAttemptObserverInstalled(): Boolean = ultimateEnableObserverInstalled.get()
+
+    @JvmStatic
+    fun isUltimateModuleLoaded(): Boolean = PluginManagerCore.isLoaded(PluginId.getId(ULTIMATE_MODULE_ID))
+
+    @JvmStatic
+    fun isUltimateEnableAttemptCompleted(): Boolean = ultimateEnableAttemptCompleted.get()
 
     @JvmStatic
     fun isProjectSmart(project: Project): Boolean = !DumbService.getInstance(project).isDumb
@@ -420,10 +464,21 @@ object FakeAiAssistantProbe {
     }
 
     @JvmStatic
-    fun setGitStagingAreaEnabled(enabled: Boolean) {
-        val settings = gitVcsApplicationSettings()
-        settings.javaClass.getDeclaredMethod("setStagingAreaEnabled", java.lang.Boolean.TYPE)
-            .invoke(settings, enabled)
+    fun setGitStagingAreaEnabled(enabled: Boolean) = runOnEdt {
+        val gitModule = requireNotNull(
+            PluginManagerCore.getPluginSet().findEnabledModule(
+                PluginModuleId.getId(GIT_BACKEND_MODULE_ID, PluginModuleId.JETBRAINS_NAMESPACE),
+            ),
+        ) {
+            "Git settings module descriptor was not found."
+        }
+        val stageManagerClass = Class.forName(
+            GIT_STAGE_MANAGER_CLASS_NAME,
+            true,
+            gitModule.pluginClassLoader,
+        )
+        stageManagerClass.getDeclaredMethod("enableStagingArea", java.lang.Boolean.TYPE)
+            .invoke(null, enabled)
     }
 
     @JvmStatic
@@ -736,7 +791,9 @@ object FakeAiAssistantProbe {
     private const val AI_COMMIT_ALL_COMMIT_SHORTCUT_ACTION_ID = "pl.devopssolutions.aicommitall.actions.CommitShortcut"
     private const val AI_COMMIT_ALL_PUSH_SHORTCUT_ACTION_ID = "pl.devopssolutions.aicommitall.actions.PushShortcut"
     private const val AI_COMMIT_ALL_PLUGIN_ID = "pl.devopssolutions.aicommitall"
+    private const val ULTIMATE_MODULE_ID = "com.intellij.modules.ultimate"
     private const val GIT_BACKEND_MODULE_ID = "intellij.vcs.git.backend"
+    private const val GIT_STAGE_MANAGER_CLASS_NAME = "git4idea.index.GitStageManagerKt"
     private const val MANAGE_SUBSCRIPTIONS_DIALOG_TITLE = "Manage Subscriptions"
     private const val FAKE_GENERATION_TIMEOUT_MILLIS = 30_000L
     private const val FAKE_GENERATION_POLL_MILLIS = 100L
@@ -744,4 +801,10 @@ object FakeAiAssistantProbe {
     private const val DEFAULT_AI_COMPLETION_CHECK_INTERVAL_MILLIS = 500L
     private const val FAKE_AI_ACTION_ID = "Vcs.LLMCommitMessageAction"
     private const val USER_EDIT_SENTINEL_KEY = '\u001D'
+}
+
+class FakeAiAssistantAppLifecycleListener : AppLifecycleListener {
+    override fun appStarted() {
+        FakeAiAssistantProbe.installUltimateEnableAttemptObserver()
+    }
 }
