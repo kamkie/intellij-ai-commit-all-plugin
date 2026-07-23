@@ -325,3 +325,52 @@ T5R9 commit `ae5aa6dba8fe01ea4a4d0bea3fb816a33f25baf4` changes only the release-
 Synthetic proof accepts both captured promoted forms and rejects non-2026.2, arbitrary exceptions, wrong index paths, generic closed-storage failures, and each single-frame near miss. The red classifier test rejected the captured diagnostic before implementation; the green classifier passed 1/1. The two formerly failed scenarios then passed 6/6 across three independent IDE processes (`20260723-162217-intellij-2026-2-t5r9-py-two-scenarios-r1-50250f`, `20260723-162342-intellij-2026-2-t5r9-py-two-scenarios-r2-4f304c`, and `20260723-162530-intellij-2026-2-t5r9-py-two-scenarios-r3-de138d`), followed by a full 13/13 PyCharm smoke pass in `20260723-162708-intellij-2026-2-t5r9-py-full-71bd67`. `compileIntegrationTestKotlin`, `spotlessCheck`, `detekt`, and `git diff --check` passed.
 
 No production, index, plugin-loading, retry, sleep, product-skip, or workflow-assertion behavior changed. PR #37 remains draft until the complete exact-head local, hosted, Codecov, review, and readiness gates pass.
+
+### Final Exact-Head Restart After T5R9
+
+T5 restarted on exact source, origin, and PR head `489a901b8158fc9c1b6f39a3232ab1bb0b1b6ac3`.
+Local prerelease job `20260723-164340-intellij-2026-2-t5-final-489a901-prerele-5f10f9`
+passed all eight gates: Marketplace change-note and description parity,
+documentation validation, agent-artifact validation, build/tests/coverage/plugin
+structure/packaging, and Plugin Verifier compatibility for IU, PY, and WS
+2026.2.
+
+Hosted exact-head evidence passed:
+
+- CI build job
+  [89239305940](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30016945943/job/89239305940).
+- UI coverage job
+  [89240451739](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30016945943/job/89240451739),
+  including all 13 PyCharm scenarios and the aggregate coverage upload.
+- Plugin Verifier jobs for
+  [IU-2026.2](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30016946292/job/89239306843),
+  [PY-2026.2](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30016946292/job/89239306898),
+  and
+  [WS-2026.2](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30016946292/job/89239306889).
+- Security job
+  [89239305984](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30016946042/job/89239305984),
+  plus the Detekt and Trivy check runs.
+- `codecov/project` check `89243823410`: 90.31%, up 0.03 percentage
+  points from base `753fda8`; Codecov reported all tests successful.
+
+The required `codecov/patch` check `89243828900` failed at 89.38% against
+the 90.27% target. Its GitHub check output attributes all 12 not-fully-covered
+diff lines to `ReflectiveCommitWorkflowSynchronizer.kt`: three missing lines
+and nine partial lines. CodeQL job
+[89239305957](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/30016945909/job/89239305957)
+was still running when the first failed current-head gate triggered T5's stop
+condition.
+
+Local IU job
+`20260723-165443-intellij-2026-2-t5-final-489a901-ui-iu-f-75d764` was stopped
+cleanly after its first 5 of 23 scenarios passed. The local PY and WS UI lanes
+were not started because the hosted patch-coverage failure had already made the
+current head ineligible for readiness.
+
+The full `origin/main...HEAD` diff review found no correctness, security,
+commit-selection, AI-invocation, push, platform-compatibility, or documentation
+finding apart from the failed coverage gate. The PR remained draft, open, and
+mergeable but blocked; `reviewDecision` was empty, there were no review requests
+or review threads, and the only review was the maintainer's earlier-head
+`COMMENTED` `LGTM` on `1072f42`. T5 remains incomplete until patch coverage and
+the complete exact-head local, hosted, review, and readiness gates pass together.
