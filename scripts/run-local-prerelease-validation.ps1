@@ -1,5 +1,5 @@
 param(
-    [string] $PluginVerifierIdeVersions = 'IU-2026.1.1,PY-2026.1.1,WS-2026.1.1',
+    [string] $PluginVerifierIdeVersions = 'IU-2026.2,PY-2026.2,WS-2026.2',
     [string] $PluginPublishChannels = 'default',
     [switch] $Resume
 )
@@ -13,8 +13,32 @@ $pluginVerifierReportDirectory = Join-Path $repoRoot 'build/reports/pluginVerifi
 $splitReportDirectory = Join-Path $repoRoot 'build/reports/pluginVerifier-local-prerelease'
 $statusDirectory = Join-Path $repoRoot 'build/reports/local-prerelease-validation'
 $statusPath = Join-Path $statusDirectory 'status.json'
-$scriptVersion = 2
+$scriptVersion = 3
 $script:validationState = $null
+
+function Assert-JavaMajorVersion
+{
+    param([int] $ExpectedMajorVersion)
+
+    $versionOutput = & java -version 2>&1
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "Unable to query the Java runtime. java -version failed with exit code $LASTEXITCODE."
+    }
+
+    $versionLine = ($versionOutput | Select-Object -First 1).ToString()
+    $versionMatch = [regex]::Match($versionLine, 'version "(?<major>\d+)')
+    if (-not $versionMatch.Success)
+    {
+        throw "Unable to parse the Java major version from: $versionLine"
+    }
+
+    $actualMajorVersion = [int] $versionMatch.Groups['major'].Value
+    if ($actualMajorVersion -ne $ExpectedMajorVersion)
+    {
+        throw "Local prerelease validation requires JDK $ExpectedMajorVersion, but java -version reported: $versionLine"
+    }
+}
 
 function Get-IdeVersions
 {
@@ -264,7 +288,7 @@ function Write-ValidationSummary
     {
         $record = $entry.Value
         $status = $record['Status']
-        $duration = if ( $record.ContainsKey('DurationSeconds'))
+        $duration = if ( $record.Contains('DurationSeconds'))
         {
             $record['DurationSeconds']
         }
@@ -280,6 +304,8 @@ if (-not (Test-Path -LiteralPath $gradleWrapper -PathType Leaf))
 {
     throw "Gradle wrapper was not found at $gradleWrapper."
 }
+
+Assert-JavaMajorVersion -ExpectedMajorVersion 25
 
 $ideVersions = Get-IdeVersions $PluginVerifierIdeVersions
 $headSha = Get-HeadSha

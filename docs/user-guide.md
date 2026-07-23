@@ -4,7 +4,7 @@ This guide covers the day-to-day workflow for AI Commit All. For the behavioral 
 
 ## Before You Start
 
-Use AI Commit All in a Git project opened in a JetBrains IDE on the `2026.1` IntelliJ Platform line.
+Use AI Commit All in a Git project opened in a JetBrains IDE on the `2026.2` IntelliJ Platform line.
 
 Required setup:
 

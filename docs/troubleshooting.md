@@ -62,7 +62,7 @@ Check these first:
 
 - Open a Git project, not a non-Git VCS project.
 - Open the non-modal Commit tool window.
-- Confirm the IDE is on the supported IntelliJ Platform `2026.1` line.
+- Confirm the IDE is on the supported IntelliJ Platform `2026.2` line.
 - Confirm the project has a commit workflow available in the current IDE
   product.
 - Confirm AI Commit All and JetBrains AI Assistant are both loaded in

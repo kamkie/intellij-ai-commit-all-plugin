@@ -69,7 +69,7 @@ internal class GitHubReleaseWorkflowTest {
             "push:\n    tags:\n      - 'v*.*.*'",
             "workflow_dispatch:",
             "IDE_PRODUCTS: \${{ inputs.ide-products || 'IU,PY,WS' }}",
-            "-PideVersion=\"\${{ inputs.ide-version || '2026.1.2' }}\"",
+            "-PideVersion=\"\${{ inputs.ide-version || '2026.2' }}\"",
         ).forEach { snippet ->
             assertTrue(content.contains(snippet), "Release matrix UI workflow is missing: $snippet")
         }
@@ -121,7 +121,7 @@ internal class GitHubReleaseWorkflowTest {
             "Release workflow must verify coverage, plugin structure, packaging, and Plugin Verifier.",
         )
         assertTrue(
-            content.contains("-PpluginVerifierIdeVersions=IU-2026.1.1,PY-2026.1.1,WS-2026.1.1"),
+            content.contains("-PpluginVerifierIdeVersions=IU-2026.2,PY-2026.2,WS-2026.2"),
             "Release workflow must verify the same supported IDE matrix used by compatibility CI.",
         )
         assertTrue(

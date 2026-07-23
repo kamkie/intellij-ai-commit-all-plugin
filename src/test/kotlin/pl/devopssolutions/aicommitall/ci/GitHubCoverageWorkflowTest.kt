@@ -89,7 +89,7 @@ internal class GitHubCoverageWorkflowTest {
         assertTrue(
             uiCoverageJob.contains("releaseMatrixUiTest") &&
                 uiCoverageJob.contains("-PideProducts=PY") &&
-                uiCoverageJob.contains("-PideVersion=2026.1.2"),
+                uiCoverageJob.contains("-PideVersion=2026.2"),
             "UI coverage job must run the smallest release-matrix UI lane that exposes integration coverage.",
         )
         assertTrue(

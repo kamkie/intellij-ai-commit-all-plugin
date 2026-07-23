@@ -1,6 +1,6 @@
 # Plugin Behavior Specification
 
-Last updated: 2026-06-25
+Last updated: 2026-07-16
 
 This document is the validation contract for the intended observable behavior of
 the `AI Commit All` IntelliJ plugin. It states what the plugin must do and where
@@ -50,7 +50,7 @@ manual sandbox checks, and future documentation.
 - REQ-ID-001: The plugin ID and base package MUST be `pl.devopssolutions.aicommitall`. Source: ADR 0022. Validates: SCN-CONTROL-AUT-001.
 - REQ-ID-002: The plugin MUST declare platform, VCS, Git, and JetBrains AI Assistant dependencies so supported IDEs load it only with the required platform capabilities available. Source: ADR 0013. Validates: SCN-STAGE-MAN-011.
 - REQ-ID-003: When JetBrains AI Assistant is missing or disabled, the IDE MUST refuse to load the plugin through the required-dependency mechanism; the plugin MUST NOT fall back to a non-AI commit-message path. Source: ADR 0013. Validates: T-VAL-015 (manual).
-- REQ-ID-004: The plugin MUST target the IntelliJ Platform 2026.1 line. Source: ADR 0008. Validates: T-VAL-018 (manual).
+- REQ-ID-004: The plugin MUST set IntelliJ Platform 2026.2, build branch 262, as the minimum supported platform and MUST leave the upper build bound open. Source: ADR 0089. Validates: generated plugin descriptor, T-VAL-018 (manual).
 - REQ-ID-005: The plugin MUST be licensed under Apache License 2.0 and MUST identify its vendor as `DevOps Solutions Kamil Kiewisz` with email `kontakt@devopssolutions.pl` and URL `https://devopssolutions.pl`. Source: ADR 0018, ADR 0022.
 - REQ-ID-006: User-visible plugin, control, notification, and settings labels MUST use the accepted `AI Commit All` product name unless a more specific requirement defines the visible section label. Source: ADR 0005. Validates: SCN-CONTROL-AUT-001, SCN-SETTINGS-AUT-010.
 
@@ -221,9 +221,10 @@ updating this specification.
 
 ## 12. Compatibility Surface
 
-- REQ-COMPAT-001: Plugin Verifier MUST run for at least IntelliJ IDEA, PyCharm, and WebStorm at the supported `2026.1.1` build. Source: ADR 0008, README CI section. Validates: T-VAL-002 (automated).
+- REQ-COMPAT-001: Plugin Verifier and release-matrix validation MUST require IntelliJ IDEA, PyCharm, and WebStorm 2026.2. If a required product is unavailable, its dependency-resolution failure MUST remain visible and MUST block release readiness; the lane MUST NOT be skipped or treated as passed. Source: ADR 0008, ADR 0089, PLAN-intellij-2026-2-sdk-upgrade. Validates: T-VAL-002 (automated).
 - REQ-COMPAT-002: When a supported IDE compatibility boundary cannot prove the requested inclusion state, the plugin MUST fail closed instead of treating the path as safely included. Source: PLAN-include-all-git-files. Validates: SCN-SELECT-*.
 - REQ-COMPAT-003: Background work such as push preparation, outgoing-commit checks, and staging confirmation MUST run off the UI event thread; only commit-UI updates and AI Assistant invocation MUST run on the event dispatch thread. Source: alpha.6/alpha.8 fixes. Validates: SCN-WORKFLOW-*.
+- REQ-COMPAT-004: Build, test, packaging, and release validation MUST use JDK 25 and Java and Kotlin target 25 for the IntelliJ Platform 2026.2 baseline. Source: ADR 0089, PLAN-intellij-2026-2-sdk-upgrade. Validates: plugin project configuration and CI contract tests (automated).
 
 ## 13. Requirement Traceability
 
@@ -238,7 +239,7 @@ behavior change.
 |----------|----------------------------------------------------------------------------------------------------------------------|
 | ADR 0003 | REQ-SEL-001, REQ-SEL-002, REQ-SEL-003                                                                                |
 | ADR 0005 | REQ-ID-006                                                                                                           |
-| ADR 0008 | REQ-ID-004, REQ-COMPAT-001                                                                                           |
+| ADR 0008 | REQ-COMPAT-001                                                                                                       |
 | ADR 0009 | REQ-ACT-001, REQ-ACT-002, REQ-SEL-006, REQ-UI-006                                                                    |
 | ADR 0010 | REQ-COM-001                                                                                                          |
 | ADR 0011 | REQ-AI-010, REQ-ERR-005                                                                                              |
@@ -262,6 +263,7 @@ behavior change.
 | ADR 0084 | REQ-ACT-006, REQ-UI-018, REQ-SEL-009..REQ-SEL-011, REQ-AI-004, REQ-AI-014, REQ-PUSH-005, REQ-PUSH-006, REQ-SHC-008, REQ-ERR-006 |
 | ADR 0087 | REQ-PUSH-002, REQ-PUSH-003, REQ-PUSH-005                                                                             |
 | ADR 0088 | REQ-ACT-006, REQ-AI-012, REQ-ERR-002, REQ-ERR-003, REQ-ERR-004                                                       |
+| ADR 0089 | REQ-ID-004, REQ-COMPAT-001, REQ-COMPAT-004                                                                           |
 
 ### 13.2 Non-ADR Sources
 
@@ -272,6 +274,7 @@ behavior change.
 | PLAN-confirm-staged-before-ai-generation    | REQ-SEL-008                                                     |
 | PLAN-fast-path-staging-confirmation         | REQ-SEL-008                                                     |
 | PLAN-include-all-git-files                  | REQ-SEL-007, REQ-COMPAT-002                                     |
+| PLAN-intellij-2026-2-sdk-upgrade            | REQ-COMPAT-001, REQ-COMPAT-004                                  |
 | PLAN-maintainability-stability-audit        | REQ-PUSH-009                                                    |
 | PLAN-staging-enabled-commit-ui-reliability  | REQ-SEL-008                                                     |
 | PLAN-three-section-ai-commit-push-control   | REQ-UI-005, REQ-UI-008, REQ-UI-017                              |

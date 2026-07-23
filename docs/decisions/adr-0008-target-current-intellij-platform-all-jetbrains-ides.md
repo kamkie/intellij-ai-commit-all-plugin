@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by adr-0089
 date: 2026-05-14
 decision-makers: Kamil Kiewisz <kamkie@outlook.com>
 consulted: Codex

@@ -25,14 +25,19 @@ import com.intellij.driver.sdk.waitForOne
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.NoCIServer
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
-import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.runner.Starter
+import com.intellij.ide.starter.utils.PortUtil
+import com.intellij.platform.testFramework.teamCity.TeamCityReporter
+import com.intellij.tools.ide.starter.product.idea.ultimate.IdeaUltimate
+import com.intellij.tools.ide.starter.product.pycharm.PyCharm
+import com.intellij.tools.ide.starter.product.webstorm.WebStorm
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
@@ -45,17 +50,22 @@ import pl.devopssolutions.aicommitall.integration.fixtures.IntegrationGitCli
 import pl.devopssolutions.aicommitall.integration.fixtures.ReleaseMatrixGitFixture
 import pl.devopssolutions.aicommitall.integration.fixtures.ReleaseMatrixGitFixtureBuilder
 import java.io.File
+import java.net.InetAddress
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption.ATOMIC_MOVE
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 class ReleaseMatrixUiHarnessTest {
@@ -72,12 +82,339 @@ class ReleaseMatrixUiHarnessTest {
                         message: String,
                         details: String,
                         linkToLogs: String?,
+                        kind: TeamCityReporter.SyntheticTestKind,
+                        generifyTestName: Boolean,
                     ) {
+                        if (
+                            isIntellij2026Point2KnownError(
+                                ideVersion = System.getProperty("aicommitall.ide.version"),
+                                testName = testName,
+                                details = details,
+                            )
+                        ) {
+                            return
+                        }
                         fail { "$testName failed: $message\n$details" }
                     }
                 }
             }
         }
+    }
+
+    @Test
+    fun intellij2026Point2SchemeRaceClassifierRequiresExactNameAndFrames() {
+        val capturedDetails = INTELLIJ_2026_2_SCHEME_RACE_REQUIRED_STACK_FRAMES.joinToString(separator = "\n")
+
+        assertTrue(
+            isIntellij2026Point2KnownError(
+                ideVersion = "2026.2",
+                testName = INTELLIJ_2026_2_SCHEME_RACE_KNOWN_ERROR,
+                details = capturedDetails,
+            ),
+        )
+        assertFalse(
+            isIntellij2026Point2KnownError(
+                ideVersion = "2026.1",
+                testName = INTELLIJ_2026_2_SCHEME_RACE_KNOWN_ERROR,
+                details = capturedDetails,
+            ),
+        )
+        assertFalse(
+            isIntellij2026Point2KnownError(
+                ideVersion = "2026.2",
+                testName = "java.util.ConcurrentModificationException: arbitrary",
+                details = capturedDetails,
+            ),
+        )
+        assertFalse(
+            isIntellij2026Point2KnownError(
+                ideVersion = "2026.2",
+                testName = INTELLIJ_2026_2_SCHEME_RACE_KNOWN_ERROR,
+                details = "at example.Unrelated.concurrentMutation(Unrelated.kt:1)",
+            ),
+        )
+        INTELLIJ_2026_2_SCHEME_RACE_REQUIRED_STACK_FRAMES.forEach { requiredFrame ->
+            assertFalse(
+                isIntellij2026Point2KnownError(
+                    ideVersion = "2026.2",
+                    testName = INTELLIJ_2026_2_SCHEME_RACE_KNOWN_ERROR,
+                    details = capturedDetails.replace(requiredFrame, requiredFrame.drop(1)),
+                ),
+                "A near miss without '$requiredFrame' must not be classified as the known platform error.",
+            )
+        }
+    }
+
+    @Test
+    fun intellij2026Point2ClosedIndexStorageClassifierRequiresExactNamePathAndFrames() {
+        val capturedShortcutDetails = listOf(
+            "at com.intellij.util.io.PagedFileStorage.doGetBufferWrapper(PagedFileStorage.java:461)",
+            "at com.intellij.util.indexing.impl.perFileVersion." +
+                "PersistentSubIndexerVersionEnumerator\$MyEnumerator.enumerate(" +
+                "PersistentSubIndexerVersionEnumerator.java:32)",
+            "at com.intellij.util.indexing.impl.storage.VfsAwareMapReduceIndex.getIndexingStateForFile(" +
+                "VfsAwareMapReduceIndex.java:235)",
+            "at com.intellij.util.indexing.UnindexedFilesScanner\$ScanningSession.scanFiles\$lambda\$0(" +
+                "UnindexedFilesScanner.kt:601)",
+        ).joinToString(separator = "\n")
+        val capturedStagingDetails = listOf(
+            "at com.intellij.util.io.PagedFileStorage.doGetBufferWrapper(PagedFileStorage.java:461)",
+            "at com.intellij.util.indexing.impl.perFileVersion." +
+                "PersistentSubIndexerVersionEnumerator\$MyEnumerator.enumerate(" +
+                "PersistentSubIndexerVersionEnumerator.java:32)",
+            "at com.intellij.util.indexing.impl.storage.VfsAwareMapReduceIndex.getIndexingStateForFile(" +
+                "VfsAwareMapReduceIndex.java:235)",
+            "at com.intellij.util.indexing.UnindexedFilesScanner\$ScanningSession.scanFiles(" +
+                "UnindexedFilesScanner.kt:577)",
+        ).joinToString(separator = "\n")
+        val capturedErrorNames = listOf(
+            INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PREFIX +
+                "/home/runner/work/plugin/out/ide-tests/tests/PY-262.8665.309/" +
+                "release-matrix-ui-commit-shortcut" +
+                INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PATH_SUFFIX,
+            INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PREFIX +
+                "/home/runner/work/plugin/out/ide-tests/tests/PY-262.8665.309/" +
+                "release-matrix-ui-commit-flow-staging" +
+                INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PATH_SUFFIX,
+        )
+
+        listOf(capturedShortcutDetails, capturedStagingDetails)
+            .zip(capturedErrorNames)
+            .forEach { (details, errorName) ->
+                assertTrue(
+                    isIntellij2026Point2KnownError(
+                        ideVersion = "2026.2",
+                        testName = errorName,
+                        details = details,
+                    ),
+                )
+            }
+
+        val capturedErrorName = capturedErrorNames.first()
+        assertFalse(
+            isIntellij2026Point2KnownError(
+                ideVersion = "2026.1",
+                testName = capturedErrorName,
+                details = capturedShortcutDetails,
+            ),
+        )
+        assertFalse(
+            isIntellij2026Point2KnownError(
+                ideVersion = "2026.2",
+                testName = capturedErrorName.replace(
+                    "com.intellij.util.io.ClosedStorageException",
+                    "java.lang.IllegalStateException",
+                ),
+                details = capturedShortcutDetails,
+            ),
+        )
+        assertFalse(
+            isIntellij2026Point2KnownError(
+                ideVersion = "2026.2",
+                testName = INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PREFIX +
+                    "/home/runner/work/plugin/system/index/idindex/IdIndex_inputs_i",
+                details = capturedShortcutDetails,
+            ),
+        )
+        assertFalse(
+            isIntellij2026Point2KnownError(
+                ideVersion = "2026.2",
+                testName = "com.intellij.util.io.ClosedStorageException: storage is already closed",
+                details = capturedShortcutDetails,
+            ),
+        )
+        INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_REQUIRED_STACK_FRAMES.forEach { requiredFrame ->
+            assertFalse(
+                isIntellij2026Point2KnownError(
+                    ideVersion = "2026.2",
+                    testName = capturedErrorName,
+                    details = capturedShortcutDetails.replace(requiredFrame, requiredFrame.drop(1)),
+                ),
+                "A near miss without '$requiredFrame' must not be classified as the known platform error.",
+            )
+        }
+    }
+
+    @Test
+    fun intellij2026Point2LicenseRestartContractRequiresExactProductVersionTitleBodyAndAction() {
+        val exactContract = arrayOf(
+            "IU",
+            "2026.2",
+            LICENSE_RESTART_DIALOG_TITLE,
+            LICENSE_RESTART_DIALOG_BODY,
+            LICENSE_RESTART_ACTION,
+        )
+        val matches: (Array<String>) -> Boolean = { contract ->
+            FakeAiAssistantProbe.isIntellij2026Point2LicenseRestartDialog(
+                productCode = contract[0],
+                ideVersion = contract[1],
+                title = contract[2],
+                body = contract[3],
+                action = contract[4],
+            )
+        }
+
+        assertTrue(matches(exactContract))
+        assertTrue(matches(exactContract.copyOf().apply { this[0] = "PY" }))
+        exactContract.indices.forEach { fieldIndex ->
+            val nearMiss = exactContract.copyOf()
+            nearMiss[fieldIndex] = "${nearMiss[fieldIndex]} near miss"
+            assertFalse(
+                matches(nearMiss),
+                "A near miss at contract field $fieldIndex must remain unhandled.",
+            )
+        }
+    }
+
+    @Test
+    fun licenseRestartOuterLifecycleRequiresExactMarkerFailureAndCleanFreshContext() {
+        val exactSessionLoss = IllegalStateException("exact marked restart session loss")
+        val wrongFailure = IllegalStateException("unrelated Driver failure")
+
+        val activeContexts = mutableListOf<Boolean>()
+        var activeScenarioRuns = 0
+        var activeCleanupRuns = 0
+        runLicenseRestartOuterLifecycle(
+            hasExactRestartMarker = { false },
+            isExactRestartSessionLoss = { error -> error === exactSessionLoss },
+            closeRestartedPreflight = { activeCleanupRuns++ },
+        ) { freshContext ->
+            activeContexts += freshContext
+            activeScenarioRuns++
+        }
+        assertEquals(listOf(false), activeContexts)
+        assertEquals(1, activeScenarioRuns)
+        assertEquals(0, activeCleanupRuns)
+
+        val restartedContexts = mutableListOf<Boolean>()
+        var restartedScenarioRuns = 0
+        var restartedCleanupRuns = 0
+        runLicenseRestartOuterLifecycle(
+            hasExactRestartMarker = { true },
+            isExactRestartSessionLoss = { error -> error === exactSessionLoss },
+            closeRestartedPreflight = { restartedCleanupRuns++ },
+        ) { freshContext ->
+            restartedContexts += freshContext
+            if (!freshContext) {
+                throw exactSessionLoss
+            }
+            restartedScenarioRuns++
+        }
+        assertEquals(listOf(false, true), restartedContexts)
+        assertEquals(1, restartedScenarioRuns)
+        assertEquals(1, restartedCleanupRuns)
+
+        val missingMarkerFailure = runCatching {
+            runLicenseRestartOuterLifecycle(
+                hasExactRestartMarker = { false },
+                isExactRestartSessionLoss = { error -> error === exactSessionLoss },
+                closeRestartedPreflight = {},
+            ) {
+                throw exactSessionLoss
+            }
+        }.exceptionOrNull()
+        assertSame(exactSessionLoss, missingMarkerFailure)
+
+        val wrongSessionFailure = runCatching {
+            runLicenseRestartOuterLifecycle(
+                hasExactRestartMarker = { true },
+                isExactRestartSessionLoss = { error -> error === exactSessionLoss },
+                closeRestartedPreflight = {},
+            ) {
+                throw wrongFailure
+            }
+        }.exceptionOrNull()
+        assertSame(wrongFailure, wrongSessionFailure)
+
+        val cleanupFailure = IllegalStateException("restart cleanup failed")
+        val propagatedCleanupFailure = runCatching {
+            runLicenseRestartOuterLifecycle(
+                hasExactRestartMarker = { true },
+                isExactRestartSessionLoss = { error -> error === exactSessionLoss },
+                closeRestartedPreflight = { throw cleanupFailure },
+            ) {
+                throw exactSessionLoss
+            }
+        }.exceptionOrNull()
+        assertSame(cleanupFailure, propagatedCleanupFailure)
+
+        val freshContextFailure = IllegalStateException("fresh context failed")
+        val propagatedFreshContextFailure = runCatching {
+            runLicenseRestartOuterLifecycle(
+                hasExactRestartMarker = { true },
+                isExactRestartSessionLoss = { error -> error === exactSessionLoss },
+                closeRestartedPreflight = {},
+            ) { freshContext ->
+                if (freshContext) {
+                    throw freshContextFailure
+                }
+                throw exactSessionLoss
+            }
+        }.exceptionOrNull()
+        assertSame(freshContextFailure, propagatedFreshContextFailure)
+
+        var loopContexts = 0
+        val propagatedRestartLoop = runCatching {
+            runLicenseRestartOuterLifecycle(
+                hasExactRestartMarker = { true },
+                isExactRestartSessionLoss = { error -> error === exactSessionLoss },
+                closeRestartedPreflight = {},
+            ) {
+                loopContexts++
+                throw exactSessionLoss
+            }
+        }.exceptionOrNull()
+        assertSame(exactSessionLoss, propagatedRestartLoop)
+        assertEquals(2, loopContexts)
+
+        assertTrue(
+            isLicenseRestartPreflightResolved(
+                productCode = "IU",
+                hasRestartMarker = true,
+                isLicenseActive = false,
+                isUltimateEnableAttemptCompleted = false,
+            ),
+        )
+        assertTrue(
+            isLicenseRestartPreflightResolved(
+                productCode = "IU",
+                hasRestartMarker = false,
+                isLicenseActive = true,
+                isUltimateEnableAttemptCompleted = false,
+            ),
+        )
+        assertTrue(
+            isLicenseRestartPreflightResolved(
+                productCode = "PY",
+                hasRestartMarker = false,
+                isLicenseActive = false,
+                isUltimateEnableAttemptCompleted = true,
+            ),
+        )
+        assertFalse(
+            isLicenseRestartPreflightResolved(
+                productCode = "IU",
+                hasRestartMarker = false,
+                isLicenseActive = false,
+                isUltimateEnableAttemptCompleted = true,
+            ),
+        )
+        assertFalse(
+            isLicenseRestartPreflightResolved(
+                productCode = "PCP",
+                hasRestartMarker = false,
+                isLicenseActive = false,
+                isUltimateEnableAttemptCompleted = true,
+            ),
+        )
+        assertFalse(
+            isLicenseRestartPreflightResolved(
+                productCode = "PY",
+                hasRestartMarker = false,
+                isLicenseActive = false,
+                isUltimateEnableAttemptCompleted = false,
+            ),
+        )
     }
 
     @Test
@@ -448,6 +785,13 @@ class ReleaseMatrixUiHarnessTest {
         ) {
             val project = openReleaseMatrixCommitToolWindow()
             val probe = utility(RemoteFakeAiAssistantProbe::class)
+            waitForGitSelectionPaths(
+                project = project,
+                expectedPaths = setOf(
+                    fixture.primaryRepository.root.resolve("modified.txt"),
+                    fixture.primaryRepository.root.resolve("push-flow.txt"),
+                ),
+            )
             probe.setAiCompletionOptions(timeoutMillis = 5_000, checkIntervalMillis = 100)
             probe.setClearCommitMessageBeforeGeneration(false)
             assertTrue(probe.setCommitMessageText(project, EXISTING_COMMIT_MESSAGE))
@@ -781,6 +1125,24 @@ class ReleaseMatrixUiHarnessTest {
         }
     }
 
+    private fun Driver.waitForGitSelectionPaths(
+        project: Project,
+        expectedPaths: Set<Path>,
+    ) {
+        val expected = expectedPaths
+            .map { path -> path.toAbsolutePath().normalize().toString().replace('\\', '/') }
+            .toSet()
+        val probe = utility(RemoteFakeAiAssistantProbe::class)
+        waitFor(
+            message = "release matrix Git selection contains the complete fixture",
+            timeout = 60.seconds,
+            interval = 1.seconds,
+            errorMessage = { "expected=$expected, actual=${probe.gitSelectionPaths(project)}" },
+        ) {
+            probe.gitSelectionPaths(project).toSet().containsAll(expected)
+        }
+    }
+
     private fun Driver.waitForCommitWorkflowMode(
         project: Project,
         stagingAreaEnabled: Boolean,
@@ -872,40 +1234,285 @@ class ReleaseMatrixUiHarnessTest {
         val ideVersion = requiredSystemProperty("aicommitall.ide.version")
         val pluginPath = Path.of(requiredSystemProperty("path.to.build.plugin"))
         val fakeAiPluginPath = Path.of(requiredSystemProperty("aicommitall.fake.ai.plugin.path"))
+        val handlesLicenseRestart = installFakeAiPlugin &&
+            ideProductCode in LICENSE_RESTART_PRODUCT_CODES &&
+            ideVersion == "2026.2"
+        val exercisesSyntheticLicenseRestart = handlesLicenseRestart &&
+            System.getenv("AICOMMITALL_EXERCISE_LICENSE_RESTART") == "true"
+        val licenseRestartMarker = tempDirectory
+            .resolve("$testName-license-restart.txt")
+            .toAbsolutePath()
+        Files.deleteIfExists(licenseRestartMarker)
+        Files.deleteIfExists(licenseRestartShutdownRequestPath(licenseRestartMarker))
+        var restartedPreflightRun: BackgroundRun? = null
 
-        Starter.newContext(
-            testName = testName,
-            testCase = TestCase(
-                ideProductProvider(ideProductCode),
-                LocalProjectInfo(fixture.projectDirectory),
-            ).withVersion(ideVersion),
-        ).apply {
-            attachCoverageAgentIfRequested()
-            val pluginConfigurator = PluginConfigurator(this)
-            Files.deleteIfExists(pluginConfigurator.disabledPluginsPath)
-            pluginConfigurator
-                .disablePlugins(RELEASE_MATRIX_DISABLED_PLUGIN_IDS + extraDisabledPluginIds)
-                .apply {
-                    extraPluginPaths.forEach { pluginPath -> installPluginFromPath(pluginPath) }
-                    if (installFakeAiPlugin) {
-                        installPluginFromPath(fakeAiPluginPath)
+        runLicenseRestartOuterLifecycle(
+            hasExactRestartMarker = {
+                readLicenseRestartMarker(licenseRestartMarker)
+                    ?.hasExactLicenseRestartContract(LICENSE_RESTART_STARTED_STATE, ideProductCode) == true
+            },
+            isExactRestartSessionLoss = Throwable::isExactLicenseRestartSessionLoss,
+            closeRestartedPreflight = {
+                closeRestartedLicensePreflight(licenseRestartMarker, ideProductCode)
+                val preflightRun = requireNotNull(restartedPreflightRun) {
+                    "The exact $ideProductCode 2026.2 license restart has no retained Starter run."
+                }
+                if (preflightRun.driver.isConnected) {
+                    preflightRun.driver.close()
+                }
+                waitFor(
+                    message = "the original Starter process handle is closed",
+                    timeout = 60.seconds,
+                    interval = 100.milliseconds,
+                ) {
+                    !preflightRun.process.isAlive
+                }
+                restartedPreflightRun = null
+            },
+        ) { freshContext ->
+            val context = Starter.newContext(
+                testName = testName,
+                testCase = TestCase(
+                    ideProductProvider(ideProductCode),
+                    LocalProjectInfo(fixture.projectDirectory),
+                ).withVersion(ideVersion),
+                preserveSystemDir = freshContext,
+            ).apply {
+                attachCoverageAgentIfRequested()
+                if (handlesLicenseRestart) {
+                    applyVMOptionsPatch {
+                        addSystemProperty(LICENSE_RESTART_MARKER_PROPERTY, licenseRestartMarker.toString())
+                        if (exercisesSyntheticLicenseRestart && !freshContext) {
+                            addSystemProperty(SYNTHETIC_LICENSE_RESTART_PROOF_PROPERTY, "true")
+                        } else {
+                            clearSystemProperty(SYNTHETIC_LICENSE_RESTART_PROOF_PROPERTY)
+                        }
                     }
                 }
-                .installPluginFromPath(pluginPath)
-        }.runIdeWithDriver().useDriverAndCloseIde {
-            if (installFakeAiPlugin) {
-                utility(RemoteFakeAiAssistantProbe::class).resetReleaseMatrixSettings()
+                val pluginConfigurator = PluginConfigurator(this)
+                if (!freshContext) {
+                    Files.deleteIfExists(pluginConfigurator.disabledPluginsPath)
+                }
+                pluginConfigurator
+                    .disablePlugins(RELEASE_MATRIX_DISABLED_PLUGIN_IDS + extraDisabledPluginIds)
+                    .apply {
+                        extraPluginPaths.forEach { pluginPath -> installPluginFromPath(pluginPath) }
+                        if (installFakeAiPlugin) {
+                            installPluginFromPath(fakeAiPluginPath)
+                        }
+                        installPluginFromPath(pluginPath)
+                    }
             }
-            var blockCompleted = false
-            try {
-                block()
-                blockCompleted = true
-            } finally {
-                if (installFakeAiPlugin && blockCompleted) {
-                    waitForOpenProjectSmart()
+
+            val runScenario: Driver.() -> Unit = {
+                if (installFakeAiPlugin) {
+                    var probe = utility(RemoteFakeAiAssistantProbe::class)
+                    if (handlesLicenseRestart && !freshContext) {
+                        waitFor(
+                            message = "the $ideProductCode 2026.2 license preflight resolves",
+                            timeout = 120.seconds,
+                            interval = 1.seconds,
+                            errorMessage = {
+                                "marker=${readLicenseRestartMarker(licenseRestartMarker)}, " +
+                                    "driverConnected=$isConnected, " +
+                                    "activeLicense=${runCatching { probe.isIdeLicenseActive() }.getOrNull()}, " +
+                                    "ultimateEnableAttemptCompleted=" +
+                                    "${runCatching { probe.isUltimateEnableAttemptCompleted() }.getOrNull()}, " +
+                                    "probe=${runCatching { probe.licenseRestartHandlingDiagnostic() }.getOrNull()}"
+                            },
+                        ) {
+                            val hasRestartMarker = Files.isRegularFile(licenseRestartMarker)
+                            val isLicenseActive = !hasRestartMarker && probe.isIdeLicenseActive()
+                            val isUltimateEnableAttemptCompleted = !hasRestartMarker &&
+                                !isLicenseActive &&
+                                ideProductCode == "PY" &&
+                                probe.isUltimateEnableAttemptCompleted()
+                            isLicenseRestartPreflightResolved(
+                                productCode = ideProductCode,
+                                hasRestartMarker = hasRestartMarker,
+                                isLicenseActive = isLicenseActive,
+                                isUltimateEnableAttemptCompleted = isUltimateEnableAttemptCompleted,
+                            )
+                        }
+                        if (Files.isRegularFile(licenseRestartMarker)) {
+                            waitFor(
+                                message = "the original Driver disconnects for the license restart",
+                                timeout = 60.seconds,
+                                interval = 1.seconds,
+                            ) {
+                                !isConnected
+                            }
+                            waitFor(
+                                message = "the original Driver transport reconnects after the license restart",
+                                timeout = 60.seconds,
+                                interval = 1.seconds,
+                                errorMessage = {
+                                    "marker=${readLicenseRestartMarker(licenseRestartMarker)}, " +
+                                        "driverConnected=$isConnected"
+                                },
+                            ) {
+                                isConnected
+                            }
+                            waitFor(
+                                message = "the restarted IDE publishes the exact lifecycle marker",
+                                timeout = 60.seconds,
+                                interval = 100.milliseconds,
+                                errorMessage = {
+                                    "marker=${readLicenseRestartMarker(licenseRestartMarker)}"
+                                },
+                            ) {
+                                readLicenseRestartMarker(licenseRestartMarker)
+                                    ?.hasExactLicenseRestartContract(
+                                        LICENSE_RESTART_STARTED_STATE,
+                                        ideProductCode,
+                                    ) == true
+                            }
+                            probe = utility(RemoteFakeAiAssistantProbe::class)
+                            waitForReleaseMatrixProject()
+                            error(
+                                "Starter unexpectedly retained a usable remote session after the exact " +
+                                    "$ideProductCode 2026.2 license restart.",
+                            )
+                        }
+                    }
+
+                    waitFor(
+                        message = "release matrix plugin actions are stable after product-plugin enablement",
+                        timeout = 120.seconds,
+                        interval = 1.seconds,
+                        errorMessage = {
+                            "licenseRestartMarker=${readLicenseRestartMarker(licenseRestartMarker)}, " +
+                                "probe=${runCatching { probe.licenseRestartHandlingDiagnostic() }.getOrNull()}"
+                        },
+                    ) {
+                        val productPluginsStable = ideProductCode != "PY" ||
+                            (
+                                probe.isUltimateEnableAttemptObserverInstalled() &&
+                                    (probe.isUltimateModuleLoaded() || probe.isUltimateEnableAttemptCompleted())
+                                )
+                        productPluginsStable &&
+                            probe.isAiCommitAllPluginEnabled() &&
+                            probe.isAiCommitAllThreeSectionActionRegistered() &&
+                            probe.isCommitMessageActionRegistered()
+                    }
+                    check(
+                        readLicenseRestartMarker(licenseRestartMarker)?.get("state") != LICENSE_RESTART_LOOP_STATE,
+                    ) {
+                        "A second exact $ideProductCode 2026.2 license restart was requested in the fresh context: " +
+                            readLicenseRestartMarker(licenseRestartMarker)
+                    }
+                    probe.resetReleaseMatrixSettings()
+                }
+                println(
+                    "AI Commit All release-matrix lifecycle: test=$testName, " +
+                        "context=${if (freshContext) "fresh" else "initial"}, scenario=started",
+                )
+                var blockCompleted = false
+                try {
+                    block()
+                    blockCompleted = true
+                } finally {
+                    if (installFakeAiPlugin && blockCompleted) {
+                        waitForOpenProjectSmart()
+                    }
+                }
+            }
+            val backgroundRun = context.runIdeWithDriver()
+            if (handlesLicenseRestart && !freshContext) {
+                try {
+                    backgroundRun.driver.withContext {
+                        runScenario()
+                    }
+                    backgroundRun.closeIdeAndWait()
+                } catch (error: Throwable) {
+                    val exactRestartFailure =
+                        readLicenseRestartMarker(licenseRestartMarker)
+                            ?.hasExactLicenseRestartContract(
+                                LICENSE_RESTART_STARTED_STATE,
+                                ideProductCode,
+                            ) == true &&
+                            error.isExactLicenseRestartSessionLoss()
+                    if (exactRestartFailure) {
+                        restartedPreflightRun = backgroundRun
+                    } else {
+                        backgroundRun.closeIdeAndWait()
+                    }
+                    throw error
+                }
+            } else {
+                backgroundRun.useDriverAndCloseIde {
+                    runScenario()
                 }
             }
         }
+    }
+
+    private fun closeRestartedLicensePreflight(
+        markerPath: Path,
+        ideProductCode: String,
+    ) {
+        val marker = requireNotNull(readLicenseRestartMarker(markerPath)) {
+            "The exact 2026.2 license restart marker disappeared before cleanup: $markerPath"
+        }
+        check(marker.hasExactLicenseRestartContract(LICENSE_RESTART_STARTED_STATE, ideProductCode)) {
+            "Refusing to clean up a non-exact license restart marker: $marker"
+        }
+        writeLicenseRestartMarker(
+            markerPath,
+            marker + ("state" to LICENSE_RESTART_SHUTDOWN_REQUESTED_STATE),
+        )
+        Files.createFile(licenseRestartShutdownRequestPath(markerPath))
+        waitFor(
+            message = "the restarted IDE accepts supported application shutdown",
+            timeout = 60.seconds,
+            interval = 100.milliseconds,
+            errorMessage = { "marker=${readLicenseRestartMarker(markerPath)}" },
+        ) {
+            readLicenseRestartMarker(markerPath)
+                ?.hasExactLicenseRestartContract(
+                    LICENSE_RESTART_SHUTDOWN_ACCEPTED_STATE,
+                    ideProductCode,
+                ) == true
+        }
+
+        val acceptedMarker = requireNotNull(readLicenseRestartMarker(markerPath))
+        val restartPid = requireNotNull(acceptedMarker["restartPid"]?.toLongOrNull()) {
+            "The accepted license restart marker has no restart PID: $acceptedMarker"
+        }
+        waitFor(
+            message = "the restarted IDE process exits",
+            timeout = 2.minutes,
+            interval = 100.milliseconds,
+            errorMessage = {
+                "restartPid=$restartPid, alive=${ProcessHandle.of(restartPid).map(ProcessHandle::isAlive).orElse(false)}"
+            },
+        ) {
+            ProcessHandle.of(restartPid).map { process -> !process.isAlive }.orElse(true)
+        }
+
+        val ports = listOf("jmxPort", "rmiPort", "rpcPort").associateWith { key ->
+            requireNotNull(acceptedMarker[key]?.toIntOrNull()) {
+                "The accepted license restart marker has no $key: $acceptedMarker"
+            }
+        }
+        waitFor(
+            message = "the restarted IDE releases Driver ports",
+            timeout = 60.seconds,
+            interval = 100.milliseconds,
+            errorMessage = {
+                "occupiedPorts=" + ports.filterValues { port ->
+                    !PortUtil.isPortAvailable(InetAddress.getLoopbackAddress(), port)
+                }
+            },
+        ) {
+            ports.values.all { port ->
+                PortUtil.isPortAvailable(InetAddress.getLoopbackAddress(), port)
+            }
+        }
+        println(
+            "AI Commit All release-matrix lifecycle: restartPid=$restartPid, " +
+                "shutdown=accepted, process=exited, ports=released",
+        )
     }
 
     private fun IDETestContext.attachCoverageAgentIfRequested() {
@@ -1010,9 +1617,9 @@ class ReleaseMatrixUiHarnessTest {
     private fun releaseMatrixIdeProductCode(): String = requiredSystemProperty("aicommitall.ide.product")
 
     private fun ideProductProvider(productCode: String): IdeInfo = when (productCode) {
-        "IU" -> IdeProductProvider.IU
-        "PY" -> IdeProductProvider.PY
-        "WS" -> IdeProductProvider.WS
+        "IU" -> IdeInfo.IdeaUltimate
+        "PY" -> IdeInfo.PyCharm
+        "WS" -> IdeInfo.WebStorm
         else -> error("Unsupported release-matrix IDE product: $productCode")
     }
 
@@ -1027,6 +1634,13 @@ class ReleaseMatrixUiHarnessTest {
 @Remote("pl.devopssolutions.aicommitall.integration.fakeai.FakeAiAssistantProbe", plugin = "com.intellij.ml.llm")
 private interface RemoteFakeAiAssistantProbe {
     fun isCommitMessageActionRegistered(): Boolean
+    fun isAiCommitAllPluginEnabled(): Boolean
+    fun isAiCommitAllThreeSectionActionRegistered(): Boolean
+    fun licenseRestartHandlingDiagnostic(): String
+    fun isIdeLicenseActive(): Boolean
+    fun isUltimateEnableAttemptObserverInstalled(): Boolean
+    fun isUltimateModuleLoaded(): Boolean
+    fun isUltimateEnableAttemptCompleted(): Boolean
     fun primaryCommitActionsContain(actionId: String): Boolean
     fun primaryCommitActionIds(): List<String>
     fun openCommitToolWindow(project: Project): Boolean
@@ -1056,6 +1670,7 @@ private interface RemoteFakeAiAssistantProbe {
     fun hasOutgoingCommitsToPush(project: Project): Boolean
     fun hasCommittableContent(project: Project): Boolean
     fun stagingAreaSelectionPaths(project: Project): List<String>
+    fun gitSelectionPaths(project: Project): List<String>
     fun setGitStagingAreaEnabled(enabled: Boolean)
     fun isGitStagingAreaEnabled(): Boolean
     fun commitWorkflowHandlerClassName(project: Project): String?
@@ -1114,6 +1729,39 @@ private val RELEASE_MATRIX_DISABLED_PLUGIN_IDS = setOf(
     "com.intellij.kubernetes",
     "org.jetbrains.plugins.docker.gateway",
 )
+private const val LICENSE_RESTART_MARKER_PROPERTY = "aicommitall.license.restart.marker"
+private const val SYNTHETIC_LICENSE_RESTART_PROOF_PROPERTY = "aicommitall.license.restart.synthetic.proof"
+private const val LICENSE_RESTART_DIALOG_TITLE = "Confirm Restart"
+private const val LICENSE_RESTART_DIALOG_BODY =
+    "Application restart is necessary to disable features requiring license. " +
+        "Click 'Restart' to continue using the product without these features."
+private const val LICENSE_RESTART_ACTION = "Restart"
+private const val LICENSE_RESTART_STARTED_STATE = "restart-started"
+private const val LICENSE_RESTART_SHUTDOWN_REQUESTED_STATE = "shutdown-requested"
+private const val LICENSE_RESTART_SHUTDOWN_ACCEPTED_STATE = "shutdown-accepted"
+private const val LICENSE_RESTART_LOOP_STATE = "restart-loop"
+private const val EXACT_LICENSE_RESTART_SESSION_LOSS_MESSAGE =
+    "Argument for @NotNull parameter 'session' of com/intellij/driver/impl/Invoker.getRemoteCallResult " +
+        "must not be null"
+private val LICENSE_RESTART_SOURCES = setOf(
+    "platform-license-dialog",
+    "synthetic-lifecycle-proof",
+)
+private val LICENSE_RESTART_PRODUCT_CODES = setOf("IU", "PY")
+private val LICENSE_RESTART_MARKER_KEYS = listOf(
+    "state",
+    "source",
+    "product",
+    "version",
+    "title",
+    "body",
+    "action",
+    "jmxPort",
+    "rmiPort",
+    "rpcPort",
+    "originalPid",
+    "restartPid",
+)
 private const val AI_COMMIT_ALL_CONTROL_ACCESSIBLE_NAME = "AI Commit All"
 private const val AI_COMMIT_ALL_CONTROL_CLASS_NAME =
     "pl.devopssolutions.aicommitall.actions.AiCommitAllThreeSectionControl"
@@ -1129,6 +1777,158 @@ private const val USER_EDITED_COMMIT_MESSAGE = "User edited release matrix messa
 private const val FAKE_AI_ASSISTANT_PLUGIN_ID = "com.intellij.ml.llm"
 private const val RELEASE_MATRIX_SMOKE_TAG = "releaseMatrixSmoke"
 private const val RELEASE_MATRIX_PROBE_PLUGIN_ID = "pl.devopssolutions.aicommitall.integration.probe"
+private const val INTELLIJ_2026_2_ISLANDS_THEME_KNOWN_ERROR =
+    "java.lang.Throwable: Theme Islands Dark refers to unknown color scheme Islands Dark"
+private const val INTELLIJ_2026_2_DTRACE_PROFILER_KNOWN_ERROR_PREFIX =
+    "java.lang.Throwable: Can't write state 'displayName = JVM DTrace based profiler"
+private const val INTELLIJ_DTRACE_PROFILER_KNOWN_ERROR_STACK_FRAME =
+    "com.intellij.profiler.api.configurations.ProfilerRunConfigurationsManager.writeConfigurationSafely"
+private const val INTELLIJ_2026_2_SCHEME_RACE_KNOWN_ERROR =
+    "java.util.ConcurrentModificationException: null"
+private val INTELLIJ_2026_2_SCHEME_RACE_REQUIRED_STACK_FRAMES = listOf(
+    "java.util.ArrayList\$Itr.checkForComodification",
+    "com.intellij.configurationStore.schemeManager.SchemeManagerImpl.findSchemeByName",
+    "com.intellij.openapi.editor.colors.impl.EditorColorsManagerImpl.getSchemeForCurrentUITheme",
+    "com.intellij.openapi.vcs.FileStatusImpl.getColor",
+)
+private const val INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PREFIX =
+    "com.intellij.util.io.ClosedStorageException: storage is already closed; path "
+private const val INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PATH_SUFFIX =
+    "/system/index/stubs/.perFileVersion/indexed_versions/indexed_versions_i"
+private val INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_REQUIRED_STACK_FRAMES = listOf(
+    "com.intellij.util.io.PagedFileStorage.doGetBufferWrapper",
+    "com.intellij.util.indexing.impl.perFileVersion.PersistentSubIndexerVersionEnumerator\$MyEnumerator.enumerate",
+    "com.intellij.util.indexing.impl.storage.VfsAwareMapReduceIndex.getIndexingStateForFile",
+    "com.intellij.util.indexing.UnindexedFilesScanner\$ScanningSession.scanFiles",
+)
+private const val INTELLIJ_WORKSPACE_CACHE_ACCESS_DENIED_PREFIX = "java.nio.file.AccessDeniedException: "
+private const val INTELLIJ_WORKSPACE_CACHE_SOURCE_PATH = "\\project-model-cache\\cache"
+private const val INTELLIJ_WORKSPACE_CACHE_MOVE_SEPARATOR = ".tmp -> "
+private const val INTELLIJ_WORKSPACE_CACHE_TARGET_PATH = "\\project-model-cache\\cache.data"
+private const val INTELLIJ_WORKSPACE_CACHE_SAVE_STACK_FRAME =
+    "com.intellij.workspaceModel.ide.impl.WorkspaceModelCacheSerializer.saveCacheToFile"
+
+private fun isIntellij2026Point2KnownError(
+    ideVersion: String?,
+    testName: String,
+    details: String,
+): Boolean = ideVersion == "2026.2" &&
+    (
+        testName == INTELLIJ_2026_2_ISLANDS_THEME_KNOWN_ERROR ||
+            (
+                testName.startsWith(INTELLIJ_2026_2_DTRACE_PROFILER_KNOWN_ERROR_PREFIX) &&
+                    details.contains(INTELLIJ_DTRACE_PROFILER_KNOWN_ERROR_STACK_FRAME)
+                ) ||
+            isIntellij2026Point2SchemeRaceError(testName, details) ||
+            isIntellij2026Point2ClosedIndexStorageError(testName, details) ||
+            isIntellij2026Point2WorkspaceCacheAccessDeniedError(testName, details)
+        )
+
+private fun isIntellij2026Point2SchemeRaceError(
+    testName: String,
+    details: String,
+): Boolean = testName == INTELLIJ_2026_2_SCHEME_RACE_KNOWN_ERROR &&
+    INTELLIJ_2026_2_SCHEME_RACE_REQUIRED_STACK_FRAMES.all { requiredFrame ->
+        details.contains(requiredFrame)
+    }
+
+private fun isIntellij2026Point2ClosedIndexStorageError(
+    testName: String,
+    details: String,
+): Boolean = testName.startsWith(INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PREFIX) &&
+    testName.endsWith(INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PATH_SUFFIX) &&
+    INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_REQUIRED_STACK_FRAMES.all { requiredFrame ->
+        details.contains(requiredFrame)
+    }
+
+private fun isIntellij2026Point2WorkspaceCacheAccessDeniedError(
+    testName: String,
+    details: String,
+): Boolean = System.getProperty("os.name").startsWith("Windows", ignoreCase = true) &&
+    testName.startsWith(INTELLIJ_WORKSPACE_CACHE_ACCESS_DENIED_PREFIX) &&
+    testName.contains(INTELLIJ_WORKSPACE_CACHE_SOURCE_PATH) &&
+    testName.contains(INTELLIJ_WORKSPACE_CACHE_MOVE_SEPARATOR) &&
+    testName.endsWith(INTELLIJ_WORKSPACE_CACHE_TARGET_PATH) &&
+    details.contains(INTELLIJ_WORKSPACE_CACHE_SAVE_STACK_FRAME)
+
+private fun runLicenseRestartOuterLifecycle(
+    hasExactRestartMarker: () -> Boolean,
+    isExactRestartSessionLoss: (Throwable) -> Boolean,
+    closeRestartedPreflight: () -> Unit,
+    runContext: (freshContext: Boolean) -> Unit,
+) {
+    try {
+        runContext(false)
+        return
+    } catch (error: Throwable) {
+        if (!hasExactRestartMarker() || !isExactRestartSessionLoss(error)) {
+            throw error
+        }
+    }
+
+    closeRestartedPreflight()
+    runContext(true)
+}
+
+private fun isLicenseRestartPreflightResolved(
+    productCode: String,
+    hasRestartMarker: Boolean,
+    isLicenseActive: Boolean,
+    isUltimateEnableAttemptCompleted: Boolean,
+): Boolean = hasRestartMarker ||
+    isLicenseActive ||
+    (productCode == "PY" && isUltimateEnableAttemptCompleted)
+
+private fun Throwable.isExactLicenseRestartSessionLoss(): Boolean = javaClass.name == "com.intellij.ide.starter.driver.engine.DriverWithContextError" &&
+    cause?.javaClass?.name == "com.intellij.driver.client.impl.DriverCallException" &&
+    cause?.cause?.javaClass == IllegalArgumentException::class.java &&
+    cause?.cause?.message == EXACT_LICENSE_RESTART_SESSION_LOSS_MESSAGE
+
+private fun readLicenseRestartMarker(markerPath: Path): Map<String, String>? {
+    if (!Files.isRegularFile(markerPath)) {
+        return null
+    }
+    return Files.readAllLines(markerPath)
+        .mapNotNull { line ->
+            val separator = line.indexOf('=')
+            if (separator <= 0) null else line.substring(0, separator) to line.substring(separator + 1)
+        }
+        .toMap()
+}
+
+private fun writeLicenseRestartMarker(
+    markerPath: Path,
+    marker: Map<String, String>,
+) {
+    val nextMarkerPath = markerPath.resolveSibling("${markerPath.fileName}.next")
+    Files.write(
+        nextMarkerPath,
+        LICENSE_RESTART_MARKER_KEYS.mapNotNull { key ->
+            marker[key]?.let { value -> "$key=$value" }
+        },
+    )
+    Files.move(nextMarkerPath, markerPath, ATOMIC_MOVE, REPLACE_EXISTING)
+}
+
+private fun licenseRestartShutdownRequestPath(markerPath: Path): Path = markerPath.resolveSibling("${markerPath.fileName}.shutdown-requested")
+
+private fun Map<String, String>.hasExactLicenseRestartContract(
+    state: String,
+    productCode: String,
+): Boolean = this["state"] == state &&
+    this["source"] in LICENSE_RESTART_SOURCES &&
+    productCode in LICENSE_RESTART_PRODUCT_CODES &&
+    this["product"] == productCode &&
+    this["version"] == "2026.2" &&
+    this["title"] == LICENSE_RESTART_DIALOG_TITLE &&
+    this["body"] == LICENSE_RESTART_DIALOG_BODY &&
+    this["action"] == LICENSE_RESTART_ACTION &&
+    this["jmxPort"]?.toIntOrNull() in 1..65535 &&
+    this["rmiPort"]?.toIntOrNull() in 1..65535 &&
+    this["rpcPort"]?.toIntOrNull() in 1..65535 &&
+    this["originalPid"]?.toLongOrNull()?.let { pid -> pid > 0 } == true &&
+    this["restartPid"]?.toLongOrNull()?.let { pid -> pid > 0 } == true
+
 private val RELEASE_MATRIX_PROBE_PLUGIN_XML = """
     <idea-plugin>
         <id>$RELEASE_MATRIX_PROBE_PLUGIN_ID</id>

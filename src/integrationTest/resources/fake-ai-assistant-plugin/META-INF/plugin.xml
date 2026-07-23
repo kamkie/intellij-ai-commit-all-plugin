@@ -6,6 +6,14 @@
 
     <depends>com.intellij.modules.platform</depends>
 
+    <applicationListeners>
+        <listener
+                class="pl.devopssolutions.aicommitall.integration.fakeai.FakeAiAssistantAppLifecycleListener"
+                topic="com.intellij.ide.AppLifecycleListener"
+                activeInTestMode="true"
+                activeInHeadlessMode="true"/>
+    </applicationListeners>
+
     <actions>
         <action
                 id="Vcs.LLMCommitMessageAction"
