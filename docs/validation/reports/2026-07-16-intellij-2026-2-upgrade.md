@@ -389,3 +389,25 @@ path can add only one hit; from Codecov's exact 101/113 patch ratio, that would
 project to 102/113 = 90.26549%, still below the unchanged 90.27% target. The
 next bounded remediation must therefore simplify only the redundant post-guard
 null handling while preserving exact diagnostics and supported behavior.
+
+T5R11 commit `df5964eb83a54b128dc3883b884cf5c33e1fe256`
+implements that bounded simplification. Handler and nested method holders are
+now constructed only after explicit non-null proof, so successful access no
+longer carries later safe calls or `checkNotNull` guards for already-proven
+methods. Behavioral tests cover each independently missing method and reject a
+same-name method with the wrong signature.
+
+Focused reflection tests passed 13/13 before and after the refactor. The full
+unit suite executed 530 tests with one existing skip and passed. Exact JaCoCo
+counters for the changed reflection range improved from 650 covered and 62
+missed instructions, 69 covered and 7 missed branches, and 98 covered and 0
+missed lines to 665/15 instructions, 68/0 branches, and 106/0 lines. The exact
+patch projection improves from 101/113 = 89.38053% to 116/121 = 95.86777%,
+above the unchanged 90.27% target. `jacocoTestReport`,
+`verifyJacocoCoverageReport`, `spotlessCheck`, `detekt`, and
+`git diff --check` passed.
+
+Exact missing-method ordering and invocation/incompatible-result diagnostics
+remain unchanged. No reflection fallback, public behavior, coverage
+configuration, UI harness, documentation, specification, or changelog behavior
+changed. Hosted aggregate Codecov remains the decisive confirmation.

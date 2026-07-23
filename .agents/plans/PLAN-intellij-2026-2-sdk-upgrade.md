@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, and T5R9 are complete. T5R10 proved every additional observable missing-method case without moving coverage because six residual branches are dominated null guards. T5R11 must remove only those redundant guards while preserving exact fail-closed behavior and covering the remaining reachable wrong-signature path.
+- Implementation progress: T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, and T5R11 are complete. T5R10's stopped experiment proved the residual coverage shape, and T5R11 removed only the dominated null guards while preserving exact fail-closed diagnostics. Restart T5 on the exact pushed head.
 
 ## Status History
 
@@ -477,7 +477,7 @@ Expected output:
 
 Result summary:
 
-- Status: blocked pending T5R11 remediation and restart
+- Status: ready to restart on the T5R11 head
 - Worker: `/root/t5_pycharm_release_gate`
 - Changed files or reviewed diff: Appended the first published-PyCharm gate evidence to `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`; source head remained unchanged.
 - Validation evidence: On exact head `489a901b8158fc9c1b6f39a3232ab1bb0b1b6ac3`, full local prerelease passed all eight gates. Hosted build, Security, Detekt, Trivy, IU/PY/WS verifier, and PyCharm UI 13/13 passed. `codecov/project` passed at 90.31%, but `codecov/patch` failed at 89.38% against a 90.27% target with three missing and nine partial diff lines in `ReflectiveCommitWorkflowSynchronizer.kt`.
@@ -486,9 +486,9 @@ Result summary:
 - Worker events: Initial worker stopped at the first published-PyCharm failure. Restarted worker `/root/t5_final_exact_head` preserved the branch-262 scheme failure. Worker `/root/t5_final_exact_head_r2` preserved the first late Codecov finding. Worker `/root/t5_final_exact_head_r3` preserved the closed-index race. Worker `/root/t5_final_exact_head_r4` passed prerelease and hosted UI, stopped local IU after 5/23 when the residual patch-coverage failure appeared, and stopped cleanly at `2026-07-23T17:00:15.2706707+02:00`.
 - Orchestrator reconciliation: Exact local, origin, and PR head remained `489a901b8158fc9c1b6f39a3232ab1bb0b1b6ac3`. The worker's report-only diff matches hosted check output: UI 13/13 and project coverage passed, while patch coverage alone failed. The local JaCoCo unit XML leaves the independently-missing handler and nested-boundary method predicates only partially covered.
 - Changelog/docs/spec/tasks updates: T5D aligned README, contributor/support documentation, changelog, and generated Marketplace notes; the validation report now records the subsequent hosted scheme-race, coverage, and closed-index evidence through T5R9.
-- Blockers: T5R11 must remove the dominated null guards without changing reflection behavior or diagnostics.
-- Review risks: The refactor must preserve the exact missing-method list and invocation/result failure classification while making successful construction depend on explicit non-null values.
-- Handoff notes and next action: Execute T5R11, push its head, then restart the complete T5 gate including Codecov.
+- Blockers: None inside T5R11; the complete exact-head local and hosted gate, including delayed Codecov checks, remains required.
+- Review risks: Hosted aggregate coverage is decisive; the current local projection is 95.87% patch coverage against the unchanged 90.27% target.
+- Handoff notes and next action: Push the T5R11 head, then restart the complete T5 gate including Codecov.
 
 ### Task Packet: T5R-stabilize-pycharm-ui-startup
 
@@ -1243,18 +1243,18 @@ Expected output:
 
 Result summary:
 
-- Status: ready
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Worker events:
-- Orchestrator reconciliation:
-- Changelog/docs/spec/tasks updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: completed
+- Worker: `/root/t5r11_reflection_null_guards`
+- Changed files or reviewed diff: Refactored only `ReflectiveCommitWorkflowSynchronizer.kt` and its matching test. Handler and nested method holders are constructed only after explicit non-null proof; tests cover each independently missing method and same-name/wrong-signature rejection.
+- Validation evidence: Focused reflection tests passed 13/13 before and after the refactor. The full unit suite executed 530 tests with one existing skip and passed. Exact JaCoCo counters for the changed reflection range improved from 650 covered/62 missed instructions, 69/7 branches, and 98/0 lines to 665/15 instructions, 68/0 branches, and 106/0 lines. `jacocoTestReport`, `verifyJacocoCoverageReport`, `spotlessCheck`, `detekt`, and `git diff --check` passed. The exact patch projection improved from 101/113 = 89.38053% to 116/121 = 95.86777%.
+- Self-review evidence from `.agents/references/reviews.md`: Exact missing-method ordering, null access, method-invocation failure/cause, and incompatible-result diagnostics are preserved. The source refactor removes only post-guard null handling and adds no reflection fallback, API behavior, coverage configuration, or unrelated change.
+- Commit: `df5964eb83a54b128dc3883b884cf5c33e1fe256`
+- Worker events: Worker started at `2026-07-23T17:13:26.9670364+02:00`, completed the two-file packet, and stopped successfully at `2026-07-23T17:31:34.5457752+02:00`.
+- Orchestrator reconciliation: Worker claims match the 58-line source and 135-line test diff, exact local counters, 13 focused cases, full/static validation, clean worktree, and required contiguous commit metadata. A temporary detached validation worktree was stopped and removed; no residual worktree remains.
+- Changelog/docs/spec/tasks updates: No user-facing behavior changed; this plan and validation report record the coverage remediation. Existing changelog and Marketplace notes remain current.
+- Blockers: None; restart T5 on the exact pushed head and require hosted patch/project coverage plus every other gate.
+- Review risks: The local projection exceeds the target, but only hosted aggregate Codecov can close the original failure.
+- Handoff notes and next action: Push T5R11 and reconciliation, then dispatch a fresh T5 worker for the complete exact-head gate.
 
 ### Task Packet: T5D-align-published-pycharm-documentation
 
@@ -1332,21 +1332,21 @@ Result summary:
 - Use one active worker at a time and a fresh sub-agent for each task packet.
 - The orchestrator records a decision capsule, reserves each write scope, reconciles claims, and commits each completed task before the next.
 - After T3, the orchestrator decides and applies any eligible `CHANGELOG.md` entry during reconciliation; workers may only suggest the text.
-- T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, and the T1/T2 corrective work are complete. T5R2 through T5R5 and T5R10 stopped cleanly after producing bounded evidence; execute T5R11, then restart T5.
+- T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, T5R11, and the T1/T2 corrective work are complete. T5R2 through T5R5 and T5R10 stopped cleanly after producing bounded evidence; restart T5.
 - Follow `.agents/references/orchestration.md`; use the current upgrade worktree only.
 
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: T5R11 reflection null-guard simplification.
-- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`; T5R `234d91e18bda4b6028a594316ed1e2d90d57229c`; T5D `82abd9634effcc276b2d4821d8ee8b8657cd0ffe`; T5R6 `777cf177ca1ea7c54156c761b54ab1250fc002d4`; T5R7 `c3bae72f614e8e4fb224aa93bbd82f0b1eade3be`; T5R8 `c6cc0c390126d21a0a58633918a553639ae73bbe`; T5R9 `ae5aa6dba8fe01ea4a4d0bea3fb816a33f25baf4`.
-- Plan status and readiness: In Progress; the original plan and all bounded remediation packets through T5R11 are approved; T5R11 is ready.
-- Validation and self-review state: T5R10's six additional behavioral cases passed but left exact JaCoCo counters unchanged, proving the residual deficit is dominated guards rather than untested supported behavior.
-- Worker event and reconciliation state: All prior tasks through stopped T5R10 worker `/root/t5r10_residual_reflection_coverage` are reconciled; dispatch a fresh T5R11 worker.
+- Current task or wave: Restart T5 for the complete exact-head final gate.
+- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`; T5R `234d91e18bda4b6028a594316ed1e2d90d57229c`; T5D `82abd9634effcc276b2d4821d8ee8b8657cd0ffe`; T5R6 `777cf177ca1ea7c54156c761b54ab1250fc002d4`; T5R7 `c3bae72f614e8e4fb224aa93bbd82f0b1eade3be`; T5R8 `c6cc0c390126d21a0a58633918a553639ae73bbe`; T5R9 `ae5aa6dba8fe01ea4a4d0bea3fb816a33f25baf4`; T5R11 `df5964eb83a54b128dc3883b884cf5c33e1fe256`.
+- Plan status and readiness: In Progress; the original plan and all bounded remediation packets through T5R11 are approved; T5R11 is complete.
+- Validation and self-review state: T5R11 passed focused/full/static checks, removed all seven missed branches in the changed reflection range, and projects 95.87% patch coverage.
+- Worker event and reconciliation state: All prior tasks through completed T5R11 worker `/root/t5r11_reflection_null_guards` are reconciled; dispatch a fresh T5 worker.
 - Changelog, docs, spec, task, or plan updates: Compatibility configuration, current public docs, changelog, and regenerated Marketplace notes are aligned with published 2026.2/JDK 25 state.
-- Blockers or open questions: No open question; T5R11 and the complete final-head gate, including delayed Codecov checks, remain required evidence.
-- Next action: Keep PR #37 draft, execute T5R11, push, and rerun the final T5 current-head gate.
-- Context handoff notes: Preserve exact fail-closed diagnostics, remove only redundant post-guard null checks, and cover the reachable same-name/wrong-signature method lookup.
+- Blockers or open questions: No open question; the complete final-head gate, including delayed Codecov checks, remains required evidence.
+- Next action: Keep PR #37 draft, push T5R11 and reconciliation, and rerun the final T5 current-head gate.
+- Context handoff notes: Hosted Codecov is decisive; if it passes, complete all local IU/PY/WS lanes and readiness review before transitioning the PR.
 
 ## Execution Graph
 
