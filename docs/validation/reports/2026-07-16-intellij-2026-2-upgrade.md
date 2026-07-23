@@ -374,3 +374,18 @@ mergeable but blocked; `reviewDecision` was empty, there were no review requests
 or review threads, and the only review was the maintainer's earlier-head
 `COMMENTED` `LGTM` on `1072f42`. T5 remains incomplete until patch coverage and
 the complete exact-head local, hosted, review, and readiness gates pass together.
+
+T5R10 tested whether additional observable missing-method combinations could
+close the patch deficit without touching production. Six temporary cases omitted
+each handler method and each nested boundary method independently. Focused tests
+passed 9/9 and the full suite passed 525/525 with one pending test, but exact
+JaCoCo counters for production lines 330-486 remained unchanged at 650 covered
+and 62 missed instructions, 69 covered and 7 missed branches, and 98 covered
+and 0 missed lines. The worker restored the test file and produced no commit.
+
+Six residual branches are compiler null paths dominated by the preceding
+missing-method guard. The remaining reachable same-name/wrong-signature lookup
+path can add only one hit; from Codecov's exact 101/113 patch ratio, that would
+project to 102/113 = 90.26549%, still below the unchanged 90.27% target. The
+next bounded remediation must therefore simplify only the redundant post-guard
+null handling while preserving exact diagnostics and supported behavior.
