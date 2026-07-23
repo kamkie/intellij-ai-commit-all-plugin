@@ -78,20 +78,63 @@ class ReleaseMatrixUiHarnessTest {
                         kind: TeamCityReporter.SyntheticTestKind,
                         generifyTestName: Boolean,
                     ) {
-                        val isIntellij2026Point2KnownError =
-                            testName == INTELLIJ_2026_2_ISLANDS_THEME_KNOWN_ERROR ||
-                                (
-                                    testName.startsWith(INTELLIJ_2026_2_DTRACE_PROFILER_KNOWN_ERROR_PREFIX) &&
-                                        details.contains(INTELLIJ_DTRACE_PROFILER_KNOWN_ERROR_STACK_FRAME)
-                                    ) ||
-                                isIntellij2026Point2WorkspaceCacheAccessDeniedError(testName, details)
-                        if (System.getProperty("aicommitall.ide.version") == "2026.2" && isIntellij2026Point2KnownError) {
+                        if (
+                            isIntellij2026Point2KnownError(
+                                ideVersion = System.getProperty("aicommitall.ide.version"),
+                                testName = testName,
+                                details = details,
+                            )
+                        ) {
                             return
                         }
                         fail { "$testName failed: $message\n$details" }
                     }
                 }
             }
+        }
+    }
+
+    @Test
+    fun intellij2026Point2SchemeRaceClassifierRequiresExactNameAndFrames() {
+        val capturedDetails = INTELLIJ_2026_2_SCHEME_RACE_REQUIRED_STACK_FRAMES.joinToString(separator = "\n")
+
+        assertTrue(
+            isIntellij2026Point2KnownError(
+                ideVersion = "2026.2",
+                testName = INTELLIJ_2026_2_SCHEME_RACE_KNOWN_ERROR,
+                details = capturedDetails,
+            ),
+        )
+        assertFalse(
+            isIntellij2026Point2KnownError(
+                ideVersion = "2026.1",
+                testName = INTELLIJ_2026_2_SCHEME_RACE_KNOWN_ERROR,
+                details = capturedDetails,
+            ),
+        )
+        assertFalse(
+            isIntellij2026Point2KnownError(
+                ideVersion = "2026.2",
+                testName = "java.util.ConcurrentModificationException: arbitrary",
+                details = capturedDetails,
+            ),
+        )
+        assertFalse(
+            isIntellij2026Point2KnownError(
+                ideVersion = "2026.2",
+                testName = INTELLIJ_2026_2_SCHEME_RACE_KNOWN_ERROR,
+                details = "at example.Unrelated.concurrentMutation(Unrelated.kt:1)",
+            ),
+        )
+        INTELLIJ_2026_2_SCHEME_RACE_REQUIRED_STACK_FRAMES.forEach { requiredFrame ->
+            assertFalse(
+                isIntellij2026Point2KnownError(
+                    ideVersion = "2026.2",
+                    testName = INTELLIJ_2026_2_SCHEME_RACE_KNOWN_ERROR,
+                    details = capturedDetails.replace(requiredFrame, requiredFrame.drop(1)),
+                ),
+                "A near miss without '$requiredFrame' must not be classified as the known platform error.",
+            )
         }
     }
 
@@ -1197,12 +1240,43 @@ private const val INTELLIJ_2026_2_DTRACE_PROFILER_KNOWN_ERROR_PREFIX =
     "java.lang.Throwable: Can't write state 'displayName = JVM DTrace based profiler"
 private const val INTELLIJ_DTRACE_PROFILER_KNOWN_ERROR_STACK_FRAME =
     "com.intellij.profiler.api.configurations.ProfilerRunConfigurationsManager.writeConfigurationSafely"
+private const val INTELLIJ_2026_2_SCHEME_RACE_KNOWN_ERROR =
+    "java.util.ConcurrentModificationException: null"
+private val INTELLIJ_2026_2_SCHEME_RACE_REQUIRED_STACK_FRAMES = listOf(
+    "java.util.ArrayList\$Itr.checkForComodification",
+    "com.intellij.configurationStore.schemeManager.SchemeManagerImpl.findSchemeByName",
+    "com.intellij.openapi.editor.colors.impl.EditorColorsManagerImpl.getSchemeForCurrentUITheme",
+    "com.intellij.openapi.vcs.FileStatusImpl.getColor",
+)
 private const val INTELLIJ_WORKSPACE_CACHE_ACCESS_DENIED_PREFIX = "java.nio.file.AccessDeniedException: "
 private const val INTELLIJ_WORKSPACE_CACHE_SOURCE_PATH = "\\project-model-cache\\cache"
 private const val INTELLIJ_WORKSPACE_CACHE_MOVE_SEPARATOR = ".tmp -> "
 private const val INTELLIJ_WORKSPACE_CACHE_TARGET_PATH = "\\project-model-cache\\cache.data"
 private const val INTELLIJ_WORKSPACE_CACHE_SAVE_STACK_FRAME =
     "com.intellij.workspaceModel.ide.impl.WorkspaceModelCacheSerializer.saveCacheToFile"
+
+private fun isIntellij2026Point2KnownError(
+    ideVersion: String?,
+    testName: String,
+    details: String,
+): Boolean = ideVersion == "2026.2" &&
+    (
+        testName == INTELLIJ_2026_2_ISLANDS_THEME_KNOWN_ERROR ||
+            (
+                testName.startsWith(INTELLIJ_2026_2_DTRACE_PROFILER_KNOWN_ERROR_PREFIX) &&
+                    details.contains(INTELLIJ_DTRACE_PROFILER_KNOWN_ERROR_STACK_FRAME)
+                ) ||
+            isIntellij2026Point2SchemeRaceError(testName, details) ||
+            isIntellij2026Point2WorkspaceCacheAccessDeniedError(testName, details)
+        )
+
+private fun isIntellij2026Point2SchemeRaceError(
+    testName: String,
+    details: String,
+): Boolean = testName == INTELLIJ_2026_2_SCHEME_RACE_KNOWN_ERROR &&
+    INTELLIJ_2026_2_SCHEME_RACE_REQUIRED_STACK_FRAMES.all { requiredFrame ->
+        details.contains(requiredFrame)
+    }
 
 private fun isIntellij2026Point2WorkspaceCacheAccessDeniedError(
     testName: String,
