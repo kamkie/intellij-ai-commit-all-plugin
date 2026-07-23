@@ -10,11 +10,11 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 
 ## Readiness
 
-- Plan readiness: Ready; the original plan and the one-file `T3R-regenerate-marketplace-change-notes` remediation packet are explicitly approved.
+- Plan readiness: Ready; the original plan and the bounded `T3R-regenerate-marketplace-change-notes`, `T5R-stabilize-pycharm-ui-startup`, `T5D-align-published-pycharm-documentation`, `T5R2-synchronize-pycharm-module-reload`, `T5R3-observe-pycharm-reload-at-startup`, `T5R4-observe-pycharm-loading-dialog`, `T5R5-await-pycharm-enable-attempt`, and `T5R6-rebuild-pycharm-staging-workflow` remediation packets are explicitly approved.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: T1 through T4 and both corrective fixes are complete; T5 waits for JetBrains to publish PyCharm 2026.2.
+- Implementation progress: T1 through T4, T3R, T5R, T5D, and T5R6 are complete. T5R2 through T5R5 produced the platform evidence used by T5R6, which now removes the paid-startup option, awaits the exact Ultimate enable-attempt completion, and applies staging mode through the real Commit workflow lifecycle. Restart T5 on the current head.
 
 ## Status History
 
@@ -23,6 +23,13 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - 2026-07-16T21:18:00+02:00: Approved -> In Progress by Codex <codex@openai.com>; approved implementation started.
 - 2026-07-16T22:15:11+02:00: In Progress -> Blocked by Codex <codex@openai.com>; T4 found stale generated Marketplace change notes and requires an explicitly approved remediation packet.
 - 2026-07-16T22:25:25+02:00: Blocked -> In Progress by Kamil Kiewisz <kamkie@outlook.com>; explicit approval to execute T3R and continue the review-fix-validation loop recorded.
+- 2026-07-23T10:43:36+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the maintainer's standing instruction to execute the normal change-review-fix loop without stopping, together with the request to check and merge PR #37, approves the bounded T5R remediation packet after the first published-PyCharm gate failure.
+- 2026-07-23T11:45:36+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5D packet after final review found current public documentation that still described published PyCharm 2026.2 as unavailable.
+- 2026-07-23T11:58:50+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R2 packet after hosted validation proved T5R opens a paid-product modal on an unlicensed Linux runner.
+- 2026-07-23T12:27:22+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R3 packet after T5R2 proved every Driver-time state or listener has an unavoidable pre-reload gap.
+- 2026-07-23T12:45:18+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R4 packet after T5R3 proved `PlatformTaskSupport` does not publish `ProgressManagerListener` for the startup loading dialog.
+- 2026-07-23T12:57:24+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R5 packet after T5R4 proved the loading modal lives in the split frontend and cannot be observed from the backend fake-plugin process.
+- 2026-07-23T13:14:12+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R6 packet after T5R5 proved completion of rejected Ultimate loading is deterministic but does not itself restore the staging workflow fixture.
 
 ## Goal
 
@@ -57,6 +64,13 @@ No open plan questions. ADR acceptance and plan approval are required lifecycle 
 - `T3R-regenerate-marketplace-change-notes`: regenerate the single stale Marketplace change-notes artifact created from the orchestrator-owned Unreleased changelog entry.
 - `T4-available-product-validation`: validate all available 2026.2 products and record the expected PyCharm availability failure.
 - `T5-pycharm-release-gate`: after PyCharm 2026.2 is published, rerun the unchanged required lane and full current-head readiness gate.
+- `T5R-stabilize-pycharm-ui-startup`: synchronize the release-matrix harness with PyCharm's first-session product-plugin reconfiguration after the hosted lane exposed a Linux-only race.
+- `T5D-align-published-pycharm-documentation`: replace the now-stale public availability wording and regenerate Marketplace change notes before final readiness.
+- `T5R2-synchronize-pycharm-module-reload`: remove the paid-startup option and wait for PyCharm's normal module reload plus AI Commit All action re-registration before a scenario begins.
+- `T5R3-observe-pycharm-reload-at-startup`: register the reload observer from the fake AI plugin descriptor so it captures `Loading Plugins` before the Driver can enter a scenario.
+- `T5R4-observe-pycharm-loading-dialog`: install an AWT observer from an app-start listener and record the actual `Loading Plugins` dialog open/close lifecycle.
+- `T5R5-await-pycharm-enable-attempt`: register an early `DynamicPluginEnabler` state listener in the fake AI plugin and wait until the Ultimate-module enable/load attempt has returned before a PyCharm scenario can begin.
+- `T5R6-rebuild-pycharm-staging-workflow`: retain the exact enable-attempt barrier and deterministically create or rebuild the requested Git staging Commit workflow after PyCharm's rejected Ultimate-module reload.
 
 ## Task Packets
 
@@ -453,39 +467,533 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review evidence from `.agents/references/reviews.md`:
+- Status: ready to restart on the T5R6 head
+- Worker: `/root/t5_pycharm_release_gate`
+- Changed files or reviewed diff: Appended the first published-PyCharm gate evidence to `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`; source head remained unchanged.
+- Validation evidence: Local PyCharm verifier passed and classified `PY-262.8665.309` as compatible; local PyCharm UI passed 13/13 before and after T5R; hosted PyCharm verifier passed; pre-T5R hosted PyCharm UI passed 10/13 then 12/13; T5R hosted UI hit its 45-minute limit after three 10-minute modal-dialog timeouts and one fake-action failure.
+- Self-review evidence from `.agents/references/reviews.md`: No production defect or compatibility change is confirmed; the failing IDE logs show IntelliJ declining an AI action because its target control stopped showing during dynamic plugin reconfiguration.
 - Commit:
-- Worker events:
-- Orchestrator reconciliation:
-- Changelog/docs/spec/tasks updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Worker events: Worker stopped at the first failing current-head gate as required; the orchestrator preserved the hosted artifact and dispatched read-only flaky-test diagnosis.
+- Orchestrator reconciliation: Exact local, origin, and PR head was `e276ec09b1b91e4b64871b7a15c5c00579a0451a`; local and hosted verifier evidence agrees, while Windows completes the same product reconfiguration before workflow activation and hosted Linux overlaps it.
+- Changelog/docs/spec/tasks updates: T5D aligned README, contributor/support documentation, changelog, and generated Marketplace notes; the validation report records the earlier timing failures and must add the T5R hosted modal evidence.
+- Blockers: None locally; current-head base integration, full local validation, hosted checks, and final review/readiness remain.
+- Review risks: The replacement must synchronize with normal PyCharm module reconfiguration without sleeps, retries, weakened assertions, paid licensing, or production changes.
+- Handoff notes and next action: Integrate current `main`, then restart T5 on the unlicensed-runner-safe and documentation-aligned exact head.
+
+### Task Packet: T5R-stabilize-pycharm-ui-startup
+
+Task id: T5R-stabilize-pycharm-ui-startup
+
+Lane: testing
+
+Required skills:
+
+- `intellij-plugin-development`
+- `kotlin-plugin-style`
+- `plugin-test-tdd`
+- `triage-flaky-test`
+
+Goal:
+
+- Prevent IDE Starter from disabling paid product plugins during release-matrix startup so PyCharm 2026.2 does not rebuild the Commit UI after the test begins.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, accepted ADR 0089, this plan's readiness and execution graph, this packet, the first hosted failure artifact, the matching local passing IDE logs, `ReleaseMatrixUiHarnessTest.kt`, and `FakeAiAssistantProbe.kt`.
+- Escalate to: exact IntelliJ 262 plugin-enable APIs or bytecode only when required to prove the completion signal.
+
+Allowed inputs:
+
+- The preserved hosted/local PyCharm evidence, exact IntelliJ 262 APIs, and focused validation output.
+
+Forbidden inputs:
+
+- Production plugin behavior changes, retries, sleeps, weakened assertions, quarantines, product-scope changes, and unrelated source.
+
+Write scope:
+
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt`
+
+Dependencies:
+
+- First T5 attempt stopped on the preserved hosted failure; this bounded packet is approved by the maintainer's normal change-review-fix continuation directive and current merge request.
+
+Validation:
+
+- Preserve the hosted 10/13 failure; compile integration tests; run the three affected PyCharm scenarios and inspect their IDE JVM options/logs for the paid-plugin startup flag and absence of a late Ultimate-plugin transition; rerun them enough to establish the post-fix pattern; run the full PyCharm UI lane, `spotlessCheck`, `detekt`, and `git diff --check`; commit T5R before restarting T5.
+
+Escalation triggers:
+
+- Escalate if the completion signal requires production code, unsupported timing assumptions, another product decision, or changes outside the two-file scope.
+
+Stop conditions:
+
+- IDE Starter's official paid-plugin startup option does not prevent the late reconfiguration, or focused/full PyCharm validation still fails.
+
+Expected output:
+
+- Deterministic startup synchronization, exact before/after evidence, task commit, events, reconciliation, and a clean handoff back to T5.
+
+Result summary:
+
+- Status: completed
+- Worker: `/root/t5r_stabilize_pycharm_startup`; read-only diagnosis `/root/t5_ci_timing_diagnosis`.
+- Changed files or reviewed diff: Added only `doNotDisablePaidPluginsOnStartup()` to `ReleaseMatrixUiHarnessTest.kt` before release-matrix plugin configuration.
+- Validation evidence: `compileIntegrationTestKotlin` passed; two focused PyCharm runs passed 3/3 each; the full PyCharm 2026.2 lane passed 13/13 in 4 minutes 37 seconds; all 13 IDE logs contain `-Dide.do.not.disable.paid.plugins.on.startup=true` and none contains an Ultimate disable, applied re-enable, or dynamic-reconfiguration event; `spotlessCheck detekt` and `git diff --check` passed.
+- Self-review evidence from `.agents/references/reviews.md`: The official IDE Starter option removes the startup lifecycle transition before tests begin; no assertion, timeout, retry, sleep, production code, or product-scope change was added.
+- Commit: `234d91e18bda4b6028a594316ed1e2d90d57229c`
+- Worker events: Read-only diagnosis classified the race and recommended the official Starter API; the fresh T5R worker completed one-file implementation and all focused/full validation.
+- Orchestrator reconciliation: Worker claims match the one-line committed diff, 6/6 focused pattern, 13/13 full log, 13 property-bearing IDE logs, zero late-transition events, and required commit metadata.
+- Changelog/docs/spec/tasks updates: No user-facing change; the task-local failure and remediation evidence is recorded in the active plan and validation report.
+- Blockers: None.
+- Review risks: Hosted Linux remains the final environment-specific proof.
+- Handoff notes and next action: Hosted validation later proved the paid-startup option opens a modal on an unlicensed runner; supersede this approach through T5R2 before restarting T5.
+
+### Task Packet: T5R2-synchronize-pycharm-module-reload
+
+Task id: T5R2-synchronize-pycharm-module-reload
+
+Lane: testing
+
+Required skills:
+
+- `intellij-plugin-development`
+- `kotlin-plugin-style`
+- `plugin-test-tdd`
+- `triage-flaky-test`
+
+Goal:
+
+- Remove the paid-plugin startup option and deterministically wait until PyCharm's normal Ultimate-module reconfiguration and AI Commit All action re-registration are complete before each fake-AI scenario begins.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, accepted ADR 0089, this plan's readiness and execution graph, this packet, hosted run 29993726119/job 89163423209 logs, the earlier hosted timing failures, `ReleaseMatrixUiHarnessTest.kt`, and `FakeAiAssistantProbe.kt`.
+- Escalate to: exact IntelliJ 262 plugin/module identifier and loaded-state APIs or bytecode only when required to implement the completion signal.
+
+Allowed inputs:
+
+- Preserved pre-T5R timing failures, the T5R hosted modal/time-limit failure, exact IntelliJ 262 APIs, focused validation output, and current local logs.
+
+Forbidden inputs:
+
+- Production plugin behavior, paid licenses or paid-startup flags, dialog dismissal, retries, sleeps, weakened assertions, quarantines, product-scope changes, and unrelated source.
+
+Write scope:
+
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt`
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/fakeai/FakeAiAssistantProbe.kt`
+
+Dependencies:
+
+- T5R and hosted run 29993726119 preserved the paid-startup modal failure; this bounded replacement is approved by the maintainer's standing normal review-fix continuation directive and current merge request.
+
+Validation:
+
+- Remove `doNotDisablePaidPluginsOnStartup()`; compile integration tests; prove the barrier observes the PyCharm Ultimate-module loaded state followed by AI Commit All plugin/action availability; rerun the previously timing-sensitive and hosted-modal scenarios; run the full PyCharm lane enough to establish a post-fix pattern; run `spotlessCheck`, `detekt`, and `git diff --check`; require no paid-startup flag or paid modal in fresh IDE logs; commit T5R2 before restarting T5.
+
+Escalation triggers:
+
+- Escalate if the completion signal requires production code, dialog handling, a timing-only assumption, another product decision, or a file outside the two-file scope.
+
+Stop conditions:
+
+- Exact 262 APIs cannot prove module reload completion, focused/full PyCharm validation fails after the barrier, or a paid modal remains.
+
+Expected output:
+
+- Unlicensed-runner-safe deterministic reload synchronization, exact before/after evidence, task commit, events, reconciliation, and a clean handoff back to T5.
+
+Result summary:
+
+- Status: stopped after proving the two-file approach cannot be deterministic
+- Worker: `/root/t5r2_pycharm_reload_barrier`
+- Changed files or reviewed diff: Three candidate barriers were implemented and tested sequentially, then both scoped Kotlin files were restored exactly to T5R; no task diff or commit remains.
+- Validation evidence: `compileIntegrationTestKotlin` passed for each candidate. Focused A1 job `20260723-121018-intellij-2026-2-t5r2-py-focused-a1-8198fa` proved loaded-only excludes a terminal failed reload; A2 `20260723-121723-intellij-2026-2-t5r2-py-focused-a2-0a25f7` proved Driver-time listeners initialize about seven seconds after `Loading Plugins` finishes; A3 `20260723-121951-intellij-2026-2-t5r2-py-focused-a3-96c067` proved the platform clears the non-load reason. Final `git diff --check` passed.
+- Self-review evidence from `.agents/references/reviews.md`: `!disabled && !modal` has an observed 349-millisecond pre-modal gap, and the internal dynamic-plugin lock still leaves an observed 225-millisecond pre-lock gap; accepting either would preserve the race.
+- Commit: None.
+- Worker events: The worker was recovered once after API diagnosis, tested three exact 262 predicates, stopped when the two-file scope could not provide an early observer, and restored its scope cleanly.
+- Orchestrator reconciliation: Worker claims match all three managed-job logs, exact IDE timestamps, clean scoped files, removed generated artifacts, and the required escalation boundary.
+- Changelog/docs/spec/tasks updates: Task-local diagnosis is recorded in this plan and validation report; no user-facing behavior or support policy changed.
+- Blockers: An observer must be registered before Driver utility availability, requiring the fake AI test plugin descriptor.
+- Review risks: The early listener must capture only the platform's `Loading Plugins` lifecycle, preserve failed and successful reload completion, and avoid production/plugin-runtime scope.
+- Handoff notes and next action: Execute T5R3 with the additional fake-plugin descriptor scope.
+
+### Task Packet: T5R3-observe-pycharm-reload-at-startup
+
+Task id: T5R3-observe-pycharm-reload-at-startup
+
+Lane: testing
+
+Required skills:
+
+- `intellij-plugin-development`
+- `kotlin-plugin-style`
+- `plugin-test-tdd`
+- `triage-flaky-test`
+
+Goal:
+
+- Register a test-only progress listener when the fake AI plugin loads so PyCharm's startup `Loading Plugins` lifecycle is recorded before IDE Driver utility calls become available.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, accepted ADR 0089, this plan's readiness and execution graph, this packet, T5R/T5R2 evidence, exact focused A1/A2/A3 IDE logs, the two Kotlin files, and the fake AI plugin descriptor.
+- Escalate to: exact IntelliJ 262 application-listener descriptor syntax and `ProgressManagerListener` contract only.
+
+Allowed inputs:
+
+- Preserved hosted/local failures, exact IntelliJ 262 listener APIs, the test-only fake AI plugin, and focused validation output.
+
+Forbidden inputs:
+
+- Production plugin behavior or descriptor, paid licenses or paid-startup flags, dialog dismissal, retries, sleeps, weakened assertions, quarantines, product-matrix changes, and unrelated source.
+
+Write scope:
+
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt`
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/fakeai/FakeAiAssistantProbe.kt`
+- `src/integrationTest/resources/fake-ai-assistant-plugin/META-INF/plugin.xml`
+
+Dependencies:
+
+- T5R2 restored its scope after proving Driver-time observation is too late; this bounded early-observer packet is approved by the maintainer's standing normal review-fix continuation directive and current merge request.
+
+Validation:
+
+- Remove `doNotDisablePaidPluginsOnStartup()`; register an early test-plugin application listener for the exact `Loading Plugins` lifecycle; wait for either Ultimate already loaded or the relevant loading task completed, then require AI Commit All plugin/action and fake action availability; compile integration tests; run the six previously timing-sensitive/modal scenarios at least twice; inspect fresh logs/evidence for both successful and rejected reload paths, no paid-startup flag, no paid modal, and no stale-control rejection; run the full PyCharm lane at least twice, `spotlessCheck`, `detekt`, and `git diff --check`; commit T5R3 before restarting T5.
+
+Escalation triggers:
+
+- Escalate if descriptor registration cannot initialize before the reload, task completion cannot be attributed to the Ultimate enable attempt, focused/full PyCharm validation fails, or any file outside the three-file scope is required.
+
+Stop conditions:
+
+- The listener misses the startup task, observes unrelated progress as readiness, or fresh runs retain a timing/modal failure.
+
+Expected output:
+
+- Early unlicensed-runner-safe reload observation, exact before/after evidence, task commit, events, reconciliation, and a clean handoff back to T5.
+
+Result summary:
+
+- Status: stopped after proving the proposed progress topic is not emitted
+- Worker: `/root/t5r3_early_reload_observer`
+- Changed files or reviewed diff: Registered the proposed listener, enabled it for test/headless modes, added harness/probe state, then restored all three scoped files exactly after the platform did not emit the required callback.
+- Validation evidence: `compileIntegrationTestKotlin` passed. Focused A1 job `20260723-123504-intellij-2026-2-t5r3-py-focused-a1-c63bf4` passed 3/6 before staging retained `ChangesViewCommitWorkflowHandler`. Targeted job `20260723-124224-intellij-2026-2-t5r3-listener-proof-81beb2` passed 1/1 but logged `Loading Plugins` at `12:43:04.305`, listener construction only at `12:43:08.922`, and its first unrelated callback at `12:43:08.926`.
+- Self-review evidence from `.agents/references/reviews.md`: The descriptor was packaged and active in integration/headless modes, but `PlatformTaskSupport` does not publish this loading operation through `ProgressManagerListener.TOPIC`; accepting the passing fallback would not prove rejected-reload synchronization.
+- Commit: None.
+- Worker events: The worker stopped at the packet boundary, restored the three files, removed generated artifacts, and left only orchestrator-owned plan/report changes.
+- Orchestrator reconciliation: Exact timestamps, packaged descriptor, targeted log, clean scoped diff, and `git diff --check` agree with the worker report.
+- Changelog/docs/spec/tasks updates: Task-local evidence is recorded in this plan and validation report; no user-facing behavior changed.
+- Blockers: The early hook must observe the actual AWT modal rather than the absent progress topic.
+- Review risks: The observer must install before the modal, match only `Loading Plugins`, never dismiss it, and record closure after successful or rejected reload.
+- Handoff notes and next action: Execute T5R4 in the same three-file test-only scope.
+
+### Task Packet: T5R4-observe-pycharm-loading-dialog
+
+Task id: T5R4-observe-pycharm-loading-dialog
+
+Lane: testing
+
+Required skills:
+
+- `intellij-plugin-development`
+- `kotlin-plugin-style`
+- `plugin-test-tdd`
+- `triage-flaky-test`
+
+Goal:
+
+- Install a test-only AWT window observer from an early app-start listener and wait for the actual PyCharm `Loading Plugins` dialog to close before scenarios begin.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, accepted ADR 0089, this plan's readiness and execution graph, this packet, T5R through T5R3 evidence, the targeted idea log, the two Kotlin files, and the fake AI plugin descriptor.
+- Escalate to: exact IntelliJ 262 `AppLifecycleListener` callback and application-listener descriptor contract only.
+
+Allowed inputs:
+
+- Preserved hosted/local failures, exact 262 app lifecycle APIs, AWT window events, the test-only fake AI plugin, and focused validation output.
+
+Forbidden inputs:
+
+- Production plugin behavior or descriptor, paid licenses or paid-startup flags, dialog dismissal or interaction, retries, sleeps, weakened assertions, quarantines, product-matrix changes, and unrelated source.
+
+Write scope:
+
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt`
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/fakeai/FakeAiAssistantProbe.kt`
+- `src/integrationTest/resources/fake-ai-assistant-plugin/META-INF/plugin.xml`
+
+Dependencies:
+
+- T5R3 restored its scope after proving the progress topic is not emitted; this bounded AWT observer packet is approved by the maintainer's standing normal review-fix continuation directive and current merge request.
+
+Validation:
+
+- Remove `doNotDisablePaidPluginsOnStartup()`; register an active-in-test/headless `AppLifecycleListener` that installs an AWT listener before reload; record only `Dialog` windows titled `Loading Plugins`, marking active on open and complete on close when Ultimate is loaded or enabled in configuration; wait for either Ultimate already loaded or relevant dialog completion, then require AI Commit All plugin/action and fake action; compile; prove observer installation precedes dialog opening in a targeted run; run the six timing/modal scenarios twice; inspect logs for successful/rejected reload paths, no paid flag/modal hang/stale-control rejection; run full PyCharm twice, `spotlessCheck`, `detekt`, and `git diff --check`; commit T5R4 before restarting T5.
+
+Escalation triggers:
+
+- Escalate if app lifecycle initialization occurs after the dialog, AWT close is not emitted, unrelated windows can satisfy readiness, focused/full validation fails, or any file outside the three-file scope is required.
+
+Stop conditions:
+
+- The listener misses the dialog, interacts with it, or leaves a timing-only readiness path.
+
+Expected output:
+
+- Early non-interacting loading-dialog observation, exact lifecycle evidence, task commit, events, reconciliation, and a clean handoff back to T5.
+
+Result summary:
+
+- Status: stopped after proving the split frontend dialog is not observable through backend AWT
+- Worker: `/root/t5r4_loading_dialog_observer`
+- Changed files or reviewed diff: Implemented the app-start AWT observer in the three scoped test-plugin files, then restored all three files exactly after the lifecycle proof missed the frontend dialog; no task diff or commit remains.
+- Validation evidence: `compileIntegrationTestKotlin` passed. Targeted job `20260723-125313-intellij-2026-2-t5r4-py-lifecycle-proof-7af0e5` passed 1/1. The listener installed at `12:53:48.156`, before `PlatformTaskSupport` logged `Modal dialog is shown: Loading Plugins` at `12:53:49.636`, but the observer received neither `WINDOW_OPENED` nor `WINDOW_CLOSED`.
+- Self-review evidence from `.agents/references/reviews.md`: Descriptor timing is early enough, but the remote-development split keeps the modal in the frontend process; accepting absence of a backend window callback as completion would preserve the race.
+- Commit: None.
+- Worker events: Worker started at `2026-07-23T12:46:59+02:00`, hit the explicit no-callback stop condition, restored its scope, and stopped cleanly at `2026-07-23T12:55:00+02:00`.
+- Orchestrator reconciliation: Exact timestamps, packaged descriptor behavior, the targeted job log, clean scoped diff, and `git diff --check` agree with the worker report.
+- Changelog/docs/spec/tasks updates: Task-local evidence is recorded in this plan and validation report; no user-facing behavior changed.
+- Blockers: The barrier must observe the backend `DynamicPluginEnabler` completion boundary rather than a frontend dialog.
+- Review risks: The listener must be installed before the enable call, filter the exact Ultimate module, retain failed-load completion, and require action availability after completion.
+- Handoff notes and next action: Execute T5R5 in the same three-file test-only scope.
+
+### Task Packet: T5R5-await-pycharm-enable-attempt
+
+Task id: T5R5-await-pycharm-enable-attempt
+
+Lane: testing
+
+Required skills:
+
+- `intellij-plugin-development`
+- `kotlin-plugin-style`
+- `plugin-test-tdd`
+- `triage-flaky-test`
+
+Goal:
+
+- Register a test-only platform state listener before PyCharm's Ultimate-module enablement and do not enter a scenario until the corresponding dynamic load attempt has returned.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, accepted ADR 0089, this plan's readiness and execution graph, this packet, T5R through T5R4 evidence, the two Kotlin files, and the fake AI plugin descriptor.
+- Escalate to: exact IntelliJ 262 `DynamicPluginEnabler` and `PluginEnableStateChangedListener` bytecode/contracts only.
+
+Allowed inputs:
+
+- Preserved hosted/local failures, exact 262 dynamic-plugin enable APIs, the test-only fake AI plugin, and focused validation output.
+
+Forbidden inputs:
+
+- Production plugin behavior or descriptor, paid licenses or paid-startup flags, dialog observation/dismissal, retries, sleeps, weakened assertions, quarantines, product-matrix changes, and unrelated source.
+
+Write scope:
+
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt`
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/fakeai/FakeAiAssistantProbe.kt`
+- `src/integrationTest/resources/fake-ai-assistant-plugin/META-INF/plugin.xml`
+
+Dependencies:
+
+- T5R4 restored its scope after proving a backend AWT listener cannot observe the split frontend modal; this bounded platform-callback packet is approved by the maintainer's standing normal review-fix continuation directive and current merge request.
+
+Validation:
+
+- Remove `doNotDisablePaidPluginsOnStartup()`; register an active-in-test/headless `AppLifecycleListener` that strongly retains a `PluginEnableStateChangedListener` through `DynamicPluginEnabler.addPluginStateChangedListener`; record completion only when `enabled=true` and the callback descriptors contain `com.intellij.modules.ultimate`; require listener installation and either Ultimate already loaded or that exact enable-attempt callback, followed by AI Commit All plugin/action and fake action availability; compile; prove installation precedes the enable attempt and the callback follows its load attempt; run the six timing/modal scenarios at least twice; inspect logs for successful/rejected reload paths, no paid flag/modal hang/stale-control rejection; run the full PyCharm lane at least twice, `spotlessCheck`, `detekt`, and `git diff --check`; commit T5R5 before restarting T5.
+
+Escalation triggers:
+
+- Escalate if the listener registers after the enable call, the callback fires before `DynamicPlugins.loadPlugins` returns, the exact Ultimate descriptor cannot be attributed, focused/full validation fails, or any file outside the three-file scope is required.
+
+Stop conditions:
+
+- The callback misses the enable attempt, unrelated plugin state can satisfy readiness, or fresh runs retain a timing/modal failure.
+
+Expected output:
+
+- Early unlicensed-runner-safe post-load-attempt synchronization, exact before/after evidence, task commit, events, reconciliation, and a clean handoff back to T5.
+
+Result summary:
+
+- Status: stopped after proving terminal rejected loading is not staging-workflow readiness
+- Worker: `/root/t5r5_pycharm_enable_completion`
+- Changed files or reviewed diff: Implemented the exact platform state listener and harness barrier in the three scoped test-plugin files, then restored all three exactly after the staging validation stop condition; no task diff or commit remains.
+- Validation evidence: `compileIntegrationTestKotlin` passed. Callback proof job `20260723-130406-intellij-2026-2-t5r5-py-callback-proof-440677` passed 1/1: observer installed at `13:04:24.936`, enablement began at `13:04:26.437`, reconfiguration was rejected at `13:04:26.590`, and the exact callback arrived at `13:04:26.595`. Focused job `20260723-130525-intellij-2026-2-t5r5-py-focused-a1-25ced1` passed 5/6; narrow final-source job `20260723-130951-intellij-2026-2-t5r5-py-staging-repro-cd5335` reproduced the staging failure 0/1 with `ChangesViewCommitWorkflowHandler`.
+- Self-review evidence from `.agents/references/reviews.md`: The callback is a valid post-load-attempt boundary and removes the original stale-control race, but accepting it alone would exclude the existing staging behavior because rejected Ultimate loading leaves the Commit workflow fixture in changelist mode.
+- Commit: None.
+- Worker events: Worker started at `2026-07-23T12:59:17+02:00`, preserved the callback proof and focused failure, restored its scope, and stopped cleanly at `2026-07-23T13:12:24+02:00`.
+- Orchestrator reconciliation: Exact timestamps, both managed-job logs, clean scoped diff, removed Allure output, and `git diff --check` agree with the worker report.
+- Changelog/docs/spec/tasks updates: Task-local evidence is recorded in this plan and validation report; no user-facing behavior changed.
+- Blockers: After the callback, the staging-enabled scenario must deterministically create or rebuild `GitStageCommitWorkflowHandler`.
+- Review risks: Fixture repair must use a real platform lifecycle/API, preserve both staging and changelist assertions, and not mask a plugin behavior defect.
+- Handoff notes and next action: Execute T5R6 in the same three-file test-only scope, retaining the proven T5R5 barrier.
+
+### Task Packet: T5R6-rebuild-pycharm-staging-workflow
+
+Task id: T5R6-rebuild-pycharm-staging-workflow
+
+Lane: testing
+
+Required skills:
+
+- `intellij-plugin-development`
+- `kotlin-plugin-style`
+- `plugin-test-tdd`
+- `triage-flaky-test`
+
+Goal:
+
+- Retain T5R5's exact post-enable-attempt synchronization and make the release-matrix fixture deterministically enter the requested Git staging or changelist Commit workflow after PyCharm rejects Ultimate-module loading.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, accepted ADR 0089, this plan's readiness and execution graph, this packet, T5R through T5R5 evidence, callback proof and staging-repro logs, the two Kotlin files, and the fake AI plugin descriptor.
+- Escalate to: exact IntelliJ 262 `GitVcsApplicationSettings`, Commit tool-window/workflow manager, staging-setting listener, and workflow rebuild contracts only.
+
+Allowed inputs:
+
+- Preserved callback/staging failures, exact IntelliJ 262 test-fixture and Commit workflow APIs, the test-only fake AI plugin, and focused validation output.
+
+Forbidden inputs:
+
+- Production plugin behavior or descriptor, paid licenses or paid-startup flags, dialog observation/dismissal, retries, sleeps, weakened assertions, direct construction of fake workflow handlers, quarantines, product-matrix changes, and unrelated source.
+
+Write scope:
+
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt`
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/fakeai/FakeAiAssistantProbe.kt`
+- `src/integrationTest/resources/fake-ai-assistant-plugin/META-INF/plugin.xml`
+
+Dependencies:
+
+- T5R5 restored its scope after proving the exact enable callback but reproducing persistent changelist workflow selection in the staging scenario; this bounded fixture-remediation packet is approved by the maintainer's standing normal review-fix continuation directive and current merge request.
+
+Validation:
+
+- Reapply T5R5 without the paid-startup option; prove the same exact callback ordering; diagnose the branch-262 supported lifecycle that applies `GitVcsApplicationSettings.stagingAreaEnabled` to an already-created or subsequently-created Commit workflow; invoke only that real lifecycle from the test fixture after terminal PyCharm enablement; require the handler to become `GitStageCommitWorkflowHandler` for enabled and not that class for disabled; run the narrow staging repro at least three times, the six timing/modal scenarios twice, both staging-enabled and staging-disabled commit flows, and the full PyCharm lane at least twice; inspect logs for no paid flag/modal hang/stale-control rejection; run `spotlessCheck`, `detekt`, and `git diff --check`; commit T5R6 before restarting T5.
+
+Escalation triggers:
+
+- Escalate if no real 262 lifecycle can rebuild workflow selection, the fix requires production code or direct fake-handler construction, either staging mode fails, or any file outside the three-file scope is required.
+
+Stop conditions:
+
+- The fixture can pass only through timing, retries, weaker handler/selection assertions, or bypassing the real Commit workflow.
+
+Expected output:
+
+- Unlicensed-runner-safe enable synchronization plus deterministic real staging/changelist workflow selection, exact evidence, task commit, events, reconciliation, and a clean handoff back to T5.
+
+Result summary:
+
+- Status: completed
+- Worker: `/root/t5r6_pycharm_staging_workflow`
+- Changed files or reviewed diff: Removed the paid-plugin startup flag, added an early test-plugin Ultimate enable-attempt listener and harness barrier, and changed the fake probe's staging setter to invoke the real `GitStageManagerKt.enableStagingArea(boolean)` lifecycle in the exact three-file scope.
+- Validation evidence: `compileIntegrationTestKotlin` passed; the formerly deterministic narrow staging failure passed 3/3; the six timing-sensitive scenarios passed 6/6 twice; staging-disabled and staging-enabled commit flows passed 2/2; full PyCharm passed 13/13 twice; all 13 full-lane logs proved listener-before-enable and terminal callback ordering with zero paid-startup or stale-control hits; `spotlessCheck`, `detekt`, and `git diff --check` passed.
+- Self-review evidence from `.agents/references/reviews.md`: The diff is test-only, exercises the real Commit workflow and existing handler assertions, retains both staging modes, and adds no retries, sleeps, fake handlers, paid licensing, dialog handling, production changes, or unrelated refactor.
+- Commit: `777cf177ca1ea7c54156c761b54ab1250fc002d4`
+- Worker events: Worker started at `2026-07-23T13:16:16.8671783+02:00`, preserved the first formatting failures, completed the full repeated matrix, and stopped successfully at `2026-07-23T14:00:00.8295546+02:00`.
+- Orchestrator reconciliation: The worker's claims match the three-file commit, required metadata, managed-job logs, clean task scope, static checks, and exact runtime bytecode for `GitStageManagerKt.enableStagingArea`.
+- Changelog/docs/spec/tasks updates: No user-facing behavior changed; task-local evidence is recorded in this plan and validation report. T5D already aligned the changelog and generated Marketplace notes with the published release.
+- Blockers: None; restart T5 on the exact integrated head.
+- Review risks: Hosted Linux remains the decisive environment proof, followed by exact-head review and readiness gates.
+- Handoff notes and next action: Integrate current `main`, restart T5, keep PR #37 draft until every exact-head gate passes.
+
+### Task Packet: T5D-align-published-pycharm-documentation
+
+Task id: T5D-align-published-pycharm-documentation
+
+Lane: docs
+
+Required skills:
+
+- `repository-documentation`
+- `intellij-plugin-development`
+
+Goal:
+
+- Align every current/public compatibility statement with the published PyCharm 2026.2 release and regenerate Marketplace change notes from the corrected changelog.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, accepted ADR 0089, this plan's readiness and execution graph, this packet, the documentation ownership guidance, the five scoped files, and the Marketplace change-notes generator.
+- Escalate to: only directly linked current/public compatibility documentation required to prove no stale availability statement remains.
+
+Allowed inputs:
+
+- JetBrains' published PyCharm 2026.2 product metadata, the accepted 2026.2 support decision, and current validation evidence.
+
+Forbidden inputs:
+
+- Historical ADR wording, production/test/workflow changes, unrelated documentation, and claims that final PR readiness has passed before current-head checks are terminal.
+
+Write scope:
+
+- `README.md`
+- `CONTRIBUTING.md`
+- `docs/SUPPORT.md`
+- `CHANGELOG.md`
+- `config/intellij-platform/change-notes.html` through the repository generator
+
+Dependencies:
+
+- PyCharm 2026.2 is published and the restarted T5 review identified the stale public wording.
+
+Validation:
+
+- Regenerate Marketplace change notes from `CHANGELOG.md`; run the documentation and Marketplace parity validators; search current/public documentation for stale PyCharm-unavailable claims; run `git diff --check`; do not stage, commit, or push.
+
+Escalation triggers:
+
+- Escalate if correcting the public availability statement requires a compatibility-policy change, historical ADR edit, or file outside the bounded scope.
+
+Stop conditions:
+
+- A scoped validator fails for a reason outside the documentation diff or source evidence contradicts the published release.
+
+Expected output:
+
+- Five-file documentation diff, generated Marketplace parity, validation evidence, events, reconciliation, and a clean handoff back to T5.
+
+Result summary:
+
+- Status: completed
+- Worker: `/root/t5d_align_published_pycharm_docs`
+- Changed files or reviewed diff: Updated the published-PyCharm compatibility statement in `README.md`, `CONTRIBUTING.md`, `docs/SUPPORT.md`, and `CHANGELOG.md`, then regenerated `config/intellij-platform/change-notes.html`.
+- Validation evidence: Marketplace change-notes generator parity, `scripts/validate-docs.ps1`, stale PyCharm-unavailable wording search, and `git diff --check` passed.
+- Self-review evidence from `.agents/references/reviews.md`: The five-file diff changes only current/public release-state wording, preserves the unchanged required product matrix, avoids a premature PR-readiness claim, and does not edit the historical ADR.
+- Commit: `82abd9634effcc276b2d4821d8ee8b8657cd0ffe`
+- Worker events: The sole active worker completed the bounded documentation packet without escalation.
+- Orchestrator reconciliation: Worker claims match the exact five-file diff, generated changelog parity, required validation, clean task commit, and reserved plan/report scope.
+- Changelog/docs/spec/tasks updates: Current public compatibility wording and generated Marketplace notes now agree that PyCharm 2026.2 is published and its local lanes pass.
+- Blockers: None.
+- Review risks: Final hosted and current-head readiness evidence remains owned by T5.
+- Handoff notes and next action: Restart T5 on the documentation-aligned head.
 
 ## Execution Model
 
 - Use one active worker at a time and a fresh sub-agent for each task packet.
 - The orchestrator records a decision capsule, reserves each write scope, reconciles claims, and commits each completed task before the next.
 - After T3, the orchestrator decides and applies any eligible `CHANGELOG.md` entry during reconciliation; workers may only suggest the text.
-- T1 through T4, T3R, and the T1/T2 corrective work are complete. T5 waits for JetBrains to publish PyCharm 2026.2.
+- T1 through T4, T3R, T5R, T5D, T5R6, and the T1/T2 corrective work are complete. T5R2 through T5R5 stopped cleanly after producing successively narrower platform evidence used by T5R6; integrate current `main`, then restart T5.
 - Follow `.agents/references/orchestration.md`; use the current upgrade worktree only.
 
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: T5 PyCharm release gate, waiting on external product publication.
-- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`.
-- Plan status and readiness: In Progress; the original plan and T3R remediation packet are approved.
-- Validation and self-review state: T1 through T4 and both corrective fixes passed; exact-head IU UI is 21/21 and WS smoke is 13/13 green; hosted available-product gates passed; local/hosted PY failures match expected unavailable-product resolution.
-- Worker event and reconciliation state: Implementation, corrective, and T4 validation workers complete and reconciled; T5 has not started because its external dependency is unavailable.
-- Changelog, docs, spec, task, or plan updates: ADR state, compatibility docs/spec/support/Marketplace description, Unreleased changelog, and generated Marketplace change notes are aligned with 2026.2/JDK 25.
-- Blockers or open questions: PyCharm 2026.2 is unpublished; there is no non-PyCharm blocker and no open product decision.
-- Next action: Keep PR #37 draft and run T5 after PyCharm 2026.2 appears in JetBrains' stable product feed.
-- Context handoff notes: Missing PyCharm is a future readiness blocker, not permission to weaken CI.
+- Current task or wave: Integrate current `main`, then restart T5 exact-head readiness.
+- Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`; T5R `234d91e18bda4b6028a594316ed1e2d90d57229c`; T5D `82abd9634effcc276b2d4821d8ee8b8657cd0ffe`.
+- Plan status and readiness: In Progress; the original plan, T3R, T5R, T5D, T5R2, T5R3, T5R4, T5R5, and T5R6 remediation packets are approved.
+- Validation and self-review state: Published PyCharm verifier passes locally and hosted; T5R6 passed narrow staging 3/3, focused 6/6 twice, both commit modes, and full local PyCharm 13/13 twice without the paid-startup option.
+- Worker event and reconciliation state: The first T5 worker, diagnosis, T5R, final review, T5D, post-T5D gate, stopped-clean T5R2/T5R3/T5R4/T5R5, and completed T5R6 are reconciled.
+- Changelog, docs, spec, task, or plan updates: Compatibility configuration, current public docs, changelog, and regenerated Marketplace notes are aligned with published 2026.2/JDK 25 state.
+- Blockers or open questions: No open question; base integration, hosted Linux, and the complete final-head gate remain required evidence.
+- Next action: Keep PR #37 draft, integrate current `main`, and rerun the final T5 current-head gate.
+- Context handoff notes: T5R6 supersedes T5R's unsuitable paid-startup flag by combining T5R5's exact post-load callback with the real Git staging Commit workflow lifecycle.
 
 ## Execution Graph
 
@@ -499,7 +1007,14 @@ flowchart TD
     W4["W4[run-verify]<br/>T4 available-product validation"]
     G1["External gate<br/>PyCharm 2026.2 published"]
     W5["W5[run-verify]<br/>T5 PyCharm release gate"]
-    O1 --> W1 --> W2 --> W3 --> W3R --> W4 --> G1 --> W5 --> O1
+    W5R["W5R[run-verify]<br/>T5R PyCharm UI startup synchronization"]
+    W5D["W5D[docs]<br/>T5D published PyCharm documentation"]
+    W5R2["W5R2[run-verify]<br/>T5R2 PyCharm module reload barrier"]
+    W5R3["W5R3[run-verify]<br/>T5R3 early reload observer"]
+    W5R4["W5R4[run-verify]<br/>T5R4 loading-dialog observer"]
+    W5R5["W5R5[run-verify]<br/>T5R5 enable-attempt completion"]
+    W5R6["W5R6[run-verify]<br/>T5R6 staging-workflow rebuild"]
+    O1 --> W1 --> W2 --> W3 --> W3R --> W4 --> G1 --> W5 --> W5R --> W5 --> W5D --> W5 --> W5R2 --> W5R3 --> W5R4 --> W5R5 --> W5R6 --> W5 --> O1
 ```
 
 ## Validation

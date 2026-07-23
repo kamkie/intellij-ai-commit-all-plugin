@@ -157,3 +157,118 @@ The final re-fetch confirmed local HEAD, `origin/codex/intellij-2026-2-upgrade`,
 Earlier T4 attempts found and preserved three non-PyCharm defects that were repaired in separately dispatched packets: stale generated Marketplace notes, the prerelease summary's `OrderedDictionary.ContainsKey` call, and unmigrated branch-262 integration-test APIs. This final run proves those repairs on the exact current head.
 
 T4 is complete and committed evidence can advance to the external T5 gate. PyCharm 2026.2 publication is the only remaining compatibility-matrix blocker. Until JetBrains publishes it, the two required hosted checks remain red and PR #37 must remain draft; no release-readiness or PyCharm-pass claim is made.
+
+## T5 PyCharm Release Gate
+
+T5 started on 2026-07-23 against unchanged source head `e276ec09b1b91e4b64871b7a15c5c00579a0451a`. At the start of the gate, local HEAD, `origin/codex/intellij-2026-2-upgrade`, and PR #37 all matched that SHA. The PR remained open and draft, had no review threads or review decision, and retained only the earlier-head `COMMENTED` `LGTM` on `1072f42`.
+
+JetBrains' [official release feed](https://data.services.jetbrains.com/products/releases?code=IIU,PCP,WS&latest=true&type=release) now reports PyCharm 2026.2 as build `262.8665.309`, released on 2026-07-21.
+
+The unchanged PyCharm Plugin Verifier lane passed locally:
+
+```powershell
+.\gradlew.bat --no-configuration-cache --rerun-tasks verifyPlugin -PpluginVerifierIdeVersions=PY-2026.2
+```
+
+- Job: `20260723-101531-intellij-2026-2-t5-e276ec0-py-verifier-0fc151`
+- Log: `C:\Users\kamki\.agent-customizations\managed-jobs\logs\20260723-101531-intellij-2026-2-t5-e276ec0-py-verifier-0fc151.log`
+- Result: Passed in 5 minutes 31 seconds with exit code 0. `PY-262.8665.309` classified the plugin as compatible; only the same two existing experimental `GitPushListener.onCompleted` usages remain.
+
+The unchanged PyCharm UI smoke lane also passed locally:
+
+```powershell
+.\gradlew.bat --no-configuration-cache --rerun-tasks releaseMatrixUiTest -PideProducts=PY -PideVersion=2026.2
+```
+
+- Job: `20260723-102223-intellij-2026-2-t5-e276ec0-ui-py-smoke-321a31`
+- Log: `C:\Users\kamki\.agent-customizations\managed-jobs\logs\20260723-102223-intellij-2026-2-t5-e276ec0-ui-py-smoke-321a31.log`
+- Result: 13/13 passed in 6 minutes 53 seconds; build passed in 7 minutes 30 seconds.
+
+The hosted PyCharm verifier rerun passed on the same source head:
+
+- Workflow: [Plugin Verifier run 29545915028, attempt 2](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/29545915028/attempts/2)
+- Job: [Verify against PY-2026.2](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/29545915028/job/89152433982)
+- Result: Passed against `PY-2026.2` on `e276ec09b1b91e4b64871b7a15c5c00579a0451a`.
+
+The hosted PyCharm UI coverage rerun exposed the first failing T5 gate on the same source head:
+
+- Workflow: [CI run 29545915006, attempt 2](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/29545915006/attempts/2)
+- Job: [UI coverage](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/29545915006/job/89152436004)
+- Command: `xvfb-run -a ./gradlew --no-configuration-cache releaseMatrixUiTest -PideProducts=PY -PideVersion=2026.2`
+- Result: 10/13 passed and 3 failed in 8 minutes 6 seconds; the Gradle build failed after 12 minutes 31 seconds.
+- First failure: `stagingAreaAiInvocationSeesExactMultiRootCommitUiPaths()` timed out after one minute with `invocations=0, paths=[]`.
+- Additional failures: `missingAiActionStopsWithoutCommitOrPush()` could not activate the Push section, and `emptyGeneratedMessageStopsWithoutCommitOrPush()` timed out after 30 seconds with `invocations=0`.
+- The workflow uploaded its release-matrix failure evidence successfully.
+
+An unchanged hosted diagnostic rerun established the timing-dependent pattern:
+
+- Workflow: [CI run 29545915006, attempt 3](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/29545915006/attempts/3)
+- Job: [UI coverage](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/29545915006/job/89155652183)
+- Result: 12/13 passed; only `stagingAreaAiInvocationSeesExactMultiRootCommitUiPaths()` repeated its `invocations=0, paths=[]` timeout. The missing-action and empty-message scenarios passed without source changes.
+- Pattern: attempt 2 passed 10/13, attempt 3 passed 12/13, and the exact local lane passed 13/13.
+
+The failing IDE logs identify an environment-dependent PyCharm startup race. In both failed staging executions, the workflow starts before PyCharm enables `com.intellij.modules.ultimate`; dynamic plugin reconfiguration then rebuilds the Commit UI while the AI phase is queued. IntelliJ subsequently refuses `FakeLlmCommitMessageAction` because the original `AiCommitAllThreeSectionControl` is no longer showing, so the fake invocation count correctly remains zero. The local Windows logs contain the same paid-plugin enable attempt before workflow activation, which leaves the control stable. T5 therefore requires the bounded `T5R-stabilize-pycharm-ui-startup` test-harness remediation before the full gate can be repeated.
+
+The complete three-product prerelease gate was started after both local PyCharm checks passed, but was stopped as soon as the hosted UI failure became available:
+
+- Job: `20260723-103035-intellij-2026-2-t5-e276ec0-full-prerelea-05c2e8`
+- Log: `C:\Users\kamki\.agent-customizations\managed-jobs\logs\20260723-103035-intellij-2026-2-t5-e276ec0-full-prerelea-05c2e8.log`
+- Result: Stopped during documentation validation, after the generated Marketplace parity checks passed. It is not readiness evidence.
+
+The approved T5R remediation added IDE Starter's `doNotDisablePaidPluginsOnStartup()` option on source head `234d91e18bda4b6028a594316ed1e2d90d57229c`. Focused PyCharm executions passed 3/3 twice and a full PyCharm lane passed 13/13. Every fresh local IDE process contained `-Dide.do.not.disable.paid.plugins.on.startup=true`, and none logged the late Ultimate-module disable, re-enable, or dynamic-reconfiguration sequence.
+
+The complete local gate then passed on the same source head:
+
+- Full prerelease validation: job `20260723-110647-intellij-2026-2-t5-234d91e-full-prerelea-ace7fe`; all documentation, agent-artifact, formatting, static-analysis, test, coverage, structure, packaging, configuration, and Marketplace parity gates passed. IU, PY, and WS Plugin Verifier targets all classified the plugin as compatible.
+- IntelliJ IDEA UI: job `20260723-111820-intellij-2026-2-t5-234d91e-ui-iu-full-d05dc5`; 21/21 passed.
+- PyCharm UI: job `20260723-112708-intellij-2026-2-t5-234d91e-ui-py-smoke-df2d7d`; 13/13 passed.
+- WebStorm UI: job `20260723-113317-intellij-2026-2-t5-234d91e-ui-ws-smoke-f86c50`; 13/13 passed.
+
+Hosted checks on that source head passed build, CodeQL, security, Detekt, and all three Plugin Verifier targets. The hosted UI lane exposed a different environment-specific failure:
+
+- Workflow: [CI run 29993726119](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/29993726119)
+- Job: [UI coverage](https://github.com/kamkie/intellij-ai-commit-all-plugin/actions/runs/29993726119/job/89163423209)
+- Result: Cancelled at the job's 45-minute limit.
+- `commitShortcutCreatesLocalCommitWhenTakeoverEnabled()`, `pushSectionCommitsAndPushesToTemporaryBareRemote()`, and `pushShortcutPushesOutgoingOnlyLocalCommitWhenTakeoverEnabled()` each reached the IDE Starter 10-minute timeout because a modal dialog was shown. `startsIdeWithPluginFakeAiDependencyAndGitFixture()` also failed because the fake AI action did not write a message.
+- The modal stack ends at `MessageDialogBuilder$Message.show -> com.intellij.ide.S.M.sQ.S`. The obfuscated platform class does not expose the title, but the failure appears only after requesting paid plugins before startup on the unlicensed hosted runner.
+- Job cancellation skipped the failure-evidence upload; the GitHub job log preserves the failure.
+
+T5D commit `82abd9634effcc276b2d4821d8ee8b8657cd0ffe` aligned README, contributor/support documentation, changelog, and generated Marketplace notes with the published PyCharm release. On that local head, Marketplace change-note and description parity, documentation validation, agent-artifact validation, and both worktree and branch `git diff --check` gates passed.
+
+T5R2 removed the paid-startup option while testing three Driver-time reload barriers. All candidates compiled, but focused PyCharm executions proved that none can deterministically distinguish terminal completion from the pre-reload window:
+
+- A1 job `20260723-121018-intellij-2026-2-t5r2-py-focused-a1-8198fa`: requiring `com.intellij.modules.ultimate` to be loaded passed one process but excluded a valid terminal failure path. In the next process, PyCharm enabled the plugin in configuration, entered `Loading Plugins`, and rejected dynamic reconfiguration because `intellij.database.dialects.hsql` referenced unavailable extension point `com.intellij.database.jdbcSourceLoader`; Ultimate remained unloaded while AI Commit All and fake actions were valid.
+- A2 job `20260723-121723-intellij-2026-2-t5r2-py-focused-a2-0a25f7`: a `ProgressManagerListener` installed through the Driver probe missed the entire lifecycle. `Loading Plugins` finished at approximately `12:17:44.646`; the Driver utility became callable around `12:17:51.681`.
+- A3 job `20260723-121951-intellij-2026-2-t5r2-py-focused-a3-96c067`: the platform cleared the failed plugin's non-load reason, leaving `loaded=false`, `disabled=false`, `nonLoadReason=null`, and no modal progress.
+
+The remaining current-state candidates retain measured gaps: configuration becomes enabled about 349 milliseconds before the modal loading task begins, and the dynamic-plugin implementation's internal lock is acquired only after another approximately 225-millisecond interval. Treating either state as ready would preserve the original race. T5R2 therefore restored its two Kotlin files exactly to T5R and produced no commit.
+
+T5R3 registered a test-only `ProgressManagerListener` from the fake AI plugin descriptor before trying to use the recorded lifecycle. The exact descriptor and callback contracts were confirmed from PyCharm 2026.2, and the listener was explicitly enabled in integration/headless modes. Compilation passed, but the focused evidence proved the platform operation does not publish this topic:
+
+- Focused A1 job `20260723-123504-intellij-2026-2-t5r3-py-focused-a1-c63bf4` passed 3/6 scenarios before the staging case remained on `ChangesViewCommitWorkflowHandler`.
+- Targeted listener job `20260723-124224-intellij-2026-2-t5r3-listener-proof-81beb2` passed 1/1, but `Loading Plugins` was shown at `12:43:04.305`, the listener was not constructed until `12:43:08.922`, and its first callback at `12:43:08.926` was the unrelated `Version Control: Processing Changed Files` task.
+- The fake plugin descriptor and observer class were packaged correctly. The absence of a loading callback therefore belongs to `PlatformTaskSupport`, not descriptor packaging or a title mismatch.
+
+T5R3 restored all three scoped files and produced no commit.
+
+T5R4 then installed an `AppLifecycleListener` early enough to attach a backend AWT window observer before the reload. `compileIntegrationTestKotlin` passed, and targeted job `20260723-125313-intellij-2026-2-t5r4-py-lifecycle-proof-7af0e5` passed 1/1. The listener installed at `12:53:48.156`, before `PlatformTaskSupport` reported `Modal dialog is shown: Loading Plugins` at `12:53:49.636`, but neither `WINDOW_OPENED` nor `WINDOW_CLOSED` reached the observer. The remote-development split owns that modal in the frontend process, so the backend fake plugin cannot use its AWT lifecycle as a barrier. T5R4 restored all three scoped files and produced no commit.
+
+The exact branch-262 `DynamicPluginEnabler` bytecode exposes a stronger backend boundary: it calls `DynamicPlugins.loadPlugins(...)` and only after that call returns notifies each `PluginEnableStateChangedListener` through `stateChanged(descriptors, true)`.
+
+T5R5 registered that listener through the fake plugin's early app-lifecycle hook. Compilation passed, and callback proof job `20260723-130406-intellij-2026-2-t5r5-py-callback-proof-440677` passed 1/1 with exact ordering: observer installation at `13:04:24.936`, Ultimate enablement at `13:04:26.437`, dynamic reconfiguration rejection at `13:04:26.590`, and the exact `enabled=true`, `com.intellij.modules.ultimate` callback at `13:04:26.595`. There was no paid-startup flag, subscription modal, or stale-control rejection.
+
+The six-scenario focused job `20260723-130525-intellij-2026-2-t5r5-py-focused-a1-25ced1` passed 5/6. Its staging scenario timed out because rejected Ultimate loading left the requested staging-enabled fixture on `ChangesViewCommitWorkflowHandler`. Narrow final-source job `20260723-130951-intellij-2026-2-t5r5-py-staging-repro-cd5335` reproduced the same state 0/1. The callback is therefore a valid completion signal, but completion of a rejected reload is not by itself readiness for the staging workflow. T5R5 restored all three scoped files and produced no commit.
+
+T5R6 retained that exact callback barrier and changed the test probe's staging setter from direct preference mutation to the same real lifecycle used by IntelliJ's staging actions: `GitStageManagerKt.enableStagingArea(boolean)`, which updates `GitVcsApplicationSettings` and synchronously publishes `CommitModeManager.SETTINGS.settingsChanged()`. The paid-startup option was removed. The implementation is confined to the release-matrix harness, fake AI test probe, and fake plugin descriptor.
+
+Validation on T5R6 commit `777cf177ca1ea7c54156c761b54ab1250fc002d4` passed:
+
+- `compileIntegrationTestKotlin`.
+- The formerly deterministic narrow staging failure in three independent IDE processes: jobs `20260723-132614-intellij-2026-2-t5r6-py-staging-r1-f586fd`, `20260723-132809-intellij-2026-2-t5r6-py-staging-r2-00bb1e`, and `20260723-132946-intellij-2026-2-t5r6-py-staging-r3-50acf9`, each 1/1.
+- The six timing-sensitive scenarios twice: jobs `20260723-133128-intellij-2026-2-t5r6-py-focused-a1-760440` and `20260723-133535-intellij-2026-2-t5r6-py-focused-a2-7cb684`, each 6/6.
+- Both staging-disabled and staging-enabled local commit flows: job `20260723-133919-intellij-2026-2-t5r6-py-staging-commit-m-7fef77`, 2/2.
+- The full PyCharm lane twice: jobs `20260723-134129-intellij-2026-2-t5r6-py-full-r1-9786d5` and `20260723-134822-intellij-2026-2-t5r6-py-full-r2-b9bbbb`, each 13/13 in 6 minutes 28 seconds.
+- All 13 full-lane IDE logs show the observer installed before Ultimate enablement and an exact terminal callback, with zero paid-startup-option or stale-control-rejection hits.
+- `spotlessCheck`, `detekt`, and `git diff --check`.
+
+T5R6 is locally complete. PR #37 must remain draft while current `main` is integrated and the complete exact-head local, hosted, review, and readiness gates are repeated.
