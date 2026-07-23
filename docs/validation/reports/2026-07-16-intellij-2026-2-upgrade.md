@@ -476,3 +476,24 @@ failure. PR #37 remains draft. T5 is incomplete until the exact license
 restart transition is handled by a separately approved remediation packet
 and the complete exact-head local, hosted, review, and readiness gates pass
 together.
+
+T5R12 tested the smallest in-context recovery. A pure exact/near-miss dialog
+contract passed after the expected red unresolved-handler proof, and
+`compileIntegrationTestKotlin` passed. Managed job
+`20260723-183104-intellij-2026-2-t5r12-iu-synthetic-resta-2dbe60` then used a
+one-shot test-only dialog wired to IntelliJ's real restart API without changing
+license state.
+
+The exact handler invoked Restart, the first IU process shut down, a second IU
+process started, and the persistent marker prevented a restart loop. Starter's
+retained Driver observed enough connectivity to reach the post-restart project
+wait, but its first remote call failed with
+`Invoker.getRemoteCallResult: session must not be null`. Starter 2026.2 keeps
+the original Driver/JMX endpoint and does not create a new remote session after
+the platform restart.
+
+This is not a safe in-context recovery point. T5R12 removed all experimental
+code and produced no commit. The next bounded remediation must close the stale
+preflight context and acquire a new supported Starter/Driver context before
+running the scenario; it must not construct a Driver manually or swallow
+unrelated session failures.

@@ -10,11 +10,11 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 
 ## Readiness
 
-- Plan readiness: Ready; the original plan and the bounded `T3R-regenerate-marketplace-change-notes`, `T5R-stabilize-pycharm-ui-startup`, `T5D-align-published-pycharm-documentation`, `T5R2-synchronize-pycharm-module-reload`, `T5R3-observe-pycharm-reload-at-startup`, `T5R4-observe-pycharm-loading-dialog`, `T5R5-await-pycharm-enable-attempt`, `T5R6-rebuild-pycharm-staging-workflow`, `T5R7-classify-2026-2-scheme-race`, `T5R8-cover-262-reflection-failures`, `T5R9-classify-2026-2-closed-index-storage`, `T5R10-cover-residual-reflection-branches`, `T5R11-simplify-reflection-null-guards`, and `T5R12-handle-license-restart-transition` remediation packets are explicitly approved.
+- Plan readiness: Ready; the original plan and the bounded `T3R-regenerate-marketplace-change-notes`, `T5R-stabilize-pycharm-ui-startup`, `T5D-align-published-pycharm-documentation`, `T5R2-synchronize-pycharm-module-reload`, `T5R3-observe-pycharm-reload-at-startup`, `T5R4-observe-pycharm-loading-dialog`, `T5R5-await-pycharm-enable-attempt`, `T5R6-rebuild-pycharm-staging-workflow`, `T5R7-classify-2026-2-scheme-race`, `T5R8-cover-262-reflection-failures`, `T5R9-classify-2026-2-closed-index-storage`, `T5R10-cover-residual-reflection-branches`, `T5R11-simplify-reflection-null-guards`, `T5R12-handle-license-restart-transition`, and `T5R13-relaunch-starter-after-license-restart` remediation packets are explicitly approved.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, and T5R11 are complete. The restarted T5 passed every hosted gate, but local IU stalled on the recurring exact license-required `Confirm Restart` transition. The maintainer explicitly requested deterministic test-harness handling; execute T5R12 before restarting T5.
+- Implementation progress: T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, and T5R11 are complete. T5R12 proved the exact handler invokes the real restart and starts a second IU process, but Starter retains a Driver with no remote session. Execute T5R13 to discard that stale context and acquire a fresh Starter/Driver context before scenario work.
 
 ## Status History
 
@@ -36,6 +36,7 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - 2026-07-23T17:00:15+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R10 packet after exact-head Codecov proved the aggregate project gate green but the patch gate remained below target on residual reflection-method branches.
 - 2026-07-23T17:11:17+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R11 packet after T5R10 proved behavioral cases cannot execute compiler null guards dominated by prior missing-method checks.
 - 2026-07-23T18:05:09+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the maintainer explicitly requests recurring deterministic handling for the exact license-required `Confirm Restart` transition that blocked the local IU lane.
+- 2026-07-23T18:40:31+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same explicit recurring-handling request and normal fix loop approve T5R13 after runtime proof showed a real restart needs outer Starter context reacquisition.
 
 ## Goal
 
@@ -83,6 +84,7 @@ No open plan questions. ADR acceptance and plan approval are required lifecycle 
 - `T5R10-cover-residual-reflection-branches`: add behavioral unit coverage for independently missing handler and nested-boundary methods in the branch-262 reflection boundary.
 - `T5R11-simplify-reflection-null-guards`: preserve the same reflection diagnostics while constructing access only from explicitly proven non-null methods, removing unreachable compiler guards from the patch.
 - `T5R12-handle-license-restart-transition`: handle the exact license-required restart lifecycle in the release-matrix harness before scenario actions, then re-establish IDE and plugin readiness without manual interaction or license bypass.
+- `T5R13-relaunch-starter-after-license-restart`: treat only the exact marked restart/session-loss fingerprint as a completed preflight, close the stale Starter context, and run the scenario in a newly acquired IDE/Driver context.
 
 ## Task Packets
 
@@ -479,7 +481,7 @@ Expected output:
 
 Result summary:
 
-- Status: blocked pending T5R12 remediation and restart
+- Status: blocked pending T5R13 remediation and restart
 - Worker: `/root/t5_pycharm_release_gate`
 - Changed files or reviewed diff: Appended the first published-PyCharm gate evidence to `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`; source head remained unchanged.
 - Validation evidence: On exact head `4ccc61b4196ff6932ec3daa97f2c8992758a0aa5`, full local prerelease passed all eight gates and every hosted check passed, including PyCharm UI 13/13, patch coverage 95.86%, and project coverage 90.51%. Local IU passed 10/23, then the next scenario stalled on the exact license-required `Confirm Restart` dialog; local PY/WS were not started.
@@ -488,9 +490,9 @@ Result summary:
 - Worker events: Initial worker stopped at the first published-PyCharm failure. Restarted workers preserved each later hosted failure. Worker `/root/t5_final_exact_head_r5` passed prerelease and every hosted gate, stopped local IU after 10/23 when the license restart modal blocked scenario 11, preserved exact log/thread/screenshot evidence, and stopped cleanly at `2026-07-23T18:05:09.4198028+02:00`.
 - Orchestrator reconciliation: Exact local, origin, and PR head remained `4ccc61b4196ff6932ec3daa97f2c8992758a0aa5`. The T5R6 observer and terminal Ultimate callbacks completed before `LicenseManager` disabled Ultimate and `BackendMessagesService` displayed the exact modal. The worker performed no manual interaction and stopped the managed process cleanly.
 - Changelog/docs/spec/tasks updates: T5D aligned README, contributor/support documentation, changelog, and generated Marketplace notes; the validation report now records the subsequent hosted scheme-race, coverage, and closed-index evidence through T5R9.
-- Blockers: T5R12 must handle the exact recurring license restart transition and re-establish IDE/plugin readiness before scenario actions.
-- Review risks: The handler must trigger the platform's real restart rather than dismissing or bypassing license enforcement, must match the exact dialog contract, and must keep near-miss or unrelated modals red.
-- Handoff notes and next action: Execute T5R12, push its head, then restart the complete T5 gate.
+- Blockers: T5R13 must relaunch a fresh Starter/Driver context after the exact marked restart rather than reusing the stale remote session.
+- Review risks: Only an exact pre-scenario restart fingerprint may trigger reacquisition; unrelated Driver/session failures must remain red, and the scenario must execute exactly once in the fresh context.
+- Handoff notes and next action: Execute T5R13, push its head, then restart the complete T5 gate.
 
 ### Task Packet: T5R-stabilize-pycharm-ui-startup
 
@@ -1316,6 +1318,77 @@ Expected output:
 
 Result summary:
 
+- Status: stopped cleanly; real restart succeeds but the retained Starter Driver cannot create a new remote session
+- Worker: `/root/t5r12_license_restart`
+- Changed files or reviewed diff: Temporarily implemented the exact two-file dialog/restart lifecycle and synthetic real-restart proof, then restored both files exactly after the stop condition.
+- Validation evidence: Pure exact/near-miss contract passed 1/1 after a red unresolved-method proof; `compileIntegrationTestKotlin` passed. In managed job `20260723-183104-intellij-2026-2-t5r12-iu-synthetic-resta-2dbe60`, the exact handler clicked the real Restart action, IU process one shut down, IU process two started, and the persisted marker prevented a loop. The first post-restart remote call then failed with `Invoker.getRemoteCallResult: session must not be null`.
+- Self-review evidence from `.agents/references/reviews.md`: No license state was altered or spoofed; the synthetic proof invoked the real platform restart. The worker did not treat a stale Driver connection as success or expand into custom Driver construction.
+- Commit: None; all experimental code was restored.
+- Worker events: Worker started at `2026-07-23T18:09:15.4932333+02:00`, reached the explicit Starter-cannot-follow-real-restart stop condition, cleaned the worktree, and stopped at `2026-07-23T18:40:31.2496910+02:00`.
+- Orchestrator reconciliation: Worker claims match the managed job, idea log, two IDE process lifecycles, null-session test failure, clean worktree, and absence of active T5R12 jobs.
+- Changelog/docs/spec/tasks updates: No user-facing behavior changed; record the task-local lifecycle evidence in this plan and the validation report.
+- Blockers: Recovery must close the stale Starter context and acquire a new IDE process/Driver session outside the original `useDriverAndCloseIde` scope.
+- Review risks: The expected restart/session-loss fingerprint must not mask unrelated process, JMX, Driver, or scenario failures.
+- Handoff notes and next action: Execute T5R13 with an outer preflight/relaunch boundary; do not build a custom Driver or reuse the stale session.
+
+### Task Packet: T5R13-relaunch-starter-after-license-restart
+
+Task id: T5R13-relaunch-starter-after-license-restart
+
+Lane: testing
+
+Required skills:
+
+- `intellij-plugin-development`
+- `kotlin-plugin-style`
+- `platform-docs-research`
+- `plugin-test-tdd`
+- `triage-flaky-test`
+
+Goal:
+
+- Complete recurring license restart handling by ending the marked preflight context after the real restart and running the scenario once in a newly acquired Starter/Driver context.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, this plan's readiness/execution graph/this packet, T5R12 result, managed job `20260723-183104-intellij-2026-2-t5r12-iu-synthetic-resta-2dbe60`, current `runReleaseMatrixIdeWithFixture`, early fake-plugin lifecycle observer, and exact Starter context/process cleanup source.
+- Escalate to: branch-262 `IDETestContext`, `BackgroundRun`, `useDriverAndCloseIde`, and process/port cleanup source only as required to guarantee a fresh context.
+
+Allowed inputs:
+
+- The validated exact dialog/restart contract, marker/process/session-loss evidence, active-license alternative, current harness/fake plugin, and focused validation output.
+
+Forbidden inputs:
+
+- Production code/resources, custom Driver/JMX construction, license bypass/spoofing/credentials, generic exception swallowing, generic dialog clicking, sleeps, retry-only mitigation, product skips, assertion weakening, and unrelated source.
+
+Write scope:
+
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt`
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/fakeai/FakeAiAssistantProbe.kt`
+
+Dependencies:
+
+- T5R12 proved the real restart and one-shot marker behavior, proved the retained Driver's null-session boundary, and restored a clean worktree.
+
+Validation:
+
+- Red-test a pure outer lifecycle state machine: active license runs one context; exact marker plus exact restart-induced stale-session failure closes preflight and runs one fresh context; missing marker, wrong exception, restart loop, cleanup failure, or second-context failure remains red. Reintroduce the exact early handler and one-shot synthetic proof without changing license state. Implement an outer preflight that catches only the exact marked restart/session-loss fingerprint before the scenario block, fully closes the original context/process, waits through supported cleanup signals, then constructs a new Starter context and reruns project/plugin readiness before invoking the scenario exactly once. Run one synthetic real-restart lifecycle proof and the formerly stalled IU scenario in two additional clean active-license processes; require all three to pass. Run the full IU lane and PyCharm smoke; run `compileIntegrationTestKotlin`, `spotlessCheck`, `detekt`, and `git diff --check`; commit T5R13 before restarting T5.
+
+Escalation triggers:
+
+- Escalate if Starter cannot fully close the restarted preflight process/ports, a fresh context cannot be acquired without custom Driver construction, scenario execution cannot be proven exactly once, or a file outside the two-file scope is required.
+
+Stop conditions:
+
+- Passing requires swallowing a generic session failure, manually assisted validation, license/configuration spoofing, custom Driver/JMX construction, product skip, retry-only mitigation, sleeps, or production behavior changes.
+
+Expected output:
+
+- Exact outer preflight/relaunch lifecycle, positive/negative state-machine proof, real restart plus active-license repeated evidence, full IU/PY validation, task commit, events, reconciliation, and clean handoff to T5.
+
+Result summary:
+
 - Status: ready
 - Worker:
 - Changed files or reviewed diff:
@@ -1405,21 +1478,21 @@ Result summary:
 - Use one active worker at a time and a fresh sub-agent for each task packet.
 - The orchestrator records a decision capsule, reserves each write scope, reconciles claims, and commits each completed task before the next.
 - After T3, the orchestrator decides and applies any eligible `CHANGELOG.md` entry during reconciliation; workers may only suggest the text.
-- T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, T5R11, and the T1/T2 corrective work are complete. T5R2 through T5R5 and T5R10 stopped cleanly after producing bounded evidence; execute T5R12, then restart T5.
+- T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, T5R11, and the T1/T2 corrective work are complete. T5R2 through T5R5, T5R10, and T5R12 stopped cleanly after producing bounded evidence; execute T5R13, then restart T5.
 - Follow `.agents/references/orchestration.md`; use the current upgrade worktree only.
 
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: T5R12 recurring license restart handling.
+- Current task or wave: T5R13 outer Starter relaunch after the license restart.
 - Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`; T5R `234d91e18bda4b6028a594316ed1e2d90d57229c`; T5D `82abd9634effcc276b2d4821d8ee8b8657cd0ffe`; T5R6 `777cf177ca1ea7c54156c761b54ab1250fc002d4`; T5R7 `c3bae72f614e8e4fb224aa93bbd82f0b1eade3be`; T5R8 `c6cc0c390126d21a0a58633918a553639ae73bbe`; T5R9 `ae5aa6dba8fe01ea4a4d0bea3fb816a33f25baf4`; T5R11 `df5964eb83a54b128dc3883b884cf5c33e1fe256`.
-- Plan status and readiness: In Progress; the original plan and all bounded remediation packets through T5R12 are approved; T5R12 is ready.
-- Validation and self-review state: Exact-head prerelease and every hosted gate pass; local IU alone is blocked by the exact recurring license restart modal after 10/23 passes.
-- Worker event and reconciliation state: All prior tasks through stopped T5 worker `/root/t5_final_exact_head_r5` are reconciled; dispatch a fresh T5R12 worker.
+- Plan status and readiness: In Progress; the original plan and all bounded remediation packets through T5R13 are approved; T5R13 is ready.
+- Validation and self-review state: T5R12 proved exact dialog matching, real restart, one-shot persistence, and the retained Driver null-session boundary; all experiment code was restored.
+- Worker event and reconciliation state: All prior tasks through stopped T5R12 worker `/root/t5r12_license_restart` are reconciled; dispatch a fresh T5R13 worker.
 - Changelog, docs, spec, task, or plan updates: Compatibility configuration, current public docs, changelog, and regenerated Marketplace notes are aligned with published 2026.2/JDK 25 state.
-- Blockers or open questions: No open product question; T5R12 and the complete final-head local/review/readiness gate remain required evidence.
-- Next action: Keep PR #37 draft, execute T5R12, push, and rerun the final T5 current-head gate.
-- Context handoff notes: Every hosted check on `4ccc61b` is green; preserve that evidence, but require fresh exact-head checks after T5R12.
+- Blockers or open questions: No open product question; T5R13 and the complete final-head local/review/readiness gate remain required evidence.
+- Next action: Keep PR #37 draft, execute T5R13, push, and rerun the final T5 current-head gate.
+- Context handoff notes: Acquire a new supported Starter context; do not reuse or construct a Driver manually after restart.
 
 ## Execution Graph
 
@@ -1446,7 +1519,8 @@ flowchart TD
     W5R10["W5R10[run-verify]<br/>T5R10 residual reflection branches"]
     W5R11["W5R11[code]<br/>T5R11 simplify reflection null guards"]
     W5R12["W5R12[run-verify]<br/>T5R12 license restart lifecycle"]
-    O1 --> W1 --> W2 --> W3 --> W3R --> W4 --> G1 --> W5 --> W5R --> W5 --> W5D --> W5 --> W5R2 --> W5R3 --> W5R4 --> W5R5 --> W5R6 --> W5 --> W5R7 --> W5 --> W5R8 --> W5 --> W5R9 --> W5 --> W5R10 --> W5R11 --> W5 --> W5R12 --> W5 --> O1
+    W5R13["W5R13[run-verify]<br/>T5R13 outer Starter relaunch"]
+    O1 --> W1 --> W2 --> W3 --> W3R --> W4 --> G1 --> W5 --> W5R --> W5 --> W5D --> W5 --> W5R2 --> W5R3 --> W5R4 --> W5R5 --> W5R6 --> W5 --> W5R7 --> W5 --> W5R8 --> W5 --> W5R9 --> W5 --> W5R10 --> W5R11 --> W5 --> W5R12 --> W5R13 --> W5 --> O1
 ```
 
 ## Validation
