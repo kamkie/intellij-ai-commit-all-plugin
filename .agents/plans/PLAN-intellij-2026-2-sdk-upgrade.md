@@ -10,11 +10,11 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 
 ## Readiness
 
-- Plan readiness: Ready; the original plan and the bounded `T3R-regenerate-marketplace-change-notes`, `T5R-stabilize-pycharm-ui-startup`, `T5D-align-published-pycharm-documentation`, `T5R2-synchronize-pycharm-module-reload`, `T5R3-observe-pycharm-reload-at-startup`, `T5R4-observe-pycharm-loading-dialog`, `T5R5-await-pycharm-enable-attempt`, `T5R6-rebuild-pycharm-staging-workflow`, `T5R7-classify-2026-2-scheme-race`, `T5R8-cover-262-reflection-failures`, `T5R9-classify-2026-2-closed-index-storage`, `T5R10-cover-residual-reflection-branches`, `T5R11-simplify-reflection-null-guards`, `T5R12-handle-license-restart-transition`, and `T5R13-relaunch-starter-after-license-restart` remediation packets are explicitly approved.
+- Plan readiness: Ready; the original plan and the bounded `T3R-regenerate-marketplace-change-notes`, `T5R-stabilize-pycharm-ui-startup`, `T5D-align-published-pycharm-documentation`, `T5R2-synchronize-pycharm-module-reload`, `T5R3-observe-pycharm-reload-at-startup`, `T5R4-observe-pycharm-loading-dialog`, `T5R5-await-pycharm-enable-attempt`, `T5R6-rebuild-pycharm-staging-workflow`, `T5R7-classify-2026-2-scheme-race`, `T5R8-cover-262-reflection-failures`, `T5R9-classify-2026-2-closed-index-storage`, `T5R10-cover-residual-reflection-branches`, `T5R11-simplify-reflection-null-guards`, `T5R12-handle-license-restart-transition`, `T5R13-relaunch-starter-after-license-restart`, and `T5R14-extend-license-restart-to-pycharm` remediation packets are explicitly approved.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, and T5R11 are complete. T5R12 proved the exact handler invokes the real restart and starts a second IU process, but Starter retains a Driver with no remote session. Execute T5R13 to discard that stale context and acquire a fresh Starter/Driver context before scenario work.
+- Implementation progress: T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, and T5R11 are complete. T5R13 proved the outer Starter relaunch and full IU lane, then stopped when PyCharm reproduced the same exact license dialog outside the IU-only product gate. Execute T5R14 to extend the exact contract to the observed PyCharm 2026.2 product and complete full IU/PY validation.
 
 ## Status History
 
@@ -37,6 +37,7 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - 2026-07-23T17:11:17+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R11 packet after T5R10 proved behavioral cases cannot execute compiler null guards dominated by prior missing-method checks.
 - 2026-07-23T18:05:09+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the maintainer explicitly requests recurring deterministic handling for the exact license-required `Confirm Restart` transition that blocked the local IU lane.
 - 2026-07-23T18:40:31+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same explicit recurring-handling request and normal fix loop approve T5R13 after runtime proof showed a real restart needs outer Starter context reacquisition.
+- 2026-07-23T19:52:30+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same recurring-handling request and normal fix loop approve T5R14 after PyCharm 2026.2 reproduced the exact license restart dialog and write-intent lock outside T5R13's IU-only gate.
 
 ## Goal
 
@@ -85,6 +86,7 @@ No open plan questions. ADR acceptance and plan approval are required lifecycle 
 - `T5R11-simplify-reflection-null-guards`: preserve the same reflection diagnostics while constructing access only from explicitly proven non-null methods, removing unreachable compiler guards from the patch.
 - `T5R12-handle-license-restart-transition`: handle the exact license-required restart lifecycle in the release-matrix harness before scenario actions, then re-establish IDE and plugin readiness without manual interaction or license bypass.
 - `T5R13-relaunch-starter-after-license-restart`: treat only the exact marked restart/session-loss fingerprint as a completed preflight, close the stale Starter context, and run the scenario in a newly acquired IDE/Driver context.
+- `T5R14-extend-license-restart-to-pycharm`: extend the proven exact restart/relaunch contract only to the observed PyCharm 2026.2 product, preserving fail-closed behavior for every near miss and unobserved product.
 
 ## Task Packets
 
@@ -1389,6 +1391,76 @@ Expected output:
 
 Result summary:
 
+- Status: stopped cleanly; IU recovery is proven, but PyCharm reproduced the same exact dialog outside the IU-only gate
+- Worker: `/root/t5r13_starter_relaunch`
+- Changed files or reviewed diff: Implemented the outer restart/relaunch lifecycle in `ReleaseMatrixUiHarnessTest.kt` and the exact dialog/marker/restart observer in `FakeAiAssistantProbe.kt`; the two-file diff remains uncommitted for T5R14.
+- Validation evidence: Red compile proved the missing outer lifecycle; focused contract/state-machine tests passed 2/2. Synthetic IU job `20260723-192107-t5r13-iu-synthetic-license-relaunch-r4-7d9c6d` passed real restart, supported shutdown, process exit, release of ports 7777/10500/11111, fresh Starter/Driver acquisition, and exactly one scenario execution. Two active-license IU repetitions passed, and full IU job `20260723-192827-t5r13-full-iu-2026-2-c8e141` passed 25/25. PyCharm smoke job `20260723-194131-t5r13-py-2026-2-smoke-a5f146` preserved a failure where the exact license dialog held the write-intent permit; the unchanged focused PyCharm rerun `20260723-194934-t5r13-py-push-focused-unchanged-05e96a` passed 1/1, confirming intermittent timing.
+- Self-review evidence from `.agents/references/reviews.md`: The handler requires the exact product/version/title/body/action, exact marker states, exact stale-session fingerprint, supported application exit, verified process/port cleanup, and exactly one fresh-context scenario. It does not alter license state, spoof configuration, click generic dialogs, swallow unrelated Driver failures, use sleeps/retries, or change production behavior.
+- Commit: None; T5R14 must complete the observed PyCharm extension, formatting, and full validation before one task commit.
+- Worker events: Started at `2026-07-23T18:44:56.2563487+02:00` and stopped at `2026-07-23T19:52:30.8506034+02:00` with no active managed job.
+- Orchestrator reconciliation: Worker claims match the two-file diff, managed-job records, test XML, IU/PY idea logs, heartbeat screenshot, thread dumps, process/port evidence, and uncommitted worktree.
+- Changelog/docs/spec/tasks updates: No user-facing plugin behavior changed; retain task-local evidence in this plan and the validation report.
+- Blockers: The exact product gate must include observed PyCharm 2026.2 before the recurring license transition is handled across the required local lanes.
+- Review risks: Product broadening must remain limited to observed IU/PY 2026.2 and preserve every negative contract and cleanup failure as red.
+- Handoff notes and next action: Execute T5R14 in a fresh worker, format the retained two-file diff, prove synthetic PyCharm recovery, rerun full IU/PY, and commit.
+
+### Task Packet: T5R14-extend-license-restart-to-pycharm
+
+Task id: T5R14-extend-license-restart-to-pycharm
+
+Lane: testing
+
+Required skills:
+
+- `intellij-plugin-development`
+- `kotlin-plugin-style`
+- `plugin-test-tdd`
+- `triage-flaky-test`
+
+Goal:
+
+- Extend the proven exact license restart/relaunch lifecycle from IU 2026.2 to the observed PyCharm 2026.2 product without weakening product, dialog, marker, session-loss, cleanup, or exactly-once boundaries.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, this plan's readiness/execution graph/this packet, the T5R13 result, the retained two-file diff, failed PyCharm job `20260723-194131-t5r13-py-2026-2-smoke-a5f146`, and focused rerun `20260723-194934-t5r13-py-push-focused-unchanged-05e96a`.
+- Escalate to: the failed PyCharm idea log, heartbeat dialog screenshot, and thread dumps only as needed to verify the exact observed fingerprint.
+
+Allowed inputs:
+
+- The retained T5R13 implementation, validated IU lifecycle evidence, exact PyCharm dialog/thread-dump evidence, current product codes/builds, and focused/full validation output.
+
+Forbidden inputs:
+
+- Production code/resources, unobserved product codes, generic dialog matching/clicking, license bypass/spoofing/credentials, generic exception swallowing, custom Driver/JMX construction, sleeps, retry-only mitigation, product skips, assertion weakening, and unrelated source.
+
+Write scope:
+
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt`
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/fakeai/FakeAiAssistantProbe.kt`
+
+Dependencies:
+
+- T5R13 proved the exact IU restart/relaunch lifecycle and full IU lane, preserved the PyCharm failure, and left the two-file implementation uncommitted.
+
+Validation:
+
+- Red/green the exact product contract so IU and PyCharm 2026.2 match while a wrong product, version, title, body, or action remains rejected. Run a synthetic real PyCharm restart/relaunch proof with supported shutdown, process exit, port release, fresh Starter/Driver acquisition, and exactly one scenario execution. Run one clean active-license PyCharm focused scenario. Run the full IU lane and required PyCharm smoke. Run `spotlessApply`, then `compileIntegrationTestKotlin`, focused contract/state-machine tests, `spotlessCheck`, `detekt`, and `git diff --check`. Remove generated `allure-results/`, self-review the final two-file diff, and commit T5R14 before restarting T5.
+
+Escalation triggers:
+
+- Escalate if PyCharm requires a different dialog contract, restart/session fingerprint, unsupported process handling, a file outside the two-file scope, or any unobserved product expansion.
+
+Stop conditions:
+
+- Passing requires generic dialog or exception handling, manually assisted validation, license/configuration spoofing, custom Driver/JMX construction, product skip, retry-only mitigation, sleeps, production behavior changes, or acceptance of a second scenario execution.
+
+Expected output:
+
+- Exact IU/PyCharm product contract, synthetic and active PyCharm evidence, full IU/PY validation, formatted two-file task commit, events, reconciliation, and clean handoff to T5.
+
+Result summary:
+
 - Status: ready
 - Worker:
 - Changed files or reviewed diff:
@@ -1478,21 +1550,21 @@ Result summary:
 - Use one active worker at a time and a fresh sub-agent for each task packet.
 - The orchestrator records a decision capsule, reserves each write scope, reconciles claims, and commits each completed task before the next.
 - After T3, the orchestrator decides and applies any eligible `CHANGELOG.md` entry during reconciliation; workers may only suggest the text.
-- T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, T5R11, and the T1/T2 corrective work are complete. T5R2 through T5R5, T5R10, and T5R12 stopped cleanly after producing bounded evidence; execute T5R13, then restart T5.
+- T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, T5R9, T5R11, and the T1/T2 corrective work are complete. T5R2 through T5R5, T5R10, T5R12, and T5R13 stopped cleanly after producing bounded evidence; execute T5R14, then restart T5.
 - Follow `.agents/references/orchestration.md`; use the current upgrade worktree only.
 
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: T5R13 outer Starter relaunch after the license restart.
+- Current task or wave: T5R14 exact PyCharm extension of the proven outer Starter relaunch.
 - Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`; T5R `234d91e18bda4b6028a594316ed1e2d90d57229c`; T5D `82abd9634effcc276b2d4821d8ee8b8657cd0ffe`; T5R6 `777cf177ca1ea7c54156c761b54ab1250fc002d4`; T5R7 `c3bae72f614e8e4fb224aa93bbd82f0b1eade3be`; T5R8 `c6cc0c390126d21a0a58633918a553639ae73bbe`; T5R9 `ae5aa6dba8fe01ea4a4d0bea3fb816a33f25baf4`; T5R11 `df5964eb83a54b128dc3883b884cf5c33e1fe256`.
-- Plan status and readiness: In Progress; the original plan and all bounded remediation packets through T5R13 are approved; T5R13 is ready.
-- Validation and self-review state: T5R12 proved exact dialog matching, real restart, one-shot persistence, and the retained Driver null-session boundary; all experiment code was restored.
-- Worker event and reconciliation state: All prior tasks through stopped T5R12 worker `/root/t5r12_license_restart` are reconciled; dispatch a fresh T5R13 worker.
+- Plan status and readiness: In Progress; the original plan and all bounded remediation packets through T5R14 are approved; T5R14 is ready.
+- Validation and self-review state: T5R13 proved exact IU restart/relaunch, process and port cleanup, exactly-once scenario execution, two active-license repetitions, and full IU 25/25; PyCharm reproduced the exact dialog outside the IU gate.
+- Worker event and reconciliation state: All prior tasks through stopped T5R13 worker `/root/t5r13_starter_relaunch` are reconciled; dispatch a fresh T5R14 worker.
 - Changelog, docs, spec, task, or plan updates: Compatibility configuration, current public docs, changelog, and regenerated Marketplace notes are aligned with published 2026.2/JDK 25 state.
-- Blockers or open questions: No open product question; T5R13 and the complete final-head local/review/readiness gate remain required evidence.
-- Next action: Keep PR #37 draft, execute T5R13, push, and rerun the final T5 current-head gate.
-- Context handoff notes: Acquire a new supported Starter context; do not reuse or construct a Driver manually after restart.
+- Blockers or open questions: No open product question; T5R14 and the complete final-head local/review/readiness gate remain required evidence.
+- Next action: Keep PR #37 draft, execute T5R14, push, and rerun the final T5 current-head gate.
+- Context handoff notes: Extend only to observed PyCharm 2026.2; preserve the exact IU/PY contract and supported fresh Starter context.
 
 ## Execution Graph
 
@@ -1520,7 +1592,8 @@ flowchart TD
     W5R11["W5R11[code]<br/>T5R11 simplify reflection null guards"]
     W5R12["W5R12[run-verify]<br/>T5R12 license restart lifecycle"]
     W5R13["W5R13[run-verify]<br/>T5R13 outer Starter relaunch"]
-    O1 --> W1 --> W2 --> W3 --> W3R --> W4 --> G1 --> W5 --> W5R --> W5 --> W5D --> W5 --> W5R2 --> W5R3 --> W5R4 --> W5R5 --> W5R6 --> W5 --> W5R7 --> W5 --> W5R8 --> W5 --> W5R9 --> W5 --> W5R10 --> W5R11 --> W5 --> W5R12 --> W5R13 --> W5 --> O1
+    W5R14["W5R14[run-verify]<br/>T5R14 PyCharm license restart"]
+    O1 --> W1 --> W2 --> W3 --> W3R --> W4 --> G1 --> W5 --> W5R --> W5 --> W5D --> W5 --> W5R2 --> W5R3 --> W5R4 --> W5R5 --> W5R6 --> W5 --> W5R7 --> W5 --> W5R8 --> W5 --> W5R9 --> W5 --> W5R10 --> W5R11 --> W5 --> W5R12 --> W5R13 --> W5R14 --> W5 --> O1
 ```
 
 ## Validation
