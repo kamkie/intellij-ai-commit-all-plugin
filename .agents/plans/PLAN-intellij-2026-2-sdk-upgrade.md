@@ -10,11 +10,11 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 
 ## Readiness
 
-- Plan readiness: Ready; the original plan and the bounded `T3R-regenerate-marketplace-change-notes`, `T5R-stabilize-pycharm-ui-startup`, `T5D-align-published-pycharm-documentation`, `T5R2-synchronize-pycharm-module-reload`, `T5R3-observe-pycharm-reload-at-startup`, `T5R4-observe-pycharm-loading-dialog`, `T5R5-await-pycharm-enable-attempt`, `T5R6-rebuild-pycharm-staging-workflow`, `T5R7-classify-2026-2-scheme-race`, and `T5R8-cover-262-reflection-failures` remediation packets are explicitly approved.
+- Plan readiness: Ready; the original plan and the bounded `T3R-regenerate-marketplace-change-notes`, `T5R-stabilize-pycharm-ui-startup`, `T5D-align-published-pycharm-documentation`, `T5R2-synchronize-pycharm-module-reload`, `T5R3-observe-pycharm-reload-at-startup`, `T5R4-observe-pycharm-loading-dialog`, `T5R5-await-pycharm-enable-attempt`, `T5R6-rebuild-pycharm-staging-workflow`, `T5R7-classify-2026-2-scheme-race`, `T5R8-cover-262-reflection-failures`, and `T5R9-classify-2026-2-closed-index-storage` remediation packets are explicitly approved.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-16T21:17:58+02:00
 - Open questions: None; the maintainer directed that `PY-2026.2` remain required and be allowed to fail until JetBrains publishes it.
-- Implementation progress: T1 through T4, T3R, T5R, T5D, T5R6, T5R7, and T5R8 are complete. T5R8 covers every executable line in the inserted branch-262 reflection boundary without production or coverage-configuration changes. Restart T5 and require hosted Codecov to confirm the local improvement.
+- Implementation progress: T1 through T4, T3R, T5R, T5D, T5R6, T5R7, and T5R8 are complete. The restarted T5 passed prerelease, but hosted PyCharm UI promoted an exact branch-262 stub-index `ClosedStorageException` in two otherwise-successful scenarios. T5R9 must version-gate only that exact platform stack before T5 restarts.
 
 ## Status History
 
@@ -32,6 +32,7 @@ Filename: `.agents/plans/PLAN-intellij-2026-2-sdk-upgrade.md`
 - 2026-07-23T13:14:12+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R6 packet after T5R5 proved completion of rejected Ultimate loading is deterministic but does not itself restore the staging workflow fixture.
 - 2026-07-23T14:26:40+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R7 packet after exact-head hosted evidence proved Starter promotes one branch-262 `SchemeManagerImpl` concurrent-mutation diagnostic during the already-known Islands Dark scheme lifecycle.
 - 2026-07-23T15:30:17+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R8 packet after delayed exact-head Codecov checks isolated the only remaining failure to uncovered branch-262 reflection failure paths.
+- 2026-07-23T16:15:06+02:00: In Progress continued by Kamil Kiewisz <kamkie@outlook.com>; the same standing review-fix instruction approves the bounded T5R9 packet after exact-head hosted evidence proved Starter promotes a branch-262 stub-index storage race during PyCharm's dynamic plugin reload.
 
 ## Goal
 
@@ -75,6 +76,7 @@ No open plan questions. ADR acceptance and plan approval are required lifecycle 
 - `T5R6-rebuild-pycharm-staging-workflow`: retain the exact enable-attempt barrier and deterministically create or rebuild the requested Git staging Commit workflow after PyCharm's rejected Ultimate-module reload.
 - `T5R7-classify-2026-2-scheme-race`: extend the existing version-gated test-reporter mapping to the exact `SchemeManagerImpl`/`EditorColorsManagerImpl`/`FileStatusImpl` concurrent-mutation stack produced by the known Islands Dark startup lifecycle.
 - `T5R8-cover-262-reflection-failures`: add behavioral unit coverage for invocation failure, missing nested boundary methods, and incompatible reflective results in the branch-262 Git staging access boundary.
+- `T5R9-classify-2026-2-closed-index-storage`: extend the version-gated test-reporter mapping to the exact stub per-file-version `ClosedStorageException` stack produced while branch 262 tumbles indexes during dynamic plugin reload.
 
 ## Task Packets
 
@@ -471,18 +473,18 @@ Expected output:
 
 Result summary:
 
-- Status: ready to restart on the T5R8 head
+- Status: blocked pending T5R9 remediation and restart
 - Worker: `/root/t5_pycharm_release_gate`
 - Changed files or reviewed diff: Appended the first published-PyCharm gate evidence to `docs/validation/reports/2026-07-16-intellij-2026-2-upgrade.md`; source head remained unchanged.
-- Validation evidence: On exact head `a0bd6c7389c1d8f5bdb03c87e3e870f8d4acb2c3`, full local prerelease passed all eight gates; IU passed 22/22, PY passed 13/13, and WS passed 13/13. Hosted build, Security, CodeQL, Detekt, IU/PY/WS verifier, and UI coverage jobs all passed. Delayed `codecov/patch` failed at 65.48% against a 90.27% target with 39 changed lines uncovered, and `codecov/project` failed at 89.58%, down 0.69% from base.
+- Validation evidence: On exact head `37abdab54c635e1a680d05d5e73f49ac45f8d558`, full local prerelease passed all eight gates and IU/PY/WS were compatible. Hosted build, Security, CodeQL, Detekt, and all three verifier jobs passed. Hosted PyCharm UI ran all 13 scenarios: 11 passed; the commit-shortcut and staging-enabled commit scenarios completed the intended commit successfully but Starter promoted the same platform `ClosedStorageException`.
 - Self-review evidence from `.agents/references/reviews.md`: No production defect or compatibility change is confirmed; the failing IDE logs show IntelliJ declining an AI action because its target control stopped showing during dynamic plugin reconfiguration.
 - Commit:
-- Worker events: Initial worker stopped at the first published-PyCharm failure. Restarted worker `/root/t5_final_exact_head` preserved the branch-262 scheme failure. Worker `/root/t5_final_exact_head_r2` started at `2026-07-23T14:48:00+02:00`, completed every local and GitHub Actions gate, then stopped cleanly when delayed Codecov checks failed at `2026-07-23T15:28:16+02:00`.
-- Orchestrator reconciliation: Exact local, origin, and PR head remained `a0bd6c7389c1d8f5bdb03c87e3e870f8d4acb2c3`; worktree was clean. Codecov attributes all 19 missing lines and 20 partial branches to `ReflectiveCommitWorkflowSynchronizer.kt`, specifically the branch-262 reflective compatibility boundary added by this upgrade.
+- Worker events: Initial worker stopped at the first published-PyCharm failure. Restarted worker `/root/t5_final_exact_head` preserved the branch-262 scheme failure. Worker `/root/t5_final_exact_head_r2` preserved the late Codecov finding. Worker `/root/t5_final_exact_head_r3` started at `2026-07-23T15:49:08+02:00`, passed prerelease, stopped local IU at 19/22 after the hosted UI failure appeared, preserved artifact `8566451340`, and stopped cleanly at `2026-07-23T16:15:06+02:00`.
+- Orchestrator reconciliation: Exact local, origin, and PR head remained `37abdab54c635e1a680d05d5e73f49ac45f8d558`; worktree was clean. The two promoted failures contain no plugin frame. Both occur during nested `FileBasedIndexTumbler` plugin-loaded/unloaded cycles approximately 13 seconds before the plugin workflow, which subsequently commits successfully with the expected subject and clean Git state.
 - Changelog/docs/spec/tasks updates: T5D aligned README, contributor/support documentation, changelog, and generated Marketplace notes; the validation report records the earlier timing failures and must add the T5R hosted modal evidence.
-- Blockers: None inside T5R8; the complete exact-head local, hosted, review, and readiness gate remains required.
-- Review risks: Hosted aggregate Codecov calculation remains the decisive coverage proof; thresholds and production behavior are unchanged.
-- Handoff notes and next action: Push T5R8 and restart the complete T5 gate.
+- Blockers: T5R9 must classify the exact known branch-262 closed-storage diagnostic without suppressing arbitrary storage failures or changing production/index behavior.
+- Review risks: The mapping must require the exact exception prefix, exact stub-index path suffix, and distinguishing PagedFileStorage/PersistentSubIndexer/VfsAwareMapReduceIndex/UnindexedFilesScanner frames, remain version-gated to 2026.2, and leave every near miss red.
+- Handoff notes and next action: Execute T5R9, push its head, then restart the complete T5 gate including Codecov.
 
 ### Task Packet: T5R-stabilize-pycharm-ui-startup
 
@@ -1045,6 +1047,75 @@ Result summary:
 - Review risks: Hosted aggregate coverage is calculated from unit plus PyCharm UI reports, so only the external checks can close the original Codecov finding.
 - Handoff notes and next action: Push T5R8 and this reconciliation, then dispatch a fresh T5 worker for the complete current-head gate.
 
+### Task Packet: T5R9-classify-2026-2-closed-index-storage
+
+Task id: T5R9-classify-2026-2-closed-index-storage
+
+Lane: testing
+
+Required skills:
+
+- `intellij-plugin-development`
+- `kotlin-plugin-style`
+- `plugin-test-tdd`
+- `triage-flaky-test`
+
+Goal:
+
+- Extend the existing branch-262 test-reporter compatibility mapping so Starter does not fail a successful scenario for the exact stub-index storage race observed during PyCharm's dynamic plugin reload.
+
+Initial context budget:
+
+- Read first: `AGENTS.md`, this plan's readiness/execution graph/this packet, hosted UI job `89226997462`, artifact `8566451340`, and the reporter/constants/classifier tests in `ReleaseMatrixUiHarnessTest.kt`.
+- Escalate to: exact branch-262 `FileBasedIndexTumbler`, `PagedFileStorage`, per-file-version stub index, and unindexed-files scanner evidence only.
+
+Allowed inputs:
+
+- The two exact promoted failure names/stacks, all 13 hosted IDE logs, the existing branch-262 reporter mapping, and focused validation output.
+
+Forbidden inputs:
+
+- Production code/resources/descriptors, index or plugin-loading mutation, arbitrary `ClosedStorageException` suppression, product skips, retries as the fix, sleeps, assertion weakening, and unrelated source.
+
+Write scope:
+
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt`
+
+Dependencies:
+
+- Restarted T5 preserved artifact `8566451340` and restored a clean worktree; this bounded reporter-remediation packet is approved by the maintainer's standing normal review-fix continuation directive and current merge request.
+
+Validation:
+
+- Add a dedicated predicate under the exact `aicommitall.ide.version == 2026.2` gate. Require an exact `com.intellij.util.io.ClosedStorageException: storage is already closed; path ` prefix, the exact `/system/index/stubs/.perFileVersion/indexed_versions/indexed_versions_i` suffix, and all distinguishing `PagedFileStorage.doGetBufferWrapper`, `PersistentSubIndexerVersionEnumerator$MyEnumerator.enumerate`, `VfsAwareMapReduceIndex.getIndexingStateForFile`, and `UnindexedFilesScanner$ScanningSession.scanFiles` frames. Prove both captured forms are accepted while non-2026.2, arbitrary storage errors, wrong index paths, and every distinguishing-frame near miss remain rejected. Compile integration tests; run the two previously failed PyCharm scenarios in three independent processes and the full PyCharm smoke lane; run `spotlessCheck`, `detekt`, and `git diff --check`; commit T5R9 before restarting T5.
+
+Escalation triggers:
+
+- Escalate if exact classification cannot be tested without a production change, a plugin frame appears, a scenario fails its intended commit behavior, another diagnostic appears, or a file outside the one-file scope is required.
+
+Stop conditions:
+
+- Passing requires generic exception suppression, index/plugin-loading mutation, timing workaround, product skip, retry-only mitigation, or weakened workflow assertion.
+
+Expected output:
+
+- Exact version-gated platform diagnostic classification, positive/negative proof, focused/full PyCharm evidence, task commit, events, reconciliation, and clean handoff to T5.
+
+Result summary:
+
+- Status: ready
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence:
+- Self-review evidence from `.agents/references/reviews.md`:
+- Commit:
+- Worker events:
+- Orchestrator reconciliation:
+- Changelog/docs/spec/tasks updates:
+- Blockers:
+- Review risks:
+- Handoff notes and next action:
+
 ### Task Packet: T5D-align-published-pycharm-documentation
 
 Task id: T5D-align-published-pycharm-documentation
@@ -1121,21 +1192,21 @@ Result summary:
 - Use one active worker at a time and a fresh sub-agent for each task packet.
 - The orchestrator records a decision capsule, reserves each write scope, reconciles claims, and commits each completed task before the next.
 - After T3, the orchestrator decides and applies any eligible `CHANGELOG.md` entry during reconciliation; workers may only suggest the text.
-- T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, and the T1/T2 corrective work are complete. T5R2 through T5R5 stopped cleanly after producing successively narrower platform evidence used by T5R6; restart T5.
+- T1 through T4, T3R, T5R, T5D, T5R6, T5R7, T5R8, and the T1/T2 corrective work are complete. T5R2 through T5R5 stopped cleanly after producing successively narrower platform evidence used by T5R6; execute T5R9, then restart T5.
 - Follow `.agents/references/orchestration.md`; use the current upgrade worktree only.
 
 ## Long-Run Continuity
 
 - Resume docs reread: after compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, readiness, execution model, current packet, and result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commits; and the next owner files.
-- Current task or wave: T5 complete exact-head readiness restart.
+- Current task or wave: T5R9 exact branch-262 closed-index-storage classification.
 - Completed commits: T1 `a7d4a5e635a1023b56f768d0bed915a278bce5b5`; T2 `a29e97485a710c56306c637a8ce8578594f5992b`; T3 `a0e2d0122bf90c2af8e373f44ad78cddbabaa54b`; T3R `d736a9120b599fd04e8ab0a19dbd7f28d7b4fac6`; T2 corrective `ceb791e44ea0f1724f7c67450f438c6169ce8bdd`; T1 integration corrective `bf3092218d3540650c27b23ccff2ad2ea04e8553`; T4 `8e4c78155b681f75521b45d3dd6b32d503ab8d40`; T5R `234d91e18bda4b6028a594316ed1e2d90d57229c`; T5D `82abd9634effcc276b2d4821d8ee8b8657cd0ffe`; T5R6 `777cf177ca1ea7c54156c761b54ab1250fc002d4`; T5R7 `c3bae72f614e8e4fb224aa93bbd82f0b1eade3be`; T5R8 `c6cc0c390126d21a0a58633918a553639ae73bbe`.
 - Plan status and readiness: In Progress; the original plan, T3R, T5R, T5D, T5R2, T5R3, T5R4, T5R5, T5R6, and T5R7 remediation packets are approved.
-- Validation and self-review state: T5R8 targeted tests, full unit suite, local coverage gates, formatting, static analysis, and diff checks pass; inserted reflection lines now cover 81/81 with 66/72 branches. Complete exact-head local and hosted validation must restart.
-- Worker event and reconciliation state: All prior tasks through completed T5R8 and stopped exact-head T5 worker `/root/t5_final_exact_head_r2` are reconciled; dispatch a fresh T5 worker.
+- Validation and self-review state: Exact-head prerelease and every hosted gate except UI coverage pass; hosted PyCharm UI passed 11/13 and exposed two promoted instances of the same exact platform index-storage race before workflow entry.
+- Worker event and reconciliation state: All prior tasks through completed T5R8 and stopped exact-head T5 worker `/root/t5_final_exact_head_r3` are reconciled; dispatch T5R9 with a fresh worker.
 - Changelog, docs, spec, task, or plan updates: Compatibility configuration, current public docs, changelog, and regenerated Marketplace notes are aligned with published 2026.2/JDK 25 state.
-- Blockers or open questions: No open question; only the complete final-head gate, including delayed Codecov checks, remains required evidence.
-- Next action: Keep PR #37 draft, push T5R8, and rerun the final T5 current-head gate.
-- Context handoff notes: T5R8 adds only behavioral unit tests, reaches every executable inserted reflection line, and leaves thresholds and production behavior unchanged.
+- Blockers or open questions: No open question; T5R9 and the complete final-head gate, including delayed Codecov checks, remain required evidence.
+- Next action: Keep PR #37 draft, execute T5R9, push, and rerun the final T5 current-head gate.
+- Context handoff notes: The exact closed-storage error occurs while branch 262 tumbles the stub index for plugin reload, contains no plugin frame, and precedes two successful plugin commit workflows.
 
 ## Execution Graph
 
@@ -1158,7 +1229,8 @@ flowchart TD
     W5R6["W5R6[run-verify]<br/>T5R6 staging-workflow rebuild"]
     W5R7["W5R7[run-verify]<br/>T5R7 scheme-race classification"]
     W5R8["W5R8[run-verify]<br/>T5R8 reflection failure coverage"]
-    O1 --> W1 --> W2 --> W3 --> W3R --> W4 --> G1 --> W5 --> W5R --> W5 --> W5D --> W5 --> W5R2 --> W5R3 --> W5R4 --> W5R5 --> W5R6 --> W5 --> W5R7 --> W5 --> W5R8 --> W5 --> O1
+    W5R9["W5R9[run-verify]<br/>T5R9 closed-index-storage classification"]
+    O1 --> W1 --> W2 --> W3 --> W3R --> W4 --> G1 --> W5 --> W5R --> W5 --> W5D --> W5 --> W5R2 --> W5R3 --> W5R4 --> W5R5 --> W5R6 --> W5 --> W5R7 --> W5 --> W5R8 --> W5 --> W5R9 --> W5 --> O1
 ```
 
 ## Validation
