@@ -920,6 +920,7 @@ class ReleaseMatrixUiHarnessTest {
                 LocalProjectInfo(fixture.projectDirectory),
             ).withVersion(ideVersion),
         ).apply {
+            doNotDisablePaidPluginsOnStartup()
             attachCoverageAgentIfRequested()
             val pluginConfigurator = PluginConfigurator(this)
             Files.deleteIfExists(pluginConfigurator.disabledPluginsPath)
