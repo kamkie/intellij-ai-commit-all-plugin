@@ -154,7 +154,7 @@ dependencies {
     testImplementation(kotlin("test"))
     integrationTestImplementation(kotlin("test"))
     integrationTestImplementation("org.junit.jupiter:junit-jupiter:6.1.2")
-    integrationTestImplementation("org.kodein.di:kodein-di-jvm:7.32.0")
+    integrationTestImplementation("org.kodein.di:kodein-di-jvm:7.33.0")
     integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.11.0")
     integrationTestRuntimeOnly("org.jetbrains.teamcity:serviceMessages:2024.07")
 }
