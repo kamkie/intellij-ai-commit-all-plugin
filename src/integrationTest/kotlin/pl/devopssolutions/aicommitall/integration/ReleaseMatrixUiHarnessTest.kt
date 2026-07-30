@@ -102,12 +102,31 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     @Test
+    fun intellijReleaseLineMatcherAcceptsBaseAndPatchVersionsOnly() {
+        assertTrue(isInReleaseLine(INTELLIJ_2026_2_RELEASE_LINE, INTELLIJ_2026_2_RELEASE_LINE))
+        assertTrue(isInReleaseLine("$INTELLIJ_2026_2_RELEASE_LINE.1", INTELLIJ_2026_2_RELEASE_LINE))
+        listOf("2026.1", "2026.20", "2026.3", "2025.2").forEach { nearMiss ->
+            assertFalse(
+                isInReleaseLine(nearMiss, INTELLIJ_2026_2_RELEASE_LINE),
+                "'$nearMiss' must not match the $INTELLIJ_2026_2_RELEASE_LINE release line.",
+            )
+        }
+    }
+
+    @Test
     fun intellij2026Point2SchemeRaceClassifierRequiresExactNameAndFrames() {
         val capturedDetails = INTELLIJ_2026_2_SCHEME_RACE_REQUIRED_STACK_FRAMES.joinToString(separator = "\n")
 
         assertTrue(
             isIntellij2026Point2KnownError(
                 ideVersion = "2026.2",
+                testName = INTELLIJ_2026_2_SCHEME_RACE_KNOWN_ERROR,
+                details = capturedDetails,
+            ),
+        )
+        assertTrue(
+            isIntellij2026Point2KnownError(
+                ideVersion = "$INTELLIJ_2026_2_RELEASE_LINE.1",
                 testName = INTELLIJ_2026_2_SCHEME_RACE_KNOWN_ERROR,
                 details = capturedDetails,
             ),
@@ -1236,7 +1255,7 @@ class ReleaseMatrixUiHarnessTest {
         val fakeAiPluginPath = Path.of(requiredSystemProperty("aicommitall.fake.ai.plugin.path"))
         val handlesLicenseRestart = installFakeAiPlugin &&
             ideProductCode in LICENSE_RESTART_PRODUCT_CODES &&
-            ideVersion == "2026.2"
+            isInReleaseLine(ideVersion, INTELLIJ_2026_2_RELEASE_LINE)
         val exercisesSyntheticLicenseRestart = handlesLicenseRestart &&
             System.getenv("AICOMMITALL_EXERCISE_LICENSE_RESTART") == "true"
         val licenseRestartMarker = tempDirectory
@@ -1777,6 +1796,7 @@ private const val USER_EDITED_COMMIT_MESSAGE = "User edited release matrix messa
 private const val FAKE_AI_ASSISTANT_PLUGIN_ID = "com.intellij.ml.llm"
 private const val RELEASE_MATRIX_SMOKE_TAG = "releaseMatrixSmoke"
 private const val RELEASE_MATRIX_PROBE_PLUGIN_ID = "pl.devopssolutions.aicommitall.integration.probe"
+private const val INTELLIJ_2026_2_RELEASE_LINE = "2026.2"
 private const val INTELLIJ_2026_2_ISLANDS_THEME_KNOWN_ERROR =
     "java.lang.Throwable: Theme Islands Dark refers to unknown color scheme Islands Dark"
 private const val INTELLIJ_2026_2_DTRACE_PROFILER_KNOWN_ERROR_PREFIX =
@@ -1812,7 +1832,7 @@ private fun isIntellij2026Point2KnownError(
     ideVersion: String?,
     testName: String,
     details: String,
-): Boolean = ideVersion == "2026.2" &&
+): Boolean = isInReleaseLine(ideVersion, INTELLIJ_2026_2_RELEASE_LINE) &&
     (
         testName == INTELLIJ_2026_2_ISLANDS_THEME_KNOWN_ERROR ||
             (
@@ -1823,6 +1843,8 @@ private fun isIntellij2026Point2KnownError(
             isIntellij2026Point2ClosedIndexStorageError(testName, details) ||
             isIntellij2026Point2WorkspaceCacheAccessDeniedError(testName, details)
         )
+
+private fun isInReleaseLine(version: String?, releaseLine: String): Boolean = version == releaseLine || version?.startsWith("$releaseLine.") == true
 
 private fun isIntellij2026Point2SchemeRaceError(
     testName: String,

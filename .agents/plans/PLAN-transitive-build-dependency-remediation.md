@@ -196,22 +196,22 @@ Expected output:
 
 Result summary:
 
-- Status: recovery in progress
-- Worker: W1 (`code`) stopped at the UI gate; W2 recovery pending.
-- Changed files or reviewed diff: `build.gradle.kts` and `gradle.properties` add integration-test-only BOM platforms for Netty `4.2.16.Final`, Jackson 2 `2.21.5`, Jackson 3 `3.1.5`, and OpenTelemetry `1.62.0`, plus an LZ4 `1.11.1` constraint; this result summary and continuity record the evidence.
+- Status: W2 recovery validated; commit, push, and branch dependency-submission inspection pending.
+- Worker: W2 (`code`) completed local recovery validation.
+- Changed files or reviewed diff: `build.gradle.kts` and `gradle.properties` add integration-test-only BOM platforms for Netty `4.2.16.Final`, Jackson 2 `2.21.5`, Jackson 3 `3.1.5`, and OpenTelemetry `1.62.0`, plus an LZ4 `1.11.1` constraint. `ReleaseMatrixUiHarnessTest.kt` uses one delimiter-aware release-line predicate for the license-restart setup and known 2026.2 platform-error classifier.
 - Validation evidence:
   - Sequential `integrationTestRuntimeClasspath` dependency insight changed Netty `4.2.15.Final -> 4.2.16.Final`, Jackson 2 `2.19.0 -> 2.21.5`, Jackson 3 `3.1.4 -> 3.1.5`, OpenTelemetry `1.48.0 -> 1.62.0`, and LZ4 `1.11.0 -> 1.11.1`; all five candidates were effective and retained.
-  - `runtimeClasspath` remains empty, and the built plugin ZIP contains only the plugin-owned JAR under `lib/`, so none of the constrained families enters production or packaged-plugin runtime; `.\gradlew.bat --no-daemon spotlessCheck test buildPlugin verifyPlugin` passed with 529 tests passing, one pending, and Plugin Verifier reporting compatibility with `IU-262.8665.337`.
-  - The first full `IU` release-matrix UI run failed with 17 passing and 8 failing tests because JetBrains reported `Theme Islands Dark refers to unknown color scheme Islands Dark`; secondary failures followed when a test IDE retained port 7777. The exact first failing method then passed twice (`pass/pass`) in fresh runs. The full-lane retry failed independently on a Windows `AccessDeniedException` moving the JetBrains workspace-model cache, so the packet stop condition fired. PyCharm and WebStorm lanes were not started.
-  - Managed logs: `C:\Users\kamki\.agent-customizations\managed-jobs\logs\20260730-204930-dependency-remediation-gradle-gate-ef6d2b.log`, `C:\Users\kamki\.agent-customizations\managed-jobs\logs\20260730-205453-dependency-remediation-ui-iu-3ad25e.log`, `C:\Users\kamki\.agent-customizations\managed-jobs\logs\20260730-210818-dependency-remediation-ui-iu-exact-retry-a37633.log`, `C:\Users\kamki\.agent-customizations\managed-jobs\logs\20260730-211036-dependency-remediation-ui-iu-exact-retry-d30f06.log`, and `C:\Users\kamki\.agent-customizations\managed-jobs\logs\20260730-211148-dependency-remediation-ui-iu-full-retry-593745.log`.
+  - RED: patch-qualified 2026.2 classification failed in managed job `20260730-213506-dependency-remediation-red-release-line-34659a`. GREEN: base and patch-qualified inputs passed while `2026.1`, `2026.20`, `2026.3`, and `2025.2` remained rejected in job `20260730-213628-dependency-remediation-green-release-lin-85181b`.
+  - `runtimeClasspath` remains empty, and the built plugin ZIP contains only the plugin-owned JAR under `lib/`, so none of the constrained families enters production or packaged-plugin runtime. `.\gradlew.bat --no-daemon spotlessCheck test buildPlugin verifyPlugin` passed in job `20260730-214507-dependency-remediation-w2-gradle-gate-re-0fdfa2` with 529 tests passing, one pending, and Plugin Verifier reporting compatibility with `IU-262.8665.337`.
+  - Sequential release-matrix validation passed: IU full, 26 tests in job `20260730-215009-dependency-remediation-w2-ui-iu-full-842667`; PY smoke, 13 tests in job `20260730-220902-dependency-remediation-w2-ui-py-smoke-f6ac69`; WS smoke, 13 tests in job `20260730-222601-dependency-remediation-w2-ui-ws-smoke-c056a4`. Restart-enabled IU/PY scenarios recorded one restart PID, accepted shutdown, process exit, released ports, and continuation in a fresh context without loops.
 - Self-review evidence from `.agents/references/reviews.md`: constraints are scoped only to `integrationTestImplementation`, the release-matrix task executes that source set's runtime classpath, main runtime remains empty, no packaged-plugin configuration or workflow filter changed, no alert was dismissed, and the diff contains no unrelated cleanup.
-- Commit: Task implementation commit not created because required release-matrix UI validation is blocked.
-- Worker events: W1 started from `56a05d7`; dependency resolution and the non-UI Gradle gate passed; deterministic UI validation remained blocked after the evidence-preserving flake workflow.
-- Orchestrator reconciliation: Verified W1's changed-file scope, dependency-resolution evidence, packaging result, validation results, preserved logs, stop-condition handling, clean managed-job shutdown, and unchanged remote head.
+- Commit: Pending final documentation validation and commit.
+- Worker events: W2 started from `038ac8e`; preserved W1's dependency diff, proved the release-line regression red/green, and completed all local validation.
+- Orchestrator reconciliation: Pending W2 handoff.
 - Changelog/docs/spec/tasks updates: Not applicable; the change affects build-time integration-test resolution only.
-- Blockers: None currently. The prior UI blocker was reclassified as exact patch-coordinate coupling in the harness and explicitly authorized for correction.
+- Blockers: None.
 - Review risks: GitHub dependency submission must still prove the project path is remediated while settings-plugin paths remain visible. Current open alerts are all attributed to `settings.gradle.kts`; those settings-plugin Netty, Jackson 2/3, OpenTelemetry, and LZ4 copies are upstream-only and intentionally preserved without filtering or dismissal.
-- Handoff notes and next action: Dispatch fresh worker W2 to prove the version-family regression red/green, rerun IDEA/PyCharm/WebStorm validation, then commit and push the complete task if all gates pass.
+- Handoff notes and next action: Validate plan artifacts, commit and push the complete task, then dispatch and inspect branch dependency submission.
 
 ## Execution Model
 
@@ -225,15 +225,15 @@ Result summary:
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, current task packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before any commit; and the next action's exact owner files.
-- Current task or wave: T1-prove-and-remediate-safe-project-configurations recovery is starting.
+- Current task or wave: T1-prove-and-remediate-safe-project-configurations recovery has passed local validation.
 - Completed commits: None.
 - Plan status and readiness: In Progress; patch-independent 2026.2 release-line handling authorized by Kamil Kiewisz <kamkie@outlook.com>.
-- Validation and self-review state: All five dependency constraints resolve at their first patched versions on `integrationTestRuntimeClasspath`; production runtime is unchanged; formatting, unit tests, packaging, and Plugin Verifier pass. Full IDEA UI validation remains blocked by unrelated JetBrains theme and Windows workspace-cache races; PyCharm and WebStorm were not run after the stop condition fired.
-- Worker event state: W1 stopped at the UI gate; W2 recovery is pending dispatch.
-- Orchestrator reconciliation state: The W1 diff remains uncommitted and unpushed; root cause is exact `2026.2` coordinate matching after the `2026.2.0.1` upgrade.
+- Validation and self-review state: All five dependency constraints resolve at their first patched versions on `integrationTestRuntimeClasspath`; production runtime is unchanged; formatting, unit tests, packaging, Plugin Verifier, IU full UI, PY smoke UI, and WS smoke UI pass.
+- Worker event state: W2 recovery completed local validation.
+- Orchestrator reconciliation state: Pending W2 handoff after commit, push, and branch dependency-submission inspection.
 - Changelog, docs, spec, task, or plan updates: Build configuration, version properties, and this plan evidence only; changelog, public docs, specification, and tasks are not affected.
 - Blockers or open questions: None.
-- Next action: Dispatch W2 recovery with TDD coverage for stable release-line handling and repeat all remaining validation.
+- Next action: Commit and push T1, then inspect branch dependency-submission output.
 - Context handoff notes: Preserve upstream-only settings-plugin alerts rather than filtering or dismissing them; avoid hardcoding mutable patch details; do not commit or push until required UI validation passes.
 
 ## Execution Graph
