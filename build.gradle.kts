@@ -132,6 +132,11 @@ val integrationTestCompileOnly by configurations.getting {
 val integrationTestRuntimeOnly by configurations.getting {
     extendsFrom(configurations.testRuntimeOnly.get())
 }
+val integrationTestNettyVersion = providers.gradleProperty("integrationTestNettyVersion")
+val integrationTestJackson2Version = providers.gradleProperty("integrationTestJackson2Version")
+val integrationTestJackson3Version = providers.gradleProperty("integrationTestJackson3Version")
+val integrationTestOpenTelemetryVersion = providers.gradleProperty("integrationTestOpenTelemetryVersion")
+val integrationTestLz4Version = providers.gradleProperty("integrationTestLz4Version")
 
 dependencies {
     intellijPlatform {
@@ -153,10 +158,20 @@ dependencies {
 
     testImplementation(kotlin("test"))
     integrationTestImplementation(kotlin("test"))
+    integrationTestImplementation(platform("io.netty:netty-bom:${integrationTestNettyVersion.get()}"))
+    integrationTestImplementation(platform("com.fasterxml.jackson:jackson-bom:${integrationTestJackson2Version.get()}"))
+    integrationTestImplementation(platform("tools.jackson:jackson-bom:${integrationTestJackson3Version.get()}"))
+    integrationTestImplementation(
+        platform("io.opentelemetry:opentelemetry-bom:${integrationTestOpenTelemetryVersion.get()}"),
+    )
     integrationTestImplementation("org.junit.jupiter:junit-jupiter:6.1.2")
     integrationTestImplementation("org.kodein.di:kodein-di-jvm:7.33.0")
     integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.11.0")
     integrationTestRuntimeOnly("org.jetbrains.teamcity:serviceMessages:2024.07")
+
+    constraints {
+        integrationTestImplementation("at.yawk.lz4:lz4-java:${integrationTestLz4Version.get()}")
+    }
 }
 
 kotlin {
