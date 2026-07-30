@@ -11,7 +11,7 @@ import pl.devopssolutions.aicommitall.gradle.VerifyJacocoCoverageReportTask
 import java.util.Locale
 
 plugins {
-    kotlin("jvm") version "2.4.0"
+    kotlin("jvm") version "2.4.10"
     jacoco
     id("dev.detekt") version "2.0.0-alpha.5"
     id("com.diffplug.spotless") version "8.8.0"
