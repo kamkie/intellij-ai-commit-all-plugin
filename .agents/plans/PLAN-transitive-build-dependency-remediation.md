@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-transitive-build-dependency-remediation
 
-Status: In Progress
+Status: Implemented
 
 Workers: 1
 
@@ -10,11 +10,11 @@ Filename: `.agents/plans/PLAN-transitive-build-dependency-remediation.md`
 
 ## Readiness
 
-- Plan readiness: Approved and resumed after the maintainer authorized a release-line version-matching correction.
+- Plan readiness: Implemented; task validation and branch dependency submission passed.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-30T20:39:23+02:00
 - Open questions: None.
-- Implementation progress: T1 recovery will remove patch-coordinate coupling from the 2026.2 UI harness, then repeat the required release-matrix validation.
+- Implementation progress: Complete in task commit `ceb4c04`; post-merge default-branch alert reconciliation remains.
 
 ## Status History
 
@@ -23,6 +23,7 @@ Filename: `.agents/plans/PLAN-transitive-build-dependency-remediation.md`
 - 2026-07-30T20:39:24+02:00: Approved -> In Progress by Codex <codex@openai.com>; autonomous approved-plan execution started after confirming PR #41 was merged.
 - 2026-07-30T21:17:23+02:00: In Progress -> Blocked by Codex <codex@openai.com>; repeated full IntelliJ UI validation failed on unrelated, nondeterministic JetBrains theme and Windows workspace-cache infrastructure races.
 - 2026-07-30T21:30:08+02:00: Blocked -> In Progress by Kamil Kiewisz <kamkie@outlook.com>; the maintainer authorized stable release-line matching instead of mutable patch-version hardcoding and resumed autonomous execution.
+- 2026-07-30T22:44:16+02:00: In Progress -> Implemented by Codex <codex@openai.com>; dependency, packaging, full Gradle, IU/PY/WS UI, documentation, and branch dependency-submission validation passed on the committed task result.
 
 ## Goal
 
@@ -196,8 +197,8 @@ Expected output:
 
 Result summary:
 
-- Status: W2 recovery validated; commit, push, and branch dependency-submission inspection pending.
-- Worker: W2 (`code`) completed local recovery validation.
+- Status: completed
+- Worker: W1 (`code`) established the dependency constraints; W2 (`code`) completed the release-line recovery and all validation.
 - Changed files or reviewed diff: `build.gradle.kts` and `gradle.properties` add integration-test-only BOM platforms for Netty `4.2.16.Final`, Jackson 2 `2.21.5`, Jackson 3 `3.1.5`, and OpenTelemetry `1.62.0`, plus an LZ4 `1.11.1` constraint. `ReleaseMatrixUiHarnessTest.kt` uses one delimiter-aware release-line predicate for the license-restart setup and known 2026.2 platform-error classifier.
 - Validation evidence:
   - Sequential `integrationTestRuntimeClasspath` dependency insight changed Netty `4.2.15.Final -> 4.2.16.Final`, Jackson 2 `2.19.0 -> 2.21.5`, Jackson 3 `3.1.4 -> 3.1.5`, OpenTelemetry `1.48.0 -> 1.62.0`, and LZ4 `1.11.0 -> 1.11.1`; all five candidates were effective and retained.
@@ -205,13 +206,13 @@ Result summary:
   - `runtimeClasspath` remains empty, and the built plugin ZIP contains only the plugin-owned JAR under `lib/`, so none of the constrained families enters production or packaged-plugin runtime. `.\gradlew.bat --no-daemon spotlessCheck test buildPlugin verifyPlugin` passed in job `20260730-214507-dependency-remediation-w2-gradle-gate-re-0fdfa2` with 529 tests passing, one pending, and Plugin Verifier reporting compatibility with `IU-262.8665.337`.
   - Sequential release-matrix validation passed: IU full, 26 tests in job `20260730-215009-dependency-remediation-w2-ui-iu-full-842667`; PY smoke, 13 tests in job `20260730-220902-dependency-remediation-w2-ui-py-smoke-f6ac69`; WS smoke, 13 tests in job `20260730-222601-dependency-remediation-w2-ui-ws-smoke-c056a4`. Restart-enabled IU/PY scenarios recorded one restart PID, accepted shutdown, process exit, released ports, and continuation in a fresh context without loops.
 - Self-review evidence from `.agents/references/reviews.md`: constraints are scoped only to `integrationTestImplementation`, the release-matrix task executes that source set's runtime classpath, main runtime remains empty, no packaged-plugin configuration or workflow filter changed, no alert was dismissed, and the diff contains no unrelated cleanup.
-- Commit: Pending final documentation validation and commit.
-- Worker events: W2 started from `038ac8e`; preserved W1's dependency diff, proved the release-line regression red/green, and completed all local validation.
-- Orchestrator reconciliation: Pending W2 handoff.
+- Commit: `ceb4c04ceaff1922a3723a7dbd1e5d81dc2ec12d`, pushed to `codex/plan-transitive-dependency-remediation`.
+- Worker events: W2 started from `038ac8e`; preserved W1's dependency diff, proved the release-line regression red/green, completed all local validation, committed, pushed, and dispatched branch dependency submission.
+- Orchestrator reconciliation: Verified the scoped diff, TDD evidence, dependency and packaging results, IU/PY/WS outcomes, clean worktree, synchronized local/upstream/remote head, clear port 7777, no active managed jobs, and successful Dependency Submission run `30579961954` on exact head `ceb4c04`.
 - Changelog/docs/spec/tasks updates: Not applicable; the change affects build-time integration-test resolution only.
 - Blockers: None.
-- Review risks: GitHub dependency submission must still prove the project path is remediated while settings-plugin paths remain visible. Current open alerts are all attributed to `settings.gradle.kts`; those settings-plugin Netty, Jackson 2/3, OpenTelemetry, and LZ4 copies are upstream-only and intentionally preserved without filtering or dismissal.
-- Handoff notes and next action: Validate plan artifacts, commit and push the complete task, then dispatch and inspect branch dependency submission.
+- Review risks: Branch Dependency Submission run `30579961954` generated and submitted an accepted snapshot, but GitHub does not update repository dependency results from a non-default-branch snapshot. Current open alerts are all attributed to `settings.gradle.kts`; those settings-plugin Netty, Jackson 2/3, OpenTelemetry, and LZ4 copies are upstream-only and intentionally preserved without filtering or dismissal.
+- Handoff notes and next action: Review and merge PR #42, then re-query default-branch Dependabot alerts after GitHub processes the merged dependency snapshot.
 
 ## Execution Model
 
@@ -225,16 +226,16 @@ Result summary:
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, current task packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before any commit; and the next action's exact owner files.
-- Current task or wave: T1-prove-and-remediate-safe-project-configurations recovery has passed local validation.
-- Completed commits: None.
-- Plan status and readiness: In Progress; patch-independent 2026.2 release-line handling authorized by Kamil Kiewisz <kamkie@outlook.com>.
+- Current task or wave: T1-prove-and-remediate-safe-project-configurations is complete.
+- Completed commits: `ceb4c04ceaff1922a3723a7dbd1e5d81dc2ec12d`.
+- Plan status and readiness: Implemented; awaiting PR review/merge and post-merge alert reconciliation.
 - Validation and self-review state: All five dependency constraints resolve at their first patched versions on `integrationTestRuntimeClasspath`; production runtime is unchanged; formatting, unit tests, packaging, Plugin Verifier, IU full UI, PY smoke UI, and WS smoke UI pass.
-- Worker event state: W2 recovery completed local validation.
-- Orchestrator reconciliation state: Pending W2 handoff after commit, push, and branch dependency-submission inspection.
+- Worker event state: W2 recovery completed, committed, pushed, and handed off.
+- Orchestrator reconciliation state: Complete; task result and external branch snapshot verified.
 - Changelog, docs, spec, task, or plan updates: Build configuration, version properties, and this plan evidence only; changelog, public docs, specification, and tasks are not affected.
 - Blockers or open questions: None.
-- Next action: Commit and push T1, then inspect branch dependency-submission output.
-- Context handoff notes: Preserve upstream-only settings-plugin alerts rather than filtering or dismissing them; avoid hardcoding mutable patch details; do not commit or push until required UI validation passes.
+- Next action: Review and merge PR #42, then inspect default-branch dependency submission and remaining alerts.
+- Context handoff notes: Preserve upstream-only settings-plugin alerts rather than filtering or dismissing them; avoid hardcoding mutable patch details in future release-line handling.
 
 ## Execution Graph
 
