@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-transitive-build-dependency-remediation
 
-Status: Blocked
+Status: In Progress
 
 Workers: 1
 
@@ -10,11 +10,11 @@ Filename: `.agents/plans/PLAN-transitive-build-dependency-remediation.md`
 
 ## Readiness
 
-- Plan readiness: Blocked; the candidate implementation is complete, but required release-matrix UI validation is nondeterministic on the current Windows host.
+- Plan readiness: Approved and resumed after the maintainer authorized a release-line version-matching correction.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-30T20:39:23+02:00
 - Open questions: None.
-- Implementation progress: T1 stopped before commit and push after repeated full IntelliJ UI runs failed on unrelated JetBrains theme and Windows workspace-cache races.
+- Implementation progress: T1 recovery will remove patch-coordinate coupling from the 2026.2 UI harness, then repeat the required release-matrix validation.
 
 ## Status History
 
@@ -22,6 +22,7 @@ Filename: `.agents/plans/PLAN-transitive-build-dependency-remediation.md`
 - 2026-07-30T20:39:23+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; the maintainer explicitly approved PR #42 and authorized autonomous implementation.
 - 2026-07-30T20:39:24+02:00: Approved -> In Progress by Codex <codex@openai.com>; autonomous approved-plan execution started after confirming PR #41 was merged.
 - 2026-07-30T21:17:23+02:00: In Progress -> Blocked by Codex <codex@openai.com>; repeated full IntelliJ UI validation failed on unrelated, nondeterministic JetBrains theme and Windows workspace-cache infrastructure races.
+- 2026-07-30T21:30:08+02:00: Blocked -> In Progress by Kamil Kiewisz <kamkie@outlook.com>; the maintainer authorized stable release-line matching instead of mutable patch-version hardcoding and resumed autonomous execution.
 
 ## Goal
 
@@ -40,6 +41,7 @@ Reduce the repository's 19 open transitive Dependabot alerts wherever patched ve
 - JetBrains IDE Starter `262.8665.337`, used by IntelliJ IDEA 2026.2.0.1, still declares Netty `4.2.15.Final`, Jackson 2 `2.19.0`, Jackson 3 `3.1.4`, OpenTelemetry `1.48.0`, and LZ4 `1.11.0`.
 - JetBrains IntelliJ Platform Gradle Plugin `2.18.1` also reaches Jackson 2 `2.20.2` through its own settings/build plugin classpath. Ordinary project dependency constraints cannot replace that settings-plugin dependency.
 - GitHub's Gradle dependency-submission action supports configuration filters, but filtering out build or test dependencies would hide executable supply-chain dependencies rather than remediate them. This plan does not use filtering or alert dismissal as a fix.
+- The first T1 UI run exposed an existing harness regression introduced when `platformVersion` changed from `2026.2` to `2026.2.0.1`: exact `ideVersion == "2026.2"` predicates disabled both license-restart setup and known 2026.2 platform-error classification even though the IDE still reports the stable `2026.2` release line.
 
 Primary evidence:
 
@@ -82,11 +84,13 @@ None. Any new incompatibility or broader remediation choice stops implementation
    - Jackson 2 BOM `2.21.5` only where it does not attempt to alter the settings-plugin classpath.
 4. Remove any constraint that does not affect the vulnerable resolution path or that destabilizes IDE Starter.
 5. Preserve unresolved settings-plugin alerts as upstream findings; do not hide or dismiss them.
+6. Match the stable 2026.2 release line independently of mutable patch-qualified artifact coordinates, cover base and patch-qualified inputs plus adjacent-line near misses, and rerun the stopped UI validation.
 
 Expected implementation files:
 
 - `build.gradle.kts`
 - `gradle.properties` only if named version properties make the retained constraints clearer
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt`
 - This plan and `.agents/plans/README.md` for lifecycle and result metadata
 
 ## Task Packets
@@ -101,7 +105,10 @@ Required skills:
 
 - `gh-fix-ci-security-quality`
 - `intellij-plugin-development`
+- `kotlin-plugin-style`
+- `plugin-test-tdd`
 - `platform-docs-research`
+- `managed-jobs`
 
 Goal:
 
@@ -117,6 +124,8 @@ Initial context budget:
   - `settings.gradle.kts`.
   - `.github/workflows/dependency-submission.yml`.
   - `docs/decisions/adr-0089-advance-minimum-intellij-platform-to-2026-2.md`.
+  - `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt`.
+  - The exact failure evidence in `C:\Users\kamki\.agent-customizations\managed-jobs\logs\20260730-205453-dependency-remediation-ui-iu-3ad25e.log`.
   - `.agents/references/testing.md`.
   - `.agents/references/reviews.md`.
 - Escalate to:
@@ -139,6 +148,7 @@ Write scope:
 
 - `build.gradle.kts`
 - `gradle.properties`
+- `src/integrationTest/kotlin/pl/devopssolutions/aicommitall/integration/ReleaseMatrixUiHarnessTest.kt`
 - `.agents/plans/PLAN-transitive-build-dependency-remediation.md`
 - `.agents/plans/README.md`
 
@@ -150,6 +160,7 @@ Dependencies:
 Validation:
 
 - Run sequential `dependencyInsight` checks for Netty, Jackson 2, Jackson 3, OpenTelemetry, and LZ4 before and after constraints.
+- Prove a red regression test for patch-qualified 2026.2 coordinates, then green coverage for base and patch-qualified 2026.2 inputs while adjacent release lines remain rejected.
 - Run `.\gradlew.bat --no-daemon spotlessCheck test buildPlugin verifyPlugin`.
 - Run the existing IntelliJ IDEA full and PyCharm/WebStorm smoke release-matrix UI lanes on the 2026.2 release line.
 - Run `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\validate-docs.ps1`.
@@ -165,6 +176,7 @@ Escalation triggers:
 - Escalate if IDE Starter, Plugin Verifier, or a release-matrix UI lane fails after a constraint.
 - Escalate if the dependency graph reports a settings/build plugin path that project constraints cannot control.
 - Escalate if a candidate requires a version newer than the first patched release.
+- Escalate if stable release-line matching would accept a different IntelliJ release line or require parsing an undocumented version format.
 
 Stop conditions:
 
@@ -184,8 +196,8 @@ Expected output:
 
 Result summary:
 
-- Status: blocked
-- Worker: W1 (`code`)
+- Status: recovery in progress
+- Worker: W1 (`code`) stopped at the UI gate; W2 recovery pending.
 - Changed files or reviewed diff: `build.gradle.kts` and `gradle.properties` add integration-test-only BOM platforms for Netty `4.2.16.Final`, Jackson 2 `2.21.5`, Jackson 3 `3.1.5`, and OpenTelemetry `1.62.0`, plus an LZ4 `1.11.1` constraint; this result summary and continuity record the evidence.
 - Validation evidence:
   - Sequential `integrationTestRuntimeClasspath` dependency insight changed Netty `4.2.15.Final -> 4.2.16.Final`, Jackson 2 `2.19.0 -> 2.21.5`, Jackson 3 `3.1.4 -> 3.1.5`, OpenTelemetry `1.48.0 -> 1.62.0`, and LZ4 `1.11.0 -> 1.11.1`; all five candidates were effective and retained.
@@ -197,13 +209,13 @@ Result summary:
 - Worker events: W1 started from `56a05d7`; dependency resolution and the non-UI Gradle gate passed; deterministic UI validation remained blocked after the evidence-preserving flake workflow.
 - Orchestrator reconciliation: Verified W1's changed-file scope, dependency-resolution evidence, packaging result, validation results, preserved logs, stop-condition handling, clean managed-job shutdown, and unchanged remote head.
 - Changelog/docs/spec/tasks updates: Not applicable; the change affects build-time integration-test resolution only.
-- Blockers: The required `IU` full release-matrix lane is not deterministic on this Windows host due JetBrains theme initialization and workspace-cache filesystem races. Resolving that test-infrastructure problem is outside this task's write scope. Push, dependency-submission dispatch, and GitHub snapshot inspection are therefore not reached.
+- Blockers: None currently. The prior UI blocker was reclassified as exact patch-coordinate coupling in the harness and explicitly authorized for correction.
 - Review risks: GitHub dependency submission must still prove the project path is remediated while settings-plugin paths remain visible. Current open alerts are all attributed to `settings.gradle.kts`; those settings-plugin Netty, Jackson 2/3, OpenTelemetry, and LZ4 copies are upstream-only and intentionally preserved without filtering or dismissal.
-- Handoff notes and next action: O1 should decide how to obtain a deterministic full IDEA/PyCharm/WebStorm release-matrix result before redispatching completion. Once that gate passes, commit and push this exact scoped diff, dispatch dependency submission, inspect the snapshot, and re-query alerts.
+- Handoff notes and next action: Dispatch fresh worker W2 to prove the version-family regression red/green, rerun IDEA/PyCharm/WebStorm validation, then commit and push the complete task if all gates pass.
 
 ## Execution Model
 
-- Use one fresh implementation worker after explicit approval.
+- Use one fresh implementation worker per initial or recovery attempt after explicit approval.
 - The orchestrator owns plan status, worker reconciliation, GitHub alert rechecks, and final handoff.
 - If sub-agents are unavailable or unauthorized, stop before implementation instead of executing this approved-plan task locally.
 - Keep all resolution probes sequential to avoid Gradle daemon and cache contention.
@@ -213,16 +225,16 @@ Result summary:
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, current task packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before any commit; and the next action's exact owner files.
-- Current task or wave: T1-prove-and-remediate-safe-project-configurations is blocked at release-matrix UI validation.
+- Current task or wave: T1-prove-and-remediate-safe-project-configurations recovery is starting.
 - Completed commits: None.
-- Plan status and readiness: Blocked at deterministic release-matrix UI validation; approved by Kamil Kiewisz <kamkie@outlook.com> at 2026-07-30T20:39:23+02:00.
+- Plan status and readiness: In Progress; patch-independent 2026.2 release-line handling authorized by Kamil Kiewisz <kamkie@outlook.com>.
 - Validation and self-review state: All five dependency constraints resolve at their first patched versions on `integrationTestRuntimeClasspath`; production runtime is unchanged; formatting, unit tests, packaging, and Plugin Verifier pass. Full IDEA UI validation remains blocked by unrelated JetBrains theme and Windows workspace-cache races; PyCharm and WebStorm were not run after the stop condition fired.
-- Worker event state: W1 implemented and validated the scoped dependency constraints but did not commit or push because the required UI gate is blocked.
-- Orchestrator reconciliation state: W1 evidence and scoped diff verified; candidate implementation remains uncommitted and unpushed.
+- Worker event state: W1 stopped at the UI gate; W2 recovery is pending dispatch.
+- Orchestrator reconciliation state: The W1 diff remains uncommitted and unpushed; root cause is exact `2026.2` coordinate matching after the `2026.2.0.1` upgrade.
 - Changelog, docs, spec, task, or plan updates: Build configuration, version properties, and this plan evidence only; changelog, public docs, specification, and tasks are not affected.
-- Blockers or open questions: The release-matrix UI infrastructure must produce a deterministic full IDEA run before task completion; the first full run failed on a JetBrains theme race, two exact retries passed, and the full retry failed on a Windows workspace-cache move.
-- Next action: O1 reconciles the UI blocker and decides whether to redispatch T1 validation on a clean host or authorize separate test-infrastructure work.
-- Context handoff notes: Preserve upstream-only settings-plugin alerts rather than filtering or dismissing them; do not commit or push the current diff until required UI validation passes.
+- Blockers or open questions: None.
+- Next action: Dispatch W2 recovery with TDD coverage for stable release-line handling and repeat all remaining validation.
+- Context handoff notes: Preserve upstream-only settings-plugin alerts rather than filtering or dismissing them; avoid hardcoding mutable patch details; do not commit or push until required UI validation passes.
 
 ## Execution Graph
 
@@ -230,8 +242,11 @@ Result summary:
 flowchart TD
     O1["O1[code]<br/>orchestrator"]
     W1["W1[code]<br/>T1: prove and remediate safe project configurations"]
+    W2["W2[code]<br/>T1 recovery: stable release-line handling and validation"]
     O1 --> W1
     W1 --> O1
+    O1 --> W2
+    W2 --> O1
 ```
 
 ## Validation
