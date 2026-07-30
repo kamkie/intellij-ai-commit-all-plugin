@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-transitive-build-dependency-remediation
 
-Status: In Progress
+Status: Blocked
 
 Workers: 1
 
@@ -10,17 +10,18 @@ Filename: `.agents/plans/PLAN-transitive-build-dependency-remediation.md`
 
 ## Readiness
 
-- Plan readiness: Approved and executing.
+- Plan readiness: Blocked; the candidate implementation is complete, but required release-matrix UI validation is nondeterministic on the current Windows host.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-07-30T20:39:23+02:00
 - Open questions: None.
-- Implementation progress: T1 dispatch is starting after PR #41 merged.
+- Implementation progress: T1 stopped before commit and push after repeated full IntelliJ UI runs failed on unrelated JetBrains theme and Windows workspace-cache races.
 
 ## Status History
 
 - 2026-07-30T18:58:43+02:00: none -> Draft by Codex <codex@openai.com>; investigation established the alert families, upstream dependency paths, and compatibility-sensitive remediation boundary.
 - 2026-07-30T20:39:23+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; the maintainer explicitly approved PR #42 and authorized autonomous implementation.
 - 2026-07-30T20:39:24+02:00: Approved -> In Progress by Codex <codex@openai.com>; autonomous approved-plan execution started after confirming PR #41 was merged.
+- 2026-07-30T21:17:23+02:00: In Progress -> Blocked by Codex <codex@openai.com>; repeated full IntelliJ UI validation failed on unrelated, nondeterministic JetBrains theme and Windows workspace-cache infrastructure races.
 
 ## Goal
 
@@ -183,18 +184,22 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
+- Status: blocked
+- Worker: W1 (`code`)
+- Changed files or reviewed diff: `build.gradle.kts` and `gradle.properties` add integration-test-only BOM platforms for Netty `4.2.16.Final`, Jackson 2 `2.21.5`, Jackson 3 `3.1.5`, and OpenTelemetry `1.62.0`, plus an LZ4 `1.11.1` constraint; this result summary and continuity record the evidence.
 - Validation evidence:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Worker events:
-- Orchestrator reconciliation:
-- Changelog/docs/spec/tasks updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+  - Sequential `integrationTestRuntimeClasspath` dependency insight changed Netty `4.2.15.Final -> 4.2.16.Final`, Jackson 2 `2.19.0 -> 2.21.5`, Jackson 3 `3.1.4 -> 3.1.5`, OpenTelemetry `1.48.0 -> 1.62.0`, and LZ4 `1.11.0 -> 1.11.1`; all five candidates were effective and retained.
+  - `runtimeClasspath` remains empty, and the built plugin ZIP contains only the plugin-owned JAR under `lib/`, so none of the constrained families enters production or packaged-plugin runtime; `.\gradlew.bat --no-daemon spotlessCheck test buildPlugin verifyPlugin` passed with 529 tests passing, one pending, and Plugin Verifier reporting compatibility with `IU-262.8665.337`.
+  - The first full `IU` release-matrix UI run failed with 17 passing and 8 failing tests because JetBrains reported `Theme Islands Dark refers to unknown color scheme Islands Dark`; secondary failures followed when a test IDE retained port 7777. The exact first failing method then passed twice (`pass/pass`) in fresh runs. The full-lane retry failed independently on a Windows `AccessDeniedException` moving the JetBrains workspace-model cache, so the packet stop condition fired. PyCharm and WebStorm lanes were not started.
+  - Managed logs: `C:\Users\kamki\.agent-customizations\managed-jobs\logs\20260730-204930-dependency-remediation-gradle-gate-ef6d2b.log`, `C:\Users\kamki\.agent-customizations\managed-jobs\logs\20260730-205453-dependency-remediation-ui-iu-3ad25e.log`, `C:\Users\kamki\.agent-customizations\managed-jobs\logs\20260730-210818-dependency-remediation-ui-iu-exact-retry-a37633.log`, `C:\Users\kamki\.agent-customizations\managed-jobs\logs\20260730-211036-dependency-remediation-ui-iu-exact-retry-d30f06.log`, and `C:\Users\kamki\.agent-customizations\managed-jobs\logs\20260730-211148-dependency-remediation-ui-iu-full-retry-593745.log`.
+- Self-review evidence from `.agents/references/reviews.md`: constraints are scoped only to `integrationTestImplementation`, the release-matrix task executes that source set's runtime classpath, main runtime remains empty, no packaged-plugin configuration or workflow filter changed, no alert was dismissed, and the diff contains no unrelated cleanup.
+- Commit: Task implementation commit not created because required release-matrix UI validation is blocked.
+- Worker events: W1 started from `56a05d7`; dependency resolution and the non-UI Gradle gate passed; deterministic UI validation remained blocked after the evidence-preserving flake workflow.
+- Orchestrator reconciliation: Verified W1's changed-file scope, dependency-resolution evidence, packaging result, validation results, preserved logs, stop-condition handling, clean managed-job shutdown, and unchanged remote head.
+- Changelog/docs/spec/tasks updates: Not applicable; the change affects build-time integration-test resolution only.
+- Blockers: The required `IU` full release-matrix lane is not deterministic on this Windows host due JetBrains theme initialization and workspace-cache filesystem races. Resolving that test-infrastructure problem is outside this task's write scope. Push, dependency-submission dispatch, and GitHub snapshot inspection are therefore not reached.
+- Review risks: GitHub dependency submission must still prove the project path is remediated while settings-plugin paths remain visible. Current open alerts are all attributed to `settings.gradle.kts`; those settings-plugin Netty, Jackson 2/3, OpenTelemetry, and LZ4 copies are upstream-only and intentionally preserved without filtering or dismissal.
+- Handoff notes and next action: O1 should decide how to obtain a deterministic full IDEA/PyCharm/WebStorm release-matrix result before redispatching completion. Once that gate passes, commit and push this exact scoped diff, dispatch dependency submission, inspect the snapshot, and re-query alerts.
 
 ## Execution Model
 
@@ -208,16 +213,16 @@ Result summary:
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, current task packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before any commit; and the next action's exact owner files.
-- Current task or wave: T1-prove-and-remediate-safe-project-configurations is starting.
+- Current task or wave: T1-prove-and-remediate-safe-project-configurations is blocked at release-matrix UI validation.
 - Completed commits: None.
-- Plan status and readiness: In Progress; approved by Kamil Kiewisz <kamkie@outlook.com> at 2026-07-30T20:39:23+02:00.
-- Validation and self-review state: Investigation evidence captured; implementation validation not started.
-- Worker event state: No worker dispatched.
-- Orchestrator reconciliation state: Not started.
-- Changelog, docs, spec, task, or plan updates: This plan and the active plan catalog only.
-- Blockers or open questions: None.
-- Next action: Dispatch the T1 implementation worker.
-- Context handoff notes: Preserve upstream-only alerts rather than filtering or dismissing them.
+- Plan status and readiness: Blocked at deterministic release-matrix UI validation; approved by Kamil Kiewisz <kamkie@outlook.com> at 2026-07-30T20:39:23+02:00.
+- Validation and self-review state: All five dependency constraints resolve at their first patched versions on `integrationTestRuntimeClasspath`; production runtime is unchanged; formatting, unit tests, packaging, and Plugin Verifier pass. Full IDEA UI validation remains blocked by unrelated JetBrains theme and Windows workspace-cache races; PyCharm and WebStorm were not run after the stop condition fired.
+- Worker event state: W1 implemented and validated the scoped dependency constraints but did not commit or push because the required UI gate is blocked.
+- Orchestrator reconciliation state: W1 evidence and scoped diff verified; candidate implementation remains uncommitted and unpushed.
+- Changelog, docs, spec, task, or plan updates: Build configuration, version properties, and this plan evidence only; changelog, public docs, specification, and tasks are not affected.
+- Blockers or open questions: The release-matrix UI infrastructure must produce a deterministic full IDEA run before task completion; the first full run failed on a JetBrains theme race, two exact retries passed, and the full retry failed on a Windows workspace-cache move.
+- Next action: O1 reconciles the UI blocker and decides whether to redispatch T1 validation on a clean host or authorize separate test-infrastructure work.
+- Context handoff notes: Preserve upstream-only settings-plugin alerts rather than filtering or dismissing them; do not commit or push the current diff until required UI validation passes.
 
 ## Execution Graph
 
