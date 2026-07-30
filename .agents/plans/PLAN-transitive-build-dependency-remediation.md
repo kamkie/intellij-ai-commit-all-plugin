@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-transitive-build-dependency-remediation
 
-Status: Draft
+Status: In Progress
 
 Workers: 1
 
@@ -10,13 +10,17 @@ Filename: `.agents/plans/PLAN-transitive-build-dependency-remediation.md`
 
 ## Readiness
 
-- Plan readiness: Ready for maintainer review.
+- Plan readiness: Approved and executing.
+- Approved by: Kamil Kiewisz <kamkie@outlook.com>
+- Approved at: 2026-07-30T20:39:23+02:00
 - Open questions: None.
-- Implementation progress: Not started; blocked on explicit plan approval and the merge of upgrade PR #41.
+- Implementation progress: T1 dispatch is starting after PR #41 merged.
 
 ## Status History
 
 - 2026-07-30T18:58:43+02:00: none -> Draft by Codex <codex@openai.com>; investigation established the alert families, upstream dependency paths, and compatibility-sensitive remediation boundary.
+- 2026-07-30T20:39:23+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; the maintainer explicitly approved PR #42 and authorized autonomous implementation.
+- 2026-07-30T20:39:24+02:00: Approved -> In Progress by Codex <codex@openai.com>; autonomous approved-plan execution started after confirming PR #41 was merged.
 
 ## Goal
 
@@ -156,10 +160,10 @@ Validation:
 
 Escalation triggers:
 
-- A patched family changes production compile or runtime configurations.
-- IDE Starter, Plugin Verifier, or a release-matrix UI lane fails after a constraint.
-- The dependency graph reports a settings/build plugin path that project constraints cannot control.
-- A candidate requires a version newer than the first patched release.
+- Escalate if a patched family changes production compile or runtime configurations.
+- Escalate if IDE Starter, Plugin Verifier, or a release-matrix UI lane fails after a constraint.
+- Escalate if the dependency graph reports a settings/build plugin path that project constraints cannot control.
+- Escalate if a candidate requires a version newer than the first patched release.
 
 Stop conditions:
 
@@ -182,7 +186,7 @@ Result summary:
 - Status: pending
 - Worker:
 - Changed files or reviewed diff:
-- Validation evidence from `.agents/references/testing.md`:
+- Validation evidence:
 - Self-review evidence from `.agents/references/reviews.md`:
 - Commit:
 - Worker events:
@@ -204,15 +208,15 @@ Result summary:
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread `AGENTS.md`; this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, current task packet, and current result summary; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before any commit; and the next action's exact owner files.
-- Current task or wave: Planning only.
+- Current task or wave: T1-prove-and-remediate-safe-project-configurations is starting.
 - Completed commits: None.
-- Plan status and readiness: Draft and ready for maintainer review.
+- Plan status and readiness: In Progress; approved by Kamil Kiewisz <kamkie@outlook.com> at 2026-07-30T20:39:23+02:00.
 - Validation and self-review state: Investigation evidence captured; implementation validation not started.
 - Worker event state: No worker dispatched.
 - Orchestrator reconciliation state: Not started.
 - Changelog, docs, spec, task, or plan updates: This plan and the active plan catalog only.
-- Blockers or open questions: Explicit plan approval and PR #41 merge.
-- Next action: Review and approve or revise the plan.
+- Blockers or open questions: None.
+- Next action: Dispatch the T1 implementation worker.
 - Context handoff notes: Preserve upstream-only alerts rather than filtering or dismissing them.
 
 ## Execution Graph

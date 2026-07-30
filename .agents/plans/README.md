@@ -22,7 +22,7 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
-- `PLAN-transitive-build-dependency-remediation` - Transitive Build Dependency Remediation ([PLAN-transitive-build-dependency-remediation.md](PLAN-transitive-build-dependency-remediation.md)), draft and awaiting maintainer review.
+- `PLAN-transitive-build-dependency-remediation` - Transitive Build Dependency Remediation ([PLAN-transitive-build-dependency-remediation.md](PLAN-transitive-build-dependency-remediation.md)), approved and in progress.
 
 ## Archived Plans
 
