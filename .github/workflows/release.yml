@@ -79,7 +79,7 @@ jobs:
           node-version: "24"
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@v6.2.0
         with:
           validate-wrappers: true
 
