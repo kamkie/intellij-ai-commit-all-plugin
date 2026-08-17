@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-intellij-patch-upgrade-automation
 
-Status: In Progress
+Status: Implemented
 
 Workers: 2 (parallel, tasks: T1-version-contract, T2-license-restart-patch-awareness; then T3-patch-update-command sequential)
 
@@ -10,17 +10,18 @@ Filename: `.agents/plans/PLAN-intellij-patch-upgrade-automation.md`
 
 ## Readiness
 
-- Plan readiness: Approved and ready. PR #48 is merged with all required checks passing, and approved-plan workers are available.
+- Plan readiness: Implemented and validated; ready for maintainer review and publication.
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-08-17T10:52:34+02:00
 - Open questions: None.
-- Implementation progress: Wave 1 complete and reconciled; T3 is ready to start.
+- Implementation progress: Complete. T1, T2, T3, and the T1 recovery are committed and reconciled.
 
 ## Status History
 
 - 2026-08-17T10:39:06+02:00: none -> Draft by Kamil Kiewisz <kamkie@outlook.com>; user requested a patch-upgrade implementation plan.
 - 2026-08-17T10:52:34+02:00: Draft -> Approved by Kamil Kiewisz <kamkie@outlook.com>; explicit user approval recorded.
 - 2026-08-17T10:52:55+02:00: Approved -> In Progress by Codex <codex@openai.com>; implementation started after verifying PR #48 and worker readiness.
+- 2026-08-17T11:46:00+02:00: In Progress -> Implemented by Codex <codex@openai.com>; all task commits, recovery validation, Plugin Verifier, and PyCharm smoke checks passed.
 
 ## Goal
 
@@ -129,9 +130,9 @@ Result summary:
 - Changed files or reviewed diff: `gradle.properties`, `build.gradle.kts`, `buildSrc/build.gradle.kts`, the new verification task, and its buildSrc tests.
 - Validation evidence: Contract tests red before implementation; buildSrc tests, `verifyIntelliJPatchVersionContract`, `spotlessCheck`, `buildPlugin`, and `git diff --check` passed.
 - Self-review: Delimiter near misses, out-of-line platform versions, AI build-prefix mismatches, and verifier mismatches fail closed; the gate runs from `check` and `buildPlugin`.
-- Commit: `3364d263c056bcbfccc934a92248254b8146507c`
+- Commit: `3364d263c056bcbfccc934a92248254b8146507c`; recovery `d81b2d5858dfc8aaf78db5e9ef21556d34f0c503` preserves the standalone Detekt lifecycle wiring.
 - Worker events: Start and successful stop recorded in chat.
-- Orchestrator reconciliation: Scope and metadata verified; combined Wave 1 buildSrc tests, contract task, formatting, and packaging passed.
+- Orchestrator reconciliation: Scope and metadata verified; combined Wave 1 buildSrc tests, contract task, formatting, packaging, focused CI contract test, and full root tests passed with 529 passing and one pending.
 - Docs/spec/tasks: Not expected; contributor guidance is owned by T3.
 - Blockers: None.
 - Review risks: No manual IDE scenario; isolated build contract only.
@@ -248,18 +249,18 @@ Expected output:
 - Changed files, negative/positive evidence, full validation, self-review, commit, worker events, blockers, risks, and final handoff.
 
 Result summary:
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review:
-- Commit:
-- Worker events:
-- Orchestrator reconciliation:
+- Status: completed
+- Worker: `/root/t3_patch_update_command`
+- Changed files or reviewed diff: Thin PowerShell entry point, tested buildSrc updater/task/fixtures, task registration, `CONTRIBUTING.md`, and `.agents/references/testing.md`.
+- Validation evidence: Red missing-implementation and hidden-duplicate tests; positive byte-exact mutation fixture; all rejection fixtures; PowerShell syntax; buildSrc tests; contract task; focused T2 tests 4/4; formatting; packaging; Plugin Verifier; docs/artifacts; and diff checks passed. Managed PyCharm 2026.2.0.1 smoke passed 13/13 in 6m24s.
+- Self-review: No Git, rollback, version discovery, signing, publishing, network, or secret behavior; real coordinates remained byte-identical during implementation validation.
+- Commit: `553669f12540aa9ed6fa0acf39abbc9645e1873f`
+- Worker events: Start and successful stop recorded in chat; managed job `20260817-112715-t3-pycharm-2026-2-ui-smoke-fe3460` completed with exit code 0.
+- Orchestrator reconciliation: Seven-file scope and metadata verified; full root test initially exposed T1's combined Detekt dependency declaration, then recovery `d81b2d5858dfc8aaf78db5e9ef21556d34f0c503` restored the existing contract and passed the complete suite.
 - Docs/spec/tasks: Contributor and agent validation guidance expected; public docs/changelog only if behavior changes.
-- Blockers:
-- Review risks:
-- Handoff:
+- Blockers: None.
+- Review risks: AI Assistant prefix validation cannot prove semantic compatibility; the caller must supply a known-compatible build. Plugin Verifier retains two pre-existing experimental API notices.
+- Handoff: The updater is ready for maintainer use; publish through a separate explicit GitHub handoff if desired.
 
 ## Execution Model
 
@@ -275,15 +276,15 @@ Result summary:
 
 - Resume docs reread:
   - After compaction, interruption, resume, or handoff, reread the latest user request; `AGENTS.md`; this plan's header, readiness, execution model, execution graph, current task packet, and current result summaries; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commit; and only the exact owner artifacts needed next.
-- Current task or wave: T3-patch-update-command.
-- Completed commits: `3364d263c056bcbfccc934a92248254b8146507c` (T1), `16c4ab8d8103559e00793c0fcad590d5971f4b61` (T2).
-- Plan status and readiness: In Progress; approved by Kamil Kiewisz <kamkie@outlook.com> at 2026-08-17T10:52:34+02:00.
-- Validation and self-review state: Wave 1 worker and combined reconciliation checks passed; T3 validation pending.
-- Worker event state: T1 and T2 start/stop events recorded; no active workers.
-- Orchestrator reconciliation state: Wave 1 complete; scopes, commits, metadata, and combined behavior verified.
-- Changelog, docs, spec, task, or plan updates: Contributor and agent validation guidance remains owned by T3; public docs/spec/changelog still not applicable.
+- Current task or wave: Complete; no active task.
+- Completed commits: `3364d263c056bcbfccc934a92248254b8146507c` (T1), `16c4ab8d8103559e00793c0fcad590d5971f4b61` (T2), `553669f12540aa9ed6fa0acf39abbc9645e1873f` (T3), and `d81b2d5858dfc8aaf78db5e9ef21556d34f0c503` (T1 recovery).
+- Plan status and readiness: Implemented; approved by Kamil Kiewisz <kamkie@outlook.com> at 2026-08-17T10:52:34+02:00.
+- Validation and self-review state: All task, recovery, full unit, Plugin Verifier, docs/artifact, and PyCharm smoke checks passed.
+- Worker event state: T1, T2, T3, and T1 recovery start/stop events recorded; no active workers.
+- Orchestrator reconciliation state: Complete; scopes, commits, metadata, durable smoke evidence, and final full test result verified.
+- Changelog, docs, spec, task, or plan updates: `CONTRIBUTING.md` and `.agents/references/testing.md` updated; public README/spec/support/changelog not applicable because plugin behavior is unchanged.
 - Blockers or open questions: None.
-- Next action: Dispatch T3 with reconciled T1/T2 inputs.
+- Next action: Maintainer review, then optional explicit GitHub publication.
 - Context handoff notes: Preserve the distinction between patch coordinates and the manually approved release line.
 
 ## Execution Graph
@@ -325,5 +326,5 @@ flowchart TD
 
 - This plan does not alter ADR 0089 or approve an IntelliJ 2026.3 migration.
 - PR #48 remains the owner of runtime-path classifier hardening and should stay scoped to that fix.
-- Implementation is explicitly approved; execute task packets in the declared graph and keep result summaries current.
+- Implementation is complete; preserve the release-line gate and require an explicit compatible AI Assistant build for every patch update.
 - No README, specification, support, or changelog update is expected unless implementation evidence reveals public behavior or compatibility-policy changes.
