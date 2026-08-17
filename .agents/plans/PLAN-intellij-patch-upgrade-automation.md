@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN-intellij-patch-upgrade-automation.md`
 - Approved by: Kamil Kiewisz <kamkie@outlook.com>
 - Approved at: 2026-08-17T10:52:34+02:00
 - Open questions: None.
-- Implementation progress: Wave 1 starting with T1 and T2 in parallel; T3 remains dependency-blocked.
+- Implementation progress: Wave 1 complete and reconciled; T3 is ready to start.
 
 ## Status History
 
@@ -124,18 +124,18 @@ Expected output:
 - Changed files, red/green evidence, final validation, self-review, commit, worker events, blockers, risks, and T3 handoff.
 
 Result summary:
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review:
-- Commit:
-- Worker events:
-- Orchestrator reconciliation:
+- Status: completed
+- Worker: `/root/t1_version_contract`
+- Changed files or reviewed diff: `gradle.properties`, `build.gradle.kts`, `buildSrc/build.gradle.kts`, the new verification task, and its buildSrc tests.
+- Validation evidence: Contract tests red before implementation; buildSrc tests, `verifyIntelliJPatchVersionContract`, `spotlessCheck`, `buildPlugin`, and `git diff --check` passed.
+- Self-review: Delimiter near misses, out-of-line platform versions, AI build-prefix mismatches, and verifier mismatches fail closed; the gate runs from `check` and `buildPlugin`.
+- Commit: `3364d263c056bcbfccc934a92248254b8146507c`
+- Worker events: Start and successful stop recorded in chat.
+- Orchestrator reconciliation: Scope and metadata verified; combined Wave 1 buildSrc tests, contract task, formatting, and packaging passed.
 - Docs/spec/tasks: Not expected; contributor guidance is owned by T3.
-- Blockers:
-- Review risks:
-- Handoff:
+- Blockers: None.
+- Review risks: No manual IDE scenario; isolated build contract only.
+- Handoff: T3 must reuse `platformReleaseLine` and the contract implementation without duplicating parsing rules.
 
 ### Task Packet: T2-license-restart-patch-awareness
 
@@ -182,18 +182,18 @@ Expected output:
 - Changed files, red/green evidence, final compilation, self-review, commit, worker events, blockers, risks, and T3 handoff.
 
 Result summary:
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence:
-- Self-review:
-- Commit:
-- Worker events:
-- Orchestrator reconciliation:
+- Status: completed
+- Worker: `/root/t2_license_patch_awareness`
+- Changed files or reviewed diff: `ReleaseMatrixUiHarnessTest.kt` and `FakeAiAssistantProbe.kt` only.
+- Validation evidence: Two patch-version assertions failed red under exact equality; targeted tests passed green, neighboring classifiers and integration compilation passed, and combined Wave 1 focused tests passed 3/3.
+- Self-review: `2026.20`, `2026.3`, unrelated versions, and altered product/dialog/marker/process fields remain rejected; known-error scope is unchanged.
+- Commit: `16c4ab8d8103559e00793c0fcad590d5971f4b61`
+- Worker events: Start and successful stop recorded in chat; transient shared-build validation collision was excluded from task evidence.
+- Orchestrator reconciliation: Two-file scope and metadata verified; combined formatting, packaging, contract, and focused integration tests passed.
 - Docs/spec/tasks: Not applicable; test harness only.
-- Blockers:
-- Review risks:
-- Handoff:
+- Blockers: None.
+- Review risks: Full IDE scenarios intentionally deferred to T3's PyCharm smoke validation.
+- Handoff: T3 may rely on delimiter-aware host/probe matching and the merged PR #48 runtime-path classifier.
 
 ### Task Packet: T3-patch-update-command
 
@@ -275,15 +275,15 @@ Result summary:
 
 - Resume docs reread:
   - After compaction, interruption, resume, or handoff, reread the latest user request; `AGENTS.md`; this plan's header, readiness, execution model, execution graph, current task packet, and current result summaries; `.agents/references/execution.md`; `.agents/references/orchestration.md`; `.agents/references/testing.md`; `.agents/references/reviews.md`; `.gitmessage` before commit; and only the exact owner artifacts needed next.
-- Current task or wave: Wave 1, T1-version-contract and T2-license-restart-patch-awareness.
-- Completed commits: None for this plan.
+- Current task or wave: T3-patch-update-command.
+- Completed commits: `3364d263c056bcbfccc934a92248254b8146507c` (T1), `16c4ab8d8103559e00793c0fcad590d5971f4b61` (T2).
 - Plan status and readiness: In Progress; approved by Kamil Kiewisz <kamkie@outlook.com> at 2026-08-17T10:52:34+02:00.
-- Validation and self-review state: Plan/docs validation passed before approval; task validation pending.
-- Worker event state: No workers started.
-- Orchestrator reconciliation state: Not started.
-- Changelog, docs, spec, task, or plan updates: Approved plan and plan catalog state; implementation changes pending.
-- Blockers or open questions: None for Wave 1; T3 waits for both Wave 1 commits and reconciliation.
-- Next action: Dispatch T1 and T2 workers with disjoint write scopes.
+- Validation and self-review state: Wave 1 worker and combined reconciliation checks passed; T3 validation pending.
+- Worker event state: T1 and T2 start/stop events recorded; no active workers.
+- Orchestrator reconciliation state: Wave 1 complete; scopes, commits, metadata, and combined behavior verified.
+- Changelog, docs, spec, task, or plan updates: Contributor and agent validation guidance remains owned by T3; public docs/spec/changelog still not applicable.
+- Blockers or open questions: None.
+- Next action: Dispatch T3 with reconciled T1/T2 inputs.
 - Context handoff notes: Preserve the distinction between patch coordinates and the manually approved release line.
 
 ## Execution Graph
