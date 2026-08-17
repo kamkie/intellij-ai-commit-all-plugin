@@ -22,6 +22,7 @@ This directory holds task-specific implementation plans for work that is too lar
 
 ## Active Plans
 
+- `PLAN-intellij-patch-upgrade-automation` - IntelliJ Patch Upgrade Automation ([PLAN-intellij-patch-upgrade-automation.md](PLAN-intellij-patch-upgrade-automation.md)), approved and in progress.
 - `PLAN-transitive-build-dependency-remediation` - Transitive Build Dependency Remediation ([PLAN-transitive-build-dependency-remediation.md](PLAN-transitive-build-dependency-remediation.md)), implemented and awaiting merge plus post-merge alert reconciliation.
 
 ## Archived Plans
