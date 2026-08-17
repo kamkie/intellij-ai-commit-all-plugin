@@ -195,9 +195,13 @@ class ReleaseMatrixUiHarnessTest {
                 "/home/runner/work/plugin/out/ide-tests/tests/PY-262.8665.309/" +
                 "release-matrix-ui-commit-flow-staging" +
                 INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PATH_SUFFIX,
+            INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PREFIX +
+                "/home/runner/work/plugin/out/ide-tests/tests/PY-262.8665.309/" +
+                "release-matrix-ui-empty-message-stop/system/index/idindex/.perFileVersion/" +
+                "indexed_versions/indexed_versions_i",
         )
 
-        listOf(capturedShortcutDetails, capturedStagingDetails)
+        listOf(capturedShortcutDetails, capturedStagingDetails, capturedShortcutDetails)
             .zip(capturedErrorNames)
             .forEach { (details, errorName) ->
                 assertTrue(
@@ -1815,6 +1819,8 @@ private const val INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PREFIX =
     "com.intellij.util.io.ClosedStorageException: storage is already closed; path "
 private const val INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PATH_SUFFIX =
     "/system/index/stubs/.perFileVersion/indexed_versions/indexed_versions_i"
+private const val INTELLIJ_2026_2_CLOSED_ID_INDEX_STORAGE_KNOWN_ERROR_PATH_SUFFIX =
+    "/system/index/idindex/.perFileVersion/indexed_versions/indexed_versions_i"
 private val INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_REQUIRED_STACK_FRAMES = listOf(
     "com.intellij.util.io.PagedFileStorage.doGetBufferWrapper",
     "com.intellij.util.indexing.impl.perFileVersion.PersistentSubIndexerVersionEnumerator\$MyEnumerator.enumerate",
@@ -1858,7 +1864,10 @@ private fun isIntellij2026Point2ClosedIndexStorageError(
     testName: String,
     details: String,
 ): Boolean = testName.startsWith(INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PREFIX) &&
-    testName.endsWith(INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PATH_SUFFIX) &&
+    (
+        testName.endsWith(INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_KNOWN_ERROR_PATH_SUFFIX) ||
+            testName.endsWith(INTELLIJ_2026_2_CLOSED_ID_INDEX_STORAGE_KNOWN_ERROR_PATH_SUFFIX)
+        ) &&
     INTELLIJ_2026_2_CLOSED_INDEX_STORAGE_REQUIRED_STACK_FRAMES.all { requiredFrame ->
         details.contains(requiredFrame)
     }
