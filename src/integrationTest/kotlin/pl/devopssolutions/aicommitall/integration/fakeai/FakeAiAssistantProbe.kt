@@ -156,7 +156,7 @@ object FakeAiAssistantProbe {
         body: String,
         action: String,
     ): Boolean = productCode in LICENSE_RESTART_PRODUCT_CODES &&
-        ideVersion == INTELLIJ_2026_2_VERSION &&
+        isInReleaseLine(ideVersion, INTELLIJ_2026_2_RELEASE_LINE) &&
         title == LICENSE_RESTART_DIALOG_TITLE &&
         body == LICENSE_RESTART_DIALOG_BODY &&
         action == LICENSE_RESTART_ACTION
@@ -680,7 +680,7 @@ object FakeAiAssistantProbe {
         val applicationInfo = ApplicationInfo.getInstance()
         if (
             applicationInfo.build.productCode !in LICENSE_RESTART_PRODUCT_CODES ||
-            applicationInfo.shortVersion != INTELLIJ_2026_2_VERSION
+            !isInReleaseLine(applicationInfo.shortVersion, INTELLIJ_2026_2_RELEASE_LINE)
         ) {
             return
         }
@@ -733,6 +733,8 @@ object FakeAiAssistantProbe {
         Files.move(nextMarkerPath, markerPath, ATOMIC_MOVE, REPLACE_EXISTING)
     }
 
+    private fun isInReleaseLine(version: String?, releaseLine: String): Boolean = version == releaseLine || version?.startsWith("$releaseLine.") == true
+
     private fun Map<String, String>.hasExactLicenseRestartContract(
         state: String,
         productCode: String,
@@ -740,7 +742,7 @@ object FakeAiAssistantProbe {
         this["source"] in LICENSE_RESTART_SOURCES &&
         productCode in LICENSE_RESTART_PRODUCT_CODES &&
         this["product"] == productCode &&
-        this["version"] == INTELLIJ_2026_2_VERSION &&
+        isInReleaseLine(this["version"], INTELLIJ_2026_2_RELEASE_LINE) &&
         this["title"] == LICENSE_RESTART_DIALOG_TITLE &&
         this["body"] == LICENSE_RESTART_DIALOG_BODY &&
         this["action"] == LICENSE_RESTART_ACTION &&
@@ -1089,7 +1091,7 @@ object FakeAiAssistantProbe {
     private const val SYNTHETIC_LICENSE_RESTART_PROOF_PROPERTY = "aicommitall.license.restart.synthetic.proof"
     private const val SYNTHETIC_LICENSE_RESTART_PROOF_COMPONENT_KEY =
         "aicommitall.license.restart.synthetic.proof.component"
-    private const val INTELLIJ_2026_2_VERSION = "2026.2"
+    private const val INTELLIJ_2026_2_RELEASE_LINE = "2026.2"
     private const val LICENSE_RESTART_DIALOG_TITLE = "Confirm Restart"
     private const val LICENSE_RESTART_DIALOG_BODY =
         "Application restart is necessary to disable features requiring license. " +
