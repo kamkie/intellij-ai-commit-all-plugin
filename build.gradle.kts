@@ -230,7 +230,8 @@ tasks.register<UpdateIntellijPatchTask>("updateIntellijPatch") {
 }
 
 tasks.check {
-    dependsOn(verifyDetektBaseline, verifyIntelliJPatchVersionContract)
+    dependsOn(verifyDetektBaseline)
+    dependsOn(verifyIntelliJPatchVersionContract)
 }
 
 testlogger {
