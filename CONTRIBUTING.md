@@ -65,6 +65,31 @@ PyCharm 2026.2 is published, so the complete verifier command now covers all
 three required targets. Do not remove, skip, or ignore the PyCharm lane;
 release readiness requires the unchanged matrix to pass.
 
+### Updating IntelliJ Patch Coordinates
+
+For a patch update within the approved IntelliJ release line, supply the exact
+IntelliJ Platform version and a known-compatible AI Assistant build:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts\update-intellij-patch.ps1 `
+    -PlatformVersion 2026.2.1 `
+    -AiAssistantPluginVersion 262.9000.1
+```
+
+The command validates the requested versions against `platformReleaseLine` and
+`pluginSinceBuild`, then atomically changes only `platformVersion` and
+`aiAssistantPluginVersion` in `gradle.properties`. It preserves UTF-8 content,
+LF line endings, comments, property order, and unrelated values, and refuses
+missing or duplicate contract keys. It then runs the version contract, focused
+patch-aware harness tests, formatting, plugin packaging, Plugin Verifier, and
+the PyCharm UI smoke lane.
+
+Invalid input fails before mutation. A later validation failure leaves the
+two-property working-tree diff visible for review; the command does not roll it
+back, stage it, commit it, or push it. It does not discover an AI Assistant
+version. A release-line update such as `2026.2` to `2026.3` must stop here and
+follow the separately reviewed compatibility-upgrade process.
+
 To run the pull-request CI workflow locally through `nektos/act`, keep Docker running and use:
 
 ```powershell

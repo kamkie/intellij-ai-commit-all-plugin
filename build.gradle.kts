@@ -5,6 +5,7 @@ import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import pl.devopssolutions.aicommitall.gradle.MergeJacocoXmlReportsTask
+import pl.devopssolutions.aicommitall.gradle.UpdateIntellijPatchTask
 import pl.devopssolutions.aicommitall.gradle.VerifyDetektBaselineTask
 import pl.devopssolutions.aicommitall.gradle.VerifyIntelliJPatchVersionContractTask
 import pl.devopssolutions.aicommitall.gradle.VerifyJacocoClassDumpTask
@@ -218,6 +219,14 @@ val verifyIntelliJPatchVersionContract by tasks.registering(VerifyIntelliJPatchV
     pluginSinceBuild.set(providers.gradleProperty("pluginSinceBuild"))
     aiAssistantPluginVersion.set(providers.gradleProperty("aiAssistantPluginVersion"))
     pluginVerifierIdeVersions.set(configuredPluginVerifierIdeVersions)
+}
+
+tasks.register<UpdateIntellijPatchTask>("updateIntellijPatch") {
+    group = "build setup"
+    description = "Updates IntelliJ platform and AI Assistant patch coordinates in gradle.properties."
+    propertiesFile.set(layout.projectDirectory.file("gradle.properties"))
+    platformVersion.set(providers.gradleProperty("newPlatformVersion"))
+    aiAssistantPluginVersion.set(providers.gradleProperty("newAiAssistantPluginVersion"))
 }
 
 tasks.check {
