@@ -164,7 +164,7 @@ dependencies {
     integrationTestImplementation(
         platform("io.opentelemetry:opentelemetry-bom:${integrationTestOpenTelemetryVersion.get()}"),
     )
-    integrationTestImplementation("org.junit.jupiter:junit-jupiter:6.1.2")
+    integrationTestImplementation("org.junit.jupiter:junit-jupiter:6.1.3")
     integrationTestImplementation("org.kodein.di:kodein-di-jvm:7.33.0")
     integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.11.0")
     integrationTestRuntimeOnly("org.jetbrains.teamcity:serviceMessages:2024.07")
