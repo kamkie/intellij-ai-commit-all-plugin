@@ -6,6 +6,7 @@ import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import pl.devopssolutions.aicommitall.gradle.MergeJacocoXmlReportsTask
 import pl.devopssolutions.aicommitall.gradle.VerifyDetektBaselineTask
+import pl.devopssolutions.aicommitall.gradle.VerifyIntelliJPatchVersionContractTask
 import pl.devopssolutions.aicommitall.gradle.VerifyJacocoClassDumpTask
 import pl.devopssolutions.aicommitall.gradle.VerifyJacocoCoverageReportTask
 import java.util.Locale
@@ -102,7 +103,7 @@ val jdkVersionTarget = jdkVersion.majorVersion
 group = "pl.devopssolutions"
 version = pluginVersion.get()
 
-val pluginVerifierIdeVersions = providers.gradleProperty("pluginVerifierIdeVersions")
+val configuredPluginVerifierIdeVersions = providers.gradleProperty("pluginVerifierIdeVersions")
     .map { value ->
         value.split(',')
             .map { version -> version.trim() }
@@ -209,8 +210,18 @@ val verifyDetektBaseline by tasks.registering(VerifyDetektBaselineTask::class) {
     baselineFile.set(detektBaselineFile)
 }
 
+val verifyIntelliJPatchVersionContract by tasks.registering(VerifyIntelliJPatchVersionContractTask::class) {
+    group = "verification"
+    description = "Verifies IntelliJ platform, AI Assistant, and Plugin Verifier versions stay on one release line."
+    platformReleaseLine.set(providers.gradleProperty("platformReleaseLine"))
+    platformVersion.set(providers.gradleProperty("platformVersion"))
+    pluginSinceBuild.set(providers.gradleProperty("pluginSinceBuild"))
+    aiAssistantPluginVersion.set(providers.gradleProperty("aiAssistantPluginVersion"))
+    pluginVerifierIdeVersions.set(configuredPluginVerifierIdeVersions)
+}
+
 tasks.check {
-    dependsOn(verifyDetektBaseline)
+    dependsOn(verifyDetektBaseline, verifyIntelliJPatchVersionContract)
 }
 
 testlogger {
@@ -354,6 +365,7 @@ val fakeAiAssistantPlugin by tasks.registering(Zip::class) {
 val fakeAiAssistantPluginArchiveFile = fakeAiAssistantPlugin.flatMap { plugin -> plugin.archiveFile }
 
 tasks.buildPlugin {
+    dependsOn(verifyIntelliJPatchVersionContract)
     archiveVersion.set(pluginArchiveVersion)
 }
 
@@ -459,7 +471,7 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            create(pluginVerifierIdeVersions)
+            create(configuredPluginVerifierIdeVersions)
         }
     }
 
