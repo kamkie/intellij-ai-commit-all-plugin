@@ -28,6 +28,28 @@ Use the repository Gradle wrapper in validation examples: `.\gradlew.bat <task>`
 - IntelliJ Plugin Verifier for the supported IDE version range once compatibility targets are chosen.
 - CI workflow validation for pull-request checks without Marketplace or signing secrets once CI exists.
 
+## IntelliJ Patch Updates
+
+Use the repository patch updater for a caller-selected platform patch and a
+known-compatible AI Assistant build within the approved release line:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/update-intellij-patch.ps1 `
+    -PlatformVersion 2026.2.1 `
+    -AiAssistantPluginVersion 262.9000.1
+```
+
+The command owns the two-property update and runs the version contract, focused
+patch-aware harness tests, `spotlessCheck`, `buildPlugin`, `verifyPlugin`, and
+the PyCharm 2026.2 UI smoke lane. Keep the focused contract-only harness
+invocation on `IU`; `PY` applies the smoke-tag filter and is reserved for the
+full PyCharm smoke invocation. Treat a release-line change, missing or
+duplicate contract key, AI build-prefix mismatch, or malformed coordinate as a
+pre-mutation failure. If a post-update check fails, preserve the first failure
+and the visible working-tree diff; do not roll back, stage, commit, or push it.
+Use the flaky-test triage workflow when the PyCharm lane alternates between pass
+and fail without relevant source or coordinate changes.
+
 ## Sandbox Checks
 
 Use `.\gradlew.bat runIde` for manual sandbox testing.

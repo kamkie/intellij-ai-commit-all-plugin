@@ -272,10 +272,10 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     @Test
-    fun intellij2026Point2LicenseRestartContractRequiresExactProductVersionTitleBodyAndAction() {
+    fun intellij2026Point2LicenseRestartContractAcceptsPatchVersionsAndRequiresExactOtherFields() {
         val exactContract = arrayOf(
             "IU",
-            "2026.2",
+            INTELLIJ_2026_2_RELEASE_LINE,
             LICENSE_RESTART_DIALOG_TITLE,
             LICENSE_RESTART_DIALOG_BODY,
             LICENSE_RESTART_ACTION,
@@ -292,12 +292,55 @@ class ReleaseMatrixUiHarnessTest {
 
         assertTrue(matches(exactContract))
         assertTrue(matches(exactContract.copyOf().apply { this[0] = "PY" }))
-        exactContract.indices.forEach { fieldIndex ->
+        assertTrue(matches(exactContract.copyOf().apply { this[1] = "$INTELLIJ_2026_2_RELEASE_LINE.1" }))
+        listOf("2026.20", "2026.3", "unrelated").forEach { unrelatedVersion ->
+            assertFalse(
+                matches(exactContract.copyOf().apply { this[1] = unrelatedVersion }),
+                "Version '$unrelatedVersion' must remain outside the $INTELLIJ_2026_2_RELEASE_LINE release line.",
+            )
+        }
+        listOf(0, 2, 3, 4).forEach { fieldIndex ->
             val nearMiss = exactContract.copyOf()
             nearMiss[fieldIndex] = "${nearMiss[fieldIndex]} near miss"
             assertFalse(
                 matches(nearMiss),
                 "A near miss at contract field $fieldIndex must remain unhandled.",
+            )
+        }
+    }
+
+    @Test
+    fun licenseRestartMarkerContractAcceptsPatchVersionsAndRequiresExactOtherFields() {
+        val exactMarker = mapOf(
+            "state" to LICENSE_RESTART_STARTED_STATE,
+            "source" to "platform-license-dialog",
+            "product" to "IU",
+            "version" to INTELLIJ_2026_2_RELEASE_LINE,
+            "title" to LICENSE_RESTART_DIALOG_TITLE,
+            "body" to LICENSE_RESTART_DIALOG_BODY,
+            "action" to LICENSE_RESTART_ACTION,
+            "jmxPort" to "12345",
+            "rmiPort" to "12346",
+            "rpcPort" to "12347",
+            "originalPid" to "12348",
+            "restartPid" to "12349",
+        )
+        val matches: (Map<String, String>) -> Boolean = { marker ->
+            marker.hasExactLicenseRestartContract(LICENSE_RESTART_STARTED_STATE, "IU")
+        }
+
+        assertTrue(matches(exactMarker))
+        assertTrue(matches(exactMarker + ("version" to "$INTELLIJ_2026_2_RELEASE_LINE.1")))
+        listOf("2026.20", "2026.3", "unrelated").forEach { unrelatedVersion ->
+            assertFalse(
+                matches(exactMarker + ("version" to unrelatedVersion)),
+                "Version '$unrelatedVersion' must remain outside the $INTELLIJ_2026_2_RELEASE_LINE release line.",
+            )
+        }
+        exactMarker.keys.minus("version").forEach { field ->
+            assertFalse(
+                matches(exactMarker + (field to "${exactMarker.getValue(field)} near miss")),
+                "A near miss at marker field '$field' must remain unhandled.",
             )
         }
     }
@@ -1969,7 +2012,7 @@ private fun Map<String, String>.hasExactLicenseRestartContract(
     this["source"] in LICENSE_RESTART_SOURCES &&
     productCode in LICENSE_RESTART_PRODUCT_CODES &&
     this["product"] == productCode &&
-    this["version"] == "2026.2" &&
+    isInReleaseLine(this["version"], INTELLIJ_2026_2_RELEASE_LINE) &&
     this["title"] == LICENSE_RESTART_DIALOG_TITLE &&
     this["body"] == LICENSE_RESTART_DIALOG_BODY &&
     this["action"] == LICENSE_RESTART_ACTION &&
