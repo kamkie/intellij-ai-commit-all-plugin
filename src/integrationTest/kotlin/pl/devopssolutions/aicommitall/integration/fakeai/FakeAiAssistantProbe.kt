@@ -19,6 +19,7 @@ import com.intellij.ide.AppLifecycleListener
 import com.intellij.ide.DataManager
 import com.intellij.ide.IdeEventQueue
 import com.intellij.ide.plugins.DynamicPluginEnabler
+import com.intellij.ide.plugins.DynamicPluginListener
 import com.intellij.ide.plugins.IdeaPluginDescriptor
 import com.intellij.ide.plugins.PluginEnableStateChangedListener
 import com.intellij.ide.plugins.PluginManagerCore
@@ -39,7 +40,6 @@ import com.intellij.openapi.application.ex.ApplicationManagerEx
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.extensions.PluginId
-import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.util.Disposer
@@ -90,7 +90,16 @@ object FakeAiAssistantProbe {
     private val licenseRestartDiagnostic = AtomicReference("No modal dialog has been observed.")
     private val ultimateEnableObserverRegistrationStarted = AtomicBoolean()
     private val ultimateEnableObserverInstalled = AtomicBoolean()
-    private val ultimateEnableAttemptCompleted = AtomicBoolean()
+    private val ultimateStartupReadiness = UltimateStartupReadiness()
+    private val ultimateStartupTransitionListener = object : DynamicPluginListener {
+        override fun beforePluginLoaded(pluginDescriptor: IdeaPluginDescriptor) {
+            invalidateUltimateStartupState(pluginDescriptor)
+        }
+
+        override fun beforePluginUnload(pluginDescriptor: IdeaPluginDescriptor, isUpdate: Boolean) {
+            invalidateUltimateStartupState(pluginDescriptor)
+        }
+    }
     private val pluginEnableStateChangedListener = object : PluginEnableStateChangedListener {
         override fun stateChanged(
             pluginDescriptors: Collection<IdeaPluginDescriptor>,
@@ -103,7 +112,7 @@ object FakeAiAssistantProbe {
                     "pluginIds=$pluginIds, ultimateEnableAttempt=$isUltimateEnableAttempt",
             )
             if (isUltimateEnableAttempt) {
-                ultimateEnableAttemptCompleted.set(true)
+                ultimateStartupReadiness.enableAttemptCompleted()
             }
         }
     }
@@ -174,10 +183,28 @@ object FakeAiAssistantProbe {
 
     @JvmStatic
     fun installUltimateEnableAttemptObserver() {
-        if (ultimateEnableObserverRegistrationStarted.compareAndSet(false, true)) {
-            DynamicPluginEnabler.addPluginStateChangedListener(pluginEnableStateChangedListener)
-            ultimateEnableObserverInstalled.set(true)
-            logger.info("AI Commit All test plugin enablement observer installed")
+        runOnEdt {
+            if (ultimateEnableObserverRegistrationStarted.compareAndSet(false, true)) {
+                val application = ApplicationManager.getApplication()
+                application.messageBus.connect(application).subscribe(
+                    DynamicPluginListener.TOPIC,
+                    ultimateStartupTransitionListener,
+                )
+                DynamicPluginEnabler.addPluginStateChangedListener(pluginEnableStateChangedListener)
+                ultimateStartupReadiness.captureInitialState(isUltimateModuleLoaded())
+                ultimateEnableObserverInstalled.set(true)
+                logger.info(
+                    "AI Commit All test plugin enablement observer installed: " +
+                        "startupStateAlreadySettled=${ultimateStartupReadiness.isAlreadySettled()}",
+                )
+            }
+        }
+    }
+
+    private fun invalidateUltimateStartupState(pluginDescriptor: IdeaPluginDescriptor) {
+        if (pluginDescriptor.pluginId.idString == ULTIMATE_MODULE_ID) {
+            ultimateStartupReadiness.transitionStarted()
+            logger.info("AI Commit All test plugin Ultimate transition started")
         }
     }
 
@@ -188,10 +215,10 @@ object FakeAiAssistantProbe {
     fun isUltimateModuleLoaded(): Boolean = PluginManagerCore.isLoaded(PluginId.getId(ULTIMATE_MODULE_ID))
 
     @JvmStatic
-    fun isUltimateEnableAttemptCompleted(): Boolean = ultimateEnableAttemptCompleted.get()
+    fun isUltimateStartupStateAlreadySettled(): Boolean = ultimateStartupReadiness.isAlreadySettled()
 
     @JvmStatic
-    fun isProjectSmart(project: Project): Boolean = !DumbService.getInstance(project).isDumb
+    fun isUltimateEnableAttemptCompleted(): Boolean = ultimateStartupReadiness.isEnableAttemptCompleted()
 
     @JvmStatic
     fun primaryCommitActionsContain(actionId: String): Boolean {
@@ -1135,6 +1162,33 @@ object FakeAiAssistantProbe {
     )
     private val HTML_TAG_REGEX = Regex("<[^>]+>")
     private val WHITESPACE_REGEX = Regex("\\s+")
+}
+
+internal class UltimateStartupReadiness {
+    private val state = AtomicReference(State.UNOBSERVED)
+
+    fun captureInitialState(moduleLoaded: Boolean) {
+        state.compareAndSet(State.UNOBSERVED, if (moduleLoaded) State.ALREADY_SETTLED else State.AWAITING_ENABLEMENT)
+    }
+
+    fun transitionStarted() {
+        state.set(State.AWAITING_ENABLEMENT)
+    }
+
+    fun enableAttemptCompleted() {
+        state.set(State.ENABLE_ATTEMPT_COMPLETED)
+    }
+
+    fun isAlreadySettled(): Boolean = state.get() == State.ALREADY_SETTLED
+
+    fun isEnableAttemptCompleted(): Boolean = state.get() == State.ENABLE_ATTEMPT_COMPLETED
+
+    private enum class State {
+        UNOBSERVED,
+        AWAITING_ENABLEMENT,
+        ALREADY_SETTLED,
+        ENABLE_ATTEMPT_COMPLETED,
+    }
 }
 
 private class SyntheticLicenseRestartDialog : DialogWrapper(false) {

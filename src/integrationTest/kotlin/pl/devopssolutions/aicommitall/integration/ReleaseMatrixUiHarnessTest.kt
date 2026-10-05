@@ -17,6 +17,8 @@ package pl.devopssolutions.aicommitall.integration
 
 import com.intellij.driver.client.Driver
 import com.intellij.driver.client.Remote
+import com.intellij.driver.client.service
+import com.intellij.driver.sdk.DumbService
 import com.intellij.driver.sdk.Project
 import com.intellij.driver.sdk.getOpenProjects
 import com.intellij.driver.sdk.openToolWindow
@@ -31,7 +33,7 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.plugins.PluginConfigurator
-import com.intellij.ide.starter.project.LocalProjectInfo
+import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.utils.PortUtil
 import com.intellij.platform.testFramework.teamCity.TeamCityReporter
@@ -46,6 +48,7 @@ import org.junit.jupiter.api.io.TempDir
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import pl.devopssolutions.aicommitall.integration.fakeai.FakeAiAssistantProbe
+import pl.devopssolutions.aicommitall.integration.fakeai.UltimateStartupReadiness
 import pl.devopssolutions.aicommitall.integration.fixtures.IntegrationGitCli
 import pl.devopssolutions.aicommitall.integration.fixtures.ReleaseMatrixGitFixture
 import pl.devopssolutions.aicommitall.integration.fixtures.ReleaseMatrixGitFixtureBuilder
@@ -99,6 +102,171 @@ class ReleaseMatrixUiHarnessTest {
                     }
                 }
             }
+        }
+    }
+
+    @Test
+    fun startupLifecycleOrdersReadinessOpeningSmartModeAndScenario() {
+        val phases = mutableListOf<String>()
+        runReleaseMatrixStartupLifecycle(
+            prepareStartup = { phases += "startup-ready" },
+            openFixture = {
+                phases += "fixture-opened"
+                "fixture"
+            },
+            waitForFixtureSmart = { project ->
+                assertEquals("fixture", project)
+                phases += "fixture-smart"
+            },
+            scenario = { phases += "scenario-completed" },
+        )
+        assertEquals(listOf("startup-ready", "fixture-opened", "fixture-smart", "scenario-completed"), phases)
+    }
+
+    @Test
+    fun startupLifecycleSetupFailureNeverOpensFixture() {
+        val setupFailure = IllegalStateException("startup failed")
+        val phases = mutableListOf<String>()
+        val actualFailure = runCatching {
+            runReleaseMatrixStartupLifecycle(
+                prepareStartup = {
+                    phases += "startup"
+                    throw setupFailure
+                },
+                openFixture = { phases += "fixture" },
+                waitForFixtureSmart = { phases += "smart" },
+                scenario = { phases += "scenario" },
+            )
+        }.exceptionOrNull()
+        assertSame(setupFailure, actualFailure)
+        assertEquals(listOf("startup"), phases)
+    }
+
+    @Test
+    fun startupLifecycleStopsAfterOpeningOrSmartModeFailure() {
+        listOf("fixture", "smart").forEach { failedPhase ->
+            val expectedFailure = IllegalStateException("$failedPhase failed")
+            val phases = mutableListOf<String>()
+            val actualFailure = runCatching {
+                runReleaseMatrixStartupLifecycle(
+                    prepareStartup = { phases += "startup" },
+                    openFixture = {
+                        phases += "fixture"
+                        if (failedPhase == "fixture") throw expectedFailure
+                    },
+                    waitForFixtureSmart = {
+                        phases += "smart"
+                        throw expectedFailure
+                    },
+                    scenario = { phases += "scenario" },
+                )
+            }.exceptionOrNull()
+            assertSame(expectedFailure, actualFailure)
+            assertEquals(if (failedPhase == "fixture") listOf("startup", "fixture") else listOf("startup", "fixture", "smart"), phases)
+        }
+    }
+
+    @Test
+    fun startupLifecycleRestartCleansObsoleteSessionBeforeFreshFixtureOpening() {
+        val exactSessionLoss = IllegalArgumentException("exact session loss")
+        val phases = mutableListOf<String>()
+        runLicenseRestartOuterLifecycle(
+            hasExactRestartMarker = { true },
+            isExactRestartSessionLoss = { error -> error === exactSessionLoss },
+            closeRestartedPreflight = { phases += "cleanup" },
+        ) { freshContext ->
+            runReleaseMatrixStartupLifecycle(
+                prepareStartup = {
+                    phases += if (freshContext) "fresh-startup" else "initial-startup"
+                    if (!freshContext) throw exactSessionLoss
+                },
+                openFixture = { phases += "fixture" },
+                waitForFixtureSmart = { phases += "smart" },
+                scenario = { phases += "scenario" },
+            )
+        }
+        assertEquals(listOf("initial-startup", "cleanup", "fresh-startup", "fixture", "smart", "scenario"), phases)
+    }
+
+    @Test
+    fun startupReadinessInvalidatesInitiallySettledAndPreviousCompletedTransitions() {
+        val readiness = UltimateStartupReadiness()
+        readiness.captureInitialState(moduleLoaded = true)
+        assertTrue(readiness.isAlreadySettled())
+        assertFalse(readiness.isEnableAttemptCompleted())
+        assertTrue(isReleaseMatrixProductPluginsStable("PY", true, readiness.isAlreadySettled(), false))
+
+        readiness.transitionStarted()
+        assertFalse(readiness.isAlreadySettled())
+        assertFalse(readiness.isEnableAttemptCompleted())
+        assertFalse(isReleaseMatrixProductPluginsStable("PY", true, readiness.isAlreadySettled(), readiness.isEnableAttemptCompleted()))
+
+        readiness.enableAttemptCompleted()
+        assertTrue(readiness.isEnableAttemptCompleted())
+        assertTrue(isReleaseMatrixProductPluginsStable("PY", true, readiness.isAlreadySettled(), readiness.isEnableAttemptCompleted()))
+        readiness.transitionStarted()
+        assertFalse(readiness.isAlreadySettled())
+        assertFalse(readiness.isEnableAttemptCompleted())
+    }
+
+    @Test
+    fun startupReadinessInitialSnapshotCannotOverwriteObservedTransition() {
+        val inProgress = UltimateStartupReadiness()
+        inProgress.transitionStarted()
+        inProgress.captureInitialState(moduleLoaded = true)
+        assertFalse(inProgress.isAlreadySettled())
+        assertFalse(inProgress.isEnableAttemptCompleted())
+
+        val completed = UltimateStartupReadiness()
+        completed.enableAttemptCompleted()
+        completed.captureInitialState(moduleLoaded = true)
+        assertFalse(completed.isAlreadySettled())
+        assertTrue(completed.isEnableAttemptCompleted())
+    }
+
+    @Test
+    fun startupBootstrapAllowsOnlyOnePlatformWelcomeProjectAndNeverFixture() {
+        assertTrue(isReleaseMatrixBootstrapProjectSet(emptyList()))
+        assertTrue(isReleaseMatrixBootstrapProjectSet(listOf("WelcomeScreen")))
+        assertFalse(isReleaseMatrixBootstrapProjectSet(listOf("release-matrix-project")))
+        assertFalse(isReleaseMatrixBootstrapProjectSet(listOf("WelcomeScreen", "release-matrix-project")))
+        assertFalse(isReleaseMatrixBootstrapProjectSet(listOf("WelcomeScreen", "WelcomeScreen")))
+        assertFalse(isReleaseMatrixBootstrapProjectSet(listOf("unrelated-project")))
+    }
+
+    @Test
+    fun startupReadinessWaitsForEnablementCompletion() {
+        assertFalse(
+            isReleaseMatrixProductPluginsStable(
+                productCode = "PY",
+                observerInstalled = true,
+                startupStateAlreadySettled = false,
+                enableAttemptCompleted = false,
+            ),
+            "A loaded Ultimate module must not admit a fixture while product reconfiguration is still running.",
+        )
+        assertTrue(
+            isReleaseMatrixProductPluginsStable(
+                productCode = "PY",
+                observerInstalled = true,
+                startupStateAlreadySettled = false,
+                enableAttemptCompleted = true,
+            ),
+            "A completed enablement attempt must allow the normal unlicensed fallback.",
+        )
+        assertFalse(
+            isReleaseMatrixProductPluginsStable(
+                productCode = "PY",
+                observerInstalled = false,
+                startupStateAlreadySettled = true,
+                enableAttemptCompleted = true,
+            ),
+        )
+        listOf("IU", "WS").forEach { productCode ->
+            assertTrue(
+                isReleaseMatrixProductPluginsStable(productCode, false, false, false),
+                "$productCode must not require the PyCharm-specific product enablement callback.",
+            )
         }
     }
 
@@ -1313,8 +1481,7 @@ class ReleaseMatrixUiHarnessTest {
         val ideVersion = requiredSystemProperty("aicommitall.ide.version")
         val pluginPath = Path.of(requiredSystemProperty("path.to.build.plugin"))
         val fakeAiPluginPath = Path.of(requiredSystemProperty("aicommitall.fake.ai.plugin.path"))
-        val handlesLicenseRestart = installFakeAiPlugin &&
-            ideProductCode in LICENSE_RESTART_PRODUCT_CODES &&
+        val handlesLicenseRestart = ideProductCode in LICENSE_RESTART_PRODUCT_CODES &&
             isInReleaseLine(ideVersion, INTELLIJ_2026_2_RELEASE_LINE)
         val exercisesSyntheticLicenseRestart = handlesLicenseRestart &&
             System.getenv("AICOMMITALL_EXERCISE_LICENSE_RESTART") == "true"
@@ -1353,11 +1520,12 @@ class ReleaseMatrixUiHarnessTest {
                 testName = testName,
                 testCase = TestCase(
                     ideProductProvider(ideProductCode),
-                    LocalProjectInfo(fixture.projectDirectory),
+                    NoProject,
                 ).withVersion(ideVersion),
                 preserveSystemDir = freshContext,
             ).apply {
                 attachCoverageAgentIfRequested()
+                addProjectToTrustedLocations(projectPath = fixture.projectDirectory, addParentDir = false)
                 if (handlesLicenseRestart) {
                     applyVMOptionsPatch {
                         addSystemProperty(LICENSE_RESTART_MARKER_PROPERTY, licenseRestartMarker.toString())
@@ -1383,118 +1551,159 @@ class ReleaseMatrixUiHarnessTest {
                     }
             }
 
-            val runScenario: Driver.() -> Unit = {
-                if (installFakeAiPlugin) {
-                    var probe = utility(RemoteFakeAiAssistantProbe::class)
-                    if (handlesLicenseRestart && !freshContext) {
-                        waitFor(
-                            message = "the $ideProductCode 2026.2 license preflight resolves",
-                            timeout = 120.seconds,
-                            interval = 1.seconds,
-                            errorMessage = {
-                                "marker=${readLicenseRestartMarker(licenseRestartMarker)}, " +
-                                    "driverConnected=$isConnected, " +
-                                    "activeLicense=${runCatching { probe.isIdeLicenseActive() }.getOrNull()}, " +
-                                    "ultimateEnableAttemptCompleted=" +
-                                    "${runCatching { probe.isUltimateEnableAttemptCompleted() }.getOrNull()}, " +
-                                    "probe=${runCatching { probe.licenseRestartHandlingDiagnostic() }.getOrNull()}"
-                            },
-                        ) {
-                            val hasRestartMarker = Files.isRegularFile(licenseRestartMarker)
-                            val isLicenseActive = !hasRestartMarker && probe.isIdeLicenseActive()
-                            val isUltimateEnableAttemptCompleted = !hasRestartMarker &&
-                                !isLicenseActive &&
-                                ideProductCode == "PY" &&
-                                probe.isUltimateEnableAttemptCompleted()
-                            isLicenseRestartPreflightResolved(
-                                productCode = ideProductCode,
-                                hasRestartMarker = hasRestartMarker,
-                                isLicenseActive = isLicenseActive,
-                                isUltimateEnableAttemptCompleted = isUltimateEnableAttemptCompleted,
-                            )
-                        }
-                        if (Files.isRegularFile(licenseRestartMarker)) {
-                            waitFor(
-                                message = "the original Driver disconnects for the license restart",
-                                timeout = 60.seconds,
-                                interval = 1.seconds,
-                            ) {
-                                !isConnected
-                            }
-                            waitFor(
-                                message = "the original Driver transport reconnects after the license restart",
-                                timeout = 60.seconds,
-                                interval = 1.seconds,
-                                errorMessage = {
-                                    "marker=${readLicenseRestartMarker(licenseRestartMarker)}, " +
-                                        "driverConnected=$isConnected"
-                                },
-                            ) {
-                                isConnected
-                            }
-                            waitFor(
-                                message = "the restarted IDE publishes the exact lifecycle marker",
-                                timeout = 60.seconds,
-                                interval = 100.milliseconds,
-                                errorMessage = {
-                                    "marker=${readLicenseRestartMarker(licenseRestartMarker)}"
-                                },
-                            ) {
-                                readLicenseRestartMarker(licenseRestartMarker)
-                                    ?.hasExactLicenseRestartContract(
-                                        LICENSE_RESTART_STARTED_STATE,
-                                        ideProductCode,
-                                    ) == true
-                            }
-                            probe = utility(RemoteFakeAiAssistantProbe::class)
-                            waitForReleaseMatrixProject()
-                            error(
-                                "Starter unexpectedly retained a usable remote session after the exact " +
-                                    "$ideProductCode 2026.2 license restart.",
-                            )
-                        }
-                    }
-
+            val prepareStartup: Driver.() -> Unit = {
+                val initialProjectNames = getOpenProjects().map { project -> project.getName() }
+                check(isReleaseMatrixBootstrapProjectSet(initialProjectNames)) {
+                    "Unexpected projects during startup preparation: $initialProjectNames"
+                }
+                var probe = releaseMatrixStartupProbe(installFakeAiPlugin)
+                if (handlesLicenseRestart && !freshContext) {
                     waitFor(
-                        message = "release matrix plugin actions are stable after product-plugin enablement",
+                        message = "the $ideProductCode 2026.2 license preflight resolves",
                         timeout = 120.seconds,
                         interval = 1.seconds,
                         errorMessage = {
-                            "licenseRestartMarker=${readLicenseRestartMarker(licenseRestartMarker)}, " +
+                            "marker=${readLicenseRestartMarker(licenseRestartMarker)}, " +
+                                "driverConnected=$isConnected, " +
+                                "activeLicense=${runCatching { probe.isIdeLicenseActive() }.getOrNull()}, " +
+                                "ultimateEnableAttemptCompleted=" +
+                                "${runCatching { probe.isUltimateEnableAttemptCompleted() }.getOrNull()}, " +
                                 "probe=${runCatching { probe.licenseRestartHandlingDiagnostic() }.getOrNull()}"
                         },
                     ) {
-                        val productPluginsStable = ideProductCode != "PY" ||
-                            (
-                                probe.isUltimateEnableAttemptObserverInstalled() &&
-                                    (probe.isUltimateModuleLoaded() || probe.isUltimateEnableAttemptCompleted())
-                                )
-                        productPluginsStable &&
-                            probe.isAiCommitAllPluginEnabled() &&
-                            probe.isAiCommitAllThreeSectionActionRegistered() &&
-                            probe.isCommitMessageActionRegistered()
+                        val hasRestartMarker = Files.isRegularFile(licenseRestartMarker)
+                        val isLicenseActive = !hasRestartMarker && probe.isIdeLicenseActive()
+                        val isUltimateEnableAttemptCompleted = !hasRestartMarker &&
+                            !isLicenseActive &&
+                            ideProductCode == "PY" &&
+                            probe.isUltimateEnableAttemptCompleted()
+                        isLicenseRestartPreflightResolved(
+                            productCode = ideProductCode,
+                            hasRestartMarker = hasRestartMarker,
+                            isLicenseActive = isLicenseActive,
+                            isUltimateEnableAttemptCompleted = isUltimateEnableAttemptCompleted,
+                        )
                     }
-                    check(
-                        readLicenseRestartMarker(licenseRestartMarker)?.get("state") != LICENSE_RESTART_LOOP_STATE,
-                    ) {
-                        "A second exact $ideProductCode 2026.2 license restart was requested in the fresh context: " +
+                    if (Files.isRegularFile(licenseRestartMarker)) {
+                        waitFor(
+                            message = "the original Driver disconnects for the license restart",
+                            timeout = 60.seconds,
+                            interval = 1.seconds,
+                        ) {
+                            !isConnected
+                        }
+                        waitFor(
+                            message = "the original Driver transport reconnects after the license restart",
+                            timeout = 60.seconds,
+                            interval = 1.seconds,
+                            errorMessage = {
+                                "marker=${readLicenseRestartMarker(licenseRestartMarker)}, " +
+                                    "driverConnected=$isConnected"
+                            },
+                        ) {
+                            isConnected
+                        }
+                        waitFor(
+                            message = "the restarted IDE publishes the exact lifecycle marker",
+                            timeout = 60.seconds,
+                            interval = 100.milliseconds,
+                            errorMessage = {
+                                "marker=${readLicenseRestartMarker(licenseRestartMarker)}"
+                            },
+                        ) {
                             readLicenseRestartMarker(licenseRestartMarker)
+                                ?.hasExactLicenseRestartContract(
+                                    LICENSE_RESTART_STARTED_STATE,
+                                    ideProductCode,
+                                ) == true
+                        }
+                        probe = releaseMatrixStartupProbe(installFakeAiPlugin)
+                        probe.licenseRestartHandlingDiagnostic()
+                        error(
+                            "Starter unexpectedly retained a usable remote session after the exact " +
+                                "$ideProductCode 2026.2 license restart.",
+                        )
                     }
-                    probe.resetReleaseMatrixSettings()
                 }
-                println(
-                    "AI Commit All release-matrix lifecycle: test=$testName, " +
-                        "context=${if (freshContext) "fresh" else "initial"}, scenario=started",
+
+                waitFor(
+                    message = "release matrix plugin actions are stable after product-plugin enablement",
+                    timeout = 120.seconds,
+                    interval = 1.seconds,
+                    errorMessage = {
+                        "licenseRestartMarker=${readLicenseRestartMarker(licenseRestartMarker)}, " +
+                            "probe=${runCatching { probe.licenseRestartHandlingDiagnostic() }.getOrNull()}"
+                    },
+                ) {
+                    val productPluginsStable = isReleaseMatrixProductPluginsStable(
+                        productCode = ideProductCode,
+                        observerInstalled = probe.isUltimateEnableAttemptObserverInstalled(),
+                        startupStateAlreadySettled = probe.isUltimateStartupStateAlreadySettled(),
+                        enableAttemptCompleted = probe.isUltimateEnableAttemptCompleted(),
+                    )
+                    productPluginsStable && (
+                        !installFakeAiPlugin ||
+                            (
+                                probe.isAiCommitAllPluginEnabled() &&
+                                    probe.isAiCommitAllThreeSectionActionRegistered() &&
+                                    utility(RemoteFakeAiAssistantProbe::class).isCommitMessageActionRegistered()
+                                )
+                        )
+                }
+                check(
+                    readLicenseRestartMarker(licenseRestartMarker)?.get("state") != LICENSE_RESTART_LOOP_STATE,
+                ) {
+                    "A second exact $ideProductCode 2026.2 license restart was requested in the fresh context: " +
+                        readLicenseRestartMarker(licenseRestartMarker)
+                }
+                if (installFakeAiPlugin) {
+                    utility(RemoteFakeAiAssistantProbe::class).resetReleaseMatrixSettings()
+                }
+            }
+            val runScenario: Driver.() -> Unit = {
+                runReleaseMatrixStartupLifecycle(
+                    prepareStartup = { prepareStartup() },
+                    openFixture = {
+                        val bootstrapProjects = getOpenProjects()
+                        val bootstrapProjectNames = bootstrapProjects.map { project -> project.getName() }
+                        check(isReleaseMatrixBootstrapProjectSet(bootstrapProjectNames)) {
+                            "Unexpected projects before fixture opening: $bootstrapProjectNames"
+                        }
+                        bootstrapProjects.forEach { project -> waitForProjectSmart(project) }
+                        reportReleaseMatrixPhase(testName, freshContext, "startup-ready", bootstrapProjectNames)
+                        requireNotNull(
+                            utility(RemoteProjectUtil::class)
+                                .openOrImport(fixture.projectDirectory.toString(), bootstrapProjects.singleOrNull(), false),
+                        ) {
+                            "The release-matrix fixture did not open after startup readiness."
+                        }.also {
+                            reportReleaseMatrixPhase(testName, freshContext, "fixture-opened")
+                        }
+                    },
+                    waitForFixtureSmart = { project ->
+                        waitForProjectSmart(project)
+                        val scenarioProjects = getOpenProjects().map { openProject -> openProject.getName() }
+                        check(scenarioProjects == listOf("release-matrix-project")) {
+                            "The fixture must be the sole scenario project: $scenarioProjects"
+                        }
+                    },
+                    scenario = {
+                        println(
+                            "AI Commit All release-matrix lifecycle: test=$testName, " +
+                                "context=${if (freshContext) "fresh" else "initial"}, scenario=started",
+                        )
+                        var blockCompleted = false
+                        try {
+                            block()
+                            blockCompleted = true
+                        } finally {
+                            if (installFakeAiPlugin && blockCompleted) {
+                                waitForOpenProjectSmart()
+                            }
+                        }
+                        reportReleaseMatrixPhase(testName, freshContext, "scenario-completed")
+                    },
                 )
-                var blockCompleted = false
-                try {
-                    block()
-                    blockCompleted = true
-                } finally {
-                    if (installFakeAiPlugin && blockCompleted) {
-                        waitForOpenProjectSmart()
-                    }
-                }
             }
             val backgroundRun = context.runIdeWithDriver()
             if (handlesLicenseRestart && !freshContext) {
@@ -1683,14 +1892,33 @@ class ReleaseMatrixUiHarnessTest {
     }
 
     private fun Driver.waitForProjectSmart(project: Project) {
-        val probe = utility(RemoteFakeAiAssistantProbe::class)
+        val dumbService = service<DumbService>(project)
         waitFor(
             message = "release matrix project indexing is idle",
             timeout = 120.seconds,
             interval = 1.seconds,
         ) {
-            probe.isProjectSmart(project)
+            !dumbService.isDumb()
         }
+    }
+
+    private fun Driver.releaseMatrixStartupProbe(installFakeAiPlugin: Boolean): ReleaseMatrixStartupProbe = if (installFakeAiPlugin) {
+        utility(RemoteFakeAiAssistantProbe::class)
+    } else {
+        utility(RemoteReleaseMatrixProbe::class)
+    }
+
+    private fun reportReleaseMatrixPhase(
+        testName: String,
+        freshContext: Boolean,
+        phase: String,
+        bootstrapProjectNames: List<String> = emptyList(),
+    ) {
+        println(
+            "AI Commit All release-matrix lifecycle: test=$testName, " +
+                "context=${if (freshContext) "fresh" else "initial"}, phase=$phase, " +
+                "bootstrapProjects=$bootstrapProjectNames",
+        )
     }
 
     private fun releaseMatrixIdeProductCode(): String = requiredSystemProperty("aicommitall.ide.product")
@@ -1710,16 +1938,14 @@ class ReleaseMatrixUiHarnessTest {
     }
 }
 
+@Remote("com.intellij.ide.impl.ProjectUtil")
+private interface RemoteProjectUtil {
+    fun openOrImport(path: String, projectToClose: Project?, forceOpenInNewFrame: Boolean): Project?
+}
+
 @Remote("pl.devopssolutions.aicommitall.integration.fakeai.FakeAiAssistantProbe", plugin = "com.intellij.ml.llm")
-private interface RemoteFakeAiAssistantProbe {
+private interface RemoteFakeAiAssistantProbe : ReleaseMatrixStartupProbe {
     fun isCommitMessageActionRegistered(): Boolean
-    fun isAiCommitAllPluginEnabled(): Boolean
-    fun isAiCommitAllThreeSectionActionRegistered(): Boolean
-    fun licenseRestartHandlingDiagnostic(): String
-    fun isIdeLicenseActive(): Boolean
-    fun isUltimateEnableAttemptObserverInstalled(): Boolean
-    fun isUltimateModuleLoaded(): Boolean
-    fun isUltimateEnableAttemptCompleted(): Boolean
     fun primaryCommitActionsContain(actionId: String): Boolean
     fun primaryCommitActionIds(): List<String>
     fun openCommitToolWindow(project: Project): Boolean
@@ -1737,7 +1963,6 @@ private interface RemoteFakeAiAssistantProbe {
     ): List<String>
 
     fun generatedCommitMessageThroughDataContext(): String
-    fun isProjectSmart(project: Project): Boolean
     fun registeredKeyboardShortcutText(actionId: String): String?
     fun setUseVcsShortcutsForAiCommitAll(enabled: Boolean)
     fun useVcsShortcutsForAiCommitAll(): Boolean
@@ -1768,9 +1993,17 @@ private interface RemoteFakeAiAssistantProbe {
 }
 
 @Remote("pl.devopssolutions.aicommitall.integration.fakeai.FakeAiAssistantProbe", plugin = RELEASE_MATRIX_PROBE_PLUGIN_ID)
-private interface RemoteReleaseMatrixProbe {
+private interface RemoteReleaseMatrixProbe : ReleaseMatrixStartupProbe
+
+private interface ReleaseMatrixStartupProbe {
     fun isAiCommitAllPluginEnabled(): Boolean
     fun isAiCommitAllThreeSectionActionRegistered(): Boolean
+    fun licenseRestartHandlingDiagnostic(): String
+    fun isIdeLicenseActive(): Boolean
+    fun isUltimateEnableAttemptObserverInstalled(): Boolean
+    fun isUltimateModuleLoaded(): Boolean
+    fun isUltimateStartupStateAlreadySettled(): Boolean
+    fun isUltimateEnableAttemptCompleted(): Boolean
 }
 
 private data class GitStateSnapshot(
@@ -1972,6 +2205,28 @@ private fun isLicenseRestartPreflightResolved(
     isLicenseActive ||
     (productCode == "PY" && isUltimateEnableAttemptCompleted)
 
+private fun isReleaseMatrixProductPluginsStable(
+    productCode: String,
+    observerInstalled: Boolean,
+    startupStateAlreadySettled: Boolean,
+    enableAttemptCompleted: Boolean,
+): Boolean = productCode != "PY" || (observerInstalled && (startupStateAlreadySettled || enableAttemptCompleted))
+
+private fun isReleaseMatrixBootstrapProjectSet(projectNames: List<String>): Boolean = projectNames.size <= 1 &&
+    projectNames.all { projectName -> projectName == "WelcomeScreen" }
+
+private fun <T> runReleaseMatrixStartupLifecycle(
+    prepareStartup: () -> Unit,
+    openFixture: () -> T,
+    waitForFixtureSmart: (T) -> Unit,
+    scenario: () -> Unit,
+) {
+    prepareStartup()
+    val project = openFixture()
+    waitForFixtureSmart(project)
+    scenario()
+}
+
 private fun Throwable.isExactLicenseRestartSessionLoss(): Boolean = javaClass.name == "com.intellij.ide.starter.driver.engine.DriverWithContextError" &&
     cause?.javaClass?.name == "com.intellij.driver.client.impl.DriverCallException" &&
     cause?.cause?.javaClass == IllegalArgumentException::class.java &&
@@ -2030,5 +2285,9 @@ private val RELEASE_MATRIX_PROBE_PLUGIN_XML = """
         <depends>com.intellij.modules.platform</depends>
         <depends>com.intellij.modules.vcs</depends>
         <depends>Git4Idea</depends>
+        <applicationListeners>
+            <listener class="pl.devopssolutions.aicommitall.integration.fakeai.FakeAiAssistantAppLifecycleListener"
+                      topic="com.intellij.ide.AppLifecycleListener" />
+        </applicationListeners>
     </idea-plugin>
 """.trimIndent()
