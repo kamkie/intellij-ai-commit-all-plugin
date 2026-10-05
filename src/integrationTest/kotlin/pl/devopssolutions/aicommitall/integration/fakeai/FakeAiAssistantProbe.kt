@@ -51,6 +51,7 @@ import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.WindowManager
+import com.intellij.platform.PlatformProjectOpenProcessor
 import com.intellij.ui.JBColor
 import com.intellij.ui.LicensingFacade
 import com.intellij.ui.components.JBLabel
@@ -146,6 +147,44 @@ object FakeAiAssistantProbe {
                 this.projectToClose = projectToClose
             },
         )
+    }
+
+    @JvmStatic
+    fun isPythonAutoImportRegistrationSettled(project: Project): Boolean {
+        if (ApplicationInfo.getInstance().build.productCode != "PY" || PlatformProjectOpenProcessor.isNewlyCreatedProject(project)) {
+            return true
+        }
+        check(!ApplicationManager.getApplication().isDispatchThread) {
+            "Python auto-import registration must be observed off the EDT."
+        }
+        val pythonModule = requireNotNull(
+            PluginManagerCore.getPluginSet().findEnabledModule(
+                PluginModuleId.getId("intellij.python.pyproject", PluginModuleId.JETBRAINS_NAMESPACE),
+            ),
+        ) {
+            "The PyCharm pyproject module descriptor was not found."
+        }
+        val settingsClass = Class.forName(
+            "com.intellij.python.pyproject.model.PyProjectModelSettings",
+            true,
+            pythonModule.pluginClassLoader,
+        )
+        val settings = requireNotNull(project.getService(settingsClass))
+        if (settingsClass.getMethod("getUsePyprojectToml").invoke(settings) == false) {
+            return true
+        }
+        val serviceClass = Class.forName(
+            "com.intellij.python.pyproject.model.internal.autoImportBridge.PyProjectAutoImportService",
+            true,
+            pythonModule.pluginClassLoader,
+        )
+        val service = project.getServiceIfCreated(serviceClass) ?: return false
+        // In PY 262, this getter takes the same monitor as the complete start() registration call.
+        val settled = serviceClass.getMethod("getInitialized\$intellij_python_pyproject").invoke(service) == true
+        if (settled) {
+            logger.info("AI Commit All test plugin Python auto-import registration settled: project=${project.name}")
+        }
+        return settled
     }
 
     @JvmStatic

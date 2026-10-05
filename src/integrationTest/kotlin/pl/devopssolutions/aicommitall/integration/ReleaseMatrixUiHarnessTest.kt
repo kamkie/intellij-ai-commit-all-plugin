@@ -1708,7 +1708,7 @@ class ReleaseMatrixUiHarnessTest {
                         check(isReleaseMatrixBootstrapProjectSet(bootstrapProjectNames, bootstrapProjectName)) {
                             "Unexpected projects before fixture opening: $bootstrapProjectNames"
                         }
-                        bootstrapProjects.forEach { project -> waitForProjectSmart(project) }
+                        bootstrapProjects.forEach { project -> waitForBootstrapReady(project, installFakeAiPlugin) }
                         reportReleaseMatrixPhase(testName, freshContext, "startup-ready", bootstrapProjectNames)
                         requireNotNull(
                             releaseMatrixStartupProbe(installFakeAiPlugin)
@@ -1941,6 +1941,23 @@ class ReleaseMatrixUiHarnessTest {
         }
     }
 
+    private fun Driver.waitForBootstrapReady(project: Project, installFakeAiPlugin: Boolean) {
+        val dumbService = service<DumbService>(project)
+        val probe = releaseMatrixStartupProbe(installFakeAiPlugin)
+        waitFor(
+            message = "bootstrap indexing and Python auto-import registration are settled",
+            timeout = 120.seconds,
+            interval = 1.seconds,
+            errorMessage = {
+                "project=${project.getName()}, projectSmart=${!dumbService.isDumb()}, " +
+                    "autoImportRegistrationSettled=" +
+                    "${probe.isPythonAutoImportRegistrationSettled(project)}"
+            },
+        ) {
+            probe.isPythonAutoImportRegistrationSettled(project) && !dumbService.isDumb()
+        }
+    }
+
     private fun Driver.releaseMatrixStartupProbe(installFakeAiPlugin: Boolean): ReleaseMatrixStartupProbe = if (installFakeAiPlugin) {
         utility(RemoteFakeAiAssistantProbe::class)
     } else {
@@ -2031,6 +2048,7 @@ private interface RemoteReleaseMatrixProbe : ReleaseMatrixStartupProbe
 
 private interface ReleaseMatrixStartupProbe {
     fun openFixtureInSameWindow(path: String, projectToClose: Project?): Project?
+    fun isPythonAutoImportRegistrationSettled(project: Project): Boolean
     fun isAiCommitAllPluginEnabled(): Boolean
     fun isAiCommitAllThreeSectionActionRegistered(): Boolean
     fun licenseRestartHandlingDiagnostic(): String
