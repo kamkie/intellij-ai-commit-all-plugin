@@ -4,11 +4,22 @@ All notable public plugin-facing changes are documented in this file.
 
 The format is based on Keep a Changelog. Release tags should use semantic version tags in the form `vMAJOR.MINOR.PATCH` for stable releases or `vMAJOR.MINOR.PATCH-PRERELEASE` for prereleases.
 
-This repository has no Marketplace-published plugin version yet. `v0.1.0-beta.10` is the current implementation prerelease candidate prepared from this repository.
+The first stable release target is `v0.1.0`. `v0.1.0-beta.10` was submitted to the JetBrains Marketplace beta channel on 2026-10-05 and is under review; no approved Marketplace release exists yet.
 
 This changelog records plugin source and runtime behavior changes, public plugin documentation changes, compatibility and support changes, and CI or release pipeline changes that affect the plugin artifact or publication. Internal AI-agent documentation, repository workflow notes, plans, proposals, ADR maintenance, scenario-register tracking, and test-case inventory changes are intentionally omitted unless they also change public plugin behavior or release artifacts.
 
 ## [Unreleased]
+
+## [v0.1.0] - 2026-10-05
+
+### Added
+
+- First stable release of the `AI | Commit | Push` Git workflow, using JetBrains AI Assistant to generate commit messages and the IDE's standard commit and push checks.
+- Commit and push shortcut integration with a settings opt-out, plus changelist and Git staging-area support.
+
+### Changed
+
+- Prepare signed distribution through the official JetBrains Marketplace Stable channel for IntelliJ Platform 2026.2/build 262 and compatible JetBrains IDEs with Git and AI Assistant installed.
 
 ## [v0.1.0-beta.10] - 2026-07-24
 
