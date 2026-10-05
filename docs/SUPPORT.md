@@ -1,7 +1,10 @@
 # Support
 
-This project is preparing its first stable IntelliJ Platform plugin release,
-`v0.1.0`. No approved public Marketplace release is available yet.
+This project's first stable IntelliJ Platform plugin, `v0.1.0`, is available on
+[GitHub](https://github.com/kamkie/intellij-ai-commit-all-plugin/releases/tag/v0.1.0)
+and was submitted to the Marketplace Stable channel on 2026-10-05 as update
+`1187809`. JetBrains review is pending; no approved public Marketplace release
+is available yet.
 
 For user-facing problem paths and FAQ entries, see
 [Troubleshooting And FAQ](troubleshooting.md). This page owns support status,
@@ -11,12 +14,14 @@ it does not repeat the troubleshooting FAQ.
 ## Current Support Status
 
 - Support is best-effort until the first official JetBrains Marketplace release.
-- Current release candidate target: `v0.1.0`, intended for the default Stable
-  Marketplace channel after release validation.
-- Latest released tag: `v0.1.0-beta.10`, submitted to the Marketplace beta
-  channel on 2026-10-05 and under review.
+- Latest release tag: `v0.1.0`, published on GitHub after passing main and tagged
+  validation; the signed package is under review in the default Stable
+  Marketplace channel as update `1187809`.
+- Earlier beta tag: `v0.1.0-beta.10`, submitted to the Marketplace beta channel
+  on 2026-10-05 and under review.
 - Current `main` branch state: AI Commit All workflow implementation and release
-  automation are present; stable publication and Marketplace approval are pending.
+  automation are present; the stable GitHub release is published and Marketplace
+  approval is pending.
 - Current IntelliJ Platform target: `2026.2`, build branch `262`.
 - Current IDE scope: JetBrains IDEs with the VCS Commit tool window and
   compatible commit workflow APIs. The release verifier gate covers IntelliJ
@@ -28,22 +33,27 @@ it does not repeat the troubleshooting FAQ.
 - Release validation checklist execution remains required before release-readiness claims for
   final control rendering, staging-area modes, shortcut takeover, AI Assistant
   unavailable states, and full commit/push UI behavior.
+  For this release the maintainer directed use of the existing automated IDE
+  harness without Computer Use testing. The report records that route,
+  historical real-AI evidence, and the remaining manual coverage limits;
+  `T-VAL-024` remains open.
 - The release workflow supports gated Marketplace signing and publishing.
   The release workflow runs only from `main` at the requested annotated release
   tag, validates documentation, formatting, Detekt, tests, coverage, plugin
   structure, packaging, and the supported IDE verifier matrix before signing and
   publishing. The protected GitHub publication credentials are not configured;
-  any local publication must satisfy the same release gates. Publication status
-  and validation gaps are recorded in the
+  the first Stable upload used externally held encrypted signing credentials
+  and the maintainer-directed validation route. Artifact checks, the verified
+  signature, publication status, and validation gaps are recorded in the
   [v0.1.0 validation report](validation/reports/2026-10-05-v0.1.0.md).
 
 See [README](../README.md) for the current supported scope decisions and
 [Release Validation Checklist](validation/release-checklist.md) for current
 manual validation expectations.
 
-## Supported Prerelease Scope
+## Supported Scope
 
-Support covers repository-local validation and prerelease plugin behavior for:
+Support covers repository-local validation and plugin behavior for:
 
 - Git repositories using the non-modal IntelliJ Commit tool window.
 - Changelist-backed commit workflows and the Git staging-area commit workflow.
@@ -62,7 +72,7 @@ Marketplace publication.
 Use repository issues or maintainer review channels for:
 
 - Build, setup, or sandbox startup problems.
-- Bugs in the prerelease plugin implementation.
+- Bugs in the plugin implementation.
 - Supported IDE, Git, changelist, staging-area, commit, push, or AI Assistant
   integration questions.
 - Release workflow, packaging, signing, or verifier failures that occur in this

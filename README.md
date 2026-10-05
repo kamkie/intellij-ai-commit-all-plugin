@@ -11,11 +11,13 @@
 
 ## Status
 
-Preparing `v0.1.0`, the first stable release candidate. Stable publication is
-pending release validation and JetBrains Marketplace moderation.
+`v0.1.0`, the first stable release, is available on
+[GitHub](https://github.com/kamkie/intellij-ai-commit-all-plugin/releases/tag/v0.1.0).
+It passed tagged validation and was submitted to the Marketplace Stable channel
+on 2026-10-05 as update `1187809`; JetBrains review is pending.
 
-Latest released tag: `v0.1.0-beta.10`. It was submitted to the Marketplace beta
-channel on 2026-10-05 and is under review. No approved public Marketplace release
+The earlier `v0.1.0-beta.10` was submitted to the Marketplace beta channel on
+2026-10-05 and is under review. No approved public Marketplace release
 is available yet: [AI Commit All on Marketplace](https://plugins.jetbrains.com/plugin/34800-ai-commit-all).
 
 The release base passed the IntelliJ IDEA, PyCharm, and WebStorm `2026.2`
@@ -32,7 +34,9 @@ If AI Assistant is missing or disabled, the IDE refuses to load the plugin throu
 
 ## Quick Start
 
-Build the plugin ZIP locally:
+Download `ai-commit-all-0.1.0.zip` from the
+[v0.1.0 GitHub release](https://github.com/kamkie/intellij-ai-commit-all-plugin/releases/tag/v0.1.0),
+or build the plugin ZIP locally:
 
 ```powershell
 .\gradlew.bat buildPlugin
@@ -40,7 +44,7 @@ Build the plugin ZIP locally:
 
 In the IDE, open `Settings | Plugins`, click the gear icon, choose `Install
 Plugin from Disk...`, and select
-`build/distributions/ai-commit-all-<version>.zip`.
+the downloaded ZIP or `build/distributions/ai-commit-all-<version>.zip`.
 
 Then:
 
