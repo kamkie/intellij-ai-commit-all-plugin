@@ -1,7 +1,7 @@
 # Support
 
-This project is a pre-release IntelliJ Platform plugin repository. No
-Marketplace-published release exists yet.
+This project is preparing its first stable IntelliJ Platform plugin release,
+`v0.1.0`. No approved public Marketplace release is available yet.
 
 For user-facing problem paths and FAQ entries, see
 [Troubleshooting And FAQ](troubleshooting.md). This page owns support status,
@@ -11,10 +11,12 @@ it does not repeat the troubleshooting FAQ.
 ## Current Support Status
 
 - Support is best-effort until the first official JetBrains Marketplace release.
-- Current release candidate target: `v0.1.0-beta.10`, an implementation
-  prerelease.
+- Current release candidate target: `v0.1.0`, intended for the default Stable
+  Marketplace channel after release validation.
+- Latest released tag: `v0.1.0-beta.10`, submitted to the Marketplace beta
+  channel on 2026-10-05 and under review.
 - Current `main` branch state: AI Commit All workflow implementation and release
-  automation are present but not Marketplace-published.
+  automation are present; stable publication and Marketplace approval are pending.
 - Current IntelliJ Platform target: `2026.2`, build branch `262`.
 - Current IDE scope: JetBrains IDEs with the VCS Commit tool window and
   compatible commit workflow APIs. The release verifier gate covers IntelliJ
@@ -26,11 +28,14 @@ it does not repeat the troubleshooting FAQ.
 - Release validation checklist execution remains required before release-readiness claims for
   final control rendering, staging-area modes, shortcut takeover, AI Assistant
   unavailable states, and full commit/push UI behavior.
-- Marketplace signing and publishing are configured through gated automation.
+- The release workflow supports gated Marketplace signing and publishing.
   The release workflow runs only from `main` at the requested annotated release
   tag, validates documentation, formatting, Detekt, tests, coverage, plugin
   structure, packaging, and the supported IDE verifier matrix before signing and
-  publishing.
+  publishing. The protected GitHub publication credentials are not configured;
+  any local publication must satisfy the same release gates. Publication status
+  and validation gaps are recorded in the
+  [v0.1.0 validation report](validation/reports/2026-10-05-v0.1.0.md).
 
 See [README](../README.md) for the current supported scope decisions and
 [Release Validation Checklist](validation/release-checklist.md) for current

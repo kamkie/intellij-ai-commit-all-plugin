@@ -11,11 +11,16 @@
 
 ## Status
 
-GitHub prerelease. The plugin has not been published to JetBrains
-Marketplace yet. Latest tag: `v0.1.0-beta.10`.
+Preparing `v0.1.0`, the first stable release candidate. Stable publication is
+pending release validation and JetBrains Marketplace moderation.
 
-The 2026.2 baseline passed the required IntelliJ IDEA, PyCharm, and WebStorm
-2026.2 verifier and UI matrix for this prerelease.
+Latest released tag: `v0.1.0-beta.10`. It was submitted to the Marketplace beta
+channel on 2026-10-05 and is under review. No approved public Marketplace release
+is available yet: [AI Commit All on Marketplace](https://plugins.jetbrains.com/plugin/34800-ai-commit-all).
+
+The release base passed the IntelliJ IDEA, PyCharm, and WebStorm `2026.2`
+verifier gates and automated UI matrix. Current release evidence is recorded in
+the [v0.1.0 validation report](docs/validation/reports/2026-10-05-v0.1.0.md).
 
 ## Requirements
 

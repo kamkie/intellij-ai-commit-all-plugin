@@ -1,6 +1,6 @@
 # Build Tasks
 
-Repository state: the executable Gradle/Kotlin IntelliJ plugin scaffold, runtime `AI Commit All` workflow implementation, automated validation coverage, manual sandbox validation records, CI, and gated Marketplace release automation are present. The plugin has not been published to JetBrains Marketplace.
+Repository state: the executable Gradle/Kotlin IntelliJ plugin scaffold, runtime `AI Commit All` workflow implementation, automated validation coverage, manual sandbox validation records, CI, and gated Marketplace release automation are present. The `v0.1.0` stable release candidate is in preparation; `v0.1.0-beta.10` was submitted to the Marketplace beta channel and is under review, with no approved public Marketplace release yet.
 
 Completed task history is preserved in [TASKS_ARCHIVE.md](TASKS_ARCHIVE.md).
 
