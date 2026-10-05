@@ -162,7 +162,7 @@ The plugin does not add its own confirmation dialog for the safe immediate-push 
 
 - Git is the only supported VCS.
 - JetBrains AI Assistant is required; there is no non-AI fallback message generator.
-- The plugin is an unreleased prerelease and is installed from a local build ZIP.
+- Marketplace availability awaits JetBrains approval. Until then, install the stable ZIP from the [v0.1.0 GitHub release](https://github.com/kamkie/intellij-ai-commit-all-plugin/releases/tag/v0.1.0) using the IDE's **Install Plugin from Disk** action.
 - Safe immediate push is intentionally conservative.
 - The screenshots and animation in this guide are generated from the runtime Swing control rendering; full manual visual review across supported IDE products is still tracked as validation work.
 - Shortcut names outside the predefined JetBrains keymaps are keymap-specific unless confirmed in the active IDE.
