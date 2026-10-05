@@ -33,6 +33,7 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.plugins.PluginConfigurator
+import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.utils.PortUtil
@@ -232,6 +233,18 @@ class ReleaseMatrixUiHarnessTest {
         assertFalse(isReleaseMatrixBootstrapProjectSet(listOf("WelcomeScreen", "release-matrix-project")))
         assertFalse(isReleaseMatrixBootstrapProjectSet(listOf("WelcomeScreen", "WelcomeScreen")))
         assertFalse(isReleaseMatrixBootstrapProjectSet(listOf("unrelated-project")))
+    }
+
+    @Test
+    fun startupBootstrapAllowsOnlyTheOwnedEmptyIntellijProject() {
+        val bootstrapName = "release-matrix-startup-bootstrap"
+        assertTrue(isReleaseMatrixBootstrapProjectSet(listOf(bootstrapName), bootstrapName))
+        listOf("WelcomeScreen", "release-matrix-project", "unrelated-project").forEach { projectName ->
+            assertFalse(isReleaseMatrixBootstrapProjectSet(listOf(projectName), bootstrapName))
+            assertFalse(isReleaseMatrixBootstrapProjectSet(listOf(bootstrapName, projectName), bootstrapName))
+        }
+        assertFalse(isReleaseMatrixBootstrapProjectSet(listOf(bootstrapName, bootstrapName), bootstrapName))
+        assertFalse(isReleaseMatrixBootstrapProjectSet(listOf(bootstrapName)))
     }
 
     @Test
@@ -1485,6 +1498,14 @@ class ReleaseMatrixUiHarnessTest {
             isInReleaseLine(ideVersion, INTELLIJ_2026_2_RELEASE_LINE)
         val exercisesSyntheticLicenseRestart = handlesLicenseRestart &&
             System.getenv("AICOMMITALL_EXERCISE_LICENSE_RESTART") == "true"
+        val bootstrapProjectDirectory = if (ideProductCode == "IU") {
+            Files.createDirectory(tempDirectory.resolve("release-matrix-startup-bootstrap")).also { directory ->
+                Files.list(directory).use { children -> check(children.findAny().isEmpty) }
+            }
+        } else {
+            null
+        }
+        val bootstrapProjectName = bootstrapProjectDirectory?.fileName?.toString() ?: "WelcomeScreen"
         val licenseRestartMarker = tempDirectory
             .resolve("$testName-license-restart.txt")
             .toAbsolutePath()
@@ -1520,12 +1541,15 @@ class ReleaseMatrixUiHarnessTest {
                 testName = testName,
                 testCase = TestCase(
                     ideProductProvider(ideProductCode),
-                    NoProject,
+                    bootstrapProjectDirectory?.let { directory -> LocalProjectInfo(directory) } ?: NoProject,
                 ).withVersion(ideVersion),
                 preserveSystemDir = freshContext,
             ).apply {
                 attachCoverageAgentIfRequested()
                 addProjectToTrustedLocations(projectPath = fixture.projectDirectory, addParentDir = false)
+                bootstrapProjectDirectory?.let { directory ->
+                    addProjectToTrustedLocations(projectPath = directory, addParentDir = false)
+                }
                 if (handlesLicenseRestart) {
                     applyVMOptionsPatch {
                         addSystemProperty(LICENSE_RESTART_MARKER_PROPERTY, licenseRestartMarker.toString())
@@ -1552,9 +1576,24 @@ class ReleaseMatrixUiHarnessTest {
             }
 
             val prepareStartup: Driver.() -> Unit = {
+                if (bootstrapProjectDirectory != null) {
+                    waitFor(
+                        message = "the owned empty IU bootstrap is the sole startup project",
+                        timeout = 120.seconds,
+                        interval = 1.seconds,
+                        errorMessage = { "openProjects=${getOpenProjects().map { project -> project.getName() }}" },
+                    ) {
+                        getOpenProjects().map { project -> project.getName() } == listOf(bootstrapProjectName)
+                    }
+                }
                 val initialProjectNames = getOpenProjects().map { project -> project.getName() }
-                check(isReleaseMatrixBootstrapProjectSet(initialProjectNames)) {
+                check(isReleaseMatrixBootstrapProjectSet(initialProjectNames, bootstrapProjectName)) {
                     "Unexpected projects during startup preparation: $initialProjectNames"
+                }
+                if (bootstrapProjectDirectory != null) {
+                    check(initialProjectNames == listOf(bootstrapProjectName)) {
+                        "The empty IU bootstrap must be the sole startup project: $initialProjectNames"
+                    }
                 }
                 var probe = releaseMatrixStartupProbe(installFakeAiPlugin)
                 if (handlesLicenseRestart && !freshContext) {
@@ -1666,14 +1705,14 @@ class ReleaseMatrixUiHarnessTest {
                     openFixture = {
                         val bootstrapProjects = getOpenProjects()
                         val bootstrapProjectNames = bootstrapProjects.map { project -> project.getName() }
-                        check(isReleaseMatrixBootstrapProjectSet(bootstrapProjectNames)) {
+                        check(isReleaseMatrixBootstrapProjectSet(bootstrapProjectNames, bootstrapProjectName)) {
                             "Unexpected projects before fixture opening: $bootstrapProjectNames"
                         }
                         bootstrapProjects.forEach { project -> waitForProjectSmart(project) }
                         reportReleaseMatrixPhase(testName, freshContext, "startup-ready", bootstrapProjectNames)
                         requireNotNull(
-                            utility(RemoteProjectUtil::class)
-                                .openOrImport(fixture.projectDirectory.toString(), bootstrapProjects.singleOrNull(), false),
+                            releaseMatrixStartupProbe(installFakeAiPlugin)
+                                .openFixtureInSameWindow(fixture.projectDirectory.toString(), bootstrapProjects.singleOrNull()),
                         ) {
                             "The release-matrix fixture did not open after startup readiness."
                         }.also {
@@ -1938,11 +1977,6 @@ class ReleaseMatrixUiHarnessTest {
     }
 }
 
-@Remote("com.intellij.ide.impl.ProjectUtil")
-private interface RemoteProjectUtil {
-    fun openOrImport(path: String, projectToClose: Project?, forceOpenInNewFrame: Boolean): Project?
-}
-
 @Remote("pl.devopssolutions.aicommitall.integration.fakeai.FakeAiAssistantProbe", plugin = "com.intellij.ml.llm")
 private interface RemoteFakeAiAssistantProbe : ReleaseMatrixStartupProbe {
     fun isCommitMessageActionRegistered(): Boolean
@@ -1996,6 +2030,7 @@ private interface RemoteFakeAiAssistantProbe : ReleaseMatrixStartupProbe {
 private interface RemoteReleaseMatrixProbe : ReleaseMatrixStartupProbe
 
 private interface ReleaseMatrixStartupProbe {
+    fun openFixtureInSameWindow(path: String, projectToClose: Project?): Project?
     fun isAiCommitAllPluginEnabled(): Boolean
     fun isAiCommitAllThreeSectionActionRegistered(): Boolean
     fun licenseRestartHandlingDiagnostic(): String
@@ -2212,8 +2247,7 @@ private fun isReleaseMatrixProductPluginsStable(
     enableAttemptCompleted: Boolean,
 ): Boolean = productCode != "PY" || (observerInstalled && (startupStateAlreadySettled || enableAttemptCompleted))
 
-private fun isReleaseMatrixBootstrapProjectSet(projectNames: List<String>): Boolean = projectNames.size <= 1 &&
-    projectNames.all { projectName -> projectName == "WelcomeScreen" }
+private fun isReleaseMatrixBootstrapProjectSet(projectNames: List<String>, bootstrapProjectName: String = "WelcomeScreen"): Boolean = projectNames.size <= 1 && projectNames.all { projectName -> projectName == bootstrapProjectName }
 
 private fun <T> runReleaseMatrixStartupLifecycle(
     prepareStartup: () -> Unit,

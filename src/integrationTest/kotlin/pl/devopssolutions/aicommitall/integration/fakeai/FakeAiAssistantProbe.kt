@@ -18,6 +18,8 @@ package pl.devopssolutions.aicommitall.integration.fakeai
 import com.intellij.ide.AppLifecycleListener
 import com.intellij.ide.DataManager
 import com.intellij.ide.IdeEventQueue
+import com.intellij.ide.impl.OpenProjectTask
+import com.intellij.ide.impl.ProjectUtil
 import com.intellij.ide.plugins.DynamicPluginEnabler
 import com.intellij.ide.plugins.DynamicPluginListener
 import com.intellij.ide.plugins.IdeaPluginDescriptor
@@ -134,6 +136,17 @@ object FakeAiAssistantProbe {
 
     @JvmStatic
     fun isCommitMessageActionRegistered(): Boolean = ActionManager.getInstance().getAction("Vcs.LLMCommitMessageAction") != null
+
+    @JvmStatic
+    fun openFixtureInSameWindow(path: String, projectToClose: Project?): Project? = runOnEdt {
+        ProjectUtil.openOrImport(
+            Path.of(path),
+            OpenProjectTask {
+                forceReuseFrame = true
+                this.projectToClose = projectToClose
+            },
+        )
+    }
 
     @JvmStatic
     fun isAiCommitAllPluginEnabled(): Boolean = PluginManagerCore.isLoaded(PluginId.getId(AI_COMMIT_ALL_PLUGIN_ID))
